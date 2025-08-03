@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -19,6 +20,14 @@ fun DashboardScreen(
     viewModel: DashboardViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        val hasPermission = com.momentum.app.util.PermissionUtils.hasUsageStatsPermission(context)
+        if (hasPermission != uiState.hasUsagePermission) {
+            viewModel.refreshData()
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -47,7 +56,7 @@ fun DashboardScreen(
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator()
-                    } else {
+                    } else if (uiState.hasUsagePermission) {
                         Text(
                             text = uiState.totalScreenTime,
                             style = MaterialTheme.typography.headlineLarge
@@ -55,6 +64,12 @@ fun DashboardScreen(
                         Text(
                             text = "Tiempo total de pantalla",
                             style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = "Permiso requerido",
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -101,26 +116,42 @@ fun DashboardScreen(
         }
 
         if (uiState.hasUsagePermission) {
-            items(uiState.topApps) { app ->
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+            if (uiState.topApps.isNotEmpty()) {
+                items(uiState.topApps) { app ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column {
-                            Text(
-                                text = app.appName,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = com.momentum.app.util.LifeWeeksCalculator.formatTimeFromMillis(app.totalTimeInMillis),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = app.appName,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    text = com.momentum.app.util.LifeWeeksCalculator.formatTimeFromMillis(app.totalTimeInMillis),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
+                    }
+                }
+            } else {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "No hay datos de uso disponibles para hoy",
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
@@ -140,7 +171,9 @@ fun DashboardScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
-                            onClick = { /* TODO: Request permission */ }
+                            onClick = { 
+                                com.momentum.app.util.PermissionUtils.openUsageStatsSettings(context)
+                            }
                         ) {
                             Text("Otorgar permiso")
                         }

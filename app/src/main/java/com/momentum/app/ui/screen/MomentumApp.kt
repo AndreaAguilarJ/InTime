@@ -1,5 +1,7 @@
 package com.momentum.app.ui.screen
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -7,6 +9,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +38,49 @@ fun MomentumApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val application = context.applicationContext as MomentumApplication
+    
+    // Check if onboarding is completed
+    val userRepository = application.userRepository
+    var isOnboardingCompleted by remember { mutableStateOf<Boolean?>(null) }
+    
+    LaunchedEffect(Unit) {
+        userRepository.getUserSettings().collect { settings ->
+            isOnboardingCompleted = settings?.isOnboardingCompleted ?: false
+        }
+    }
+    
+    when (isOnboardingCompleted) {
+        null -> {
+            // Loading state
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        false -> {
+            // Show onboarding
+            val onboardingViewModel: com.momentum.app.ui.viewmodel.OnboardingViewModel = viewModel(
+                factory = com.momentum.app.ui.viewmodel.OnboardingViewModelFactory(application.userRepository)
+            )
+            OnboardingScreen(
+                viewModel = onboardingViewModel,
+                onCompleted = { isOnboardingCompleted = true }
+            )
+        }
+        true -> {
+            // Show main app
+            MainAppContent(application)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainAppContent(application: MomentumApplication) {
+    val navController = rememberNavController()
+    val context = LocalContext.current
     
     val screens = listOf(
         Screen.Today,
@@ -77,7 +123,8 @@ fun MomentumApp() {
                     factory = DashboardViewModelFactory(
                         application.userRepository,
                         application.usageStatsRepository,
-                        application.quotesRepository
+                        application.quotesRepository,
+                        context
                     )
                 )
                 DashboardScreen(viewModel = viewModel)

@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -23,6 +24,7 @@ fun LifeWeeksScreen(
     viewModel: LifeWeeksViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LazyColumn(
         modifier = Modifier
@@ -132,7 +134,20 @@ fun LifeWeeksScreen(
                 }
                 
                 OutlinedButton(
-                    onClick = { /* TODO: Save to gallery */ },
+                    onClick = { 
+                        uiState.lifeWeeksData?.let { data ->
+                            uiState.userSettings?.let { settings ->
+                                val bitmap = com.momentum.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
+                                    context = context,
+                                    weeksLived = data.weeksLived,
+                                    livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor),
+                                    futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor),
+                                    backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor)
+                                )
+                                com.momentum.app.util.WallpaperGenerator.saveToGallery(context, bitmap)
+                            }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(stringResource(R.string.save_to_gallery))
@@ -142,7 +157,20 @@ fun LifeWeeksScreen(
 
         item {
             Button(
-                onClick = { /* TODO: Set as wallpaper */ },
+                onClick = { 
+                    uiState.lifeWeeksData?.let { data ->
+                        uiState.userSettings?.let { settings ->
+                            val bitmap = com.momentum.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
+                                context = context,
+                                weeksLived = data.weeksLived,
+                                livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor),
+                                futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor),
+                                backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor)
+                            )
+                            com.momentum.app.util.WallpaperGenerator.setAsWallpaper(context, bitmap)
+                        }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.set_as_wallpaper))
