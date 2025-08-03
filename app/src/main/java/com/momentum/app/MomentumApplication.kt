@@ -11,6 +11,7 @@ import com.momentum.app.data.appwrite.AppwriteService
 import com.momentum.app.data.appwrite.repository.AppwriteUserRepository
 import com.momentum.app.data.appwrite.repository.AppwriteQuotesRepository
 import com.momentum.app.data.repository.SubscriptionRepository
+import com.momentum.app.data.manager.*
 import com.momentum.app.minimal.MinimalPhoneManager
 
 class MomentumApplication : Application(), Configuration.Provider {
@@ -35,6 +36,21 @@ class MomentumApplication : Application(), Configuration.Provider {
     
     // Subscription management
     val subscriptionRepository by lazy { SubscriptionRepository(appwriteService) }
+    
+    // Enhanced managers
+    val themeManager by lazy { ThemeManager(this) }
+    val billingManager by lazy { BillingManager(this) }
+    val notificationManager by lazy { NotificationManager(this) }
+    val exportManager by lazy { ExportManager(this) }
+    val backupSyncManager by lazy { 
+        BackupSyncManager(
+            this, 
+            appwriteService, 
+            usageStatsRepository, 
+            userRepository, 
+            quotesRepository
+        ) 
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -44,6 +60,10 @@ class MomentumApplication : Application(), Configuration.Provider {
         
         // Start widget update worker
         com.momentum.app.service.WidgetUpdateWorker.startPeriodicUpdate(this)
+        
+        // Initialize enhanced features
+        billingManager.startConnection()
+        notificationManager.scheduleDailyGoalReminder()
         
         // Initialize Appwrite quotes if needed
         // TODO: Seed default quotes on first run

@@ -298,7 +298,37 @@ private fun MainAppContent(application: MomentumApplication) {
                     )
                 }
                 composable(Screen.Settings.route) {
-                    SettingsScreen()
+                    SettingsScreen(
+                        onNavigateToScreen = { screen ->
+                            when (screen) {
+                                "theme_settings" -> navController.navigate("theme_settings")
+                                "backup_settings" -> navController.navigate("backup_settings")
+                                "notification_settings" -> navController.navigate("notification_settings")
+                                "account_settings" -> navController.navigate("account_settings")
+                                "about" -> navController.navigate("about")
+                            }
+                        }
+                    )
+                }
+                
+                // Theme Settings
+                composable("theme_settings") {
+                    com.momentum.app.ui.screen.settings.ThemeSettingsScreen(
+                        onBackClick = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+                
+                // Backup Settings  
+                composable("backup_settings") {
+                    com.momentum.app.ui.screen.settings.BackupSettingsScreen(
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        backupSyncManager = application.backupSyncManager,
+                        exportManager = application.exportManager
+                    )
                 }
             }
         }

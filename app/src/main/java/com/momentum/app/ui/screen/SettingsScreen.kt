@@ -23,7 +23,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    onNavigateToScreen: (String) -> Unit = {}
+) {
     val context = LocalContext.current
     val application = context.applicationContext as MomentumApplication
     val coroutineScope = rememberCoroutineScope()
@@ -62,7 +64,10 @@ fun SettingsScreen() {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* TODO: Navigate to account settings */ }
+                    onClick = { 
+                        // Navigate to account settings screen (premium feature)
+                        onNavigateToScreen("account_settings")
+                    }
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.account_settings)) },
@@ -98,7 +103,10 @@ fun SettingsScreen() {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* TODO: Navigate to app limits */ }
+                    onClick = { 
+                        // Navigate to theme settings
+                        onNavigateToScreen("theme_settings")
+                    }
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.app_limits)) },
@@ -124,7 +132,10 @@ fun SettingsScreen() {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* TODO: Navigate to notifications */ }
+                    onClick = { 
+                        // Navigate to notification settings
+                        onNavigateToScreen("notification_settings")
+                    }
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.notifications)) },
@@ -137,7 +148,10 @@ fun SettingsScreen() {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* TODO: Navigate to widget settings */ }
+                    onClick = { 
+                        // Navigate to export/backup settings
+                        onNavigateToScreen("backup_settings")
+                    }
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.widget_settings)) },
@@ -160,7 +174,10 @@ fun SettingsScreen() {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* TODO: Navigate to about */ }
+                    onClick = { 
+                        // Navigate to about screen
+                        onNavigateToScreen("about")
+                    }
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.about)) },
