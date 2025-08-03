@@ -104,6 +104,30 @@ dependencies {
     // For minimal phone functionality
     implementation("androidx.core:core-telecom:1.0.0-alpha01")
 
+    // In-app billing for purchases
+    implementation("com.android.billingclient:billing:6.1.0")
+    implementation("com.android.billingclient:billing-ktx:6.1.0")
+
+    // DataStore for preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Export capabilities - CSV/PDF
+    implementation("com.opencsv:opencsv:5.8")
+    implementation("com.itextpdf:itext7-core:7.2.5")
+
+    // Notification support
+    implementation("androidx.core:core-ktx:1.12.0")
+
+    // Enhanced UI components
+    implementation("androidx.compose.animation:animation:1.5.4")
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+    // File picker for export
+    implementation("androidx.activity:activity-ktx:1.8.2")
+
+    // Splash screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
