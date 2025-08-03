@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Life weeks colors -->
+    <color name="weeks_lived_default">#FF6366F1</color>
+    <color name="weeks_future_default">#FFE5E7EB</color>
+    <color name="weeks_background">#FFFFFFFF</color>
+</resources>
