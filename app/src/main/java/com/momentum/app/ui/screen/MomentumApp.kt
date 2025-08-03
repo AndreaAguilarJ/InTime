@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,53 +26,147 @@ import com.momentum.app.R
 import com.momentum.app.ui.viewmodel.DashboardViewModelFactory
 import com.momentum.app.ui.viewmodel.LifeWeeksViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.momentum.app.ui.screen.auth.WelcomeScreen
+import com.momentum.app.ui.screen.auth.SignUpScreen
+import com.momentum.app.ui.screen.auth.SignInScreen
+import com.momentum.app.ui.screen.onboarding.EnhancedOnboardingScreen
+import com.momentum.app.minimal.MinimalPhoneScreen
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 sealed class Screen(val route: String, val icon: ImageVector, val titleRes: Int) {
     object Today : Screen("today", Icons.Filled.Home, R.string.nav_today)
     object MyLife : Screen("my_life", Icons.Filled.Person, R.string.nav_my_life)
     object Settings : Screen("settings", Icons.Filled.Settings, R.string.nav_settings)
+    object MinimalPhone : Screen("minimal_phone", Icons.Filled.PhoneAndroid, R.string.nav_minimal_phone)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MomentumApp() {
-    val navController = rememberNavController()
     val context = LocalContext.current
     val application = context.applicationContext as MomentumApplication
     
-    // Check if onboarding is completed
-    val userRepository = application.userRepository
+    // Authentication state
+    val isLoggedIn by application.appwriteService.isLoggedIn.collectAsState()
+    var authState by remember { mutableStateOf<AuthState>(AuthState.Loading) }
     var isOnboardingCompleted by remember { mutableStateOf<Boolean?>(null) }
     
-    LaunchedEffect(Unit) {
-        userRepository.getUserSettings().collect { settings ->
-            isOnboardingCompleted = settings?.isOnboardingCompleted ?: false
+    LaunchedEffect(isLoggedIn) {
+        authState = if (isLoggedIn) {
+            // Check onboarding status
+            AuthState.Authenticated
+        } else {
+            AuthState.NotAuthenticated
         }
     }
     
-    when (isOnboardingCompleted) {
-        null -> {
-            // Loading state
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+    when (authState) {
+        AuthState.Loading -> {
+            LoadingScreen()
+        }
+        AuthState.NotAuthenticated -> {
+            AuthenticationFlow(
+                application = application,
+                onAuthSuccess = { authState = AuthState.Authenticated }
+            )
+        }
+        AuthState.Authenticated -> {
+            // Check onboarding status for authenticated users
+            LaunchedEffect(Unit) {
+                val currentUser = application.appwriteService.currentUser.value
+                currentUser?.let { user ->
+                    application.appwriteUserRepository.getUserSettings(user.id).collect { settings ->
+                        isOnboardingCompleted = settings?.isOnboardingCompleted ?: false
+                    }
+                }
+            }
+            
+            when (isOnboardingCompleted) {
+                null -> LoadingScreen()
+                false -> {
+                    EnhancedOnboardingScreen(
+                        onCompleted = { isOnboardingCompleted = true },
+                        onBirthDateSelected = { birthDate ->
+                            // Save birth date to Appwrite
+                        },
+                        onColorPreferencesSelected = { livedColor, futureColor ->
+                            // Save color preferences to Appwrite
+                        }
+                    )
+                }
+                true -> {
+                    MainAppContent(application)
+                }
             }
         }
-        false -> {
-            // Show onboarding
-            val onboardingViewModel: com.momentum.app.ui.viewmodel.OnboardingViewModel = viewModel(
-                factory = com.momentum.app.ui.viewmodel.OnboardingViewModelFactory(application.userRepository)
-            )
-            OnboardingScreen(
-                viewModel = onboardingViewModel,
-                onCompleted = { isOnboardingCompleted = true }
+    }
+}
+
+@Composable
+private fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun AuthenticationFlow(
+    application: MomentumApplication,
+    onAuthSuccess: () -> Unit
+) {
+    var currentScreen by remember { mutableStateOf<AuthScreen>(AuthScreen.Welcome) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+    
+    when (currentScreen) {
+        AuthScreen.Welcome -> {
+            WelcomeScreen(
+                onSignUpClick = { currentScreen = AuthScreen.SignUp },
+                onSignInClick = { currentScreen = AuthScreen.SignIn }
             )
         }
-        true -> {
-            // Show main app
-            MainAppContent(application)
+        AuthScreen.SignUp -> {
+            SignUpScreen(
+                onSignUp = { name, email, password ->
+                    isLoading = true
+                    coroutineScope.launch {
+                        val result = application.appwriteService.createAccount(email, password, name)
+                        isLoading = false
+                        if (result.isSuccess) {
+                            onAuthSuccess()
+                        } else {
+                            errorMessage = result.exceptionOrNull()?.message ?: "Error al crear cuenta"
+                        }
+                    }
+                },
+                onBackToWelcome = { currentScreen = AuthScreen.Welcome },
+                isLoading = isLoading,
+                errorMessage = errorMessage
+            )
+        }
+        AuthScreen.SignIn -> {
+            SignInScreen(
+                onSignIn = { email, password ->
+                    isLoading = true
+                    coroutineScope.launch {
+                        val result = application.appwriteService.login(email, password)
+                        isLoading = false
+                        if (result.isSuccess) {
+                            onAuthSuccess()
+                        } else {
+                            errorMessage = result.exceptionOrNull()?.message ?: "Error al iniciar sesión"
+                        }
+                    }
+                },
+                onBackToWelcome = { currentScreen = AuthScreen.Welcome },
+                isLoading = isLoading,
+                errorMessage = errorMessage
+            )
         }
     }
 }
@@ -81,63 +176,97 @@ fun MomentumApp() {
 private fun MainAppContent(application: MomentumApplication) {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val minimalPhoneManager = application.minimalPhoneManager
+    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
     
-    val screens = listOf(
-        Screen.Today,
-        Screen.MyLife,
-        Screen.Settings
-    )
+    if (isMinimalModeEnabled) {
+        // Show minimal phone interface
+        MinimalPhoneScreen(
+            minimalPhoneManager = minimalPhoneManager,
+            onSettingsClick = {
+                navController.navigate(Screen.Settings.route)
+            }
+        )
+    } else {
+        // Show normal app interface
+        val screens = listOf(
+            Screen.Today,
+            Screen.MyLife,
+            Screen.MinimalPhone,
+            Screen.Settings
+        )
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                
-                screens.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = null) },
-                        label = { Text(stringResource(screen.titleRes)) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    
+                    screens.forEach { screen ->
+                        NavigationBarItem(
+                            icon = { Icon(screen.icon, contentDescription = null) },
+                            label = { Text(stringResource(screen.titleRes)) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
+                        )
+                    }
+                }
+            }
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Today.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(Screen.Today.route) {
+                    val viewModel: com.momentum.app.ui.viewmodel.DashboardViewModel = viewModel(
+                        factory = DashboardViewModelFactory(
+                            application.userRepository,
+                            application.usageStatsRepository,
+                            application.quotesRepository,
+                            context
+                        )
+                    )
+                    DashboardScreen(viewModel = viewModel)
+                }
+                composable(Screen.MyLife.route) {
+                    val viewModel: com.momentum.app.ui.viewmodel.LifeWeeksViewModel = viewModel(
+                        factory = LifeWeeksViewModelFactory(application.userRepository)
+                    )
+                    LifeWeeksScreen(viewModel = viewModel)
+                }
+                composable(Screen.MinimalPhone.route) {
+                    MinimalPhoneScreen(
+                        minimalPhoneManager = minimalPhoneManager,
+                        onSettingsClick = {
+                            navController.navigate(Screen.Settings.route)
                         }
                     )
                 }
-            }
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Today.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Today.route) {
-                val viewModel: com.momentum.app.ui.viewmodel.DashboardViewModel = viewModel(
-                    factory = DashboardViewModelFactory(
-                        application.userRepository,
-                        application.usageStatsRepository,
-                        application.quotesRepository,
-                        context
-                    )
-                )
-                DashboardScreen(viewModel = viewModel)
-            }
-            composable(Screen.MyLife.route) {
-                val viewModel: com.momentum.app.ui.viewmodel.LifeWeeksViewModel = viewModel(
-                    factory = LifeWeeksViewModelFactory(application.userRepository)
-                )
-                LifeWeeksScreen(viewModel = viewModel)
-            }
-            composable(Screen.Settings.route) {
-                SettingsScreen()
+                composable(Screen.Settings.route) {
+                    SettingsScreen()
+                }
             }
         }
     }
+}
+
+private enum class AuthState {
+    Loading,
+    NotAuthenticated,
+    Authenticated
+}
+
+private enum class AuthScreen {
+    Welcome,
+    SignUp,
+    SignIn
 }

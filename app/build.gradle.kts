@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -70,10 +71,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
 
-    // Room database
+    // Room database (keeping for migration)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
+
+    // Appwrite SDK
+    implementation("io.appwrite:sdk-for-android:4.0.0")
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
@@ -87,6 +91,18 @@ dependencies {
     // Widget support
     implementation("androidx.glance:glance-appwidget:1.0.0")
     implementation("androidx.glance:glance-material3:1.0.0")
+
+    // HTTP client for Appwrite
+    implementation("io.ktor:ktor-client-okhttp:2.3.6")
+
+    // JSON serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    // Biometric authentication
+    implementation("androidx.biometric:biometric:1.1.0")
+
+    // For minimal phone functionality
+    implementation("androidx.core:core-telecom:1.0.0-alpha01")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
