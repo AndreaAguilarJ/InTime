@@ -10,6 +10,7 @@ import com.momentum.app.data.repository.QuotesRepository
 import com.momentum.app.data.appwrite.AppwriteService
 import com.momentum.app.data.appwrite.repository.AppwriteUserRepository
 import com.momentum.app.data.appwrite.repository.AppwriteQuotesRepository
+import com.momentum.app.data.repository.SubscriptionRepository
 import com.momentum.app.minimal.MinimalPhoneManager
 
 class MomentumApplication : Application(), Configuration.Provider {
@@ -31,6 +32,9 @@ class MomentumApplication : Application(), Configuration.Provider {
     // New Appwrite repositories
     val appwriteUserRepository by lazy { AppwriteUserRepository(appwriteService) }
     val appwriteQuotesRepository by lazy { AppwriteQuotesRepository(appwriteService) }
+    
+    // Subscription management
+    val subscriptionRepository by lazy { SubscriptionRepository(appwriteService) }
 
     override fun onCreate() {
         super.onCreate()

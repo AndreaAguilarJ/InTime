@@ -37,8 +37,11 @@ import java.time.LocalDate
 sealed class Screen(val route: String, val icon: ImageVector, val titleRes: Int) {
     object Today : Screen("today", Icons.Filled.Home, R.string.nav_today)
     object MyLife : Screen("my_life", Icons.Filled.Person, R.string.nav_my_life)
+    object Analytics : Screen("analytics", Icons.Filled.Analytics, R.string.nav_analytics)
+    object Focus : Screen("focus", Icons.Filled.Psychology, R.string.nav_focus)
     object Settings : Screen("settings", Icons.Filled.Settings, R.string.nav_settings)
     object MinimalPhone : Screen("minimal_phone", Icons.Filled.PhoneAndroid, R.string.nav_minimal_phone)
+    object Subscription : Screen("subscription", Icons.Filled.Star, R.string.nav_subscription)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -192,6 +195,8 @@ private fun MainAppContent(application: MomentumApplication) {
         val screens = listOf(
             Screen.Today,
             Screen.MyLife,
+            Screen.Analytics,
+            Screen.Focus,
             Screen.MinimalPhone,
             Screen.Settings
         )
@@ -235,7 +240,13 @@ private fun MainAppContent(application: MomentumApplication) {
                             context
                         )
                     )
-                    DashboardScreen(viewModel = viewModel)
+                    DashboardScreen(
+                        viewModel = viewModel,
+                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        onUpgradeClick = {
+                            navController.navigate(Screen.Subscription.route)
+                        }
+                    )
                 }
                 composable(Screen.MyLife.route) {
                     val viewModel: com.momentum.app.ui.viewmodel.LifeWeeksViewModel = viewModel(
@@ -243,12 +254,43 @@ private fun MainAppContent(application: MomentumApplication) {
                     )
                     LifeWeeksScreen(viewModel = viewModel)
                 }
+                composable(Screen.Analytics.route) {
+                    com.momentum.app.ui.screen.analytics.AdvancedAnalyticsScreen(
+                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        onUpgradeClick = {
+                            navController.navigate(Screen.Subscription.route)
+                        }
+                    )
+                }
+                composable(Screen.Focus.route) {
+                    com.momentum.app.ui.screen.focus.FocusSessionScreen(
+                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        onUpgradeClick = {
+                            navController.navigate(Screen.Subscription.route)
+                        }
+                    )
+                }
                 composable(Screen.MinimalPhone.route) {
                     MinimalPhoneScreen(
                         minimalPhoneManager = minimalPhoneManager,
                         onSettingsClick = {
                             navController.navigate(Screen.Settings.route)
                         }
+                    )
+                }
+                composable(Screen.Subscription.route) {
+                    com.momentum.app.ui.screen.subscription.SubscriptionScreen(
+                        onSubscriptionSelected = { planId, isYearly ->
+                            // Handle subscription purchase
+                        },
+                        onStartTrial = {
+                            // Handle trial start
+                        },
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        isTrialAvailable = application.subscriptionRepository.isTrialAvailable(),
+                        remainingTrialDays = application.subscriptionRepository.getRemainingTrialDays()
                     )
                 }
                 composable(Screen.Settings.route) {

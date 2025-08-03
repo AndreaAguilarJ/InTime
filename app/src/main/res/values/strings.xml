@@ -4,8 +4,11 @@
     <!-- Navigation -->
     <string name="nav_today">Hoy</string>
     <string name="nav_my_life">Mi Vida</string>
+    <string name="nav_analytics">Análisis</string>
+    <string name="nav_focus">Enfoque</string>
     <string name="nav_settings">Ajustes</string>
     <string name="nav_minimal_phone">Teléfono Mínimo</string>
+    <string name="nav_subscription">Premium</string>
     
     <!-- Dashboard -->
     <string name="screen_time_today">Tiempo de pantalla hoy</string>
