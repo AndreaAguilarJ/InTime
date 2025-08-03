@@ -2,6 +2,8 @@ package com.momentum.app.ui.screen.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -399,26 +401,9 @@ private fun DatePickerDialog(
     onDateSelected: (LocalDate) -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Seleccionar fecha de nacimiento") },
-        text = {
-            Text("Por favor selecciona tu fecha de nacimiento para calcular las semanas vividas.")
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    // For demo purposes, using a sample date
-                    onDateSelected(LocalDate.of(1990, 1, 1))
-                }
-            ) {
-                Text("Aceptar")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
-        }
+    com.momentum.app.ui.component.SimpleDatePicker(
+        selectedDate = null,
+        onDateSelected = onDateSelected,
+        onDismiss = onDismiss
     )
 }

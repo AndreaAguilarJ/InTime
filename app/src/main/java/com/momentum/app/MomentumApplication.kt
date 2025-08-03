@@ -38,6 +38,9 @@ class MomentumApplication : Application(), Configuration.Provider {
         // Initialize WorkManager
         WorkManager.initialize(this, workManagerConfiguration)
         
+        // Start widget update worker
+        com.momentum.app.service.WidgetUpdateWorker.startPeriodicUpdate(this)
+        
         // Initialize Appwrite quotes if needed
         // TODO: Seed default quotes on first run
     }

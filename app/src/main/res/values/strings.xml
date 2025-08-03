@@ -5,6 +5,7 @@
     <string name="nav_today">Hoy</string>
     <string name="nav_my_life">Mi Vida</string>
     <string name="nav_settings">Ajustes</string>
+    <string name="nav_minimal_phone">Teléfono Mínimo</string>
     
     <!-- Dashboard -->
     <string name="screen_time_today">Tiempo de pantalla hoy</string>
@@ -36,11 +37,44 @@
     <string name="notifications">Notificaciones</string>
     <string name="widget_settings">Configuración de widgets</string>
     <string name="about">Acerca de</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="account_settings">Configuración de cuenta</string>
     
     <!-- Widgets -->
     <string name="life_weeks_widget_name">Mi Vida en Semanas</string>
+    <string name="life_weeks_widget_description">Visualiza tu progreso de vida en semanas</string>
     <string name="quote_widget_name">Frase Motivacional</string>
+    <string name="quote_widget_description">Inspiración diaria para tu pantalla de inicio</string>
+    
+    <!-- Minimal Phone -->
+    <string name="minimal_phone_title">Teléfono Mínimo</string>
+    <string name="minimal_phone_description">Simplifica tu experiencia móvil</string>
+    <string name="enable_minimal_mode">Activar modo mínimo</string>
+    <string name="disable_minimal_mode">Desactivar modo mínimo</string>
+    <string name="allowed_apps">Apps permitidas</string>
+    <string name="manage_apps">Gestionar apps</string>
+    
+    <!-- Authentication -->
+    <string name="create_account">Crear cuenta</string>
+    <string name="sign_in">Iniciar sesión</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="name">Nombre</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="already_have_account">¿Ya tienes cuenta?</string>
+    <string name="dont_have_account">¿No tienes cuenta?</string>
     
     <!-- Permissions -->
     <string name="usage_stats_permission_rationale">Esta aplicación necesita acceso a los datos de uso para mostrar estadísticas de tiempo de pantalla y ayudarte a gestionar tu tiempo digital de manera más consciente.</string>
+    
+    <!-- Error messages -->
+    <string name="error_network">Error de conexión. Verifica tu conexión a internet.</string>
+    <string name="error_authentication">Error de autenticación. Verifica tus credenciales.</string>
+    <string name="error_generic">Ha ocurrido un error. Inténtalo de nuevo.</string>
+    
+    <!-- Success messages -->
+    <string name="account_created_success">Cuenta creada exitosamente</string>
+    <string name="login_success">Sesión iniciada correctamente</string>
+    <string name="settings_saved">Configuración guardada</string>
 </resources>

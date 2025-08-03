@@ -25,13 +25,29 @@ fun MinimalPhoneScreen(
     modifier: Modifier = Modifier
 ) {
     val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
+    var currentScreen by remember { mutableStateOf<MinimalScreen>(MinimalScreen.Home) }
     
     if (isMinimalModeEnabled) {
-        MinimalLauncherContent(
-            minimalPhoneManager = minimalPhoneManager,
-            onSettingsClick = onSettingsClick,
-            modifier = modifier
-        )
+        when (currentScreen) {
+            MinimalScreen.Home -> {
+                MinimalLauncherContent(
+                    minimalPhoneManager = minimalPhoneManager,
+                    onSettingsClick = onSettingsClick,
+                    onDialerClick = { currentScreen = MinimalScreen.Dialer },
+                    modifier = modifier
+                )
+            }
+            MinimalScreen.Dialer -> {
+                MinimalDialerScreen(
+                    onCall = { phoneNumber ->
+                        minimalPhoneManager.makePhoneCall(phoneNumber)
+                        currentScreen = MinimalScreen.Home
+                    },
+                    onBack = { currentScreen = MinimalScreen.Home },
+                    modifier = modifier
+                )
+            }
+        }
     } else {
         MinimalModeToggleScreen(
             onEnableMinimalMode = { minimalPhoneManager.enableMinimalMode() },
@@ -40,18 +56,24 @@ fun MinimalPhoneScreen(
     }
 }
 
+private enum class MinimalScreen {
+    Home,
+    Dialer
+}
+
 @Composable
 private fun MinimalLauncherContent(
     minimalPhoneManager: MinimalPhoneManager,
     onSettingsClick: () -> Unit,
+    onDialerClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val essentialApps = listOf(
         EssentialApp("Teléfono", Icons.Default.Phone) {
-            // Open phone dialer
+            onDialerClick()
         },
         EssentialApp("Mensajes", Icons.Default.Message) {
-            // Open messages
+            // Open messages app
         },
         EssentialApp("Contactos", Icons.Default.Contacts) {
             minimalPhoneManager.openContacts()
