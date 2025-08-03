@@ -1,5 +1,6 @@
 package com.momentum.app.ui.screen.subscription
 
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,12 +19,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentum.app.data.manager.BillingManager
 import com.momentum.app.data.model.SubscriptionPlan
 import com.momentum.app.data.model.SubscriptionPlans
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,10 +36,26 @@ fun SubscriptionScreen(
     onStartTrial: () -> Unit,
     onBackClick: () -> Unit,
     isTrialAvailable: Boolean = true,
-    remainingTrialDays: Int = 0
+    remainingTrialDays: Int = 0,
+    billingManager: BillingManager? = null
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    
+    val billing = billingManager ?: remember { BillingManager(context) }
+    
     var selectedPlan by remember { mutableStateOf("premium") }
     var isYearly by remember { mutableStateOf(true) }
+    
+    val connectionState by billing.billingConnectionState.collectAsState()
+    val purchaseState by billing.purchaseState.collectAsState()
+    val subscriptionStatus by billing.subscriptionStatus.collectAsState()
+    val availableProducts by billing.availableProducts.collectAsState()
+    
+    // Initialize billing connection
+    LaunchedEffect(Unit) {
+        billing.startConnection()
+    }
     
     Column(
         modifier = Modifier
