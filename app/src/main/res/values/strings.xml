@@ -1,0 +1,83 @@
+<resources>
+    <string name="app_name">Momentum</string>
+    
+    <!-- Navigation -->
+    <string name="nav_today">Hoy</string>
+    <string name="nav_my_life">Mi Vida</string>
+    <string name="nav_analytics">Análisis</string>
+    <string name="nav_focus">Enfoque</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="nav_minimal_phone">Teléfono Mínimo</string>
+    <string name="nav_subscription">Premium</string>
+    
+    <!-- Dashboard -->
+    <string name="screen_time_today">Tiempo de pantalla hoy</string>
+    <string name="most_used_apps">Apps más usadas</string>
+    <string name="quote_of_the_day">Frase del día</string>
+    <string name="hours_short">h</string>
+    <string name="minutes_short">m</string>
+    
+    <!-- Life in Weeks -->
+    <string name="my_life_in_weeks">Mi Vida en Semanas</string>
+    <string name="weeks_lived">Semanas vividas</string>
+    <string name="weeks_remaining">Semanas restantes</string>
+    <string name="customize_colors">Personalizar colores</string>
+    <string name="save_to_gallery">Guardar en galería</string>
+    <string name="set_as_wallpaper">Establecer como fondo</string>
+    
+    <!-- Onboarding -->
+    <string name="welcome_title">Bienvenido a Momentum</string>
+    <string name="welcome_subtitle">Tu compañero para un uso consciente del tiempo</string>
+    <string name="birth_date_title">¿Cuál es tu fecha de nacimiento?</string>
+    <string name="birth_date_subtitle">Esto nos ayudará a crear tu visualización personal</string>
+    <string name="permission_title">Permisos necesarios</string>
+    <string name="permission_subtitle">Para monitorear tu tiempo de pantalla necesitamos acceso a los datos de uso</string>
+    <string name="continue_button">Continuar</string>
+    <string name="grant_permission">Otorgar permiso</string>
+    
+    <!-- Settings -->
+    <string name="app_limits">Límites de aplicaciones</string>
+    <string name="notifications">Notificaciones</string>
+    <string name="widget_settings">Configuración de widgets</string>
+    <string name="about">Acerca de</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="account_settings">Configuración de cuenta</string>
+    
+    <!-- Widgets -->
+    <string name="life_weeks_widget_name">Mi Vida en Semanas</string>
+    <string name="life_weeks_widget_description">Visualiza tu progreso de vida en semanas</string>
+    <string name="quote_widget_name">Frase Motivacional</string>
+    <string name="quote_widget_description">Inspiración diaria para tu pantalla de inicio</string>
+    
+    <!-- Minimal Phone -->
+    <string name="minimal_phone_title">Teléfono Mínimo</string>
+    <string name="minimal_phone_description">Simplifica tu experiencia móvil</string>
+    <string name="enable_minimal_mode">Activar modo mínimo</string>
+    <string name="disable_minimal_mode">Desactivar modo mínimo</string>
+    <string name="allowed_apps">Apps permitidas</string>
+    <string name="manage_apps">Gestionar apps</string>
+    
+    <!-- Authentication -->
+    <string name="create_account">Crear cuenta</string>
+    <string name="sign_in">Iniciar sesión</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="name">Nombre</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="already_have_account">¿Ya tienes cuenta?</string>
+    <string name="dont_have_account">¿No tienes cuenta?</string>
+    
+    <!-- Permissions -->
+    <string name="usage_stats_permission_rationale">Esta aplicación necesita acceso a los datos de uso para mostrar estadísticas de tiempo de pantalla y ayudarte a gestionar tu tiempo digital de manera más consciente.</string>
+    
+    <!-- Error messages -->
+    <string name="error_network">Error de conexión. Verifica tu conexión a internet.</string>
+    <string name="error_authentication">Error de autenticación. Verifica tus credenciales.</string>
+    <string name="error_generic">Ha ocurrido un error. Inténtalo de nuevo.</string>
+    
+    <!-- Success messages -->
+    <string name="account_created_success">Cuenta creada exitosamente</string>
+    <string name="login_success">Sesión iniciada correctamente</string>
+    <string name="settings_saved">Configuración guardada</string>
+</resources>
