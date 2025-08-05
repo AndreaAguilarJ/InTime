@@ -95,7 +95,7 @@ fun AppTutorialScreen(
         TutorialStep(
             title = "Widgets de Pantalla",
             description = "Mantente motivado con widgets en tu pantalla de inicio",
-            icon = Icons.Default.Widgets,
+            icon = Icons.Default.ViewModule,
             tips = listOf(
                 "Agrega el widget 'Mi Vida en Semanas'",
                 "Instala el widget de frases motivacionales",

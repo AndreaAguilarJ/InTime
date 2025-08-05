@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -183,7 +183,7 @@ fun SettingsScreen(
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.widget_settings)) },
                         supportingContent = { Text("Personalizar widgets de pantalla de inicio") },
-                        leadingContent = { Icon(Icons.Default.Widgets, contentDescription = null) }
+                        leadingContent = { Icon(Icons.Default.ViewModule, contentDescription = null) }
                     )
                 }
             }

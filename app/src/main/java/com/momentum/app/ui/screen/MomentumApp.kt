@@ -107,11 +107,8 @@ fun MomentumApp() {
                     var showTutorial by remember { mutableStateOf(false) }
                     
                     LaunchedEffect(Unit) {
-                        val currentUser = application.appwriteService.currentUser.value
-                        currentUser?.let { user ->
-                            application.appwriteUserRepository.getUserSettings(user.id).collect { settings ->
-                                showTutorial = !(settings?.hasSeenTutorial ?: false)
-                            }
+                        application.userRepository.getUserSettings().collect { settings ->
+                            showTutorial = !(settings?.hasSeenTutorial ?: false)
                         }
                     }
                     
@@ -120,7 +117,9 @@ fun MomentumApp() {
                             onCompleted = { 
                                 showTutorial = false
                                 // Mark tutorial as seen
-                                // TODO: Save to user settings
+                                kotlinx.coroutines.GlobalScope.launch {
+                                    application.userRepository.markTutorialAsSeen()
+                                }
                             }
                         )
                     } else {
@@ -151,6 +150,7 @@ private fun AuthenticationFlow(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     
     when (currentScreen) {
         AuthScreen.Welcome -> {
@@ -163,17 +163,29 @@ private fun AuthenticationFlow(
             SignUpScreen(
                 onSignUp = { name, email, password ->
                     isLoading = true
+                    errorMessage = null
                     coroutineScope.launch {
-                        val result = application.appwriteService.createAccount(email, password, name)
-                        isLoading = false
-                        if (result.isSuccess) {
-                            onAuthSuccess()
-                        } else {
-                            errorMessage = result.exceptionOrNull()?.message ?: "Error al crear cuenta"
+                        try {
+                            val result = application.appwriteService.createAccount(email, password, name)
+                            if (result.isSuccess) {
+                                onAuthSuccess()
+                            } else {
+                                errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(
+                                    result.exceptionOrNull() ?: Exception("Error desconocido"), 
+                                    context
+                                )
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(e, context)
+                        } finally {
+                            isLoading = false
                         }
                     }
                 },
-                onBackToWelcome = { currentScreen = AuthScreen.Welcome },
+                onBackToWelcome = { 
+                    currentScreen = AuthScreen.Welcome
+                    errorMessage = null
+                },
                 isLoading = isLoading,
                 errorMessage = errorMessage
             )
@@ -182,17 +194,29 @@ private fun AuthenticationFlow(
             SignInScreen(
                 onSignIn = { email, password ->
                     isLoading = true
+                    errorMessage = null
                     coroutineScope.launch {
-                        val result = application.appwriteService.login(email, password)
-                        isLoading = false
-                        if (result.isSuccess) {
-                            onAuthSuccess()
-                        } else {
-                            errorMessage = result.exceptionOrNull()?.message ?: "Error al iniciar sesión"
+                        try {
+                            val result = application.appwriteService.login(email, password)
+                            if (result.isSuccess) {
+                                onAuthSuccess()
+                            } else {
+                                errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(
+                                    result.exceptionOrNull() ?: Exception("Error desconocido"), 
+                                    context
+                                )
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(e, context)
+                        } finally {
+                            isLoading = false
                         }
                     }
                 },
-                onBackToWelcome = { currentScreen = AuthScreen.Welcome },
+                onBackToWelcome = { 
+                    currentScreen = AuthScreen.Welcome
+                    errorMessage = null
+                },
                 isLoading = isLoading,
                 errorMessage = errorMessage
             )

@@ -9,6 +9,7 @@ data class UserSettings(
     @PrimaryKey val id: Int = 1,
     val birthDate: Date?,
     val isOnboardingCompleted: Boolean = false,
+    val hasSeenTutorial: Boolean = false,
     val livedWeeksColor: String = "#6366F1",
     val futureWeeksColor: String = "#E5E7EB",
     val backgroundColor: String = "#FFFFFF"
