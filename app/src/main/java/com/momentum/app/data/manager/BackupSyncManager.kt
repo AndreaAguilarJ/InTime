@@ -4,6 +4,8 @@ import android.content.Context
 import com.momentum.app.data.appwrite.AppwriteService
 import com.momentum.app.data.entity.*
 import com.momentum.app.data.repository.*
+import com.momentum.app.ui.screen.focus.FocusSession
+import com.momentum.app.ui.screen.goals.Goal
 import io.appwrite.models.Document
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +38,7 @@ class BackupSyncManager(
     }
     
     data class BackupData(
-        val usageStats: List<UsageStats>,
+        val usageStats: List<AppUsageInfo>,
         val userSettings: UserSettings?,
         val quotes: List<Quote>,
         val focusSessions: List<FocusSession>,

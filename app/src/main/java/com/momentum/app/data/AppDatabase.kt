@@ -13,6 +13,8 @@ import com.momentum.app.data.entity.AppUsage
 import com.momentum.app.data.entity.Quote
 import com.momentum.app.data.entity.UserSettings
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @Database(
@@ -57,7 +59,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "momentum_database"
-                ).addCallback(AppDatabaseCallback(kotlinx.coroutines.GlobalScope))
+                ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
                     .fallbackToDestructiveMigration() // For now, allow destructive migration
                     .build()
                 INSTANCE = instance
