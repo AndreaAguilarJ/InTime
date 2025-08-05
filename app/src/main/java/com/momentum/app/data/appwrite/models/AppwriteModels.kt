@@ -1,7 +1,6 @@
 package com.momentum.app.data.appwrite.models
 
 import kotlinx.serialization.Serializable
-import java.util.Date
 
 @Serializable
 data class AppwriteUserSettings(

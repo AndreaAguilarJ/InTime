@@ -88,12 +88,17 @@ class AppwriteUserRepository(private val appwriteService: AppwriteService) {
     
     suspend fun completeOnboarding(userId: String): Result<Unit> {
         return try {
-            val currentSettings = getUserSettings(userId).toString()
-            val settings = if (currentSettings.isNotEmpty()) {
-                Json.decodeFromString<AppwriteUserSettings>(currentSettings)
-            } else {
-                AppwriteUserSettings(userId = userId, birthDate = "", isOnboardingCompleted = true)
+            // Get current settings properly
+            var currentSettings: AppwriteUserSettings? = null
+            getUserSettings(userId).collect { settings ->
+                currentSettings = settings
             }
+            
+            val settings = currentSettings ?: AppwriteUserSettings(
+                userId = userId, 
+                birthDate = "", 
+                isOnboardingCompleted = true
+            )
             
             updateUserSettings(userId, settings.copy(isOnboardingCompleted = true))
             Result.success(Unit)

@@ -9,6 +9,9 @@ import io.appwrite.models.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AppwriteService(context: Context) {
     private val client = Client(context)
@@ -30,14 +33,15 @@ class AppwriteService(context: Context) {
     }
     
     private fun checkCurrentUser() {
-        try {
-            account.get().also { user ->
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val user = account.get()
                 _currentUser.value = user
                 _isLoggedIn.value = true
+            } catch (e: Exception) {
+                _currentUser.value = null
+                _isLoggedIn.value = false
             }
-        } catch (e: Exception) {
-            _currentUser.value = null
-            _isLoggedIn.value = false
         }
     }
     

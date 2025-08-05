@@ -105,6 +105,7 @@ fun MomentumApp() {
                 true -> {
                     // Check if user has seen the tutorial
                     var showTutorial by remember { mutableStateOf(false) }
+                    val coroutineScope = rememberCoroutineScope()
                     
                     LaunchedEffect(Unit) {
                         application.userRepository.getUserSettings().collect { settings ->
@@ -117,7 +118,7 @@ fun MomentumApp() {
                             onCompleted = { 
                                 showTutorial = false
                                 // Mark tutorial as seen
-                                kotlinx.coroutines.GlobalScope.launch {
+                                coroutineScope.launch {
                                     application.userRepository.markTutorialAsSeen()
                                 }
                             }
