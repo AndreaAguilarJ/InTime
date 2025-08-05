@@ -103,7 +103,28 @@ fun MomentumApp() {
                     )
                 }
                 true -> {
-                    MainAppContent(application)
+                    // Check if user has seen the tutorial
+                    var showTutorial by remember { mutableStateOf(false) }
+                    
+                    LaunchedEffect(Unit) {
+                        application.userRepository.getUserSettings().collect { settings ->
+                            showTutorial = !(settings?.hasSeenTutorial ?: false)
+                        }
+                    }
+                    
+                    if (showTutorial) {
+                        com.momentum.app.ui.screen.tutorial.AppTutorialScreen(
+                            onCompleted = { 
+                                showTutorial = false
+                                // Mark tutorial as seen
+                                kotlinx.coroutines.GlobalScope.launch {
+                                    application.userRepository.markTutorialAsSeen()
+                                }
+                            }
+                        )
+                    } else {
+                        MainAppContent(application)
+                    }
                 }
             }
         }
@@ -129,6 +150,7 @@ private fun AuthenticationFlow(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     
     when (currentScreen) {
         AuthScreen.Welcome -> {
@@ -141,17 +163,29 @@ private fun AuthenticationFlow(
             SignUpScreen(
                 onSignUp = { name, email, password ->
                     isLoading = true
+                    errorMessage = null
                     coroutineScope.launch {
-                        val result = application.appwriteService.createAccount(email, password, name)
-                        isLoading = false
-                        if (result.isSuccess) {
-                            onAuthSuccess()
-                        } else {
-                            errorMessage = result.exceptionOrNull()?.message ?: "Error al crear cuenta"
+                        try {
+                            val result = application.appwriteService.createAccount(email, password, name)
+                            if (result.isSuccess) {
+                                onAuthSuccess()
+                            } else {
+                                errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(
+                                    result.exceptionOrNull() ?: Exception("Error desconocido"), 
+                                    context
+                                )
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(e, context)
+                        } finally {
+                            isLoading = false
                         }
                     }
                 },
-                onBackToWelcome = { currentScreen = AuthScreen.Welcome },
+                onBackToWelcome = { 
+                    currentScreen = AuthScreen.Welcome
+                    errorMessage = null
+                },
                 isLoading = isLoading,
                 errorMessage = errorMessage
             )
@@ -160,17 +194,29 @@ private fun AuthenticationFlow(
             SignInScreen(
                 onSignIn = { email, password ->
                     isLoading = true
+                    errorMessage = null
                     coroutineScope.launch {
-                        val result = application.appwriteService.login(email, password)
-                        isLoading = false
-                        if (result.isSuccess) {
-                            onAuthSuccess()
-                        } else {
-                            errorMessage = result.exceptionOrNull()?.message ?: "Error al iniciar sesión"
+                        try {
+                            val result = application.appwriteService.login(email, password)
+                            if (result.isSuccess) {
+                                onAuthSuccess()
+                            } else {
+                                errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(
+                                    result.exceptionOrNull() ?: Exception("Error desconocido"), 
+                                    context
+                                )
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = com.momentum.app.util.ErrorHandler.getErrorMessage(e, context)
+                        } finally {
+                            isLoading = false
                         }
                     }
                 },
-                onBackToWelcome = { currentScreen = AuthScreen.Welcome },
+                onBackToWelcome = { 
+                    currentScreen = AuthScreen.Welcome
+                    errorMessage = null
+                },
                 isLoading = isLoading,
                 errorMessage = errorMessage
             )
@@ -305,6 +351,7 @@ private fun MainAppContent(application: MomentumApplication) {
                                 "backup_settings" -> navController.navigate("backup_settings")
                                 "notification_settings" -> navController.navigate("notification_settings")
                                 "account_settings" -> navController.navigate("account_settings")
+                                "tutorial" -> navController.navigate("tutorial")
                                 "about" -> navController.navigate("about")
                             }
                         }
@@ -328,6 +375,15 @@ private fun MainAppContent(application: MomentumApplication) {
                         },
                         backupSyncManager = application.backupSyncManager,
                         exportManager = application.exportManager
+                    )
+                }
+                
+                // Tutorial
+                composable("tutorial") {
+                    com.momentum.app.ui.screen.tutorial.AppTutorialScreen(
+                        onCompleted = {
+                            navController.popBackStack()
+                        }
                     )
                 }
             }

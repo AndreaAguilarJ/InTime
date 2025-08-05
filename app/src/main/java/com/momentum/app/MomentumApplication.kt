@@ -59,7 +59,7 @@ class MomentumApplication : Application(), Configuration.Provider {
         WorkManager.initialize(this, workManagerConfiguration)
         
         // Start widget update worker
-        com.momentum.app.service.WidgetUpdateWorker.startPeriodicUpdate(this)
+        com.momentum.app.worker.WidgetUpdateWorker.startPeriodicUpdate(this)
         
         // Initialize enhanced features
         billingManager.startConnection()

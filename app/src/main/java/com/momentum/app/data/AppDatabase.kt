@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [UserSettings::class, Quote::class, AppUsage::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -58,6 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "momentum_database"
                 ).addCallback(AppDatabaseCallback(kotlinx.coroutines.GlobalScope))
+                    .fallbackToDestructiveMigration() // For now, allow destructive migration
                     .build()
                 INSTANCE = instance
                 instance

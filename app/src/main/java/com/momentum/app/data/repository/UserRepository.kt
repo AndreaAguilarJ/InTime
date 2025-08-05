@@ -36,4 +36,14 @@ class UserRepository(private val userDao: UserDao) {
         )
         userDao.updateUserSettings(settings)
     }
+
+    suspend fun markTutorialAsSeen() {
+        // Get current settings first
+        val currentSettings = UserSettings(
+            birthDate = null,
+            isOnboardingCompleted = true,
+            hasSeenTutorial = true
+        )
+        userDao.insertUserSettings(currentSettings)
+    }
 }
