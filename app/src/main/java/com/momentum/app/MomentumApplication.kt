@@ -1,6 +1,7 @@
 package com.momentum.app
 
 import android.app.Application
+import android.content.Context
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.momentum.app.data.AppDatabase
@@ -11,8 +12,23 @@ import com.momentum.app.data.appwrite.AppwriteService
 import com.momentum.app.data.appwrite.repository.AppwriteUserRepository
 import com.momentum.app.data.appwrite.repository.AppwriteQuotesRepository
 import com.momentum.app.data.repository.SubscriptionRepository
-import com.momentum.app.data.manager.*
+import com.momentum.app.data.manager.ThemeManager
+import com.momentum.app.data.manager.BillingManager
+import com.momentum.app.data.manager.NotificationManager
+import com.momentum.app.data.manager.ExportManager
+import com.momentum.app.data.manager.BackupSyncManager
 import com.momentum.app.minimal.MinimalPhoneManager
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
 class MomentumApplication : Application(), Configuration.Provider {
     
@@ -52,6 +68,32 @@ class MomentumApplication : Application(), Configuration.Provider {
         ) 
     }
 
+    
+    private object PreferencesKeys {
+        val QUOTES_SEEDED = booleanPreferencesKey("quotes_seeded")
+    }
+    
+    private fun seedDefaultQuotesIfNeeded() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val preferences = dataStore.data.first()
+                val quotesSeeded = preferences[PreferencesKeys.QUOTES_SEEDED] ?: false
+                
+                if (!quotesSeeded) {
+                    appwriteQuotesRepository.seedQuotes()
+                    
+                    // Mark as seeded
+                    dataStore.edit { preferences ->
+                        preferences[PreferencesKeys.QUOTES_SEEDED] = true
+                    }
+                }
+            } catch (e: Exception) {
+                // Log error but don't crash the app
+                android.util.Log.e("MomentumApplication", "Error seeding quotes: ${e.message}")
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         
@@ -66,7 +108,7 @@ class MomentumApplication : Application(), Configuration.Provider {
         notificationManager.scheduleDailyGoalReminder()
         
         // Initialize Appwrite quotes if needed
-        // TODO: Seed default quotes on first run
+        seedDefaultQuotesIfNeeded()
     }
 
     override val workManagerConfiguration: Configuration
