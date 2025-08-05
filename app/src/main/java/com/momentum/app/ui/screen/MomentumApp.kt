@@ -103,7 +103,29 @@ fun MomentumApp() {
                     )
                 }
                 true -> {
-                    MainAppContent(application)
+                    // Check if user has seen the tutorial
+                    var showTutorial by remember { mutableStateOf(false) }
+                    
+                    LaunchedEffect(Unit) {
+                        val currentUser = application.appwriteService.currentUser.value
+                        currentUser?.let { user ->
+                            application.appwriteUserRepository.getUserSettings(user.id).collect { settings ->
+                                showTutorial = !(settings?.hasSeenTutorial ?: false)
+                            }
+                        }
+                    }
+                    
+                    if (showTutorial) {
+                        com.momentum.app.ui.screen.tutorial.AppTutorialScreen(
+                            onCompleted = { 
+                                showTutorial = false
+                                // Mark tutorial as seen
+                                // TODO: Save to user settings
+                            }
+                        )
+                    } else {
+                        MainAppContent(application)
+                    }
                 }
             }
         }
@@ -305,6 +327,7 @@ private fun MainAppContent(application: MomentumApplication) {
                                 "backup_settings" -> navController.navigate("backup_settings")
                                 "notification_settings" -> navController.navigate("notification_settings")
                                 "account_settings" -> navController.navigate("account_settings")
+                                "tutorial" -> navController.navigate("tutorial")
                                 "about" -> navController.navigate("about")
                             }
                         }
@@ -328,6 +351,15 @@ private fun MainAppContent(application: MomentumApplication) {
                         },
                         backupSyncManager = application.backupSyncManager,
                         exportManager = application.exportManager
+                    )
+                }
+                
+                // Tutorial
+                composable("tutorial") {
+                    com.momentum.app.ui.screen.tutorial.AppTutorialScreen(
+                        onCompleted = {
+                            navController.popBackStack()
+                        }
                     )
                 }
             }

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -86,6 +87,32 @@ fun SettingsScreen(
                         headlineContent = { Text(stringResource(R.string.logout)) },
                         supportingContent = { Text("Cerrar sesión actual") },
                         leadingContent = { Icon(Icons.Default.Logout, contentDescription = null) }
+                    )
+                }
+            }
+
+            // Help Section
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Ayuda",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { 
+                        // Navigate to tutorial
+                        onNavigateToScreen("tutorial")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Tutorial de la app") },
+                        supportingContent = { Text("Aprende a usar todas las funciones de Momentum") },
+                        leadingContent = { Icon(Icons.Default.School, contentDescription = null) }
                     )
                 }
             }

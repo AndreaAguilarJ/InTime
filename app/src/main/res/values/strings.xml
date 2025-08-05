@@ -80,4 +80,12 @@
     <string name="account_created_success">Cuenta creada exitosamente</string>
     <string name="login_success">Sesión iniciada correctamente</string>
     <string name="settings_saved">Configuración guardada</string>
+    
+    <!-- Tutorial -->
+    <string name="tutorial_title">Tutorial de la app</string>
+    <string name="tutorial_description">Aprende a usar todas las funciones</string>
+    <string name="tutorial_skip">Omitir</string>
+    <string name="tutorial_next">Siguiente</string>
+    <string name="tutorial_previous">Anterior</string>
+    <string name="tutorial_finish">¡Empezar!</string>
 </resources>
