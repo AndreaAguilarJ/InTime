@@ -1,22 +1,18 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    id("com.android.application") version "8.7.3" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21" apply false
+    id("com.google.dagger.hilt.android") version "2.52" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
+}
+
+// Add repositories for classpath plugin resolution
 buildscript {
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
-    }
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.0.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21")
-        classpath("com.google.devtools.ksp:symbol-processing-gradle-plugin:1.8.21-1.0.11")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.8.21")
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url = uri("https://jitpack.io") }
     }
 }

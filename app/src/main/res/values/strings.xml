@@ -37,6 +37,7 @@
     
     <!-- Settings -->
     <string name="app_limits">Límites de aplicaciones</string>
+    <string name="manage_apps">Gestionar aplicaciones</string>
     <string name="notifications">Notificaciones</string>
     <string name="widget_settings">Configuración de widgets</string>
     <string name="about">Acerca de</string>
@@ -48,15 +49,48 @@
     <string name="life_weeks_widget_description">Visualiza tu progreso de vida en semanas</string>
     <string name="quote_widget_name">Frase Motivacional</string>
     <string name="quote_widget_description">Inspiración diaria para tu pantalla de inicio</string>
+    <string name="year_progress_widget_name">Progreso del Año</string>
+    <string name="year_progress_widget_description">Visualiza los días pasados y restantes del año en curso</string>
     
-    <!-- Minimal Phone -->
+    <!-- Minimal Phone / Launcher -->
     <string name="minimal_phone_title">Teléfono Mínimo</string>
-    <string name="minimal_phone_description">Simplifica tu experiencia móvil</string>
-    <string name="enable_minimal_mode">Activar modo mínimo</string>
-    <string name="disable_minimal_mode">Desactivar modo mínimo</string>
-    <string name="allowed_apps">Apps permitidas</string>
-    <string name="manage_apps">Gestionar apps</string>
-    
+    <string name="minimal_launcher_title">Momentum Minimal</string>
+    <string name="launcher_settings">Configuración del Launcher</string>
+    <string name="set_as_default_launcher">Establecer como Launcher por Defecto</string>
+    <string name="is_default_launcher">Launcher por Defecto</string>
+    <string name="not_default_launcher">No es Launcher por Defecto</string>
+    <string name="auto_enable_minimal">Auto-activar Modo Mínimo</string>
+    <string name="launcher_management">Gestión de Launchers</string>
+    <string name="view_installed_launchers">Ver Launchers Instalados</string>
+    <string name="open_system_settings">Abrir Configuración del Sistema</string>
+    <string name="minimal_mode_active">Modo Mínimo Activo</string>
+    <string name="exit_minimal_mode">Salir del modo mínimo</string>
+    <string name="activate_minimal_mode">Activar modo mínimo</string>
+    <string name="minimal_phone_features">Características del modo mínimo</string>
+    <string name="essential_apps_only">Solo apps esenciales disponibles</string>
+    <string name="simplified_interface">Interfaz simplificada</string>
+    <string name="less_distractions">Menos distracciones</string>
+    <string name="focus_communication">Enfoque en comunicación</string>
+    <string name="phone_app">Teléfono</string>
+    <string name="messages_app">Mensajes</string>
+    <string name="contacts_app">Contactos</string>
+    <string name="settings_app">Configuración</string>
+    <string name="dialer_title">Marcador</string>
+    <string name="enter_number">Ingresa un número</string>
+    <string name="call_button">Llamar</string>
+    <string name="back_button">← Volver</string>
+    <string name="delete_button">Borrar</string>
+    <string name="launcher_instructions">Instrucciones</string>
+    <string name="launcher_setup_steps">1. Presiona \'Establecer como Launcher por Defecto\'\n2. Selecciona \'Momentum\' en la lista\n3. Marca \'Usar siempre\' si quieres que sea permanente\n4. Activa el modo mínimo para una experiencia simplificada</string>
+    <string name="momentum_launcher_description">Momentum es tu launcher principal</string>
+    <string name="set_momentum_as_default">Configura Momentum como launcher predeterminado</string>
+    <string name="this_app">Esta aplicación</string>
+    <string name="default_launcher">Por defecto</string>
+    <string name="installed_launchers">Launchers Instalados</string>
+    <string name="minimal_mode_configuration">Configuración del Modo Mínimo</string>
+    <string name="auto_enable_description">Activar automáticamente al abrir el launcher</string>
+    <string name="toggle_minimal_mode">Activar/desactivar el modo mínimo</string>
+
     <!-- Authentication -->
     <string name="create_account">Crear cuenta</string>
     <string name="sign_in">Iniciar sesión</string>
@@ -88,4 +122,11 @@
     <string name="tutorial_next">Siguiente</string>
     <string name="tutorial_previous">Anterior</string>
     <string name="tutorial_finish">¡Empezar!</string>
+
+    <!-- Website Blocking -->
+    <string name="website_block_service_description">Servicio para bloquear sitios web distractores en navegadores. Momentum necesita este permiso para detectar cuando accedes a sitios bloqueados y ayudarte a mantener el enfoque.</string>
+    <string name="website_blocked_title">Sitio Bloqueado</string>
+    <string name="website_blocked_message">Este sitio está bloqueado para ayudarte a mantener el enfoque</string>
+    <string name="enable_accessibility_service">Habilitar servicio de accesibilidad</string>
+    <string name="accessibility_service_description">Para bloquear sitios web, necesitas habilitar el servicio de accesibilidad de Momentum en la configuración del sistema</string>
 </resources>

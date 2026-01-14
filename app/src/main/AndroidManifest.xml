@@ -5,7 +5,6 @@
     <!-- Required permissions -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     
@@ -13,6 +12,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
+    <!-- App blocking overlay permissions -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <!-- Minimal phone functionality permissions -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -24,12 +28,7 @@
     
     <!-- Biometric permission -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
-    
-    <!-- Widget permissions -->
-    <uses-permission android:name="android.permission.BIND_APPWIDGET" />
-    <uses-permission android:name="android.permission.UPDATE_DEVICE_STATS" />
-    
+
     <!-- Notification permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -37,12 +36,31 @@
     <!-- Billing permission -->
     <uses-permission android:name="com.android.vending.BILLING" />
     
-    <!-- File export permissions -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    
+    <!-- Media permissions for Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
     <!-- Camera permission for minimal phone mode -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Hardware features -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.fingerprint"
+        android:required="false" />
+
+    <queries>
+        <!-- Ver apps lanzables en Android 11+ -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
 
     <application
         android:name=".MomentumApplication"
@@ -65,13 +83,57 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Minimal Launcher Activity -->
+        <activity
+            android:name=".minimal.MinimalLauncherActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Momentum">
             <!-- Home launcher capability for minimal phone mode -->
-            <intent-filter>
+            <intent-filter android:priority="1">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <!-- Birth Date Config Activity -->
+        <activity
+            android:name=".ui.BirthDateActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Momentum" />
+
+        <!-- Widget Launch Activity -->
+        <activity
+            android:name=".ui.WidgetLaunchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Momentum" />
+
+        <!-- App Blocked Activity -->
+        <activity
+            android:name=".ui.AppBlockedActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Momentum" />
+
+        <!-- In-App Feature Blocked Activity -->
+        <activity
+            android:name=".ui.InAppBlockedActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Momentum" />
+
+        <!-- Website Blocked Activity -->
+        <activity
+            android:name=".ui.screen.websiteblock.WebsiteBlockedActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Momentum" />
 
         <!-- Life Weeks Widget -->
         <receiver
@@ -97,11 +159,71 @@
                 android:resource="@xml/quote_widget_info" />
         </receiver>
 
+        <!-- Year Progress Widget -->
+        <receiver
+            android:name=".widget.YearProgressWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/year_progress_widget_info" />
+        </receiver>
+
+        <!-- Boot Receiver to start monitoring service after device reboot -->
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
         <!-- WorkManager Worker for periodic updates -->
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="shortService"
             tools:node="merge" />
+
+        <!-- App Monitoring Service for blocking distracting apps -->
+        <service
+            android:name=".service.AppMonitoringService"
+            android:exported="false"
+            android:foregroundServiceType="shortService" />
+
+        <!-- App Block Overlay Service -->
+        <service
+            android:name=".ui.overlay.AppBlockOverlayService"
+            android:exported="false" />
+
+        <!-- Accessibility Service to appear in system Accessibility settings -->
+        <service
+            android:name=".accessibility.MomentumAccessibilityService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Website Block Accessibility Service -->
+        <service
+            android:name=".service.WebsiteBlockService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/website_block_accessibility_service" />
+        </service>
 
         <!-- File Provider for export functionality -->
         <provider

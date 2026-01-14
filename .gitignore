@@ -76,3 +76,6 @@ fastlane/readme.md
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Ignorar archivos de volcado de memoria
+java_pid18504.hprof
