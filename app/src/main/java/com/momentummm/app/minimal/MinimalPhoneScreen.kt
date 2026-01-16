@@ -26,7 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.util.LifeWeeksCalculator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,7 +107,9 @@ private fun MinimalLauncherContent(
 
     LaunchedEffect(Unit) {
         val database = AppDatabase.getDatabase(context)
-        val userSettings = database.userDao().getUserSettingsSync()
+        val userSettings = withContext(Dispatchers.IO) {
+            database.userDao().getUserSettingsSync()
+        }
         lifeWeeksData = userSettings?.birthDate?.let { birthDate ->
             LifeWeeksCalculator.calculateLifeWeeks(birthDate)
         }
@@ -153,9 +157,9 @@ private fun MinimalLauncherContent(
             modifier = Modifier.size(240.dp)
         ) {
             // Barra de progreso circular de semanas de vida
-            if (lifeWeeksData != null) {
+            lifeWeeksData?.let { data ->
                 CircularLifeWeeksProgress(
-                    progressPercentage = lifeWeeksData!!.progressPercentage,
+                    progressPercentage = data.progressPercentage,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -181,10 +185,10 @@ private fun MinimalLauncherContent(
                     fontWeight = FontWeight.Bold
                 )
 
-                if (lifeWeeksData != null) {
+                lifeWeeksData?.let { data ->
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "${lifeWeeksData!!.progressPercentage.toInt()}% vivido",
+                        text = "${data.progressPercentage.toInt()}% vivido",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

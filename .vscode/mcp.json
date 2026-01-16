@@ -1,0 +1,20 @@
+{
+  "servers": {
+    "appwrite-api": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-appwrite",
+        "--sites", "--databases", "--users", "--storage"
+      ],
+      "env": {
+        "APPWRITE_PROJECT_ID": "momentum-intime",
+        "APPWRITE_API_KEY": "standard_710616bb57e69284d483bfbe3dd0c036f9e6ebcb1d5c9875ac1627e8fe80b968683ec5215e78ee5c6ab161c3679524ea62c5d68dc8c4882f17fcdc1de3eb0171335dca039c90ac35707b690bef40b4f54229328f604eb2c0bbd13d8af77b2a29a7fc0aeacc769d45331a845c494c5881cae92bbc8aac0a4e9b8e7101c46e4e4c",
+        "APPWRITE_ENDPOINT": "https://sfo.cloud.appwrite.io/v1"
+      }
+    },
+    "appwrite-docs": {
+      "url": "https://mcp-for-docs.appwrite.io",
+      "type": "http"
+    }
+  }
+}

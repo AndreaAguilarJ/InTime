@@ -38,10 +38,11 @@ fun AccountSettingsScreen(
 
     var userSettingsFlow by remember { mutableStateOf<Flow<AppwriteUserSettings?>?>(null) }
     LaunchedEffect(currentUser?.id) {
-        if (currentUser?.id != null && currentUser?.id!!.isNotBlank()) {
-            userSettingsFlow = application.appwriteUserRepository.getUserSettings(currentUser!!.id)
+        val userId = currentUser?.id?.takeIf { it.isNotBlank() }
+        userSettingsFlow = if (userId != null) {
+            application.appwriteUserRepository.getUserSettings(userId)
         } else {
-            userSettingsFlow = null
+            null
         }
     }
     val userSettings = userSettingsFlow?.collectAsState(initial = null)?.value

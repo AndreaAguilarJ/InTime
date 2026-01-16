@@ -55,7 +55,7 @@ class AppwriteService(context: Context) {
     
     suspend fun createAccount(email: String, password: String, name: String): Result<User<*>> {
         return try {
-            val user = account.create(
+            account.create(
                 userId = "unique()",
                 email = email,
                 password = password,
@@ -63,10 +63,11 @@ class AppwriteService(context: Context) {
             )
             // Crear sesión tras crear cuenta
             runCatching { account.createEmailPasswordSession(email, password) }
-            _currentUser.value = account.get()
+            val user = account.get()
+            _currentUser.value = user
             _isLoggedIn.value = true
             _isAuthReady.value = true
-            Result.success(_currentUser.value!!)
+            Result.success(user)
         } catch (e: Exception) {
             _isAuthReady.value = true
             Result.failure(e)

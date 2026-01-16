@@ -3,8 +3,6 @@ package com.momentummm.app.service
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.os.Handler
-import android.os.Looper
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.PackageManager
@@ -31,9 +29,8 @@ class AppMonitoringService : Service() {
     @Inject lateinit var appWhitelistRepository: AppWhitelistRepository
     @Inject lateinit var smartNotificationManager: SmartNotificationManager
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val handler = Handler(Looper.getMainLooper())
-    private var monitoringRunnable: Runnable? = null
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var monitoringJob: Job? = null
 
     private val MONITORING_INTERVAL = 2000L // 2 segundos - más frecuente para mejor detección
     private var lastCheckedApp: String = ""
@@ -83,6 +80,7 @@ class AppMonitoringService : Service() {
 
     private fun createNotification(): android.app.Notification {
         val intent = packageManager.getLaunchIntentForPackage(packageName)
+            ?: Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -100,26 +98,24 @@ class AppMonitoringService : Service() {
 
     private fun startMonitoring() {
         Log.d(TAG, "Iniciando monitoreo de aplicaciones")
-        monitoringRunnable = object : Runnable {
-            override fun run() {
-                serviceScope.launch {
-                    try {
-                        checkCurrentApp()
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error en checkCurrentApp", e)
-                        e.printStackTrace()
-                    } finally {
-                        handler.postDelayed(this@AppMonitoringService.monitoringRunnable!!, MONITORING_INTERVAL)
-                    }
+        monitoringJob?.cancel()
+        monitoringJob = serviceScope.launch {
+            while (isActive) {
+                try {
+                    checkCurrentApp()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error en checkCurrentApp", e)
+                    e.printStackTrace()
                 }
+                delay(MONITORING_INTERVAL)
             }
         }
-        handler.post(monitoringRunnable!!)
     }
 
     private fun stopMonitoring() {
         Log.d(TAG, "Deteniendo monitoreo de aplicaciones")
-        monitoringRunnable?.let { handler.removeCallbacks(it) }
+        monitoringJob?.cancel()
+        monitoringJob = null
     }
 
     private suspend fun checkCurrentApp() {
@@ -129,7 +125,9 @@ class AppMonitoringService : Service() {
 
                 // CAMBIO IMPORTANTE: Primero verificar si la app tiene un límite configurado
                 // Solo monitoreamos apps que están explícitamente en la lista de límites
-                val appLimit = appLimitRepository.getLimitByPackage(currentApp)
+                val appLimit = withContext(Dispatchers.IO) {
+                    appLimitRepository.getLimitByPackage(currentApp)
+                }
 
                 // Si la app NO tiene límite configurado, simplemente la ignoramos
                 if (appLimit == null || !appLimit.isEnabled) {
@@ -140,7 +138,9 @@ class AppMonitoringService : Service() {
                 Log.d(TAG, "App monitoreada detectada: $currentApp")
 
                 // Verificar si la app está en la whitelist (apps de emergencia)
-                val isWhitelisted = appWhitelistRepository.isAppWhitelisted(currentApp)
+                val isWhitelisted = withContext(Dispatchers.IO) {
+                    appWhitelistRepository.isAppWhitelisted(currentApp)
+                }
                 if (isWhitelisted) {
                     Log.d(TAG, "App $currentApp está en whitelist - no se bloqueará")
                     return
@@ -228,12 +228,16 @@ class AppMonitoringService : Service() {
         try {
             Log.d(TAG, "Bloqueando app: $blockedAppPackage")
 
-            val appLimit = appLimitRepository.getLimitByPackage(blockedAppPackage)
+            val appLimit = withContext(Dispatchers.IO) {
+                appLimitRepository.getLimitByPackage(blockedAppPackage)
+            }
             val appName = appLimit?.appName ?: getAppName(blockedAppPackage)
             val dailyLimit = appLimit?.dailyLimitMinutes ?: 0
 
             // Abrir la pantalla de bloqueo
-            AppBlockedActivity.start(this, appName, dailyLimit)
+            withContext(Dispatchers.Main) {
+                AppBlockedActivity.start(this@AppMonitoringService, appName, dailyLimit)
+            }
 
         } catch (e: Exception) {
             Log.e(TAG, "Error al bloquear app", e)
@@ -283,7 +287,9 @@ class AppMonitoringService : Service() {
                 return
             }
 
-            val appLimit = appLimitRepository.getLimitByPackage(blockedAppPackage)
+            val appLimit = withContext(Dispatchers.IO) {
+                appLimitRepository.getLimitByPackage(blockedAppPackage)
+            }
             val appName = appLimit?.appName ?: getAppName(blockedAppPackage)
 
             val intent = Intent(this, AppBlockOverlayService::class.java).apply {
