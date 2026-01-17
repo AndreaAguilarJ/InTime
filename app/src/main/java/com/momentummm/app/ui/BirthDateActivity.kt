@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
 import com.momentummm.app.data.UserPreferencesRepository
-import com.momentummm.app.widget.LifeWeeksWidgetProvider
+import com.momentummm.app.widget.LifeWeeksWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,7 +53,7 @@ class BirthDateActivity : ComponentActivity() {
             val iso = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
             CoroutineScope(Dispatchers.IO).launch {
                 UserPreferencesRepository.setDobIso(this@BirthDateActivity, iso)
-                LifeWeeksWidgetProvider().updateAll(this@BirthDateActivity)
+                LifeWeeksWidget().updateAll(this@BirthDateActivity)
             }
             finish()
         }, year, month, day)

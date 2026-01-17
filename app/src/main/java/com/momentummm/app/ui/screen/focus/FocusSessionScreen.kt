@@ -84,14 +84,16 @@ fun FocusSessionScreen(
         FocusSession("quick", "⚡ Enfoque Rápido", 15, 3, emptyList())
     )
 
-    val activeSession = if (focusState.status != FocusTimerStatus.IDLE && focusState.sessionType != null) {
-        FocusSession(
-            id = focusState.sessionType,
-            name = focusState.sessionName ?: "Sesión de Enfoque",
-            duration = (focusState.totalSeconds / 60).coerceAtLeast(1),
-            breakDuration = focusState.breakMinutes,
-            blockedApps = focusState.blockedApps
-        )
+    val activeSession = if (focusState.status != FocusTimerStatus.IDLE) {
+        focusState.sessionType?.let { sessionType ->
+            FocusSession(
+                id = sessionType,
+                name = focusState.sessionName ?: "Sesión de Enfoque",
+                duration = (focusState.totalSeconds / 60).coerceAtLeast(1),
+                breakDuration = focusState.breakMinutes,
+                blockedApps = focusState.blockedApps
+            )
+        }
     } else {
         null
     }
@@ -105,13 +107,35 @@ fun FocusSessionScreen(
     LaunchedEffect(focusState.status, focusState.sessionType) {
         val session = activeSession ?: return@LaunchedEffect
         if (focusState.status == FocusTimerStatus.COMPLETED && savedSessionKey != session.id) {
-            saveCompletedSession(
-                session = session,
-                actualDuration = session.duration,
-                wasCompleted = true,
-                startTimeIso = focusState.startTimeIso
-            )
-            savedSessionKey = session.id
+            currentUser.value?.let { user ->
+                try {
+                    val sessionId = "sess_${System.currentTimeMillis()}"
+                    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                    val currentTimestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                        timeZone = TimeZone.getTimeZone("UTC")
+                    }.format(Date())
+
+                    val focusSession = AppwriteFocusSession(
+                        userId = user.id,
+                        sessionId = sessionId,
+                        sessionType = session.id,
+                        date = currentDate,
+                        startTime = focusState.startTimeIso,
+                        endTime = currentTimestamp,
+                        plannedDuration = session.duration,
+                        actualDuration = session.duration,
+                        wasCompleted = true,
+                        distractions = 0,
+                        blockedApps = session.blockedApps,
+                        breakDuration = session.breakDuration
+                    )
+
+                    focusRepository.saveFocusSession(focusSession)
+                    savedSessionKey = session.id
+                } catch (_: Exception) {
+                    // Manejar error silenciosamente
+                }
+            }
         }
     }
 

@@ -42,6 +42,7 @@ fun MinimalPhoneScreen(
     val coroutineScope = rememberCoroutineScope()
     val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
     var currentScreen by remember { mutableStateOf<MinimalScreen>(MinimalScreen.Home) }
+    var showExitConfirm by remember { mutableStateOf(false) }
     
     if (isMinimalModeEnabled) {
         when (currentScreen) {
@@ -49,7 +50,6 @@ fun MinimalPhoneScreen(
                 MinimalLauncherContent(
                     minimalPhoneManager = minimalPhoneManager,
                     onSettingsClick = onSettingsClick,
-        var showExitConfirm by remember { mutableStateOf(false) }
                     onExitMinimalMode = onExitMinimalMode,
                     onDialerClick = { currentScreen = MinimalScreen.Dialer },
                     onAppListClick = { currentScreen = MinimalScreen.AppList },
@@ -101,7 +101,8 @@ private fun MinimalLauncherContent(
     onAppListClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-            TextButton(onClick = { showExitConfirm = true }) {
+    val coroutineScope = rememberCoroutineScope()
+    var showExitConfirm by remember { mutableStateOf(false) }
     val customApp by minimalPhoneManager.customApp.collectAsState()
     val customAppInfo = remember(customApp) { minimalPhoneManager.getCustomAppInfo() }
     var showAppSelector by remember { mutableStateOf(false) }
@@ -156,7 +157,7 @@ private fun MinimalLauncherContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = onExitMinimalMode) {
+        TextButton(onClick = { showExitConfirm = true }) {
             Icon(Icons.Default.Close, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Salir del modo mínimo")
@@ -232,28 +233,6 @@ private fun MinimalLauncherContent(
 
             // Segunda fila: Contactos y Configuración
             Row(
-        if (showExitConfirm) {
-            AlertDialog(
-                onDismissRequest = { showExitConfirm = false },
-                title = { Text("Salir del modo mínimo") },
-                text = { Text("¿Seguro que quieres salir? Se restaurará la experiencia completa de Momentum.") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showExitConfirm = false
-                            onExitMinimalMode()
-                        }
-                    ) {
-                        Text("Salir")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showExitConfirm = false }) {
-                        Text("Cancelar")
-                    }
-                }
-            )
-        }
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -307,6 +286,29 @@ private fun MinimalLauncherContent(
                 coroutineScope.launch {
                     minimalPhoneManager.setCustomApp(packageName)
                     showAppSelector = false
+                }
+            }
+        )
+    }
+
+    if (showExitConfirm) {
+        AlertDialog(
+            onDismissRequest = { showExitConfirm = false },
+            title = { Text("Salir del modo mínimo") },
+            text = { Text("¿Seguro que quieres salir? Se restaurará la experiencia completa de Momentum.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showExitConfirm = false
+                        onExitMinimalMode()
+                    }
+                ) {
+                    Text("Salir")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitConfirm = false }) {
+                    Text("Cancelar")
                 }
             }
         )

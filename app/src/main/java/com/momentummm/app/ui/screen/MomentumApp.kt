@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import com.momentummm.app.data.UserPreferencesRepository
 import java.time.format.DateTimeFormatter
 import androidx.glance.appwidget.updateAll
-import com.momentummm.app.widget.LifeWeeksWidgetProvider
+import com.momentummm.app.widget.LifeWeeksWidget
 import com.momentummm.app.ui.screen.onboarding.EnhancedOnboardingScreen
 import com.momentummm.app.ui.screen.tutorial.AppTutorialScreen
 import com.momentummm.app.data.appwrite.models.AppwriteUserSettings
@@ -463,7 +463,7 @@ private fun MainAppContent(
                                 val updated = existing.copy(birthDate = iso)
                                 application.appwriteUserRepository.updateUserSettings(userId, updated)
                                 UserPreferencesRepository.setDobIso(context, iso)
-                                LifeWeeksWidgetProvider().updateAll(context)
+                                LifeWeeksWidget().updateAll(context)
                             }
                         },
                         onColorPreferencesSelected = { livedColor, futureColor ->
@@ -473,7 +473,7 @@ private fun MainAppContent(
                                 val updated = existing.copy(livedWeeksColor = livedColor, futureWeeksColor = futureColor)
                                 application.appwriteUserRepository.updateUserSettings(userId, updated)
                                 UserPreferencesRepository.setWidgetColors(context, livedColor, futureColor)
-                                LifeWeeksWidgetProvider().updateAll(context)
+                                LifeWeeksWidget().updateAll(context)
                             }
                         },
                         onCompleted = {

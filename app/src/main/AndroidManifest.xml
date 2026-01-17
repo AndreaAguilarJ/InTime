@@ -198,7 +198,7 @@
         <service
             android:name=".service.FocusTimerService"
             android:exported="false"
-            android:foregroundServiceType="timer" />
+            android:foregroundServiceType="shortService" />
 
         <!-- App Block Overlay Service -->
         <service

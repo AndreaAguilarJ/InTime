@@ -335,7 +335,7 @@ fun AppBlockSection(
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
 
             // Lista de funciones bloqueables
             rules.forEach { rule ->
@@ -344,7 +344,7 @@ fun AppBlockSection(
                     onToggle = { enabled -> onToggleRule(rule.ruleId, enabled) }
                 )
                 if (rule != rules.last()) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
                 }
             }
         }

@@ -4,13 +4,13 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleService
 import com.momentummm.app.R
 import com.momentummm.app.data.UserPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
@@ -49,7 +49,7 @@ data class FocusSessionState(
     val status: FocusTimerStatus = FocusTimerStatus.IDLE
 )
 
-class FocusTimerService : LifecycleService() {
+class FocusTimerService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var tickerJob: Job? = null
@@ -62,7 +62,6 @@ class FocusTimerService : LifecycleService() {
     val sessionState: StateFlow<FocusSessionState> = _sessionState.asStateFlow()
 
     override fun onBind(intent: Intent): IBinder {
-        super.onBind(intent)
         return binder
     }
 
@@ -87,7 +86,7 @@ class FocusTimerService : LifecycleService() {
             ACTION_RESUME -> resumeSession()
             ACTION_STOP -> stopSession()
         }
-        return START_STICKY
+        return Service.START_STICKY
     }
 
     override fun onDestroy() {
@@ -121,8 +120,8 @@ class FocusTimerService : LifecycleService() {
         )
 
         serviceScope.launch {
-            UserPreferencesRepository.setFocusModeEnabled(this@FocusTimerService, true)
-            UserPreferencesRepository.setFocusModeBlockedApps(this@FocusTimerService, blockedApps)
+            UserPreferencesRepository.setFocusModeEnabled(applicationContext, true)
+            UserPreferencesRepository.setFocusModeBlockedApps(applicationContext, blockedApps)
         }
 
         val notification = buildNotification(totalSeconds, FocusTimerStatus.RUNNING)
@@ -170,7 +169,7 @@ class FocusTimerService : LifecycleService() {
             UserPreferencesRepository.setFocusModeBlockedApps(this@FocusTimerService, emptyList())
         }
 
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopForeground(Service.STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 

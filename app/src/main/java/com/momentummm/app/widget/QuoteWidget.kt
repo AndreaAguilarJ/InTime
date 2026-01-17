@@ -1,36 +1,49 @@
 package com.momentummm.app.widget
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.*
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import com.momentummm.app.MainActivity
+import com.momentummm.app.data.AppDatabase
+import com.momentummm.app.data.entity.Quote
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class QuoteWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val quote = withContext(Dispatchers.IO) {
+            AppDatabase.getDatabase(context).quoteDao().getRandomQuote()
+        } ?: defaultQuote()
+
         provideContent {
-            QuoteWidgetContent()
+            QuoteWidgetContent(context, quote)
         }
     }
 
     @Composable
-    private fun QuoteWidgetContent() {
-        val quote = getRandomQuote()
+    private fun QuoteWidgetContent(context: Context, quote: Quote) {
+        val authorText = quote.author?.takeIf { it.isNotBlank() } ?: "Momentum"
 
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(Color.DarkGray)
-                .padding(16.dp),
+                .padding(16.dp)
+                .clickable(actionStartActivity(Intent(context, MainActivity::class.java))),
             verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -53,7 +66,7 @@ class QuoteWidget : GlanceAppWidget() {
             Spacer(modifier = GlanceModifier.height(8.dp))
             
             Text(
-                text = "- ${quote.author}",
+                text = "- $authorText",
                 style = TextStyle(
                     fontSize = 12.sp
                 )
@@ -61,17 +74,10 @@ class QuoteWidget : GlanceAppWidget() {
         }
     }
 
-    private fun getRandomQuote(): Quote {
-        // Default quotes until we can load from database
-        val quotes = listOf(
-            Quote("El tiempo es más valioso que el dinero. Puedes conseguir más dinero, pero no puedes conseguir más tiempo.", "Jim Rohn"),
-            Quote("Tu tiempo es limitado, no lo desperdicies viviendo la vida de alguien más.", "Steve Jobs"),
-            Quote("No esperes por el momento perfecto, toma el momento y hazlo perfecto.", "Zoey Sayward"),
-            Quote("El tiempo que disfrutas desperdiciando no es tiempo desperdiciado.", "Marthe Troly-Curtin"),
-            Quote("La gestión del tiempo es una habilidad de vida esencial.", "Dwayne Johnson")
+    private fun defaultQuote(): Quote {
+        return Quote(
+            text = "Tu tiempo es limitado, úsalo sabiamente.",
+            author = "Momentum"
         )
-        return quotes.random()
     }
-
-    data class Quote(val text: String, val author: String)
 }
