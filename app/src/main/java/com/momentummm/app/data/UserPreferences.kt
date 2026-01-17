@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -21,6 +22,7 @@ object UserPreferencesKeys {
     val SUPPRESS_TUTORIAL_ONCE: Preferences.Key<Boolean> = booleanPreferencesKey("suppress_tutorial_once")
     val LIVED_COLOR: Preferences.Key<String> = stringPreferencesKey("lived_color_hex")
     val FUTURE_COLOR: Preferences.Key<String> = stringPreferencesKey("future_color_hex")
+    val ONBOARDING_COMPLETED: Preferences.Key<Boolean> = booleanPreferencesKey("onboarding_completed")
 
     // Nuevas configuraciones para persistencia completa
     val THEME_MODE: Preferences.Key<String> = stringPreferencesKey("theme_mode")
@@ -30,9 +32,22 @@ object UserPreferencesKeys {
     val LAST_SYNC_TIMESTAMP: Preferences.Key<Long> = longPreferencesKey("last_sync_timestamp")
     val AUTO_SYNC_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("auto_sync_enabled")
     val FOCUS_MODE_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("focus_mode_enabled")
+    val FOCUS_MODE_BLOCKED_APPS: Preferences.Key<Set<String>> = stringSetPreferencesKey("focus_mode_blocked_apps")
 }
 
 object UserPreferencesRepository {
+    fun isOnboardingCompletedFlow(context: Context): Flow<Boolean> {
+        return context.userPreferencesDataStore.data.map { prefs ->
+            prefs[UserPreferencesKeys.ONBOARDING_COMPLETED] ?: false
+        }
+    }
+
+    suspend fun setOnboardingCompleted(context: Context, completed: Boolean) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.ONBOARDING_COMPLETED] = completed
+        }
+    }
+
     suspend fun getDobIso(context: Context): String? {
         val prefs = context.userPreferencesDataStore.data.first()
         return prefs[UserPreferencesKeys.DOB_ISO]
@@ -144,5 +159,16 @@ object UserPreferencesRepository {
     suspend fun getFocusModeEnabled(context: Context): Boolean {
         val prefs = context.userPreferencesDataStore.data.first()
         return prefs[UserPreferencesKeys.FOCUS_MODE_ENABLED] ?: false
+    }
+
+    suspend fun setFocusModeBlockedApps(context: Context, apps: List<String>) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.FOCUS_MODE_BLOCKED_APPS] = apps.toSet()
+        }
+    }
+
+    suspend fun getFocusModeBlockedApps(context: Context): List<String> {
+        val prefs = context.userPreferencesDataStore.data.first()
+        return prefs[UserPreferencesKeys.FOCUS_MODE_BLOCKED_APPS]?.toList() ?: emptyList()
     }
 }

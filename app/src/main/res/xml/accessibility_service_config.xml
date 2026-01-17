@@ -7,6 +7,5 @@
     android:canRetrieveWindowContent="true"
     android:canPerformGestures="false"
     android:settingsActivity=""
-    android:accessibleNavigation="true"
     android:accessibilityFlags="flagReportViewIds|flagIncludeNotImportantViews" />
 

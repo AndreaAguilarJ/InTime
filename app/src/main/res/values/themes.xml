@@ -6,4 +6,6 @@
     </style>
 
     <style name="Theme.Momentum" parent="Base.Theme.Momentum" />
+
+    <style name="Theme.Momentum.NoActionBar" parent="Base.Theme.Momentum" />
 </resources>

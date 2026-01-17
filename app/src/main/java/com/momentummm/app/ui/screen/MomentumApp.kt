@@ -40,9 +40,12 @@ import com.momentummm.app.data.UserPreferencesRepository
 import java.time.format.DateTimeFormatter
 import androidx.glance.appwidget.updateAll
 import com.momentummm.app.widget.LifeWeeksWidgetProvider
+import com.momentummm.app.ui.screen.onboarding.EnhancedOnboardingScreen
 import com.momentummm.app.ui.screen.tutorial.AppTutorialScreen
 import com.momentummm.app.data.appwrite.models.AppwriteUserSettings
 import com.momentummm.app.ui.settings.NotificationSettingsScreen
+import com.momentummm.app.ui.viewmodel.OnboardingViewModel
+import com.momentummm.app.ui.viewmodel.OnboardingViewModelFactory
 
 sealed class Screen(val route: String, val icon: ImageVector, val titleRes: Int) {
     object Today : Screen("today", Icons.Filled.Home, R.string.nav_today)
@@ -77,8 +80,10 @@ fun MomentumApp() {
     val isLoggedIn by application.appwriteService.isLoggedIn.collectAsState()
     val isAuthReady by application.appwriteService.isAuthReady.collectAsState()
     var authState by remember { mutableStateOf(AuthState.Loading) }
-    var isOnboardingCompleted by remember { mutableStateOf<Boolean?>(null) }
     var cachedSettings by remember { mutableStateOf<AppwriteUserSettings?>(null) }
+    val onboardingCompleted by UserPreferencesRepository
+        .isOnboardingCompletedFlow(context)
+        .collectAsState(initial = false)
 
     LaunchedEffect(isAuthReady, isLoggedIn) {
         authState = if (!isAuthReady) {
@@ -101,18 +106,19 @@ fun MomentumApp() {
             )
         }
         AuthState.Authenticated -> {
-            // Check onboarding status for authenticated users
+            // Sync settings for authenticated users
             LaunchedEffect(Unit) {
                 val currentUser = application.appwriteService.currentUser.value
                 currentUser?.let { user ->
-                    val appwriteSettings = application.appwriteUserRepository.getUserSettings(user.id)
-                    val localSettings = application.userRepository.getUserSettings()
+                    val appwriteSettingsFlow = application.appwriteUserRepository.getUserSettings(user.id)
+                    val localSettingsFlow = application.userRepository.getUserSettings()
 
-                    kotlinx.coroutines.flow.combine(appwriteSettings, localSettings) { appwrite, local ->
+                    kotlinx.coroutines.flow.combine(appwriteSettingsFlow, localSettingsFlow) { appwrite, local ->
+                        appwrite to local
+                    }.collect { (appwrite, local) ->
                         cachedSettings = appwrite
                         val appwriteCompleted = appwrite?.isOnboardingCompleted ?: false
                         val localCompleted = local?.isOnboardingCompleted ?: false
-                        val shouldBeCompleted = appwriteCompleted || localCompleted
 
                         if (appwriteCompleted != localCompleted) {
                             if (appwriteCompleted) {
@@ -122,64 +128,46 @@ fun MomentumApp() {
                             }
                         }
 
+                        if (appwriteCompleted || localCompleted) {
+                            UserPreferencesRepository.setOnboardingCompleted(context, true)
+                        }
+
                         val dobIso = appwrite?.birthDate
                         if (!dobIso.isNullOrBlank()) {
                             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                                 UserPreferencesRepository.setDobIso(context, dobIso)
                             }
                         }
-                        shouldBeCompleted
-                    }.collect { completed ->
-                        isOnboardingCompleted = completed
                     }
                 }
             }
 
-            when (isOnboardingCompleted) {
-                null -> LoadingScreen()
-                false -> {
-                    AppTutorialScreen(
-                        existingDobIso = cachedSettings?.birthDate,
-                        initialLivedColor = cachedSettings?.livedWeeksColor,
-                        initialFutureColor = cachedSettings?.futureWeeksColor,
-                        onBirthDateSelected = { birthDate ->
-                            val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
-                            val iso = birthDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
-                            coroutineScope.launch {
-                                val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = "")
-                                val updated = existing.copy(birthDate = iso)
-                                application.appwriteUserRepository.updateUserSettings(userId, updated)
-                                UserPreferencesRepository.setDobIso(context, iso)
-                                LifeWeeksWidgetProvider().updateAll(context)
+            val startDestination = if (onboardingCompleted) "home" else "onboarding"
+            androidx.compose.runtime.key(startDestination) {
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = startDestination
+                ) {
+                    composable("onboarding") {
+                        val onboardingViewModel: OnboardingViewModel = viewModel(
+                            factory = OnboardingViewModelFactory(context, application.userRepository)
+                        )
+                        EnhancedOnboardingScreen(
+                            viewModel = onboardingViewModel,
+                            onCompleted = {
+                                navController.navigate("home") {
+                                    popUpTo("onboarding") { inclusive = true }
+                                }
                             }
-                        },
-                        onColorPreferencesSelected = { livedColor, futureColor ->
-                            val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
-                            coroutineScope.launch {
-                                val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = cachedSettings?.birthDate ?: "")
-                                val updated = existing.copy(livedWeeksColor = livedColor, futureWeeksColor = futureColor)
-                                application.appwriteUserRepository.updateUserSettings(userId, updated)
-                                UserPreferencesRepository.setWidgetColors(context, livedColor, futureColor)
-                                LifeWeeksWidgetProvider().updateAll(context)
-                            }
-                        },
-                        onCompleted = {
-                            val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
-                            coroutineScope.launch {
-                                application.appwriteUserRepository.completeOnboarding(userId)
-                                application.userRepository.completeOnboarding()
-                                application.userRepository.markTutorialAsSeen()
-                                isOnboardingCompleted = true
-                                LifeWeeksWidgetProvider().updateAll(context)
-                            }
-                        }
-                    )
-                }
-                true -> {
-                    MainAppContent(
-                        application = application,
-                        cachedSettings = cachedSettings
-                    )
+                        )
+                    }
+                    composable("home") {
+                        MainAppContent(
+                            application = application,
+                            cachedSettings = cachedSettings
+                        )
+                    }
                 }
             }
         }
@@ -299,6 +287,11 @@ private fun MainAppContent(
                     minimalPhoneManager.disableMinimalMode()
                 }
                 navController.navigate(Screen.Settings.route)
+            },
+            onExitMinimalMode = {
+                coroutineScope.launch {
+                    minimalPhoneManager.disableMinimalMode()
+                }
             }
         )
     } else {
@@ -384,6 +377,16 @@ private fun MainAppContent(
                         minimalPhoneManager = minimalPhoneManager,
                         onSettingsClick = {
                             navController.navigate(Screen.Settings.route)
+                        },
+                        onExitMinimalMode = {
+                            coroutineScope.launch {
+                                minimalPhoneManager.disableMinimalMode()
+                            }
+                            navController.navigate(Screen.Today.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    inclusive = false
+                                }
+                            }
                         }
                     )
                 }

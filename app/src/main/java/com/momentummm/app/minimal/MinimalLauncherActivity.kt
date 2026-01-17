@@ -1,5 +1,6 @@
 package com.momentummm.app.minimal
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -8,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.momentummm.app.MomentumApplication
+import com.momentummm.app.MainActivity
 import com.momentummm.app.data.manager.ThemeManager
 import com.momentummm.app.ui.theme.MomentumTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MinimalLauncherActivity : ComponentActivity() {
@@ -40,6 +44,16 @@ class MinimalLauncherActivity : ComponentActivity() {
                         onSettingsClick = {
                             // Open settings in main app
                             finish()
+                        },
+                        onExitMinimalMode = {
+                            lifecycleScope.launch {
+                                minimalPhoneManager.disableMinimalMode()
+                                val intent = Intent(this@MinimalLauncherActivity, MainActivity::class.java).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                }
+                                startActivity(intent)
+                                finish()
+                            }
                         }
                     )
                 }

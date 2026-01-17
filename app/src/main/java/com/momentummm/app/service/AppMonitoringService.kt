@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 import com.momentummm.app.data.repository.AppLimitRepository
 import com.momentummm.app.data.repository.AppWhitelistRepository
+import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.manager.SmartNotificationManager
 import com.momentummm.app.ui.AppBlockedActivity
 import com.momentummm.app.ui.overlay.AppBlockOverlayService
@@ -123,6 +124,30 @@ class AppMonitoringService : Service() {
             val currentApp = getCurrentForegroundApp()
             if (currentApp.isNotEmpty() && currentApp != packageName) {
 
+                // Verificar si la app está en la whitelist (apps de emergencia)
+                val isWhitelisted = withContext(Dispatchers.IO) {
+                    appWhitelistRepository.isAppWhitelisted(currentApp)
+                }
+                if (isWhitelisted) {
+                    Log.d(TAG, "App $currentApp está en whitelist - no se bloqueará")
+                    return
+                }
+
+                // Focus Mode: bloqueo agresivo para apps en la lista negra
+                val focusModeEnabled = withContext(Dispatchers.IO) {
+                    UserPreferencesRepository.getFocusModeEnabled(this@AppMonitoringService)
+                }
+                if (focusModeEnabled) {
+                    val blockedApps = withContext(Dispatchers.IO) {
+                        UserPreferencesRepository.getFocusModeBlockedApps(this@AppMonitoringService)
+                    }
+                    if (blockedApps.contains(currentApp)) {
+                        Log.d(TAG, "Focus Mode activo - bloqueando app $currentApp")
+                        blockApp(currentApp)
+                        return
+                    }
+                }
+
                 // CAMBIO IMPORTANTE: Primero verificar si la app tiene un límite configurado
                 // Solo monitoreamos apps que están explícitamente en la lista de límites
                 val appLimit = withContext(Dispatchers.IO) {
@@ -136,15 +161,6 @@ class AppMonitoringService : Service() {
                 }
 
                 Log.d(TAG, "App monitoreada detectada: $currentApp")
-
-                // Verificar si la app está en la whitelist (apps de emergencia)
-                val isWhitelisted = withContext(Dispatchers.IO) {
-                    appWhitelistRepository.isAppWhitelisted(currentApp)
-                }
-                if (isWhitelisted) {
-                    Log.d(TAG, "App $currentApp está en whitelist - no se bloqueará")
-                    return
-                }
 
                 // Obtener uso actual de la app
                 val usageStats = getCurrentAppUsageStats(currentApp)

@@ -115,17 +115,16 @@ class MomentumAccessibilityService : AccessibilityService() {
     // Instagram Reels
     private fun detectInstagramReels(rootNode: AccessibilityNodeInfo): Boolean {
         // Estrategia: Buscar combinaciones de texto, ID y descripción
-        // 1. Texto explícito "Reels" en cualquier parte visible
-        if (hasText(rootNode, "Reels") || hasText(rootNode, "Reel")) return true
-        
-        // 2. IDs específicos de contenedores de video o tabs
+        // 1. IDs específicos de contenedores de video
         // "clips" suele ser el identificador interno de Reels en Instagram
         if (hasViewId(rootNode, "clips_video_container")) return true
-        if (hasViewId(rootNode, "clips_tab")) return true // Botón de la barra inferior
-        
-        // 3. Descripción de contenido (para accesibilidad)
-        if (hasContentDescription(rootNode, "Reels tab")) return true
-        if (hasContentDescription(rootNode, "Pestaña Reels")) return true
+
+        // 2. Tab de Reels seleccionado (evitar falsos positivos en Home)
+        if (hasSelectedViewId(rootNode, "clips_tab")) return true // Botón Reels seleccionado
+        if (hasSelectedContentDescription(rootNode, "Reels tab")) return true
+        if (hasSelectedContentDescription(rootNode, "Pestaña Reels")) return true
+        if (hasSelectedText(rootNode, "Reels")) return true
+        if (hasSelectedText(rootNode, "Reel")) return true
         
         return false
     }
@@ -166,9 +165,9 @@ class MomentumAccessibilityService : AccessibilityService() {
 
     // Facebook Reels
     private fun detectFacebookReels(rootNode: AccessibilityNodeInfo): Boolean {
-        if (hasText(rootNode, "Reels")) return true
-        if (hasContentDescription(rootNode, "Reels")) return true
-        // Facebook suele usar "Reels" en la barra de navegación o encabezados
+        // Solo bloquear si la pestaña de Reels está explícitamente seleccionada
+        if (hasSelectedText(rootNode, "Reels")) return true
+        if (hasSelectedContentDescription(rootNode, "Reels")) return true
         return false
     }
 
@@ -253,6 +252,75 @@ class MomentumAccessibilityService : AccessibilityService() {
             val child = rootNode.getChild(i)
             if (child != null) {
                 if (hasContentDescription(child, description)) {
+                    child.recycle()
+                    return true
+                }
+                child.recycle()
+            }
+        }
+        return false
+    }
+
+    private fun hasSelectedText(rootNode: AccessibilityNodeInfo?, text: String): Boolean {
+        if (rootNode == null) return false
+
+        if (rootNode.text?.contains(text, ignoreCase = true) == true &&
+            (rootNode.isSelected || rootNode.isChecked)
+        ) {
+            return true
+        }
+
+        val count = rootNode.childCount
+        for (i in 0 until count) {
+            val child = rootNode.getChild(i)
+            if (child != null) {
+                if (hasSelectedText(child, text)) {
+                    child.recycle()
+                    return true
+                }
+                child.recycle()
+            }
+        }
+        return false
+    }
+
+    private fun hasSelectedContentDescription(rootNode: AccessibilityNodeInfo?, description: String): Boolean {
+        if (rootNode == null) return false
+
+        if (rootNode.contentDescription?.contains(description, ignoreCase = true) == true &&
+            (rootNode.isSelected || rootNode.isChecked)
+        ) {
+            return true
+        }
+
+        val count = rootNode.childCount
+        for (i in 0 until count) {
+            val child = rootNode.getChild(i)
+            if (child != null) {
+                if (hasSelectedContentDescription(child, description)) {
+                    child.recycle()
+                    return true
+                }
+                child.recycle()
+            }
+        }
+        return false
+    }
+
+    private fun hasSelectedViewId(rootNode: AccessibilityNodeInfo?, viewIdPart: String): Boolean {
+        if (rootNode == null) return false
+
+        if (rootNode.viewIdResourceName?.contains(viewIdPart, ignoreCase = true) == true &&
+            (rootNode.isSelected || rootNode.isChecked)
+        ) {
+            return true
+        }
+
+        val count = rootNode.childCount
+        for (i in 0 until count) {
+            val child = rootNode.getChild(i)
+            if (child != null) {
+                if (hasSelectedViewId(child, viewIdPart)) {
                     child.recycle()
                     return true
                 }

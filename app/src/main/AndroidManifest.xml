@@ -125,7 +125,7 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Momentum" />
+            android:theme="@style/Theme.Momentum.NoActionBar" />
 
         <!-- Website Blocked Activity -->
         <activity
@@ -193,6 +193,12 @@
             android:name=".service.AppMonitoringService"
             android:exported="false"
             android:foregroundServiceType="shortService" />
+
+        <!-- Focus Timer Service for Pomodoro sessions -->
+        <service
+            android:name=".service.FocusTimerService"
+            android:exported="false"
+            android:foregroundServiceType="timer" />
 
         <!-- App Block Overlay Service -->
         <service

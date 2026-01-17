@@ -1,9 +1,10 @@
 package com.momentummm.app.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.momentummm.app.data.entity.UserSettings
+import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,11 +28,23 @@ enum class OnboardingStep {
 }
 
 class OnboardingViewModel(
+    private val appContext: Context,
     private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
+
+    private val _onboardingCompleted = MutableStateFlow(false)
+    val onboardingCompleted: StateFlow<Boolean> = _onboardingCompleted.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            UserPreferencesRepository.isOnboardingCompletedFlow(appContext).collect { completed ->
+                _onboardingCompleted.value = completed
+            }
+        }
+    }
 
     fun nextStep() {
         val currentStep = _uiState.value.currentStep
@@ -57,7 +70,7 @@ class OnboardingViewModel(
         _uiState.value = _uiState.value.copy(selectedBirthDate = birthDate)
     }
 
-    private fun completeOnboarding() {
+    fun completeOnboarding() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             
@@ -66,6 +79,9 @@ class OnboardingViewModel(
                 if (birthDate != null) {
                     userRepository.setBirthDate(birthDate)
                 }
+
+                UserPreferencesRepository.setOnboardingCompleted(appContext, true)
+                userRepository.completeOnboarding()
                 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -79,12 +95,13 @@ class OnboardingViewModel(
 }
 
 class OnboardingViewModelFactory(
+    private val context: Context,
     private val userRepository: UserRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(OnboardingViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return OnboardingViewModel(userRepository) as T
+            return OnboardingViewModel(context.applicationContext, userRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Phone
@@ -35,6 +36,7 @@ import kotlinx.coroutines.withContext
 fun MinimalPhoneScreen(
     minimalPhoneManager: MinimalPhoneManager,
     onSettingsClick: () -> Unit,
+    onExitMinimalMode: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -47,6 +49,8 @@ fun MinimalPhoneScreen(
                 MinimalLauncherContent(
                     minimalPhoneManager = minimalPhoneManager,
                     onSettingsClick = onSettingsClick,
+        var showExitConfirm by remember { mutableStateOf(false) }
+                    onExitMinimalMode = onExitMinimalMode,
                     onDialerClick = { currentScreen = MinimalScreen.Dialer },
                     onAppListClick = { currentScreen = MinimalScreen.AppList },
                     modifier = modifier
@@ -92,11 +96,12 @@ private enum class MinimalScreen {
 private fun MinimalLauncherContent(
     minimalPhoneManager: MinimalPhoneManager,
     onSettingsClick: () -> Unit,
+    onExitMinimalMode: () -> Unit,
     onDialerClick: () -> Unit,
     onAppListClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val coroutineScope = rememberCoroutineScope()
+            TextButton(onClick = { showExitConfirm = true }) {
     val customApp by minimalPhoneManager.customApp.collectAsState()
     val customAppInfo = remember(customApp) { minimalPhoneManager.getCustomAppInfo() }
     var showAppSelector by remember { mutableStateOf(false) }
@@ -148,6 +153,14 @@ private fun MinimalLauncherContent(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(onClick = onExitMinimalMode) {
+            Icon(Icons.Default.Close, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Salir del modo mínimo")
+        }
         
         Spacer(modifier = Modifier.height(48.dp))
         
@@ -219,6 +232,28 @@ private fun MinimalLauncherContent(
 
             // Segunda fila: Contactos y Configuración
             Row(
+        if (showExitConfirm) {
+            AlertDialog(
+                onDismissRequest = { showExitConfirm = false },
+                title = { Text("Salir del modo mínimo") },
+                text = { Text("¿Seguro que quieres salir? Se restaurará la experiencia completa de Momentum.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showExitConfirm = false
+                            onExitMinimalMode()
+                        }
+                    ) {
+                        Text("Salir")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showExitConfirm = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -261,17 +296,6 @@ private fun MinimalLauncherContent(
             Text("Todas las apps", style = MaterialTheme.typography.titleMedium)
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        OutlinedButton(
-            onClick = {
-                coroutineScope.launch {
-                    minimalPhoneManager.disableMinimalMode()
-                }
-            }
-        ) {
-            Text("Salir del modo mínimo")
-        }
     }
 
     if (showAppSelector) {

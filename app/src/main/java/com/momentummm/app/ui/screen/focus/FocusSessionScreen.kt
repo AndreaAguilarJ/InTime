@@ -32,11 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.appwrite.models.AppwriteFocusSession
 import com.momentummm.app.data.appwrite.models.FocusSessionStats
-import kotlinx.coroutines.delay
+import com.momentummm.app.service.FocusTimerStatus
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -50,14 +51,6 @@ data class FocusSession(
     val isCustom: Boolean = false
 )
 
-enum class SessionState {
-    NOT_STARTED,
-    RUNNING,
-    BREAK,
-    COMPLETED,
-    PAUSED
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusSessionScreen(
@@ -69,15 +62,13 @@ fun FocusSessionScreen(
     val focusRepository = application.appwriteFocusSessionRepository
     val currentUser = application.appwriteService.currentUser.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val viewModel: FocusSessionViewModel = viewModel()
+    val focusState by viewModel.sessionState.collectAsState()
 
-    var selectedSession by remember { mutableStateOf<FocusSession?>(null) }
-    var sessionState by remember { mutableStateOf(SessionState.NOT_STARTED) }
-    var timeRemaining by remember { mutableStateOf(0) }
-    var totalTime by remember { mutableStateOf(0) }
-    var sessionStartTime by remember { mutableStateOf<String?>(null) }
     var showCreateSessionDialog by remember { mutableStateOf(false) }
     var customSessions by remember { mutableStateOf<List<FocusSession>>(emptyList()) }
     var showDeleteConfirmation by remember { mutableStateOf<FocusSession?>(null) }
+    var savedSessionKey by remember { mutableStateOf<String?>(null) }
 
     // Estados para estadísticas reales
     var focusStats by remember { mutableStateOf(FocusSessionStats()) }
@@ -92,6 +83,37 @@ fun FocusSessionScreen(
         FocusSession("meeting", "💼 Preparación de Reunión", 30, 5, emptyList()),
         FocusSession("quick", "⚡ Enfoque Rápido", 15, 3, emptyList())
     )
+
+    val activeSession = if (focusState.status != FocusTimerStatus.IDLE && focusState.sessionType != null) {
+        FocusSession(
+            id = focusState.sessionType,
+            name = focusState.sessionName ?: "Sesión de Enfoque",
+            duration = (focusState.totalSeconds / 60).coerceAtLeast(1),
+            breakDuration = focusState.breakMinutes,
+            blockedApps = focusState.blockedApps
+        )
+    } else {
+        null
+    }
+
+    LaunchedEffect(focusState.status, focusState.sessionType, focusState.remainingSeconds, focusState.totalSeconds) {
+        if (focusState.status == FocusTimerStatus.RUNNING && focusState.remainingSeconds == focusState.totalSeconds) {
+            savedSessionKey = null
+        }
+    }
+
+    LaunchedEffect(focusState.status, focusState.sessionType) {
+        val session = activeSession ?: return@LaunchedEffect
+        if (focusState.status == FocusTimerStatus.COMPLETED && savedSessionKey != session.id) {
+            saveCompletedSession(
+                session = session,
+                actualDuration = session.duration,
+                wasCompleted = true,
+                startTimeIso = focusState.startTimeIso
+            )
+            savedSessionKey = session.id
+        }
+    }
 
     // Cargar estadísticas y historial
     LaunchedEffect(currentUser.value) {
@@ -121,7 +143,12 @@ fun FocusSessionScreen(
     }
 
     // Función para guardar sesión completada
-    suspend fun saveCompletedSession(session: FocusSession, actualDuration: Int, wasCompleted: Boolean) {
+    suspend fun saveCompletedSession(
+        session: FocusSession,
+        actualDuration: Int,
+        wasCompleted: Boolean,
+        startTimeIso: String?
+    ) {
         currentUser.value?.let { user ->
             try {
                 val sessionId = "sess_${System.currentTimeMillis()}"
@@ -135,7 +162,7 @@ fun FocusSessionScreen(
                     sessionId = sessionId,
                     sessionType = session.id,
                     date = currentDate,
-                    startTime = sessionStartTime,
+                    startTime = startTimeIso,
                     endTime = currentTimestamp,
                     plannedDuration = session.duration,
                     actualDuration = actualDuration,
@@ -214,7 +241,7 @@ fun FocusSessionScreen(
             }
 
             // Sesión activa con animación
-            if (selectedSession != null && sessionState != SessionState.NOT_STARTED) {
+            if (activeSession != null && focusState.status != FocusTimerStatus.IDLE) {
                 item {
                     AnimatedVisibility(
                         visible = true,
@@ -222,31 +249,34 @@ fun FocusSessionScreen(
                         exit = fadeOut() + slideOutVertically()
                     ) {
                         ActiveSessionCard(
-                            session = selectedSession!!,
-                            sessionState = sessionState,
-                            timeRemaining = timeRemaining,
-                            totalTime = totalTime,
-                            onPause = { sessionState = SessionState.PAUSED },
-                            onResume = { sessionState = SessionState.RUNNING },
+                            session = activeSession,
+                            sessionState = focusState.status,
+                            timeRemaining = focusState.remainingSeconds,
+                            totalTime = focusState.totalSeconds,
+                            onPause = { viewModel.pauseSession() },
+                            onResume = { viewModel.resumeSession() },
                             onStop = {
-                                val elapsedMinutes = (totalTime - timeRemaining) / 60
-                                val currentSession = selectedSession
+                                val elapsedMinutes = ((focusState.totalSeconds - focusState.remainingSeconds) / 60)
+                                    .coerceAtLeast(0)
+                                val currentSession = activeSession
 
-                                // Primero cambiamos el estado
-                                sessionState = SessionState.NOT_STARTED
-                                selectedSession = null
-                                sessionStartTime = null
-
-                                // Luego guardamos la sesión en background
-                                if (currentSession != null) {
+                                if (currentSession != null && focusState.status != FocusTimerStatus.COMPLETED) {
                                     coroutineScope.launch {
                                         try {
-                                            saveCompletedSession(currentSession, elapsedMinutes, false)
+                                            saveCompletedSession(
+                                                session = currentSession,
+                                                actualDuration = elapsedMinutes,
+                                                wasCompleted = false,
+                                                startTimeIso = focusState.startTimeIso
+                                            )
+                                            savedSessionKey = currentSession.id
                                         } catch (_: Exception) {
                                             // Manejar error silenciosamente
                                         }
                                     }
                                 }
+
+                                viewModel.stopSession()
                             }
                         )
                     }
@@ -301,13 +331,7 @@ fun FocusSessionScreen(
                     SessionCard(
                         session = session,
                         onSelect = {
-                            selectedSession = session
-                            totalTime = session.duration * 60
-                            timeRemaining = totalTime
-                            sessionState = SessionState.RUNNING
-                            sessionStartTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-                                timeZone = TimeZone.getTimeZone("UTC")
-                            }.format(Date())
+                            viewModel.startSession(session)
                         },
                         onDelete = null,
                         modifier = Modifier.fillMaxWidth()
@@ -335,13 +359,7 @@ fun FocusSessionScreen(
                         SessionCard(
                             session = session,
                             onSelect = {
-                                selectedSession = session
-                                totalTime = session.duration * 60
-                                timeRemaining = totalTime
-                                sessionState = SessionState.RUNNING
-                                sessionStartTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-                                    timeZone = TimeZone.getTimeZone("UTC")
-                                }.format(Date())
+                                viewModel.startSession(session)
                             },
                             onDelete = { showDeleteConfirmation = session },
                             modifier = Modifier.fillMaxWidth()
@@ -403,7 +421,7 @@ fun FocusSessionScreen(
         }
 
         // Botón flotante para crear sesión personalizada
-        if (selectedSession == null || sessionState == SessionState.NOT_STARTED) {
+        if (focusState.status == FocusTimerStatus.IDLE) {
             FloatingActionButton(
                 onClick = { showCreateSessionDialog = true },
                 modifier = Modifier
@@ -452,28 +470,6 @@ fun FocusSessionScreen(
         )
     }
 
-    // Timer effect mejorado con notificaciones de progreso
-    LaunchedEffect(sessionState, timeRemaining) {
-        if (sessionState == SessionState.RUNNING && timeRemaining > 0) {
-            delay(1000)
-            timeRemaining--
-
-            // Notificaciones de progreso (placeholders para futuras implementaciones)
-            if (timeRemaining > 0 && totalTime > 0) {
-                val progress = ((totalTime - timeRemaining).toFloat() / totalTime.toFloat() * 100).toInt()
-                // Notificar en 25%, 50%, 75%
-                @Suppress("ControlFlowWithEmptyBody")
-                if (progress == 25 || progress == 50 || progress == 75) {
-                    // TODO: Aquí podrías agregar una notificación o feedback visual
-                }
-            }
-        } else if (sessionState == SessionState.RUNNING && timeRemaining <= 0) {
-            sessionState = SessionState.COMPLETED
-            selectedSession?.let { session ->
-                saveCompletedSession(session, session.duration, true)
-            }
-        }
-    }
 }
 
 @Composable
@@ -628,7 +624,7 @@ private fun CreateSessionDialog(
 @Composable
 private fun ActiveSessionCard(
     session: FocusSession,
-    sessionState: SessionState,
+    sessionState: FocusTimerStatus,
     timeRemaining: Int,
     totalTime: Int,
     onPause: () -> Unit,
@@ -675,19 +671,19 @@ private fun ActiveSessionCard(
 
             Surface(
                 color = when (sessionState) {
-                    SessionState.RUNNING -> MaterialTheme.colorScheme.primaryContainer
-                    SessionState.PAUSED -> MaterialTheme.colorScheme.tertiaryContainer
-                    SessionState.COMPLETED -> MaterialTheme.colorScheme.secondaryContainer
+                    FocusTimerStatus.RUNNING -> MaterialTheme.colorScheme.primaryContainer
+                    FocusTimerStatus.PAUSED -> MaterialTheme.colorScheme.tertiaryContainer
+                    FocusTimerStatus.COMPLETED -> MaterialTheme.colorScheme.secondaryContainer
                     else -> MaterialTheme.colorScheme.surfaceVariant
                 },
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Text(
                     text = when (sessionState) {
-                        SessionState.RUNNING -> "🔥 En progreso"
-                        SessionState.BREAK -> "☕ Descanso"
-                        SessionState.PAUSED -> "⏸️ Pausado"
-                        SessionState.COMPLETED -> "✅ ¡Completado!"
+                        FocusTimerStatus.RUNNING -> "🔥 En progreso"
+                        FocusTimerStatus.BREAK -> "☕ Descanso"
+                        FocusTimerStatus.PAUSED -> "⏸️ Pausado"
+                        FocusTimerStatus.COMPLETED -> "✅ ¡Completado!"
                         else -> ""
                     },
                     style = MaterialTheme.typography.bodyMedium,
@@ -702,7 +698,7 @@ private fun ActiveSessionCard(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(220.dp)
-                    .scale(if (sessionState == SessionState.RUNNING) scale else 1f)
+                        .scale(if (sessionState == FocusTimerStatus.RUNNING) scale else 1f)
             ) {
                 val animatedProgress by animateFloatAsState(
                     targetValue = progress,
@@ -725,9 +721,9 @@ private fun ActiveSessionCard(
 
                     // Progreso con gradiente
                     val progressColor = when (sessionState) {
-                        SessionState.RUNNING -> Color(0xFF4CAF50)
-                        SessionState.PAUSED -> Color(0xFFFF9800)
-                        SessionState.COMPLETED -> Color(0xFF2196F3)
+                        FocusTimerStatus.RUNNING -> Color(0xFF4CAF50)
+                        FocusTimerStatus.PAUSED -> Color(0xFFFF9800)
+                        FocusTimerStatus.COMPLETED -> Color(0xFF2196F3)
                         else -> Color.Gray
                     }
 
@@ -762,7 +758,7 @@ private fun ActiveSessionCard(
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    if (sessionState == SessionState.RUNNING) {
+                    if (sessionState == FocusTimerStatus.RUNNING) {
                         Text(
                             text = "restantes",
                             style = MaterialTheme.typography.bodyLarge,
@@ -780,9 +776,9 @@ private fun ActiveSessionCard(
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp)),
                         color = when (sessionState) {
-                            SessionState.RUNNING -> Color(0xFF4CAF50)
-                            SessionState.PAUSED -> Color(0xFFFF9800)
-                            SessionState.COMPLETED -> Color(0xFF2196F3)
+                            FocusTimerStatus.RUNNING -> Color(0xFF4CAF50)
+                            FocusTimerStatus.PAUSED -> Color(0xFFFF9800)
+                            FocusTimerStatus.COMPLETED -> Color(0xFF2196F3)
                             else -> Color.Gray
                         },
                         trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -831,7 +827,7 @@ private fun ActiveSessionCard(
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
                 when (sessionState) {
-                    SessionState.RUNNING -> {
+                    FocusTimerStatus.RUNNING -> {
                         MomentumButton(
                             onClick = onPause,
                             style = ButtonStyle.Secondary,
@@ -841,7 +837,7 @@ private fun ActiveSessionCard(
                             Text("Pausar")
                         }
                     }
-                    SessionState.PAUSED -> {
+                    FocusTimerStatus.PAUSED -> {
                         MomentumButton(
                             onClick = onResume,
                             style = ButtonStyle.Primary,
@@ -851,7 +847,7 @@ private fun ActiveSessionCard(
                             Text("Continuar")
                         }
                     }
-                    SessionState.COMPLETED -> {
+                    FocusTimerStatus.COMPLETED -> {
                         MomentumButton(
                             onClick = onStop,
                             style = ButtonStyle.Primary,
@@ -864,7 +860,7 @@ private fun ActiveSessionCard(
                     else -> {}
                 }
 
-                if (sessionState != SessionState.COMPLETED) {
+                if (sessionState != FocusTimerStatus.COMPLETED) {
                     MomentumButton(
                         onClick = onStop,
                         style = ButtonStyle.Outline,

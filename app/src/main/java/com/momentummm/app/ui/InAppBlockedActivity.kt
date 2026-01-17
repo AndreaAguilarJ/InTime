@@ -1,17 +1,38 @@
 package com.momentummm.app.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,20 +51,32 @@ class InAppBlockedActivity : ComponentActivity() {
         appName = intent.getStringExtra("app_name") ?: "Aplicación"
         featureName = intent.getStringExtra("feature_name") ?: "Función"
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                launchHome()
+            }
+        })
+
         setContent {
             MomentumTheme {
                 InAppBlockedScreen(
                     appName = appName,
                     featureName = featureName,
-                    onClose = { finish() }
+                    onClose = {
+                        launchHome()
+                        finish()
+                    }
                 )
             }
         }
     }
 
-    override fun onBackPressed() {
-        // Prevenir que el usuario cierre con el botón de atrás
-        // Solo permitir cerrar con el botón "Entendido"
+    private fun launchHome() {
+        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(homeIntent)
     }
 }
 
@@ -53,7 +86,8 @@ fun InAppBlockedScreen(
     featureName: String,
     onClose: () -> Unit
 ) {
-    var timeRemaining by remember { mutableStateOf(3) }
+    val initialCountdownSeconds = 4
+    var timeRemaining by remember { mutableStateOf(initialCountdownSeconds) }
 
     LaunchedEffect(Unit) {
         while (timeRemaining > 0) {
@@ -64,12 +98,12 @@ fun InAppBlockedScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.error
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.error)
                 .padding(32.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -81,18 +115,18 @@ fun InAppBlockedScreen(
                 Icon(
                     imageVector = Icons.Default.Block,
                     contentDescription = "Bloqueado",
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.error
+                    modifier = Modifier.size(96.dp),
+                    tint = MaterialTheme.colorScheme.onError
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Título
                 Text(
-                    text = "Función Bloqueada",
-                    fontSize = 28.sp,
+                    text = "Función bloqueada",
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onError,
                     textAlign = TextAlign.Center
                 )
 
@@ -100,9 +134,9 @@ fun InAppBlockedScreen(
 
                 // Mensaje
                 Text(
-                    text = "Has intentado acceder a:",
+                    text = "Estás intentando ver",
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onError.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center
                 )
 
@@ -112,7 +146,7 @@ fun InAppBlockedScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
+                        containerColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
                     Column(
@@ -123,13 +157,13 @@ fun InAppBlockedScreen(
                             text = featureName,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                         Text(
                             text = "en $appName",
                             fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -141,7 +175,7 @@ fun InAppBlockedScreen(
                 Text(
                     text = "Esta función está bloqueada para ayudarte a mantener el enfoque y reducir el tiempo de distracción.",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onError.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
                 )
@@ -160,8 +194,8 @@ fun InAppBlockedScreen(
                         .height(56.dp),
                     enabled = timeRemaining == 0,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.onError,
+                        disabledContainerColor = MaterialTheme.colorScheme.onError.copy(alpha = 0.5f)
                     )
                 ) {
                     Text(
@@ -171,7 +205,8 @@ fun InAppBlockedScreen(
                             "Entendido"
                         },
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
 
@@ -181,7 +216,7 @@ fun InAppBlockedScreen(
                 Text(
                     text = "💡 Puedes desactivar este bloqueo desde la configuración de InTime",
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onError.copy(alpha = 0.75f),
                     textAlign = TextAlign.Center,
                     lineHeight = 16.sp
                 )
