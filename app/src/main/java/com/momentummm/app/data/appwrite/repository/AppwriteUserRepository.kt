@@ -106,4 +106,108 @@ class AppwriteUserRepository(private val appwriteService: AppwriteService) {
             Result.failure(e)
         }
     }
+    
+    /**
+     * Sincroniza los datos de gamificación a Appwrite
+     */
+    suspend fun syncGamificationData(
+        userId: String,
+        userLevel: Int,
+        currentXp: Int,
+        totalXp: Int,
+        timeCoins: Int,
+        currentStreak: Int,
+        longestStreak: Int,
+        lastActiveDate: String?,
+        totalFocusMinutes: Int,
+        totalSessionsCompleted: Int,
+        perfectDaysCount: Int,
+        gamificationEnabled: Boolean,
+        showXpNotifications: Boolean,
+        showStreakReminders: Boolean
+    ): Result<Unit> {
+        return try {
+            var currentSettings: AppwriteUserSettings? = null
+            getUserSettings(userId).collect { settings ->
+                currentSettings = settings
+            }
+            
+            val settings = currentSettings ?: AppwriteUserSettings(
+                userId = userId,
+                birthDate = ""
+            )
+            
+            val updatedSettings = settings.copy(
+                userLevel = userLevel,
+                currentXp = currentXp,
+                totalXp = totalXp,
+                timeCoins = timeCoins,
+                currentStreak = currentStreak,
+                longestStreak = longestStreak,
+                lastActiveDate = lastActiveDate ?: "",
+                totalFocusMinutes = totalFocusMinutes,
+                totalSessionsCompleted = totalSessionsCompleted,
+                perfectDaysCount = perfectDaysCount,
+                gamificationEnabled = gamificationEnabled,
+                showXpNotifications = showXpNotifications,
+                showStreakReminders = showStreakReminders
+            )
+            
+            updateUserSettings(userId, updatedSettings)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene los datos de gamificación desde Appwrite
+     */
+    suspend fun getGamificationData(userId: String): Result<GamificationCloudData?> {
+        return try {
+            var cloudSettings: AppwriteUserSettings? = null
+            getUserSettings(userId).collect { settings ->
+                cloudSettings = settings
+            }
+            
+            cloudSettings?.let { settings ->
+                Result.success(GamificationCloudData(
+                    userLevel = settings.userLevel,
+                    currentXp = settings.currentXp,
+                    totalXp = settings.totalXp,
+                    timeCoins = settings.timeCoins,
+                    currentStreak = settings.currentStreak,
+                    longestStreak = settings.longestStreak,
+                    lastActiveDate = settings.lastActiveDate,
+                    totalFocusMinutes = settings.totalFocusMinutes,
+                    totalSessionsCompleted = settings.totalSessionsCompleted,
+                    perfectDaysCount = settings.perfectDaysCount,
+                    gamificationEnabled = settings.gamificationEnabled,
+                    showXpNotifications = settings.showXpNotifications,
+                    showStreakReminders = settings.showStreakReminders
+                ))
+            } ?: Result.success(null)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
+
+/**
+ * Data class para datos de gamificación de la nube
+ */
+data class GamificationCloudData(
+    val userLevel: Int,
+    val currentXp: Int,
+    val totalXp: Int,
+    val timeCoins: Int,
+    val currentStreak: Int,
+    val longestStreak: Int,
+    val lastActiveDate: String?,
+    val totalFocusMinutes: Int,
+    val totalSessionsCompleted: Int,
+    val perfectDaysCount: Int,
+    val gamificationEnabled: Boolean,
+    val showXpNotifications: Boolean,
+    val showStreakReminders: Boolean
+)

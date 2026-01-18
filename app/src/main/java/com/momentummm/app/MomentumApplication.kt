@@ -18,6 +18,7 @@ import com.momentummm.app.data.manager.SmartNotificationManager
 import com.momentummm.app.data.manager.ExportManager
 import com.momentummm.app.data.manager.BackupSyncManager
 import com.momentummm.app.data.manager.AutoSyncManager
+import com.momentummm.app.data.manager.GamificationManager
 import com.momentummm.app.data.repository.GoalsRepository
 import com.momentummm.app.data.repository.AppLimitRepository
 import com.momentummm.app.data.repository.AppWhitelistRepository
@@ -75,6 +76,7 @@ class MomentumApplication : Application(), Configuration.Provider {
     val themeManager by lazy { ThemeManager(this) }
     val billingManager by lazy { BillingManager(this) }
     val exportManager by lazy { ExportManager(this) }
+    val gamificationManager by lazy { GamificationManager(database.userDao()) }
     val backupSyncManager by lazy { 
         BackupSyncManager(
             this, 

@@ -12,7 +12,9 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.momentummm.app.R
+import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.UserPreferencesRepository
+import com.momentummm.app.data.manager.GamificationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,15 +48,24 @@ data class FocusSessionState(
     val breakMinutes: Int = 0,
     val startTimeIso: String? = null,
     val blockedApps: List<String> = emptyList(),
-    val status: FocusTimerStatus = FocusTimerStatus.IDLE
+    val status: FocusTimerStatus = FocusTimerStatus.IDLE,
+    // Gamification
+    val minutesCompleted: Int = 0,
+    val xpEarned: Int = 0,
+    val coinsEarned: Int = 0
 )
 
 class FocusTimerService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var tickerJob: Job? = null
+    private var xpTrackerJob: Job? = null
     private var endTimeMillis: Long? = null
     private var pausedRemainingSeconds: Int = 0
+    private var lastMinuteAwarded: Int = 0
+
+    // Gamification Manager
+    private lateinit var gamificationManager: GamificationManager
 
     private val binder = FocusTimerBinder()
 
@@ -68,6 +79,10 @@ class FocusTimerService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        
+        // Initialize GamificationManager
+        val database = AppDatabase.getDatabase(applicationContext)
+        gamificationManager = GamificationManager(database.userDao())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -92,6 +107,7 @@ class FocusTimerService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         tickerJob?.cancel()
+        xpTrackerJob?.cancel()
         serviceScope.cancel()
     }
 
@@ -107,6 +123,7 @@ class FocusTimerService : Service() {
         val startTimeMillis = System.currentTimeMillis()
         endTimeMillis = startTimeMillis + totalSeconds * 1000L
         pausedRemainingSeconds = 0
+        lastMinuteAwarded = 0
 
         _sessionState.value = FocusSessionState(
             sessionType = sessionType,
@@ -116,7 +133,10 @@ class FocusTimerService : Service() {
             breakMinutes = breakMinutes,
             startTimeIso = startTimeIso,
             blockedApps = blockedApps,
-            status = FocusTimerStatus.RUNNING
+            status = FocusTimerStatus.RUNNING,
+            minutesCompleted = 0,
+            xpEarned = 0,
+            coinsEarned = 0
         )
 
         serviceScope.launch {
@@ -127,6 +147,35 @@ class FocusTimerService : Service() {
         val notification = buildNotification(totalSeconds, FocusTimerStatus.RUNNING)
         startForeground(NOTIFICATION_ID, notification)
         startTicker()
+        startXpTracker()
+    }
+
+    /**
+     * Tracker de XP - Otorga XP cada minuto completado de foco
+     */
+    private fun startXpTracker() {
+        xpTrackerJob?.cancel()
+        xpTrackerJob = serviceScope.launch {
+            while (isActive) {
+                delay(60_000) // Cada minuto
+                
+                val current = _sessionState.value
+                if (current.status == FocusTimerStatus.RUNNING) {
+                    val minutesCompleted = current.minutesCompleted + 1
+                    
+                    // Otorgar XP por minuto
+                    val event = gamificationManager.awardFocusMinuteXp(1)
+                    
+                    _sessionState.value = current.copy(
+                        minutesCompleted = minutesCompleted,
+                        xpEarned = current.xpEarned + event.xpGained,
+                        coinsEarned = current.coinsEarned + event.coinsGained
+                    )
+                    
+                    lastMinuteAwarded = minutesCompleted
+                }
+            }
+        }
     }
 
     private fun pauseSession() {
@@ -160,6 +209,7 @@ class FocusTimerService : Service() {
 
     private fun stopSession() {
         tickerJob?.cancel()
+        xpTrackerJob?.cancel()
         endTimeMillis = null
         pausedRemainingSeconds = 0
         _sessionState.value = FocusSessionState()
@@ -195,17 +245,26 @@ class FocusTimerService : Service() {
 
     private fun onSessionCompleted() {
         tickerJob?.cancel()
+        xpTrackerJob?.cancel()
+        
         val current = _sessionState.value
-        _sessionState.value = current.copy(
-            remainingSeconds = 0,
-            status = FocusTimerStatus.COMPLETED
-        )
-        updateNotification(0, FocusTimerStatus.COMPLETED)
-
+        
+        // Otorgar bonus por completar sesión
         serviceScope.launch {
+            val bonusEvent = gamificationManager.awardSessionCompletionBonus()
+            
+            _sessionState.value = current.copy(
+                remainingSeconds = 0,
+                status = FocusTimerStatus.COMPLETED,
+                xpEarned = current.xpEarned + bonusEvent.xpGained,
+                coinsEarned = current.coinsEarned + bonusEvent.coinsGained
+            )
+            
             UserPreferencesRepository.setFocusModeEnabled(this@FocusTimerService, false)
             UserPreferencesRepository.setFocusModeBlockedApps(this@FocusTimerService, emptyList())
         }
+        
+        updateNotification(0, FocusTimerStatus.COMPLETED)
     }
 
     private fun computeRemainingSeconds(): Int {

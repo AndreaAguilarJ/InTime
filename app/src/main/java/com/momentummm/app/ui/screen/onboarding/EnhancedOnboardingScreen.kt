@@ -47,6 +47,7 @@ import com.momentummm.app.ui.viewmodel.OnboardingViewModelFactory
 import com.momentummm.app.util.PermissionUtils
 
 private enum class OnboardingWizardStep {
+	SHOCK_REALITY, // Nueva pantalla de impacto psicológico
 	WELCOME,
 	USAGE_STATS,
 	NOTIFICATIONS,
@@ -140,6 +141,18 @@ fun EnhancedOnboardingScreen(
 	val currentStepEnum = OnboardingWizardStep.values()[currentStep]
 	val progress = (currentStep + 1).toFloat() / totalSteps.toFloat()
 
+	// La pantalla de shock ocupa toda la pantalla sin UI de wizard
+	if (currentStepEnum == OnboardingWizardStep.SHOCK_REALITY) {
+		val application = context.applicationContext as MomentumApplication
+		ShockOnboardingScreen(
+			usageStatsRepository = application.usageStatsRepository,
+			userBirthYear = null, // Se puede agregar selección de edad después
+			onContinue = { currentStep = OnboardingWizardStep.WELCOME.ordinal },
+			onSkip = { currentStep = OnboardingWizardStep.WELCOME.ordinal }
+		)
+		return
+	}
+
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
@@ -147,13 +160,16 @@ fun EnhancedOnboardingScreen(
 		verticalArrangement = Arrangement.spacedBy(20.dp)
 	) {
 		Text(
-			text = "Paso ${currentStep + 1} de $totalSteps",
+			text = "Paso ${currentStep} de ${totalSteps - 1}", // Excluir shock del contador
 			style = MaterialTheme.typography.labelLarge,
 			color = MaterialTheme.colorScheme.onSurfaceVariant
 		)
-		LinearProgressIndicator(progress = progress, modifier = Modifier.fillMaxWidth())
+		LinearProgressIndicator(progress = currentStep.toFloat() / (totalSteps - 1).toFloat(), modifier = Modifier.fillMaxWidth())
 
 		when (currentStepEnum) {
+			OnboardingWizardStep.SHOCK_REALITY -> {
+				// Handled above, never reaches here
+			}
 			OnboardingWizardStep.WELCOME -> {
 				StepContainer(
 					title = "Bienvenido a Momentum",

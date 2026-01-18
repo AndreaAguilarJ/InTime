@@ -16,6 +16,7 @@ class BillingManager(
     companion object {
         const val PREMIUM_MONTHLY_SKU = "premium_monthly_subscription"
         const val PREMIUM_YEARLY_SKU = "premium_yearly_subscription"
+        const val EMERGENCY_UNLOCK_SKU = "emergency_unlock_consumable"
     }
     
     private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
@@ -193,6 +194,66 @@ class BillingManager(
     
     fun isPremiumUser(): Boolean {
         return _subscriptionStatus.value != SubscriptionStatus.NOT_SUBSCRIBED
+    }
+
+    /**
+     * Inicia la compra del desbloqueo de emergencia (consumible de $0.99).
+     * Este es un producto de una sola vez que permite desbloquear una app por 15 minutos.
+     */
+    fun launchEmergencyUnlockPurchase(activity: Activity) {
+        if (!billingClient.isReady) {
+            startConnection()
+            return
+        }
+
+        // Consultar el producto de desbloqueo de emergencia
+        val productList = listOf(
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(EMERGENCY_UNLOCK_SKU)
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        )
+
+        val params = QueryProductDetailsParams.newBuilder()
+            .setProductList(productList)
+            .build()
+
+        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                val emergencyUnlockProduct = productDetailsList.firstOrNull()
+                if (emergencyUnlockProduct != null) {
+                    val productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()
+                        .setProductDetails(emergencyUnlockProduct)
+                        .build()
+
+                    val billingFlowParams = BillingFlowParams.newBuilder()
+                        .setProductDetailsParamsList(listOf(productDetailsParams))
+                        .build()
+
+                    _purchaseState.value = PurchaseState.Purchasing
+                    billingClient.launchBillingFlow(activity, billingFlowParams)
+                } else {
+                    _purchaseState.value = PurchaseState.Failed
+                }
+            } else {
+                _purchaseState.value = PurchaseState.Failed
+            }
+        }
+    }
+
+    /**
+     * Consume un producto de desbloqueo de emergencia para permitir otra compra.
+     */
+    private fun consumeEmergencyUnlock(purchase: Purchase) {
+        val consumeParams = ConsumeParams.newBuilder()
+            .setPurchaseToken(purchase.purchaseToken)
+            .build()
+
+        billingClient.consumeAsync(consumeParams) { billingResult, purchaseToken ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                // Producto consumido exitosamente
+            }
+        }
     }
     
     fun endConnection() {

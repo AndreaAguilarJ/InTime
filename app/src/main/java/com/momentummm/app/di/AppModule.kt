@@ -4,6 +4,8 @@ import android.content.Context
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.appwrite.AppwriteService
 import com.momentummm.app.data.manager.AutoSyncManager
+import com.momentummm.app.data.manager.BillingManager
+import com.momentummm.app.data.manager.GamificationManager
 import com.momentummm.app.data.repository.*
 import dagger.Module
 import dagger.Provides
@@ -105,5 +107,21 @@ object AppModule {
             appWhitelistRepository,
             quotesRepository
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideBillingManager(
+        @ApplicationContext context: Context
+    ): BillingManager {
+        return BillingManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGamificationManager(
+        database: AppDatabase
+    ): GamificationManager {
+        return GamificationManager(database.userDao())
     }
 }

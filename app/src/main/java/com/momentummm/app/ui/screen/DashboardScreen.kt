@@ -23,6 +23,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.draw.clip
 import androidx.core.graphics.drawable.toBitmap
 import com.momentummm.app.R
+import com.momentummm.app.ui.component.GamificationEventToast
+import com.momentummm.app.ui.component.GamificationHeader
 import com.momentummm.app.ui.viewmodel.DashboardViewModel
 import com.momentummm.app.ui.system.*
 
@@ -43,122 +45,134 @@ fun DashboardScreen(
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "¡Buen día!",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = stringResource(R.string.screen_time_today),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                // Comentado temporalmente - Promoción Premium
-                /*
-                if (!isPremiumUser) {
-                    MomentumButton(
-                        onClick = onUpgradeClick,
-                        style = ButtonStyle.Secondary,
-                        size = ButtonSize.Small,
-                        icon = Icons.Filled.Star
-                    ) {
-                        Text("Premium")
-                    }
-                }
-                */
-            }
-        }
-        
-        // Comentado temporalmente - Promoción Premium para usuarios gratuitos
-        /*
-        if (!isPremiumUser) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Gamification Header - NUEVO
             item {
-                PremiumPromotionCard(
-                    onUpgradeClick = onUpgradeClick
+                GamificationHeader(
+                    gamificationState = uiState.gamificationState,
+                    onCoinsClick = {
+                        // TODO: Abrir tienda de TimeCoins
+                    }
                 )
             }
-        }
-        */
 
-        item {
-            // Screen time card
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator()
-                    } else if (uiState.hasUsagePermission) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                    Column {
+                        Text(
+                            text = "¡Buen día!",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.screen_time_today),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // Comentado temporalmente - Promoción Premium
+                    /*
+                    if (!isPremiumUser) {
+                        MomentumButton(
+                            onClick = onUpgradeClick,
+                            style = ButtonStyle.Secondary,
+                            size = ButtonSize.Small,
+                            icon = Icons.Filled.Star
                         ) {
-                            Icon(
-                                Icons.Filled.PhoneAndroid,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Text("Premium")
+                        }
+                    }
+                    */
+                }
+            }
+            
+            // Comentado temporalmente - Promoción Premium para usuarios gratuitos
+            /*
+            if (!isPremiumUser) {
+                item {
+                    PremiumPromotionCard(
+                        onUpgradeClick = onUpgradeClick
+                    )
+                }
+            }
+            */
+
+            item {
+                // Screen time card
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator()
+                        } else if (uiState.hasUsagePermission) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.Filled.PhoneAndroid,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = uiState.totalScreenTime,
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "Tiempo total de pantalla hoy",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        } else {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Filled.Block,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = uiState.totalScreenTime,
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
+                                    text = "Permiso requerido",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "Tiempo total de pantalla hoy",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    text = "Para mostrar estadísticas reales",
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-                    } else {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                Icons.Filled.Block,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Permiso requerido",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "Para mostrar estadísticas reales",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
                     }
                 }
             }
-        }
 
-        item {
+            item {
             // Quote of the day
             uiState.quoteOfTheDay?.let { quote ->
                 Card(
@@ -222,10 +236,42 @@ fun DashboardScreen(
             }
         }
 
-        if (uiState.hasUsagePermission) {
-            if (uiState.topApps.isNotEmpty()) {
-                items(uiState.topApps) { app ->
-                    AppUsageCard(app = app)
+            if (uiState.hasUsagePermission) {
+                if (uiState.topApps.isNotEmpty()) {
+                    items(uiState.topApps) { app ->
+                        AppUsageCard(app = app)
+                    }
+                } else {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    Icons.Filled.HourglassEmpty,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "No hay datos de uso disponibles para hoy",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "Usa algunas aplicaciones y vuelve a revisar",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
                 }
             } else {
                 item {
@@ -237,71 +283,50 @@ fun DashboardScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                Icons.Filled.HourglassEmpty,
+                                Icons.Filled.Security,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(48.dp)
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Se requiere permiso para mostrar estadísticas de uso",
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "No hay datos de uso disponibles para hoy",
+                                text = "Otorga acceso a las estadísticas de uso para ver tus aplicaciones más utilizadas",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
                             )
-                            Text(
-                                text = "Usa algunas aplicaciones y vuelve a revisar",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Filled.Security,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Se requiere permiso para mostrar estadísticas de uso",
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Otorga acceso a las estadísticas de uso para ver tus aplicaciones más utilizadas",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        MomentumButton(
-                            onClick = {
-                                com.momentummm.app.util.PermissionUtils.openUsageStatsSettings(context)
-                            },
-                            style = ButtonStyle.Primary,
-                            size = ButtonSize.Large
-                        ) {
-                            Text("Otorgar permiso")
+                            Spacer(modifier = Modifier.height(16.dp))
+                            MomentumButton(
+                                onClick = {
+                                    com.momentummm.app.util.PermissionUtils.openUsageStatsSettings(context)
+                                },
+                                style = ButtonStyle.Primary,
+                                size = ButtonSize.Large
+                            ) {
+                                Text("Otorgar permiso")
+                            }
                         }
                     }
                 }
             }
         }
+
+        // Gamification Event Toast - NUEVO
+        GamificationEventToast(
+            message = uiState.gamificationEventMessage,
+            xpGained = uiState.gamificationEventXp,
+            coinsGained = uiState.gamificationEventCoins,
+            isLevelUp = uiState.isLevelUpEvent,
+            visible = uiState.showGamificationEvent,
+            onDismiss = { viewModel.dismissGamificationEvent() }
+        )
     }
 }
 

@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class],
-    version = 9,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -96,6 +96,33 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // MIGRATION 9 -> 10: Agregar campos de gamificación a user_settings
+        private val MIGRATION_9_10 = object : androidx.room.migration.Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Agregar campos de gamificación a la tabla user_settings
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN userLevel INTEGER NOT NULL DEFAULT 1")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN currentXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN totalXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN timeCoins INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN currentStreak INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN longestStreak INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN lastActiveDate INTEGER")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN totalFocusMinutes INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN totalSessionsCompleted INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN perfectDaysCount INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        // MIGRATION 10 -> 11: Agregar campos de configuración de gamificación
+        private val MIGRATION_10_11 = object : androidx.room.migration.Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Agregar campos de configuración de gamificación
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN gamificationEnabled INTEGER NOT NULL DEFAULT 1")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN showXpNotifications INTEGER NOT NULL DEFAULT 1")
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN showStreakReminders INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -103,7 +130,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "momentum_database"
                 ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
-                    .addMigrations(MIGRATION_8_9)
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .fallbackToDestructiveMigration() // For now, allow destructive migration
                     .build()
                 INSTANCE = instance

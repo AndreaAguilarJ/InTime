@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,42 +26,77 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.momentummm.app.MainActivity
+import com.momentummm.app.data.manager.BillingManager
+import com.momentummm.app.ui.component.EmergencyUnlockScreen
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.ui.theme.MomentumTheme
+import com.momentummm.app.util.SocialShareUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AppBlockedActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var billingManager: BillingManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val blockedAppName = intent.getStringExtra(EXTRA_APP_NAME) ?: "Aplicación"
         val dailyLimit = intent.getIntExtra(EXTRA_DAILY_LIMIT, 0)
+        val currentStreakDays = intent.getIntExtra(EXTRA_STREAK_DAYS, 0)
 
         setContent {
             MomentumTheme {
-                AppBlockedScreen(
-                    blockedAppName = blockedAppName,
-                    dailyLimit = dailyLimit,
-                    onOpenMomentum = {
-                        // Abrir la MainActivity
-                        val launchIntent = Intent(this, MainActivity::class.java).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                var showEmergencyUnlock by remember { mutableStateOf(false) }
+
+                if (showEmergencyUnlock) {
+                    EmergencyUnlockScreen(
+                        blockedAppName = blockedAppName,
+                        currentStreakDays = currentStreakDays,
+                        billingManager = billingManager,
+                        onUnlockWithPayment = {
+                            // Procesar pago y desbloquear temporalmente
+                            billingManager.launchEmergencyUnlockPurchase(this@AppBlockedActivity)
+                            finish()
+                        },
+                        onUnlockWithShame = {
+                            // El share ya se ejecutó, simplemente cerrar
+                            finish()
+                        },
+                        onCancel = {
+                            showEmergencyUnlock = false
                         }
-                        startActivity(launchIntent)
-                        finish()
-                    },
-                    onDismiss = {
-                        finish()
-                    }
-                )
+                    )
+                } else {
+                    AppBlockedScreen(
+                        blockedAppName = blockedAppName,
+                        dailyLimit = dailyLimit,
+                        currentStreakDays = currentStreakDays,
+                        onOpenMomentum = {
+                            // Abrir la MainActivity
+                            val launchIntent = Intent(this, MainActivity::class.java).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            }
+                            startActivity(launchIntent)
+                            finish()
+                        },
+                        onEmergencyUnlock = {
+                            showEmergencyUnlock = true
+                        },
+                        onDismiss = {
+                            finish()
+                        }
+                    )
+                }
             }
         }
     }
@@ -78,11 +114,13 @@ class AppBlockedActivity : ComponentActivity() {
     companion object {
         private const val EXTRA_APP_NAME = "extra_app_name"
         private const val EXTRA_DAILY_LIMIT = "extra_daily_limit"
+        private const val EXTRA_STREAK_DAYS = "extra_streak_days"
 
-        fun start(context: Context, appName: String, dailyLimit: Int) {
+        fun start(context: Context, appName: String, dailyLimit: Int, streakDays: Int = 0) {
             val intent = Intent(context, AppBlockedActivity::class.java).apply {
                 putExtra(EXTRA_APP_NAME, appName)
                 putExtra(EXTRA_DAILY_LIMIT, dailyLimit)
+                putExtra(EXTRA_STREAK_DAYS, streakDays)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or
                         Intent.FLAG_ACTIVITY_NO_HISTORY)
@@ -96,7 +134,9 @@ class AppBlockedActivity : ComponentActivity() {
 private fun AppBlockedScreen(
     blockedAppName: String,
     dailyLimit: Int,
+    currentStreakDays: Int = 0,
     onOpenMomentum: () -> Unit,
+    onEmergencyUnlock: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var countdown by remember { mutableStateOf(5) }
@@ -464,7 +504,7 @@ private fun AppBlockedScreen(
                             contentColor = Color.White,
                             disabledContentColor = Color.White.copy(alpha = 0.4f)
                         ),
-                        border = androidx.compose.foundation.BorderStroke(
+                        border = BorderStroke(
                             1.5.dp,
                             if (countdown == 0) Color.White.copy(alpha = 0.5f)
                             else Color.White.copy(alpha = 0.2f)
@@ -475,6 +515,34 @@ private fun AppBlockedScreen(
                             text = if (countdown > 0) "Cerrar en $countdown..." else "Cerrar",
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
+                    }
+
+                    // Botón de Desbloqueo de Emergencia (para viralidad)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    TextButton(
+                        onClick = onEmergencyUnlock,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color(0xFFFF6666)
+                        )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.LockOpen,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "🚨 Desbloqueo de emergencia",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }

@@ -14,6 +14,20 @@ data class AppwriteUserSettings(
     val allowedApps: List<String> = emptyList(),
     val dailyQuotesEnabled: Boolean = true,
     val onboardingStep: Int = 0,
+    // Gamification fields
+    val userLevel: Int = 1,
+    val currentXp: Int = 0,
+    val totalXp: Int = 0,
+    val timeCoins: Int = 0,
+    val currentStreak: Int = 0,
+    val longestStreak: Int = 0,
+    val lastActiveDate: String = "",
+    val totalFocusMinutes: Int = 0,
+    val totalSessionsCompleted: Int = 0,
+    val perfectDaysCount: Int = 0,
+    val gamificationEnabled: Boolean = true,
+    val showXpNotifications: Boolean = true,
+    val showStreakReminders: Boolean = true,
     val createdAt: String = "",
     val updatedAt: String = ""
 )

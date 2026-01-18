@@ -74,7 +74,7 @@ A continuación se detallan todas las colecciones utilizadas actualmente por la 
 ---
 
 ### 4) user_settings
-- Propósito: preferencias del usuario, estado de onboarding y flags de auto-backup.
+- Propósito: preferencias del usuario, estado de onboarding, flags de auto-backup y datos de gamificación.
 - Atributos
   | Nombre               | Tipo              | Tamaño máx | Requerido | Default    | Notas |
   |----------------------|-------------------|------------|-----------|------------|-------|
@@ -93,13 +93,26 @@ A continuación se detallan todas las colecciones utilizadas actualmente por la 
   | autoBackupEnabled    | boolean           | —          | No        | false      | Usado por auto-backup.
   | autoBackupInterval   | integer           | —          | No        | 24         | Horas.
   | lastBackupCheck      | string (ISO-8601) | 30         | No        | —          | Última verificación.
+  | **userLevel**        | integer           | —          | No        | 1          | Nivel actual del usuario (gamificación).
+  | **currentXp**        | integer           | —          | No        | 0          | XP actual en el nivel.
+  | **totalXp**          | integer           | —          | No        | 0          | XP total acumulado.
+  | **timeCoins**        | integer           | —          | No        | 0          | Monedas de tiempo ganadas.
+  | **currentStreak**    | integer           | —          | No        | 0          | Días consecutivos activo.
+  | **longestStreak**    | integer           | —          | No        | 0          | Racha más larga histórica.
+  | **lastActiveDate**   | string (ISO-8601) | 30         | No        | —          | Última fecha activa.
+  | **totalFocusMinutes**| integer           | —          | No        | 0          | Minutos totales de foco.
+  | **totalSessionsCompleted** | integer     | —          | No        | 0          | Sesiones de foco completadas.
+  | **perfectDaysCount** | integer           | —          | No        | 0          | Días sin romper límites.
+  | **gamificationEnabled** | boolean        | —          | No        | true       | Habilitar sistema de gamificación.
+  | **showXpNotifications** | boolean        | —          | No        | true       | Mostrar notificaciones de XP.
+  | **showStreakReminders** | boolean        | —          | No        | true       | Recordatorios de racha.
 - Consultas/usos: `equal("userId", ...)`.
 - Índices:
   - key en ["userId"] (necesario).
   - unique en ["userId"] (recomendado para 1 documento por usuario).
 - Permisos sugeridos (ACL):
   - create/read/update/delete: `user:$id`.
-- Nota: Estandarizar el guardado por atributos (evitar almacenar todo como JSON string) para aprovechar índices/consultas.
+- Nota: Los campos de gamificación (marcados en **negrita**) se sincronizan automáticamente cuando el usuario tiene conexión. Estandarizar el guardado por atributos (evitar almacenar todo como JSON string) para aprovechar índices/consultas.
 
 ---
 

@@ -433,6 +433,12 @@ fun SettingsScreen(
                     initiallyExpanded = true
                 ) {
                     PreferenceItem(
+                        title = "Gamificación",
+                        subtitle = "Niveles, XP, rachas y TimeCoins",
+                        icon = Icons.Default.EmojiEvents,
+                        onClick = { onNavigateToScreen("gamification_settings") }
+                    )
+                    PreferenceItem(
                         title = "Notificaciones",
                         subtitle = "Configurar alertas y recordatorios",
                         icon = Icons.Default.Notifications,

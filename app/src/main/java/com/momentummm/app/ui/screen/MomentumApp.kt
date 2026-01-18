@@ -355,6 +355,7 @@ private fun MainAppContent(
                             application.userRepository,
                             application.usageStatsRepository,
                             application.quotesRepository,
+                            application.gamificationManager,
                             context
                         )
                     )
@@ -442,6 +443,7 @@ private fun MainAppContent(
                                 "app_whitelist" -> navController.navigate("app_whitelist")
                                 
                                 // Personalización y Datos
+                                "gamification_settings" -> navController.navigate("gamification_settings")
                                 "notification_settings" -> navController.navigate("notification_settings")
                                 "mi_vida_en_semanas" -> navController.navigate("mi_vida_en_semanas")
                                 "theme_settings" -> navController.navigate("theme_settings")
@@ -575,6 +577,12 @@ private fun MainAppContent(
                 composable("notification_settings") {
                     NotificationSettingsScreen(
                         onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable("gamification_settings") {
+                    com.momentummm.app.ui.screen.settings.GamificationSettingsScreen(
+                        onBack = { navController.popBackStack() }
                     )
                 }
 
