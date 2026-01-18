@@ -1,5 +1,6 @@
 package com.momentummm.app.ui.screen.applimits
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -231,6 +232,17 @@ private fun AddToWhitelistDialog(
     var selectedApp by remember { mutableStateOf<AppUsageInfo?>(null) }
     var reason by remember { mutableStateOf("Emergencias") }
     var showAppPicker by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredApps = remember(availableApps, searchQuery) {
+        if (searchQuery.isBlank()) {
+            availableApps
+        } else {
+            availableApps.filter {
+                it.appName.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
 
     val predefinedReasons = listOf(
         "Emergencias",
@@ -307,19 +319,54 @@ private fun AddToWhitelistDialog(
             onDismissRequest = { showAppPicker = false },
             title = { Text("Seleccionar Aplicación") },
             text = {
-                LazyColumn {
-                    items(availableApps) { app ->
-                        TextButton(
-                            onClick = {
-                                selectedApp = app
-                                showAppPicker = false
-                            },
-                            modifier = Modifier.fillMaxWidth()
+                Column(modifier = Modifier.heightIn(max = 400.dp)) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text("Buscar app") },
+                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    if (filteredApps.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = app.appName,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Filled.SearchOff,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "No se encontraron apps",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(modifier = Modifier.animateContentSize()) {
+                            items(filteredApps) { app ->
+                                TextButton(
+                                    onClick = {
+                                        selectedApp = app
+                                        showAppPicker = false
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = app.appName,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
                         }
                     }
                 }

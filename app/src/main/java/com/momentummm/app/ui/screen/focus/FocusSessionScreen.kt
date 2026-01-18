@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,7 +28,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +43,7 @@ import com.momentummm.app.data.appwrite.models.AppwriteFocusSession
 import com.momentummm.app.data.appwrite.models.FocusSessionStats
 import com.momentummm.app.service.FocusTimerStatus
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -885,19 +890,110 @@ private fun ActiveSessionCard(
                 }
 
                 if (sessionState != FocusTimerStatus.COMPLETED) {
-                    MomentumButton(
-                        onClick = onStop,
-                        style = ButtonStyle.Outline,
-                        icon = Icons.Filled.Stop,
+                    LongPressStopButton(
+                        onStop = onStop,
                         modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Detener")
-                    }
+                    )
                 }
             }
         }
     }
 }
+
+@Composable
+private fun LongPressStopButton(
+    onStop: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val haptics = LocalHapticFeedback.current
+    var isPressed by remember { mutableStateOf(false) }
+    var progress by remember { mutableStateOf(0f) }
+    val scope = rememberCoroutineScope()
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = tween(100),
+        label = "button_scale"
+    )
+    
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            val duration = 1000L // 1 segundo para completar
+            val steps = 50
+            val stepDuration = duration / steps
+            
+            repeat(steps) { step ->
+                delay(stepDuration)
+                progress = (step + 1).toFloat() / steps
+                
+                if (progress >= 1f) {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onStop()
+                    isPressed = false
+                    progress = 0f
+                }
+            }
+        } else {
+            progress = 0f
+        }
+    }
+    
+    Surface(
+        modifier = modifier
+            .scale(scale)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        tryAwaitRelease()
+                        isPressed = false
+                    }
+                )
+            },
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.errorContainer,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 2.dp,
+            color = MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+        )
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.height(48.dp)
+        ) {
+            // Progress background
+            Canvas(modifier = Modifier.matchParentSize()) {
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFFEF5350),
+                            Color(0xFFD32F2F)
+                        )
+                    ),
+                    size = Size(size.width * progress, size.height)
+                )
+            }
+            
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.Stop,
+                    contentDescription = null,
+                    tint = if (progress > 0.5f) Color.White else MaterialTheme.colorScheme.onErrorContainer
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (isPressed) "Manteniendo..." else "Mantener para detener",
+                    color = if (progress > 0.5f) Color.White else MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
 
 @Composable
 private fun SessionCard(
@@ -906,10 +1002,15 @@ private fun SessionCard(
     onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
+    val haptics = LocalHapticFeedback.current
+    
     MomentumCard(
         modifier = modifier
             .animateContentSize(),
-        onClick = onSelect
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onSelect()
+        }
     ) {
         Row(
             modifier = Modifier

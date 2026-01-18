@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -232,12 +234,44 @@ fun GoalsAndChallengesScreen(
 
                 if (uiState.activeGoals.isEmpty()) {
                     item {
-                        EmptyStateCard(
-                            title = "No hay metas activas",
-                            description = "Crea tu primera meta para comenzar a mejorar tus hábitos digitales",
-                            actionText = "Crear Meta",
-                            onActionClick = { viewModel.showCreateGoalDialog() }
-                        )
+                        MomentumCard(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(48.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Flag,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                                )
+                                Text(
+                                    text = "Sin metas por ahora",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "Define tu primer objetivo para empezar a avanzar",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                MomentumButton(
+                                    onClick = { viewModel.showCreateGoalDialog() },
+                                    style = ButtonStyle.Primary,
+                                    icon = Icons.Filled.Add
+                                ) {
+                                    Text("Crear Mi Primera Meta")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -289,12 +323,44 @@ fun GoalsAndChallengesScreen(
 
                 if (uiState.activeChallenges.isEmpty() && uiState.availableChallenges.isEmpty()) {
                     item {
-                        EmptyStateCard(
-                            title = "No hay desafíos disponibles",
-                            description = "Los desafíos aparecerán aquí cuando estén disponibles",
-                            actionText = "Actualizar",
-                            onActionClick = { viewModel.refreshData() }
-                        )
+                        MomentumCard(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(48.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.EmojiEvents,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)
+                                )
+                                Text(
+                                    text = "Sin desafíos disponibles",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "Los desafíos gamificados aparecerán aquí próximamente",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                MomentumButton(
+                                    onClick = { viewModel.refreshData() },
+                                    style = ButtonStyle.Outline,
+                                    icon = Icons.Filled.Refresh
+                                ) {
+                                    Text("Actualizar")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -530,6 +596,7 @@ private fun GoalCard(
     onUpdateProgress: (Int) -> Unit,
     onDeactivate: () -> Unit
 ) {
+    val haptics = LocalHapticFeedback.current
     val progress = if (goal.targetValue > 0) {
         goal.currentValue.toFloat() / goal.targetValue.toFloat()
     } else 0f
@@ -539,6 +606,13 @@ private fun GoalCard(
         progress >= 0.8f -> Color(0xFF4CAF50)
         progress >= 0.5f -> Color(0xFFFF9800)
         else -> Color(0xFFF44336)
+    }
+    
+    // Vibrar cuando se completa una meta
+    LaunchedEffect(progress) {
+        if (progress >= 1.0f) {
+            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
     }
     
     MomentumCard(

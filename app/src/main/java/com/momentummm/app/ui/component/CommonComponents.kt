@@ -6,9 +6,34 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
+
+/**
+ * Función de extensión para realizar feedback táctil ligero
+ */
+fun HapticFeedback.performLightFeedback() {
+    this.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+}
+
+/**
+ * Función de extensión para realizar feedback táctil de confirmación
+ */
+fun HapticFeedback.performSuccessFeedback() {
+    this.performHapticFeedback(HapticFeedbackType.LongPress)
+}
+
+/**
+ * Composable que proporciona acceso fácil al feedback háptico
+ */
+@Composable
+fun rememberHapticFeedback(): HapticFeedback {
+    return LocalHapticFeedback.current
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

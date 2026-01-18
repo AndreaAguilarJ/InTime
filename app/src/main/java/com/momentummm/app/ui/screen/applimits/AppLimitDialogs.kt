@@ -1,5 +1,6 @@
 package com.momentummm.app.ui.screen.applimits
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +36,7 @@ fun AddAppLimitDialog(
     var selectedApp by remember { mutableStateOf<AppUsageInfo?>(null) }
     var limitMinutes by remember { mutableStateOf("60") }
     var searchQuery by remember { mutableStateOf("") }
+    val isLoading = remember(availableApps) { availableApps.isEmpty() }
 
     val filteredApps = remember(availableApps, searchQuery) {
         if (searchQuery.isBlank()) {
@@ -101,18 +103,54 @@ fun AddAppLimitDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Apps list
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(filteredApps) { app ->
-                        AppSelectionItem(
-                            app = app,
-                            isSelected = selectedApp?.packageName == app.packageName,
-                            onSelect = { selectedApp = app }
-                        )
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .animateContentSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredApps) { app ->
+                            AppSelectionItem(
+                                app = app,
+                                isSelected = selectedApp?.packageName == app.packageName,
+                                onSelect = { selectedApp = app }
+                            )
+                        }
+                        
+                        if (filteredApps.isEmpty() && searchQuery.isNotEmpty()) {
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        Icons.Filled.SearchOff,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(48.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        "No se encontraron apps",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
