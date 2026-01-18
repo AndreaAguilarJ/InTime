@@ -82,8 +82,15 @@ fun AccountSettingsScreen(
                             val updated = existing.copy(birthDate = iso)
                             application.appwriteUserRepository.updateUserSettings(userId, updated)
 
-                            // Also save locally for widget
+                            // Save locally for widget
                             UserPreferencesRepository.setDobIso(context, iso)
+
+                            // Save in local Room database
+                            val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                            val date = dateFormatter.parse(iso)
+                            if (date != null) {
+                                application.userRepository.setBirthDate(date)
+                            }
 
                             // Update widget - trigger update
                             try {

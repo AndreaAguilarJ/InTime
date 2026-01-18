@@ -459,10 +459,22 @@ private fun MainAppContent(
                             val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
                             val iso = birthDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
                             coroutineScope.launch {
+                                // Guardar en Appwrite
                                 val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = "")
                                 val updated = existing.copy(birthDate = iso)
                                 application.appwriteUserRepository.updateUserSettings(userId, updated)
+                                
+                                // Guardar en preferencias del usuario
                                 UserPreferencesRepository.setDobIso(context, iso)
+                                
+                                // Guardar en base de datos local de Room
+                                val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                val date = dateFormatter.parse(iso)
+                                if (date != null) {
+                                    application.userRepository.setBirthDate(date)
+                                }
+                                
+                                // Actualizar widgets
                                 LifeWeeksWidget().updateAll(context)
                             }
                         },
@@ -525,6 +537,12 @@ private fun MainAppContent(
                 composable("notification_settings") {
                     NotificationSettingsScreen(
                         onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable("about") {
+                    com.momentummm.app.ui.screen.settings.AboutScreen(
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
 

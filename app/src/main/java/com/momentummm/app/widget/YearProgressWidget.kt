@@ -38,7 +38,7 @@ class YearProgressWidget : GlanceAppWidget() {
         val data = calculateYearProgress()
 
         provideContent {
-            YearProgressContent(context, data)
+            YearProgressContent(data)
         }
     }
 
@@ -66,13 +66,16 @@ class YearProgressWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun YearProgressContent(context: Context, data: YearProgressData) {
+    private fun YearProgressContent(data: YearProgressData) {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(Color.Black)
                 .padding(16.dp)
-                .clickable(actionStartActivity(Intent(context, MainActivity::class.java))),
+                .clickable(actionStartActivity(Intent().apply {
+                    setClassName("com.momentummm.app", "com.momentummm.app.MainActivity")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalAlignment = Alignment.CenterVertically
         ) {

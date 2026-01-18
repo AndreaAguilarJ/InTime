@@ -36,13 +36,12 @@ class LifeWeeksWidget : GlanceAppWidget() {
         }
 
         provideContent {
-            LifeWeeksWidgetContent(context, lifeWeeksData)
+            LifeWeeksWidgetContent(lifeWeeksData)
         }
     }
 
     @Composable
     private fun LifeWeeksWidgetContent(
-        context: Context,
         lifeWeeksData: LifeWeeksCalculator.LifeWeeksData?
     ) {
         Column(
@@ -50,7 +49,10 @@ class LifeWeeksWidget : GlanceAppWidget() {
                 .fillMaxSize()
                 .background(Color.Black)
                 .padding(16.dp)
-                .clickable(actionStartActivity(Intent(context, MainActivity::class.java))),
+                .clickable(actionStartActivity(Intent().apply {
+                    setClassName("com.momentummm.app", "com.momentummm.app.MainActivity")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })),
             verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

@@ -3,6 +3,8 @@
 
 package com.momentummm.app.ui.screen.tutorial
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -20,6 +23,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -123,40 +128,104 @@ fun AppTutorialScreen(
     }
 
     val pagerState = rememberPagerState(pageCount = { steps.size })
+    
+    // Animación para el progreso
+    val animatedProgress by animateFloatAsState(
+        targetValue = (pagerState.currentPage + 1).toFloat() / steps.size,
+        animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
+        label = "progress"
+    )
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+                    )
+                )
+            )
+    ) {
         TopAppBar(
-            title = { Text("Tutorial de Uso") },
+            title = { 
+                Text(
+                    "Tutorial de Uso",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                ) 
+            },
             actions = {
-                TextButton(onClick = onCompleted) { Text("Omitir") }
-            }
+                TextButton(
+                    onClick = onCompleted,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) { 
+                    Text(
+                        "Omitir",
+                        style = MaterialTheme.typography.labelLarge
+                    ) 
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         )
 
-        LinearProgressIndicator(
-            progress = (pagerState.currentPage + 1).toFloat() / steps.size,
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primary
-        )
+        // Indicador de progreso mejorado con animación
+        Column {
+            LinearProgressIndicator(
+                progress = animatedProgress,
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+            
+            // Texto de progreso
+            Text(
+                text = "Paso ${pagerState.currentPage + 1} de ${steps.size}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
 
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            pageSpacing = 16.dp
         ) { page ->
             val step = steps[page]
-            if (step.content != null) {
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) { step.content.invoke() }
-            } else {
-                TutorialStepContent(
-                    step = com.momentummm.app.ui.screen.tutorial.TutorialStep(
-                        title = step.title,
-                        description = step.description,
-                        icon = step.icon,
-                        tips = step.tips
-                    ),
-                    modifier = Modifier.fillMaxSize()
-                )
+            
+            // Animación de entrada para cada página
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(animationSpec = tween(400)) + 
+                        slideInHorizontally(animationSpec = tween(400)) { it / 3 },
+                exit = fadeOut(animationSpec = tween(200))
+            ) {
+                if (step.content != null) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp)
+                    ) { step.content.invoke() }
+                } else {
+                    TutorialStepContent(
+                        step = com.momentummm.app.ui.screen.tutorial.TutorialStep(
+                            title = step.title,
+                            description = step.description,
+                            icon = step.icon,
+                            tips = step.tips
+                        ),
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
 
@@ -180,18 +249,42 @@ private fun TutorialStepContent(
     step: com.momentummm.app.ui.screen.tutorial.TutorialStep,
     modifier: Modifier = Modifier
 ) {
+    // Animación de escala para el icono
+    var iconVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        iconVisible = true
+    }
+    
+    val iconScale by animateFloatAsState(
+        targetValue = if (iconVisible) 1f else 0.3f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "icon_scale"
+    )
+    
     LazyColumn(
-        modifier = modifier.padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
-            // Icon
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        
+        item {
+            // Icon con animación
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Card(
-                    modifier = Modifier.size(80.dp),
+                    modifier = Modifier
+                        .size(96.dp)
+                        .scale(iconScale),
+                    shape = RoundedCornerShape(24.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
@@ -203,8 +296,8 @@ private fun TutorialStepContent(
                         Icon(
                             imageVector = step.icon,
                             contentDescription = null,
-                            modifier = Modifier.size(40.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -212,62 +305,94 @@ private fun TutorialStepContent(
         }
 
         item {
-            // Title
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+        
+        item {
+            // Title con mejor espaciado
             Text(
                 text = step.title,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             )
         }
 
         item {
-            // Description
+            // Description con mejor legibilidad
             Text(
                 text = step.description,
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth()
+                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3f,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
             )
         }
 
         if (step.tips.isNotEmpty()) {
-            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item { Spacer(modifier = Modifier.height(12.dp)) }
             item {
-                Text(
-                    text = "Consejos:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lightbulb,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Consejos útiles",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
+            item { Spacer(modifier = Modifier.height(4.dp)) }
             items(step.tips) { tip ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
                     )
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Lightbulb,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .align(Alignment.CenterVertically)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = tip,
                             style = MaterialTheme.typography.bodyMedium,
+                            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4f,
                             modifier = Modifier.weight(1f)
                         )
                     }
                 }
             }
+        }
+        
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -281,55 +406,109 @@ private fun TutorialNavigationBar(
     isCurrentStepConfirmable: Boolean
 ) {
     val coroutineScope = rememberCoroutineScope()
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        tonalElevation = 3.dp,
+        shadowElevation = 8.dp
     ) {
-        if (pagerState.currentPage > 0) {
-            OutlinedButton(
-                onClick = {
-                    coroutineScope.launch {
-                        animateToPage(pagerState, pagerState.currentPage - 1)
-                    }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (pagerState.currentPage > 0) {
+                OutlinedButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            animateToPage(pagerState, pagerState.currentPage - 1)
+                        }
+                    },
+                    modifier = Modifier.height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        width = 1.5.dp
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBack, 
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Anterior",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
-            ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Anterior")
+            } else {
+                Spacer(modifier = Modifier.width(80.dp))
             }
-        } else {
-            Spacer(modifier = Modifier.width(1.dp))
-        }
 
-        PageIndicators(
-            total = totalSteps,
-            current = pagerState.currentPage
-        )
+            PageIndicators(
+                total = totalSteps,
+                current = pagerState.currentPage
+            )
 
-        if (pagerState.currentPage < totalSteps - 1) {
-            Button(
-                onClick = {
-                    coroutineScope.launch {
-                        animateToPage(pagerState, pagerState.currentPage + 1)
-                    }
-                },
-                enabled = isCurrentStepConfirmable
-            ) {
-                Text("Siguiente")
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Default.ArrowForward, contentDescription = null)
-            }
-        } else {
-            Button(
-                onClick = onCompleted,
-                enabled = isCurrentStepConfirmable
-            ) {
-                Text("¡Empezar!")
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Default.Check, contentDescription = null)
+            if (pagerState.currentPage < totalSteps - 1) {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            animateToPage(pagerState, pagerState.currentPage + 1)
+                        }
+                    },
+                    enabled = isCurrentStepConfirmable,
+                    modifier = Modifier.height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 4.dp,
+                        disabledElevation = 0.dp
+                    )
+                ) {
+                    Text(
+                        "Siguiente",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.ArrowForward, 
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            } else {
+                Button(
+                    onClick = onCompleted,
+                    enabled = isCurrentStepConfirmable,
+                    modifier = Modifier.height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 3.dp,
+                        pressedElevation = 6.dp,
+                        disabledElevation = 0.dp
+                    )
+                ) {
+                    Text(
+                        "¡Empezar!",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.Check, 
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }
@@ -339,20 +518,43 @@ private fun TutorialNavigationBar(
 @Composable
 private fun PageIndicators(total: Int, current: Int) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(total) { index ->
+            val isSelected = index == current
+            
+            // Animación de tamaño
+            val width by animateDpAsState(
+                targetValue = if (isSelected) 24.dp else 8.dp,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                ),
+                label = "indicator_width"
+            )
+            
+            val height by animateDpAsState(
+                targetValue = if (isSelected) 10.dp else 8.dp,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                ),
+                label = "indicator_height"
+            )
+            
             Box(
                 modifier = Modifier
-                    .size(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .run {
-                        if (index == current) {
-                            this.background(MaterialTheme.colorScheme.primary)
+                    .width(width)
+                    .height(height)
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(
+                        if (isSelected) {
+                            MaterialTheme.colorScheme.primary
                         } else {
-                            this.background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                         }
-                    }
+                    )
             )
         }
     }
@@ -370,26 +572,183 @@ private fun ColorCustomizationStepContent(
         "#FF6B6B" to "Rojo",
         "#4ECDC4" to "Turquesa",
         "#45B7D1" to "Azul",
-        "#96CEB4" to "Verde"
+        "#96CEB4" to "Verde",
+        "#FFA07A" to "Coral",
+        "#DDA0DD" to "Morado"
     )
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = "🎨", style = MaterialTheme.typography.displayMedium)
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "Semanas vividas:", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            colorOptions.forEach { (color, name) ->
-                FilterChip(selected = livedColor == color, onClick = { onLivedColorChanged(color) }, label = { Text(name) })
+    
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        item {
+            Text(
+                text = "🎨", 
+                style = MaterialTheme.typography.displayLarge
+            )
+        }
+        
+        item {
+            Text(
+                text = "Personaliza tu experiencia",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+        
+        item { Spacer(modifier = Modifier.height(8.dp)) }
+        
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Circle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Semanas vividas",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        colorOptions.chunked(3).first().forEach { (color, name) ->
+                            FilterChip(
+                                selected = livedColor == color,
+                                onClick = { onLivedColorChanged(color) },
+                                label = { 
+                                    Text(
+                                        name,
+                                        style = MaterialTheme.typography.labelMedium
+                                    ) 
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        colorOptions.chunked(3).last().forEach { (color, name) ->
+                            FilterChip(
+                                selected = livedColor == color,
+                                onClick = { onLivedColorChanged(color) },
+                                label = { 
+                                    Text(
+                                        name,
+                                        style = MaterialTheme.typography.labelMedium
+                                    ) 
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Semanas futuras:", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            colorOptions.forEach { (color, name) ->
-                FilterChip(selected = futureColor == color, onClick = { onFutureColorChanged(color) }, label = { Text(name) })
+        
+        item { Spacer(modifier = Modifier.height(4.dp)) }
+        
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Circle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.outline
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Semanas futuras",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        colorOptions.chunked(3).first().forEach { (color, name) ->
+                            FilterChip(
+                                selected = futureColor == color,
+                                onClick = { onFutureColorChanged(color) },
+                                label = { 
+                                    Text(
+                                        name,
+                                        style = MaterialTheme.typography.labelMedium
+                                    ) 
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        colorOptions.chunked(3).last().forEach { (color, name) ->
+                            FilterChip(
+                                selected = futureColor == color,
+                                onClick = { onFutureColorChanged(color) },
+                                label = { 
+                                    Text(
+                                        name,
+                                        style = MaterialTheme.typography.labelMedium
+                                    ) 
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
+        
+        item { Spacer(modifier = Modifier.height(8.dp)) }
     }
 }
 
@@ -399,24 +758,162 @@ private fun BirthDateStepContent(
     onDateSelected: (LocalDate) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = "📅", style = MaterialTheme.typography.displayMedium)
-        Spacer(modifier = Modifier.height(24.dp))
-        OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
-            Text(text = selectedDate?.toString() ?: "Seleccionar fecha de nacimiento")
-        }
-        if (selectedDate != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            val age = LocalDate.now().year - selectedDate.year
-            val weeksLived = age * 52
+    
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        item {
             Text(
-                text = "Tienes aproximadamente $age años\nHas vivido ~$weeksLived semanas",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.primary
+                text = "📅", 
+                style = MaterialTheme.typography.displayLarge
             )
         }
+        
+        item {
+            Text(
+                text = "Tu fecha de nacimiento",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+        
+        item {
+            Text(
+                text = "Esta información nos ayuda a calcular tu progreso de vida",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        
+        item { Spacer(modifier = Modifier.height(8.dp)) }
+        
+        item {
+            Button(
+                onClick = { showDatePicker = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (selectedDate != null) 
+                        MaterialTheme.colorScheme.primaryContainer 
+                    else 
+                        MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = selectedDate?.let {
+                        val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        it.format(formatter)
+                    } ?: "Seleccionar fecha",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+        
+        if (selectedDate != null) {
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        val age = LocalDate.now().year - selectedDate.year
+                        val weeksLived = age * 52
+                        val estimatedWeeksTotal = 90 * 52
+                        val percentageLived = (weeksLived.toFloat() / estimatedWeeksTotal * 100).toInt()
+                        
+                        Text(
+                            text = "📊 Tu progreso",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        
+                        Divider(
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
+                        )
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "$age",
+                                    style = MaterialTheme.typography.displaySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "años",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                            
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "~$weeksLived",
+                                    style = MaterialTheme.typography.displaySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "semanas vividas",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                        
+                        LinearProgressIndicator(
+                            progress = percentageLived / 100f,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp)),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        
+                        Text(
+                            text = "$percentageLived% de una vida estimada de 90 años",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+        }
     }
+    
     if (showDatePicker) {
         com.momentummm.app.ui.component.SimpleDatePicker(
             selectedDate = selectedDate,

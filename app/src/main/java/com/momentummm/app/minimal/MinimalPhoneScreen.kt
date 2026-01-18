@@ -24,7 +24,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.util.LifeWeeksCalculator
 import kotlinx.coroutines.Dispatchers
@@ -145,81 +147,97 @@ private fun MinimalLauncherContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = "Momentum Minimal",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        TextButton(onClick = { showExitConfirm = true }) {
-            Icon(Icons.Default.Close, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Salir del modo mínimo")
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = getCurrentDate(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            TextButton(
+                onClick = { showExitConfirm = true },
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Salir",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
         
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         
         // Reloj con barra de progreso circular de semanas de vida
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(240.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
         ) {
-            // Barra de progreso circular de semanas de vida
-            lifeWeeksData?.let { data ->
-                CircularLifeWeeksProgress(
-                    progressPercentage = data.progressPercentage,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            // Reloj en el centro
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(280.dp)
             ) {
-                // Hora actual
-                var currentTime by remember { mutableStateOf(getCurrentTime()) }
-
-                LaunchedEffect(Unit) {
-                    while (true) {
-                        currentTime = getCurrentTime()
-                        kotlinx.coroutines.delay(1000) // Actualizar cada segundo
-                    }
+                // Barra de progreso circular de semanas de vida
+                lifeWeeksData?.let { data ->
+                    CircularLifeWeeksProgress(
+                        progressPercentage = data.progressPercentage,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
 
-                Text(
-                    text = currentTime,
-                    style = MaterialTheme.typography.displayLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+                // Reloj en el centro
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Hora actual
+                    var currentTime by remember { mutableStateOf(getCurrentTime()) }
 
-                lifeWeeksData?.let { data ->
-                    Spacer(modifier = Modifier.height(8.dp))
+                    LaunchedEffect(Unit) {
+                        while (true) {
+                            currentTime = getCurrentTime()
+                            kotlinx.coroutines.delay(1000)
+                        }
+                    }
+
                     Text(
-                        text = "${data.progressPercentage.toInt()}% vivido",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = currentTime,
+                        style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
+
+                    lifeWeeksData?.let { data ->
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${data.progressPercentage.toInt()}% vivido",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
         // Essential apps grid (4 apps + 1 custom slot)
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
             // Primera fila: Teléfono y Mensajes
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 EssentialAppCard(
                     app = essentialApps[0],
@@ -234,7 +252,7 @@ private fun MinimalLauncherContent(
             // Segunda fila: Contactos y Configuración
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 EssentialAppCard(
                     app = essentialApps[2],
@@ -256,25 +274,30 @@ private fun MinimalLauncherContent(
                         appInfo = customAppInfo,
                         onClick = { minimalPhoneManager.openCustomApp() },
                         onLongClick = { showAppSelector = true },
-                        modifier = Modifier.width(160.dp)
+                        modifier = Modifier.widthIn(min = 160.dp, max = 180.dp)
                     )
                 } else {
                     AddCustomAppCard(
                         onClick = { showAppSelector = true },
-                        modifier = Modifier.width(160.dp)
+                        modifier = Modifier.widthIn(min = 160.dp, max = 180.dp)
                     )
                 }
             }
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
-        TextButton(
-            onClick = onAppListClick
+        OutlinedButton(
+            onClick = onAppListClick,
+            modifier = Modifier.fillMaxWidth(0.8f)
         ) {
-            Text("Todas las apps", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Ver todas las apps",
+                style = MaterialTheme.typography.titleMedium
+            )
         }
         
+        Spacer(modifier = Modifier.height(8.dp))
     }
 
     if (showAppSelector) {
@@ -441,26 +464,33 @@ private fun EssentialAppCard(
 ) {
     Card(
         onClick = app.onClick,
-        modifier = modifier.aspectRatio(1f)
+        modifier = modifier
+            .aspectRatio(1f)
+            .heightIn(min = 100.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 8.dp
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = app.icon,
                 contentDescription = app.name,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(40.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = app.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -571,28 +601,43 @@ private fun CustomAppCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.aspectRatio(1f)
+        modifier = modifier
+            .aspectRatio(1f)
+            .heightIn(min = 100.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 8.dp
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "📱",
-                style = MaterialTheme.typography.displaySmall
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = appInfo.appName,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                maxLines = 2
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = onLongClick) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "📱",
+                    style = MaterialTheme.typography.displaySmall
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = appInfo.appName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center
+                )
+            }
+            TextButton(
+                onClick = onLongClick,
+                contentPadding = PaddingValues(4.dp)
+            ) {
                 Text(
                     text = "Cambiar",
                     style = MaterialTheme.typography.labelSmall
@@ -610,29 +655,39 @@ private fun AddCustomAppCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.aspectRatio(1f),
+        modifier = modifier
+            .aspectRatio(1f)
+            .heightIn(min = 100.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        border = ButtonDefaults.outlinedButtonBorder.copy(
+            width = 2.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+            )
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Agregar app",
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(36.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Agregar app",
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -781,5 +836,10 @@ private fun AppSelectorDialog(
 
 private fun getCurrentTime(): String {
     return java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+        .format(java.util.Date())
+}
+
+private fun getCurrentDate(): String {
+    return java.text.SimpleDateFormat("EEE, d MMM", java.util.Locale("es", "ES"))
         .format(java.util.Date())
 }

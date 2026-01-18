@@ -30,12 +30,12 @@ class QuoteWidget : GlanceAppWidget() {
         } ?: defaultQuote()
 
         provideContent {
-            QuoteWidgetContent(context, quote)
+            QuoteWidgetContent(quote)
         }
     }
 
     @Composable
-    private fun QuoteWidgetContent(context: Context, quote: Quote) {
+    private fun QuoteWidgetContent(quote: Quote) {
         val authorText = quote.author?.takeIf { it.isNotBlank() } ?: "Momentum"
 
         Column(
@@ -43,7 +43,10 @@ class QuoteWidget : GlanceAppWidget() {
                 .fillMaxSize()
                 .background(Color.DarkGray)
                 .padding(16.dp)
-                .clickable(actionStartActivity(Intent(context, MainActivity::class.java))),
+                .clickable(actionStartActivity(Intent().apply {
+                    setClassName("com.momentummm.app", "com.momentummm.app.MainActivity")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })),
             verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
