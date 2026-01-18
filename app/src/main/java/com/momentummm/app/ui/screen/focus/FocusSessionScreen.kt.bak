@@ -498,8 +498,7 @@ fun FocusSessionScreen(
             }
         )
     }
-
-}
+} // Cierre de FocusSessionScreen
 
 @Composable
 private fun CreateSessionDialog(
@@ -994,7 +993,6 @@ private fun LongPressStopButton(
             }
         }
     }
-}
 
 @Composable
 private fun SessionCard(
@@ -1327,4 +1325,6 @@ private fun AppwriteSessionHistoryCard(
             }
         }
     }
+}
+
 }

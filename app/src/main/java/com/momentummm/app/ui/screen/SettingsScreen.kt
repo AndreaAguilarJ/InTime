@@ -1,348 +1,534 @@
 package com.momentummm.app.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.ViewModule
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.R
-import com.momentummm.app.minimal.AllowedAppsManagementScreen
+import com.momentummm.app.ui.password.PasswordProtectionViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+
+// ============================================================================
+// COMPONENTES DE PREFERENCIA REUTILIZABLES
+// ============================================================================
+
+/**
+ * Categoría de preferencias con título y contenido expandible opcional
+ */
+@Composable
+fun PreferenceCategory(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                content = content
+            )
+        }
+    }
+}
+
+/**
+ * Subcategoría expandible dentro de una categoría principal
+ */
+@Composable
+fun PreferenceSubCategory(
+    title: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    initiallyExpanded: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(initiallyExpanded) }
+    
+    Column(modifier = modifier.fillMaxWidth()) {
+        // Header de la subcategoría
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isExpanded = !isExpanded }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (isExpanded) "Colapsar" else "Expandir",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        
+        // Contenido expandible
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 32.dp),
+                content = content
+            )
+        }
+    }
+}
+
+/**
+ * Item de preferencia clickeable
+ */
+@Composable
+fun PreferenceItem(
+    title: String,
+    subtitle: String? = null,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    showDivider: Boolean = true,
+    trailingContent: @Composable (() -> Unit)? = null
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant 
+                       else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface 
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant 
+                                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+            }
+            if (trailingContent != null) {
+                trailingContent()
+            } else {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            }
+        }
+        if (showDivider) {
+            Divider(
+                modifier = Modifier.padding(start = 56.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+        }
+    }
+}
+
+/**
+ * Item de preferencia con Switch
+ */
+@Composable
+fun PreferenceSwitchItem(
+    title: String,
+    subtitle: String? = null,
+    icon: ImageVector,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    showDivider: Boolean = true
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = enabled) { onCheckedChange(!checked) }
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (checked) MaterialTheme.colorScheme.primary 
+                       else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                enabled = enabled
+            )
+        }
+        if (showDivider) {
+            Divider(
+                modifier = Modifier.padding(start = 56.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+        }
+    }
+}
+
+// ============================================================================
+// PANTALLA PRINCIPAL DE AJUSTES
+// ============================================================================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateToScreen: (String) -> Unit = {}
+    onNavigateToScreen: (String) -> Unit = {},
+    passwordViewModel: PasswordProtectionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as MomentumApplication
     val coroutineScope = rememberCoroutineScope()
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var showAppsManagement by remember { mutableStateOf(false) }
     
-    if (showAppsManagement) {
-        AllowedAppsManagementScreen(
-            minimalPhoneManager = application.minimalPhoneManager,
-            modifier = Modifier.fillMaxSize()
-        )
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
+    // Estado de protección por contraseña
+    val passwordProtection by passwordViewModel.passwordProtection.collectAsState()
+    val isPasswordSet = passwordProtection?.isEnabled == true && !passwordProtection?.passwordHash.isNullOrEmpty()
+    val isProtectionActive = passwordProtection?.isEnabled == true
+    
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(bottom = 32.dp)
+    ) {
+        // ====================================================================
+        // HEADER
+        // ====================================================================
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 24.dp)
+            ) {
                 Text(
                     text = stringResource(R.string.nav_settings),
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // Account Section
-            item {
-                Text(
-                    text = "Cuenta",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
+        }
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { 
-                        // Navigate to account settings screen (premium feature)
-                        onNavigateToScreen("account_settings")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.account_settings)) },
-                        supportingContent = { Text("Gestionar tu perfil y configuración") },
-                        leadingContent = { Icon(Icons.Default.AccountCircle, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
+        // ====================================================================
+        // 1. CUENTA
+        // ====================================================================
+        item {
+            PreferenceCategory(title = "Cuenta") {
+                PreferenceItem(
+                    title = "Configuración de cuenta",
+                    subtitle = "Gestionar tu perfil y datos personales",
+                    icon = Icons.Default.AccountCircle,
+                    onClick = { onNavigateToScreen("account_settings") }
+                )
+                PreferenceItem(
+                    title = "Ayuda",
+                    subtitle = "Preguntas frecuentes y soporte",
+                    icon = Icons.Default.HelpOutline,
+                    onClick = { onNavigateToScreen("help") }
+                )
+                PreferenceItem(
+                    title = "Cerrar sesión",
+                    subtitle = "Salir de tu cuenta actual",
+                    icon = Icons.Default.Logout,
                     onClick = { showLogoutDialog = true }
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.logout)) },
-                        supportingContent = { Text("Cerrar sesión actual") },
-                        leadingContent = { Icon(Icons.Default.Logout, contentDescription = null) }
-                    )
-                }
-            }
-
-            // Help Section
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Ayuda",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                )
+                PreferenceItem(
+                    title = "Tutorial de la app",
+                    subtitle = "Aprende a usar todas las funciones de Momentum",
+                    icon = Icons.Default.School,
+                    onClick = { onNavigateToScreen("tutorial") },
+                    showDivider = false
                 )
             }
+        }
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { 
-                        // Navigate to tutorial
-                        onNavigateToScreen("tutorial")
-                    }
+        // ====================================================================
+        // 2. FUNCIONES
+        // ====================================================================
+        item {
+            PreferenceCategory(title = "Funciones") {
+                // ------------------------------------------------------------
+                // 2.1 Seguridad y Privacidad
+                // ------------------------------------------------------------
+                PreferenceSubCategory(
+                    title = "Seguridad y Privacidad",
+                    icon = Icons.Default.Security,
+                    initiallyExpanded = true
                 ) {
-                    ListItem(
-                        headlineContent = { Text("Tutorial de la app") },
-                        supportingContent = { Text("Aprende a usar todas las funciones de Momentum") },
-                        leadingContent = { Icon(Icons.Default.School, contentDescription = null) }
+                    PreferenceSwitchItem(
+                        title = "Protección activa",
+                        subtitle = if (isProtectionActive) "La app está protegida" else "Activa para proteger tu configuración",
+                        icon = Icons.Default.Shield,
+                        checked = isProtectionActive,
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                passwordViewModel.toggleProtection(enabled)
+                            }
+                        },
+                        enabled = isPasswordSet // Solo se puede activar si hay contraseña configurada
+                    )
+                    PreferenceItem(
+                        title = "Protección por Contraseña",
+                        subtitle = if (isPasswordSet) "Contraseña configurada" else "Configura una contraseña numérica",
+                        icon = Icons.Default.Lock,
+                        onClick = {
+                            if (isPasswordSet) {
+                                onNavigateToScreen("password_manage")
+                            } else {
+                                onNavigateToScreen("password_setup")
+                            }
+                        },
+                        showDivider = false,
+                        trailingContent = {
+                            if (isPasswordSet) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Configurado",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                     )
                 }
-            }
-
-            // App Features Section
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Funciones",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                
+                Divider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                 )
-            }
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onNavigateToScreen("password_protection")
-                    }
+                // ------------------------------------------------------------
+                // 2.2 Bienestar Digital
+                // ------------------------------------------------------------
+                PreferenceSubCategory(
+                    title = "Bienestar Digital",
+                    icon = Icons.Default.Psychology,
+                    initiallyExpanded = true
                 ) {
-                    ListItem(
-                        headlineContent = { Text("Protección por Contraseña") },
-                        supportingContent = { Text("Protege tus configuraciones con contraseña numérica") },
-                        leadingContent = { Icon(Icons.Default.Lock, contentDescription = null) }
+                    PreferenceItem(
+                        title = "Límites de aplicaciones",
+                        subtitle = "Configura tiempo máximo de uso por app",
+                        icon = Icons.Default.Timer,
+                        onClick = { onNavigateToScreen("app_limits") }
+                    )
+                    PreferenceItem(
+                        title = "Bloqueo dentro de Apps",
+                        subtitle = "Bloquea Reels, Shorts y contenido específico",
+                        icon = Icons.Default.VideoLibrary,
+                        onClick = { onNavigateToScreen("in_app_blocking") }
+                    )
+                    PreferenceItem(
+                        title = "Bloqueo de sitios web",
+                        subtitle = "Bloquear sitios web distractores",
+                        icon = Icons.Default.Web,
+                        onClick = { onNavigateToScreen("website_blocks") }
+                    )
+                    PreferenceItem(
+                        title = "Gestionar aplicaciones",
+                        subtitle = "Apps permitidas en Modo Mínimo",
+                        icon = Icons.Default.PhoneAndroid,
+                        onClick = { onNavigateToScreen("app_whitelist") },
+                        showDivider = false
                     )
                 }
-            }
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onNavigateToScreen("app_limits")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.app_limits)) },
-                        supportingContent = { Text("Configurar límites de tiempo para apps distractoras") },
-                        leadingContent = { Icon(Icons.Default.Block, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onNavigateToScreen("in_app_blocking")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Bloqueo dentro de Apps") },
-                        supportingContent = { Text("Bloquea Reels, Shorts y más sin bloquear toda la app") },
-                        leadingContent = { Icon(Icons.Default.VideoLibrary, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onNavigateToScreen("website_blocks")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Bloqueo de sitios web") },
-                        supportingContent = { Text("Bloquear sitios web distractores o no deseados") },
-                        leadingContent = { Icon(Icons.Default.Security, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { showAppsManagement = true }
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.manage_apps)) },
-                        supportingContent = { Text("Gestionar apps permitidas en modo mínimo") },
-                        leadingContent = { Icon(Icons.Default.PhoneAndroid, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { 
-                        // Navigate to notification settings
-                        onNavigateToScreen("notification_settings")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.notifications)) },
-                        supportingContent = { Text("Configurar notificaciones y recordatorios") },
-                        leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        // Navigate to "Mi vida en semanas" screen
-                        onNavigateToScreen("mi_vida_en_semanas")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Mi vida en semanas") },
-                        supportingContent = { Text("Visualiza tu vida y reflexiona sobre el tiempo") },
-                        leadingContent = { Icon(Icons.Default.Person, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        // Navigate to theme settings
-                        onNavigateToScreen("theme_settings")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Personalización") },
-                        supportingContent = { Text("Temas y apariencia de la aplicación") },
-                        leadingContent = { Icon(Icons.Default.Apps, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { 
-                        // Navigate to export/backup settings
-                        onNavigateToScreen("backup_settings")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.widget_settings)) },
-                        supportingContent = { Text("Personalizar widgets de pantalla de inicio") },
-                        leadingContent = { Icon(Icons.Default.ViewModule, contentDescription = null) }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onNavigateToScreen("sync_settings")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Sincronización") },
-                        supportingContent = { Text("Ver estado y sincronizar datos") },
-                        leadingContent = { Icon(Icons.Default.Sync, contentDescription = null) }
-                    )
-                }
-            }
-
-            // About Section
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Información",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                Divider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                 )
-            }
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { 
-                        // Navigate to about screen
-                        onNavigateToScreen("about")
-                    }
+                // ------------------------------------------------------------
+                // 2.3 Personalización y Datos
+                // ------------------------------------------------------------
+                PreferenceSubCategory(
+                    title = "Personalización y Datos",
+                    icon = Icons.Default.Palette,
+                    initiallyExpanded = true
                 ) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.about)) },
-                        supportingContent = { Text("Información sobre Momentum v1.0") },
-                        leadingContent = { Icon(Icons.Default.Info, contentDescription = null) }
+                    PreferenceItem(
+                        title = "Notificaciones",
+                        subtitle = "Configurar alertas y recordatorios",
+                        icon = Icons.Default.Notifications,
+                        onClick = { onNavigateToScreen("notification_settings") }
                     )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        // Navigate to permissions settings
-                        onNavigateToScreen("permissions_settings")
-                    }
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Permisos") },
-                        supportingContent = { Text("Configurar permisos de la aplicación") },
-                        leadingContent = { Icon(Icons.Default.Security, contentDescription = null) }
+                    PreferenceItem(
+                        title = "Mi vida en semanas",
+                        subtitle = "Visualiza tu vida y reflexiona sobre el tiempo",
+                        icon = Icons.Default.CalendarMonth,
+                        onClick = { onNavigateToScreen("mi_vida_en_semanas") }
+                    )
+                    PreferenceItem(
+                        title = "Personalización",
+                        subtitle = "Temas y apariencia de la aplicación",
+                        icon = Icons.Default.ColorLens,
+                        onClick = { onNavigateToScreen("theme_settings") }
+                    )
+                    PreferenceItem(
+                        title = "Configuración de widgets",
+                        subtitle = "Personalizar widgets de pantalla de inicio",
+                        icon = Icons.Default.Widgets,
+                        onClick = { onNavigateToScreen("widget_setup") }
+                    )
+                    PreferenceItem(
+                        title = "Sincronización",
+                        subtitle = "Ver estado y sincronizar datos con la nube",
+                        icon = Icons.Default.Sync,
+                        onClick = { onNavigateToScreen("sync_settings") },
+                        showDivider = false
                     )
                 }
             }
         }
+
+        // ====================================================================
+        // 3. INFORMACIÓN
+        // ====================================================================
+        item {
+            PreferenceCategory(title = "Información") {
+                PreferenceItem(
+                    title = "Acerca de",
+                    subtitle = "Información sobre Momentum",
+                    icon = Icons.Default.Info,
+                    onClick = { onNavigateToScreen("about") }
+                )
+                PreferenceItem(
+                    title = "Permisos",
+                    subtitle = "Gestionar permisos de la aplicación",
+                    icon = Icons.Default.Security,
+                    onClick = { onNavigateToScreen("permissions_settings") },
+                    showDivider = false
+                )
+            }
+        }
+
+        // Espacio al final
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 
-    // Logout confirmation dialog
+    // ========================================================================
+    // DIÁLOGO DE CONFIRMACIÓN DE CIERRE DE SESIÓN
+    // ========================================================================
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Cerrar sesión") },
-            text = { Text("¿Estás seguro de que quieres cerrar sesión?") },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Logout,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = { 
+                Text(
+                    text = "Cerrar sesión",
+                    fontWeight = FontWeight.SemiBold
+                ) 
+            },
+            text = { 
+                Text("¿Estás seguro de que quieres cerrar sesión? Tus datos locales se mantendrán sincronizados.") 
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
                         coroutineScope.launch {
                             application.appwriteService.logout()
                             showLogoutDialog = false
+                            // Navegar a la pantalla de login
+                            onNavigateToScreen("logout")
                         }
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
                     Text("Cerrar sesión")
                 }

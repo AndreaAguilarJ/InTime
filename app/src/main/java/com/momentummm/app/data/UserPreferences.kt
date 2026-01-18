@@ -87,6 +87,24 @@ object UserPreferencesRepository {
         return prefs[UserPreferencesKeys.LIVED_COLOR] to prefs[UserPreferencesKeys.FUTURE_COLOR]
     }
 
+    /**
+     * Flow para observar cambios en el color de semanas vividas
+     */
+    fun getLivedWeeksColorFlow(context: Context): Flow<String> {
+        return context.userPreferencesDataStore.data.map { prefs ->
+            prefs[UserPreferencesKeys.LIVED_COLOR] ?: "#4CAF50"
+        }
+    }
+
+    /**
+     * Flow para observar cambios en el color de semanas futuras
+     */
+    fun getFutureWeeksColorFlow(context: Context): Flow<String> {
+        return context.userPreferencesDataStore.data.map { prefs ->
+            prefs[UserPreferencesKeys.FUTURE_COLOR] ?: "#E0E0E0"
+        }
+    }
+
     // Nuevos métodos para configuraciones adicionales
     suspend fun setThemeMode(context: Context, mode: String) {
         context.userPreferencesDataStore.edit { prefs ->

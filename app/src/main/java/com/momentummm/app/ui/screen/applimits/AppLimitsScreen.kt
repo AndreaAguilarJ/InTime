@@ -4,6 +4,7 @@ import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -156,6 +157,59 @@ fun AppLimitsScreen(
                         uiState.appLimits.map { it.dailyLimitMinutes }.average().toInt()
                     } else 0
                 )
+            }
+
+            // Nueva Sección: Apps Comunes para Bloquear (Sugerencias)
+            if (uiState.suggestedApps.isNotEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Apps comunes para bloquear",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = "Las más adictivas detectadas en tu dispositivo",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Icon(
+                                Icons.Filled.Recommend,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp)
+                        ) {
+                            items(uiState.suggestedApps) { app ->
+                                val hasLimit = uiState.appLimits.any { it.packageName == app.packageName }
+                                SuggestedAppCard(
+                                    app = app,
+                                    hasLimit = hasLimit,
+                                    onAddLimit = { packageName, appName, limitMinutes ->
+                                        protectAction {
+                                            viewModel.addAppLimit(packageName, appName, limitMinutes)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             // Agregar botón para whitelist
@@ -712,4 +766,222 @@ private fun MonitoringStatusCard(
             )
         }
     }
+}
+
+/**
+ * Card compacta para mostrar apps sugeridas en scroll horizontal
+ */
+@Composable
+private fun SuggestedAppCard(
+    app: AppUsageInfo,
+    hasLimit: Boolean,
+    onAddLimit: (String, String, Int) -> Unit
+) {
+    val context = LocalContext.current
+    var showQuickDialog by remember { mutableStateOf(false) }
+    
+    // Load app icon outside of composable calls
+    val appIcon = remember(app.packageName) {
+        try {
+            context.packageManager.getApplicationIcon(app.packageName).toBitmap()
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    Card(
+        modifier = Modifier
+            .width(140.dp)
+            .height(180.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (hasLimit) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        ),
+        onClick = { if (!hasLimit) showQuickDialog = true }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // App Icon
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center
+            ) {
+                if (appIcon != null) {
+                    Image(
+                        painter = BitmapPainter(appIcon.asImageBitmap()),
+                        contentDescription = app.appName,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                } else {
+                    Icon(
+                        Icons.Filled.Apps,
+                        contentDescription = app.appName,
+                        modifier = Modifier.size(32.dp),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            // App Name
+            Text(
+                text = app.appName,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                color = if (hasLimit) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+            )
+
+            // Action Button
+            if (hasLimit) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Limitada",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                Button(
+                    onClick = { showQuickDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(32.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "Limitar",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+
+    // Quick Limit Dialog
+    if (showQuickDialog) {
+        QuickLimitDialog(
+            appName = app.appName,
+            onDismiss = { showQuickDialog = false },
+            onConfirm = { minutes ->
+                onAddLimit(app.packageName, app.appName, minutes)
+                showQuickDialog = false
+            }
+        )
+    }
+}
+
+/**
+ * Diálogo rápido para establecer límites comunes
+ */
+@Composable
+private fun QuickLimitDialog(
+    appName: String,
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit
+) {
+    var selectedMinutes by remember { mutableStateOf(30) }
+    
+    val quickOptions = listOf(
+        15 to "15 min",
+        30 to "30 min",
+        45 to "45 min",
+        60 to "1 hora",
+        90 to "1.5 horas",
+        120 to "2 horas"
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                Icons.Filled.Timer,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Establecer límite",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "¿Cuánto tiempo quieres usar $appName al día?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    quickOptions.forEach { (minutes, label) ->
+                        FilterChip(
+                            selected = selectedMinutes == minutes,
+                            onClick = { selectedMinutes = minutes },
+                            label = { Text(label) },
+                            leadingIcon = if (selectedMinutes == minutes) {
+                                {
+                                    Icon(
+                                        Icons.Filled.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            } else null,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(selectedMinutes) }
+            ) {
+                Text("Establecer límite")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

@@ -44,8 +44,16 @@ import com.momentummm.app.ui.screen.onboarding.EnhancedOnboardingScreen
 import com.momentummm.app.ui.screen.tutorial.AppTutorialScreen
 import com.momentummm.app.data.appwrite.models.AppwriteUserSettings
 import com.momentummm.app.ui.settings.NotificationSettingsScreen
+import com.momentummm.app.ui.screen.settings.HelpScreen
+import com.momentummm.app.ui.screen.settings.WidgetSetupScreen
 import com.momentummm.app.ui.viewmodel.OnboardingViewModel
 import com.momentummm.app.ui.viewmodel.OnboardingViewModelFactory
+import com.momentummm.app.security.AppLockManager
+import com.momentummm.app.security.BiometricPromptManager
+import com.momentummm.app.ui.password.LockScreen
+import androidx.compose.ui.zIndex
+import javax.inject.Inject
+import dagger.hilt.android.AndroidEntryPoint
 
 sealed class Screen(val route: String, val icon: ImageVector, val titleRes: Int) {
     object Today : Screen("today", Icons.Filled.Home, R.string.nav_today)
@@ -279,31 +287,39 @@ private fun MainAppContent(
     val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
-    if (isMinimalModeEnabled) {
-        MinimalPhoneScreen(
-            minimalPhoneManager = minimalPhoneManager,
-            onSettingsClick = {
-                coroutineScope.launch {
-                    minimalPhoneManager.disableMinimalMode()
-                }
-                navController.navigate(Screen.Settings.route)
-            },
-            onExitMinimalMode = {
-                coroutineScope.launch {
-                    minimalPhoneManager.disableMinimalMode()
-                }
-            }
-        )
-    } else {
-        val screens = listOf(
-            Screen.Today,
-            Screen.Analytics,
-            Screen.Focus,
-            Screen.MinimalPhone,
-            Screen.Settings
-        )
+    // Sistema de bloqueo
+    val appLockManager = application.appLockManager
+    val biometricPromptManager = application.biometricPromptManager
+    val shouldShowLockScreen by appLockManager.shouldShowLockScreen.collectAsState()
 
-        Scaffold(
+    // Box para manejar la pantalla de bloqueo sobre todo lo demás
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Contenido principal de la app
+        if (isMinimalModeEnabled) {
+            MinimalPhoneScreen(
+                minimalPhoneManager = minimalPhoneManager,
+                onSettingsClick = {
+                    coroutineScope.launch {
+                        minimalPhoneManager.disableMinimalMode()
+                    }
+                    navController.navigate(Screen.Settings.route)
+                },
+                onExitMinimalMode = {
+                    coroutineScope.launch {
+                        minimalPhoneManager.disableMinimalMode()
+                    }
+                }
+            )
+        } else {
+            val screens = listOf(
+                Screen.Today,
+                Screen.Analytics,
+                Screen.Focus,
+                Screen.MinimalPhone,
+                Screen.Settings
+            )
+
+            Scaffold(
             bottomBar = {
                 NavigationBar {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -403,20 +419,42 @@ private fun MainAppContent(
                     SettingsScreen(
                         onNavigateToScreen = { screen ->
                             when (screen) {
-                                "password_protection" -> navController.navigate("password_protection")
-                                "mi_vida_en_semanas" -> navController.navigate("mi_vida_en_semanas")
-                                "theme_settings" -> navController.navigate("theme_settings")
-                                "backup_settings" -> navController.navigate("backup_settings")
-                                "sync_settings" -> navController.navigate("sync_settings")
-                                "notification_settings" -> navController.navigate("notification_settings")
+                                // Cuenta
                                 "account_settings" -> navController.navigate("account_settings")
-                                "permissions_settings" -> navController.navigate("permissions_settings")
+                                "help" -> navController.navigate("help")
+                                "logout" -> {
+                                    // Manejar logout: limpiar navegación y volver al login
+                                    coroutineScope.launch {
+                                        application.appwriteService.logout()
+                                    }
+                                }
                                 "tutorial" -> navController.navigate("tutorial")
-                                "about" -> navController.navigate("about")
-                                "launcher_settings" -> navController.navigate("launcher_settings")
+                                
+                                // Seguridad y Privacidad
+                                "password_setup" -> navController.navigate("password_setup")
+                                "password_manage" -> navController.navigate("password_manage")
+                                "password_protection" -> navController.navigate("password_protection")
+                                
+                                // Bienestar Digital
                                 "app_limits" -> navController.navigate("app_limits")
                                 "in_app_blocking" -> navController.navigate("in_app_blocking")
                                 "website_blocks" -> navController.navigate("website_blocks")
+                                "app_whitelist" -> navController.navigate("app_whitelist")
+                                
+                                // Personalización y Datos
+                                "notification_settings" -> navController.navigate("notification_settings")
+                                "mi_vida_en_semanas" -> navController.navigate("mi_vida_en_semanas")
+                                "theme_settings" -> navController.navigate("theme_settings")
+                                "widget_setup" -> navController.navigate("widget_setup")
+                                "backup_settings" -> navController.navigate("backup_settings")
+                                "sync_settings" -> navController.navigate("sync_settings")
+                                
+                                // Información
+                                "about" -> navController.navigate("about")
+                                "permissions_settings" -> navController.navigate("permissions_settings")
+                                
+                                // Legado
+                                "launcher_settings" -> navController.navigate("launcher_settings")
                             }
                         }
                     )
@@ -546,7 +584,28 @@ private fun MainAppContent(
                     )
                 }
 
+                // Ruta de Ayuda
+                composable("help") {
+                    HelpScreen(
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
+                // Ruta de configuración de Widgets
+                composable("widget_setup") {
+                    WidgetSetupScreen(
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
                 composable("password_protection") {
+                    com.momentummm.app.ui.password.PasswordProtectionManageScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToSetup = { navController.navigate("password_setup") }
+                    )
+                }
+
+                composable("password_manage") {
                     com.momentummm.app.ui.password.PasswordProtectionManageScreen(
                         onNavigateBack = { navController.popBackStack() },
                         onNavigateToSetup = { navController.navigate("password_setup") }
@@ -560,5 +619,20 @@ private fun MainAppContent(
                 }
             }
         }
-    }
+        } // Cierre del else block
+
+        // Pantalla de bloqueo superpuesta (z-index alto)
+        if (shouldShowLockScreen) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(Float.MAX_VALUE)
+            ) {
+                LockScreen(
+                    appLockManager = appLockManager,
+                    biometricPromptManager = biometricPromptManager
+                )
+            }
+        }
+    } // Cierre del Box
 }

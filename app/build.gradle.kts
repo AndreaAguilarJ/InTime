@@ -151,6 +151,10 @@ dependencies {
     // DataStore for preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    // Biometric authentication
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+
     // Export capabilities - CSV/PDF
     implementation("com.opencsv:opencsv:5.8")
     implementation("com.itextpdf:itext7-core:7.2.5")

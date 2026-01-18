@@ -155,6 +155,18 @@ class PasswordProtectionRepository @Inject constructor(
         }
     }
 
+    /**
+     * Activa o desactiva la protección (toggle switch sin cambiar la contraseña)
+     */
+    suspend fun toggleProtection(enabled: Boolean) {
+        val current = passwordProtectionDao.getPasswordProtectionSync() ?: return
+        // Solo permite activar si hay contraseña configurada
+        if (enabled && current.passwordHash.isNullOrEmpty()) {
+            return
+        }
+        passwordProtectionDao.update(current.copy(isEnabled = enabled))
+    }
+
     private fun hashPassword(password: String): String {
         val bytes = password.toByteArray()
         val md = MessageDigest.getInstance("SHA-256")

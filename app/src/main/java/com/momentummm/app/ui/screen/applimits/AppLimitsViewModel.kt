@@ -17,6 +17,7 @@ data class AppLimitsUiState(
     val isLoading: Boolean = true,
     val appLimits: List<AppLimit> = emptyList(),
     val availableApps: List<AppUsageInfo> = emptyList(),
+    val suggestedApps: List<AppUsageInfo> = emptyList(),
     val remainingTimes: Map<String, Int> = emptyMap(),
     val isMonitoringActive: Boolean = false,
     val error: String? = null
@@ -30,6 +31,30 @@ class AppLimitsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AppLimitsUiState())
     val uiState: StateFlow<AppLimitsUiState> = _uiState.asStateFlow()
+
+    companion object {
+        /**
+         * Lista de apps comúnmente bloqueadas/adictivas
+         * Solo las que el usuario tenga instaladas aparecerán en la sección de sugerencias
+         */
+        private val COMMON_ADDICTIVE_PACKAGES = listOf(
+            "com.instagram.android",              // Instagram
+            "com.zhiliaoapp.musically",          // TikTok (Internacional)
+            "com.ss.android.ugc.trill",          // TikTok (Algunos mercados)
+            "com.google.android.youtube",        // YouTube
+            "com.facebook.katana",               // Facebook
+            "com.snapchat.android",              // Snapchat
+            "com.twitter.android",               // Twitter/X
+            "com.netflix.mediaclient",           // Netflix
+            "com.whatsapp",                      // WhatsApp
+            "com.reddit.frontpage",              // Reddit
+            "com.spotify.music",                 // Spotify
+            "com.pinterest",                     // Pinterest
+            "com.discord",                       // Discord
+            "com.medium.reader",                 // Medium
+            "com.tumblr"                         // Tumblr
+        )
+    }
 
     init {
         loadData()
@@ -67,14 +92,26 @@ class AppLimitsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val availableApps = appLimitRepository.getInstallableApps()
+                val filteredAvailable = availableApps.filter { app ->
+                    _uiState.value.appLimits.none { it.packageName == app.packageName }
+                }
+                
+                // Filtrar apps sugeridas: solo las comunes que están instaladas
+                // y que NO tienen límite activo
+                val suggestedApps = filteredAvailable.filter { app ->
+                    COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
+                }.sortedBy { it.appName }
+                
                 _uiState.value = _uiState.value.copy(
-                    availableApps = availableApps.filter { app ->
-                        _uiState.value.appLimits.none { it.packageName == app.packageName }
-                    }
+                    availableApps = filteredAvailable,
+                    suggestedApps = suggestedApps
                 )
             } catch (e: SecurityException) {
                 // Android 11+ sin <queries> adecuado puede causar visibilidad limitada; no cerrar app
-                _uiState.value = _uiState.value.copy(availableApps = emptyList())
+                _uiState.value = _uiState.value.copy(
+                    availableApps = emptyList(),
+                    suggestedApps = emptyList()
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = e.message)
             }
@@ -91,10 +128,17 @@ class AppLimitsViewModel @Inject constructor(
             try {
                 appLimitRepository.addAppLimit(packageName, appName, limitMinutes)
 
-                // Actualizar la lista de apps disponibles
+                // Actualizar la lista de apps disponibles y sugeridas
                 val currentAvailable = _uiState.value.availableApps
+                val filteredAvailable = currentAvailable.filter { it.packageName != packageName }
+                
+                val updatedSuggestedApps = filteredAvailable.filter { app ->
+                    COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
+                }.sortedBy { it.appName }
+                
                 _uiState.value = _uiState.value.copy(
-                    availableApps = currentAvailable.filter { it.packageName != packageName }
+                    availableApps = filteredAvailable,
+                    suggestedApps = updatedSuggestedApps
                 )
 
                 // Reiniciar monitoreo si está activo
@@ -155,8 +199,13 @@ class AppLimitsViewModel @Inject constructor(
                 currentAvailable.add(availableApp)
                 currentAvailable.sortBy { it.appName }
 
+                val updatedSuggestedApps = currentAvailable.filter { app ->
+                    COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
+                }.sortedBy { it.appName }
+
                 _uiState.value = _uiState.value.copy(
-                    availableApps = currentAvailable
+                    availableApps = currentAvailable,
+                    suggestedApps = updatedSuggestedApps
                 )
 
             } catch (e: Exception) {

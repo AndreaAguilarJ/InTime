@@ -23,6 +23,8 @@ import com.momentummm.app.data.repository.AppLimitRepository
 import com.momentummm.app.data.repository.AppWhitelistRepository
 import com.momentummm.app.minimal.MinimalPhoneManager
 import com.momentummm.app.minimal.LauncherManager
+import com.momentummm.app.security.AppLockManager
+import com.momentummm.app.security.BiometricPromptManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -33,11 +35,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
 @HiltAndroidApp
 class MomentumApplication : Application(), Configuration.Provider {
+    
+    // Security managers (injected by Hilt)
+    @Inject
+    lateinit var appLockManager: AppLockManager
+    
+    @Inject
+    lateinit var biometricPromptManager: BiometricPromptManager
     
     // Database instance (keeping for migration)
     val database by lazy { AppDatabase.getDatabase(this) }
