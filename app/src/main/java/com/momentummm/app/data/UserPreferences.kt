@@ -33,6 +33,9 @@ object UserPreferencesKeys {
     val AUTO_SYNC_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("auto_sync_enabled")
     val FOCUS_MODE_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("focus_mode_enabled")
     val FOCUS_MODE_BLOCKED_APPS: Preferences.Key<Set<String>> = stringSetPreferencesKey("focus_mode_blocked_apps")
+    
+    // Temporary unlocks for Shame or Pay feature
+    val TEMPORARY_UNLOCKS: Preferences.Key<Set<String>> = stringSetPreferencesKey("temporary_unlocks")
 }
 
 object UserPreferencesRepository {
@@ -188,5 +191,76 @@ object UserPreferencesRepository {
     suspend fun getFocusModeBlockedApps(context: Context): List<String> {
         val prefs = context.userPreferencesDataStore.data.first()
         return prefs[UserPreferencesKeys.FOCUS_MODE_BLOCKED_APPS]?.toList() ?: emptyList()
+    }
+
+    // === SHAME OR PAY: Temporary Unlocks ===
+    
+    /**
+     * Añade un desbloqueo temporal para una app (formato: "packageName:expirationTime")
+     */
+    suspend fun addTemporaryUnlock(context: Context, packageName: String, expirationTime: Long) {
+        context.userPreferencesDataStore.edit { prefs ->
+            val currentUnlocks = prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS]?.toMutableSet() ?: mutableSetOf()
+            // Limpiar desbloqueos expirados
+            val now = System.currentTimeMillis()
+            val validUnlocks = currentUnlocks.filter { entry ->
+                val parts = entry.split(":")
+                if (parts.size == 2) {
+                    parts[1].toLongOrNull()?.let { it > now } ?: false
+                } else false
+            }.toMutableSet()
+            
+            // Añadir nuevo desbloqueo
+            validUnlocks.add("$packageName:$expirationTime")
+            prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] = validUnlocks
+        }
+    }
+
+    /**
+     * Verifica si una app tiene un desbloqueo temporal activo
+     */
+    suspend fun isAppTemporarilyUnlocked(context: Context, packageName: String): Boolean {
+        val prefs = context.userPreferencesDataStore.data.first()
+        val unlocks = prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] ?: return false
+        val now = System.currentTimeMillis()
+        
+        return unlocks.any { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2 && parts[0] == packageName) {
+                parts[1].toLongOrNull()?.let { it > now } ?: false
+            } else false
+        }
+    }
+
+    /**
+     * Obtiene el tiempo de expiración del desbloqueo temporal
+     */
+    suspend fun getTemporaryUnlockExpiration(context: Context, packageName: String): Long? {
+        val prefs = context.userPreferencesDataStore.data.first()
+        val unlocks = prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] ?: return null
+        
+        return unlocks.firstNotNullOfOrNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2 && parts[0] == packageName) {
+                parts[1].toLongOrNull()
+            } else null
+        }
+    }
+
+    /**
+     * Limpia todos los desbloqueos temporales expirados
+     */
+    suspend fun cleanExpiredUnlocks(context: Context) {
+        context.userPreferencesDataStore.edit { prefs ->
+            val currentUnlocks = prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] ?: return@edit
+            val now = System.currentTimeMillis()
+            val validUnlocks = currentUnlocks.filter { entry ->
+                val parts = entry.split(":")
+                if (parts.size == 2) {
+                    parts[1].toLongOrNull()?.let { it > now } ?: false
+                } else false
+            }.toSet()
+            prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] = validUnlocks
+        }
     }
 }

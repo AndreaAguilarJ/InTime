@@ -27,15 +27,17 @@ import kotlinx.coroutines.delay
 import java.util.Calendar
 
 /**
- * Pantalla de "Shock" Onboarding - Muestra una proyección alarmante del tiempo
- * que el usuario pasará en su teléfono si continúa con su ritmo actual.
+ * Pantalla de "Shock" Onboarding - "REALIDAD MORTAL"
+ * Muestra una proyección alarmante del tiempo que el usuario pasará en su teléfono.
  * 
- * Esta pantalla usa psicología de pérdida (Loss Aversion) para convertir usuarios.
+ * FÓRMULA: (TiempoDiarioHoras * 365 * AñosRestantesDeVida) / 24 = Años perdidos en el teléfono
+ * 
+ * Esta pantalla usa psicología de pérdida (Loss Aversion) para conversión inmediata.
  */
 @Composable
 fun ShockOnboardingScreen(
     usageStatsRepository: UsageStatsRepository,
-    userBirthYear: Int? = null, // Si no se tiene, asumir edad promedio
+    userBirthYear: Int? = null,
     onContinue: () -> Unit,
     onSkip: () -> Unit
 ) {
@@ -143,8 +145,8 @@ private fun ShockContent(
     
     LaunchedEffect(data.yearsOnPhone) {
         val targetValue = data.yearsOnPhone
-        val duration = 2000L
-        val steps = 60
+        val duration = 2500L
+        val steps = 80
         val stepDuration = duration / steps
         val increment = targetValue / steps
         
@@ -155,30 +157,41 @@ private fun ShockContent(
         displayedYears = targetValue
     }
 
-    // Animación de pulso para el número principal
+    // Animación de pulso para el número principal (efecto de latido cardíaco)
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulse by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.05f,
+        targetValue = 1.08f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
+            animation = tween(800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulse"
     )
+    
+    // Animación de resplandor rojo
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow"
+    )
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Emoji de alarma
+        // Emoji de alarma con animación
         AnimatedVisibility(
             visible = isVisible,
             enter = fadeIn() + scaleIn(initialScale = 0.5f)
         ) {
             Text(
-                text = "⚠️",
-                fontSize = 80.sp
+                text = "💀",
+                fontSize = 72.sp
             )
         }
 
@@ -190,12 +203,13 @@ private fun ShockContent(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "LA VERDAD INCÓMODA",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    text = "REALIDAD MORTAL",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Black,
                     color = Color.White,
-                    letterSpacing = 3.sp
+                    letterSpacing = 4.sp
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (hasRealData) "basada en TU uso real" else "basada en promedios",
                     style = MaterialTheme.typography.bodyMedium,
@@ -204,48 +218,91 @@ private fun ShockContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Número principal de SHOCK - Años en el teléfono
+        // ========================================
+        // NÚMERO PRINCIPAL DE SHOCK - AÑOS EN EL TELÉFONO
+        // ========================================
         AnimatedVisibility(
             visible = isVisible,
             enter = fadeIn(animationSpec = tween(600, delayMillis = 600)) +
                     scaleIn(initialScale = 0.3f, animationSpec = spring(dampingRatio = 0.4f))
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Texto introductorio
                 Text(
-                    text = "Pasarás",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White.copy(alpha = 0.9f)
-                )
-                
-                // Número gigante animado
-                Text(
-                    text = String.format("%.1f", displayedYears),
-                    fontSize = 100.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White,
-                    modifier = Modifier.scale(pulse)
-                )
-                
-                Text(
-                    text = "AÑOS",
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFD700),
-                    letterSpacing = 8.sp
-                )
-                
-                Text(
-                    text = "de tu vida mirando una pantalla",
+                    text = "Al ritmo actual, pasarás",
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center
                 )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ========================================
+                // NÚMERO GIGANTE EN ROJO (colorScheme.error)
+                // ========================================
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.scale(pulse)
+                ) {
+                    // Glow effect detrás del número
+                    Text(
+                        text = String.format("%.1f", displayedYears),
+                        fontSize = 120.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.error.copy(alpha = glowAlpha * 0.3f),
+                        modifier = Modifier.scale(1.1f)
+                    )
+                    
+                    // Número principal
+                    Text(
+                        text = String.format("%.1f", displayedYears),
+                        fontSize = 120.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.error // ROJO DE ERROR
+                    )
+                }
+                
+                // "AÑOS" en dorado
+                Text(
+                    text = "AÑOS",
+                    fontSize = 44.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFD700),
+                    letterSpacing = 10.sp
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // ========================================
+                // TEXTO PRINCIPAL DE IMPACTO
+                // ========================================
+                Text(
+                    text = "de tu vida mirando una pantalla",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White.copy(alpha = 0.95f),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                // Detalle adicional
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = Color.Black.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "≈ ${String.format("%.0f", data.daysOnPhone)} días completos (24h) sin parar",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Stats adicionales de shock
         AnimatedVisibility(
@@ -255,40 +312,48 @@ private fun ShockContent(
         ) {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.Black.copy(alpha = 0.3f)
+                    containerColor = Color.Black.copy(alpha = 0.35f)
                 ),
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    // Información del cálculo
+                    Text(
+                        text = "📊 Tu proyección personal",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    ShockStatRow(
+                        emoji = "⏰",
+                        value = String.format("%.1f", data.dailyHours),
+                        unit = "horas/día",
+                        description = "tu uso diario promedio"
+                    )
+                    
+                    Divider(color = Color.White.copy(alpha = 0.15f))
+                    
                     ShockStatRow(
                         emoji = "📅",
                         value = "${data.daysOnPhone.toInt()}",
                         unit = "días completos",
-                        description = "24 horas pegado a la pantalla"
+                        description = "24 horas sin parar"
                     )
                     
-                    Divider(color = Color.White.copy(alpha = 0.2f))
-                    
-                    ShockStatRow(
-                        emoji = "🎬",
-                        value = "${data.moviesEquivalent.toInt()}",
-                        unit = "películas",
-                        description = "de 2 horas que podrías ver"
-                    )
-                    
-                    Divider(color = Color.White.copy(alpha = 0.2f))
+                    Divider(color = Color.White.copy(alpha = 0.15f))
                     
                     ShockStatRow(
                         emoji = "📚",
                         value = "${data.booksEquivalent.toInt()}",
                         unit = "libros",
-                        description = "que podrías leer"
+                        description = "que podrías leer en ese tiempo"
                     )
                     
-                    Divider(color = Color.White.copy(alpha = 0.2f))
+                    Divider(color = Color.White.copy(alpha = 0.15f))
                     
                     ShockStatRow(
                         emoji = "🌍",
@@ -296,11 +361,35 @@ private fun ShockContent(
                         unit = "viajes",
                         description = "de 2 semanas que podrías hacer"
                     )
+                    
+                    Divider(color = Color.White.copy(alpha = 0.15f))
+                    
+                    // Porcentaje de vida despierta - MUY IMPACTANTE
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text("⚡", fontSize = 28.sp)
+                        Column {
+                            Text(
+                                text = "${String.format("%.0f", data.percentageOfWakingLife)}% de tu vida despierta",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = "se va en el teléfono cada día",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Mensaje emocional
         AnimatedVisibility(
@@ -416,59 +505,76 @@ private fun ShockStatRow(
  */
 private data class ShockData(
     val dailyHours: Float,
-    val yearsOnPhone: Float,
-    val daysOnPhone: Float,
-    val moviesEquivalent: Float,
-    val booksEquivalent: Float,
-    val travelDaysEquivalent: Float,
-    val percentageOfWakingLife: Float
+    val yearsOnPhone: Float,       // FÓRMULA PRINCIPAL: (dailyHours * 365 * yearsRemaining) / 24
+    val daysOnPhone: Float,        // Días completos (24h) en el teléfono
+    val hoursPerYear: Float,       // Horas por año en el teléfono
+    val moviesEquivalent: Float,   // Películas de 2h que podrías ver
+    val booksEquivalent: Float,    // Libros que podrías leer (~10h/libro)
+    val travelDaysEquivalent: Float, // Viajes de 2 semanas
+    val percentageOfWakingLife: Float, // % de vida despierta en el teléfono
+    val estimatedAge: Int,         // Edad estimada del usuario
+    val yearsRemaining: Int        // Años restantes estimados
 )
 
 /**
- * Calcula las proyecciones de tiempo basadas en el uso actual
+ * Calcula las proyecciones de tiempo basadas en el uso actual.
+ * 
+ * FÓRMULA PRINCIPAL: 
+ *   yearsOnPhone = (TiempoDiarioHoras * 365 * AñosRestantesDeVida) / 24
+ * 
+ * Esto calcula cuántos AÑOS COMPLETOS (24h/día) pasará el usuario
+ * mirando su teléfono durante el resto de su vida.
  */
 private fun calculateShockData(
     dailyUsageMs: Long,
     weeklyUsageMs: Long,
     birthYear: Int?
 ): ShockData {
-    // Convertir a horas diarias
+    // Convertir a horas diarias (promedio de semana si está disponible)
     val dailyHours = if (weeklyUsageMs > 0) {
-        (weeklyUsageMs / 7.0 / 1000 / 60 / 60).toFloat()
+        (weeklyUsageMs / 7.0 / 1000.0 / 60.0 / 60.0).toFloat()
     } else {
-        (dailyUsageMs / 1000.0 / 60 / 60).toFloat()
+        (dailyUsageMs / 1000.0 / 60.0 / 60.0).toFloat()
     }
     
-    // Calcular años restantes de vida (hasta 80 años)
+    // Calcular años restantes de vida (expectativa de vida: 80 años)
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-    val estimatedAge = if (birthYear != null) {
+    val estimatedAge = if (birthYear != null && birthYear > 1900 && birthYear < currentYear) {
         currentYear - birthYear
     } else {
-        30 // Edad promedio estimada
+        28 // Edad promedio de usuarios de apps de productividad
     }
-    val yearsRemaining = maxOf(0, 80 - estimatedAge)
+    val yearsRemaining = maxOf(1, 80 - estimatedAge)
     
-    // Calcular tiempo total en el teléfono
-    val hoursPerYear = dailyHours * 365
-    val totalHoursRemaining = hoursPerYear * yearsRemaining
-    val yearsOnPhone = totalHoursRemaining / (24 * 365) // Años completos (24h/día)
-    val daysOnPhone = totalHoursRemaining / 24
+    // ========================================
+    // FÓRMULA PRINCIPAL: AÑOS EN EL TELÉFONO
+    // ========================================
+    // (HorasDiarias * 365 días * AñosRestantes) / 24 horas = Años completos
+    val totalHoursRemaining = dailyHours * 365f * yearsRemaining
+    val yearsOnPhone = totalHoursRemaining / (24f * 365f) // Años completos (24h/día, 365 días)
+    
+    // Cálculos adicionales para impacto
+    val daysOnPhone = totalHoursRemaining / 24f // Días de 24 horas
+    val hoursPerYear = dailyHours * 365f
     
     // Equivalencias impactantes
-    val moviesEquivalent = totalHoursRemaining / 2 // Películas de 2 horas
-    val booksEquivalent = totalHoursRemaining / 10 // ~10 horas por libro
-    val travelDaysEquivalent = daysOnPhone / 14 // Viajes de 2 semanas
+    val moviesEquivalent = totalHoursRemaining / 2f // Películas de 2 horas
+    val booksEquivalent = totalHoursRemaining / 10f // ~10 horas por libro
+    val travelDaysEquivalent = daysOnPhone / 14f // Viajes de 2 semanas
     
-    // Porcentaje de vida despierto (16 horas)
-    val percentageOfWakingLife = (dailyHours / 16) * 100
+    // Porcentaje de vida despierto (16 horas despierto al día)
+    val percentageOfWakingLife = (dailyHours / 16f) * 100f
     
     return ShockData(
         dailyHours = dailyHours,
-        yearsOnPhone = yearsOnPhone.toFloat(),
-        daysOnPhone = daysOnPhone.toFloat(),
-        moviesEquivalent = moviesEquivalent.toFloat(),
-        booksEquivalent = booksEquivalent.toFloat(),
-        travelDaysEquivalent = travelDaysEquivalent.toFloat(),
-        percentageOfWakingLife = percentageOfWakingLife.toFloat()
+        yearsOnPhone = yearsOnPhone,
+        daysOnPhone = daysOnPhone,
+        hoursPerYear = hoursPerYear,
+        moviesEquivalent = moviesEquivalent,
+        booksEquivalent = booksEquivalent,
+        travelDaysEquivalent = travelDaysEquivalent,
+        percentageOfWakingLife = percentageOfWakingLife,
+        estimatedAge = estimatedAge,
+        yearsRemaining = yearsRemaining
     )
 }

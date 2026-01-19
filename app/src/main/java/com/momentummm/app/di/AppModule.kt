@@ -7,6 +7,7 @@ import com.momentummm.app.data.manager.AutoSyncManager
 import com.momentummm.app.data.manager.BillingManager
 import com.momentummm.app.data.manager.GamificationManager
 import com.momentummm.app.data.repository.*
+import com.momentummm.app.util.SocialShareHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -123,5 +124,11 @@ object AppModule {
         database: AppDatabase
     ): GamificationManager {
         return GamificationManager(database.userDao())
+    }
+
+    @Provides
+    @Singleton
+    fun provideSocialShareHelper(): SocialShareHelper {
+        return SocialShareHelper()
     }
 }
