@@ -27,10 +27,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.R
 import com.momentummm.app.MainActivity
 import com.momentummm.app.data.manager.BillingManager
 import com.momentummm.app.ui.component.EmergencyUnlockScreen
@@ -50,7 +52,8 @@ class AppBlockedActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val blockedAppName = intent.getStringExtra(EXTRA_APP_NAME) ?: "Aplicación"
+        val blockedAppName = intent.getStringExtra(EXTRA_APP_NAME)
+            ?: getString(R.string.app_blocked_default_app_name)
         val dailyLimit = intent.getIntExtra(EXTRA_DAILY_LIMIT, 0)
         val currentStreakDays = intent.getIntExtra(EXTRA_STREAK_DAYS, 0)
 
@@ -115,12 +118,14 @@ class AppBlockedActivity : ComponentActivity() {
         private const val EXTRA_APP_NAME = "extra_app_name"
         private const val EXTRA_DAILY_LIMIT = "extra_daily_limit"
         private const val EXTRA_STREAK_DAYS = "extra_streak_days"
+        private const val EXTRA_CUSTOM_REASON = "extra_custom_reason"
 
-        fun start(context: Context, appName: String, dailyLimit: Int, streakDays: Int = 0) {
+        fun start(context: Context, appName: String, dailyLimit: Int, customReason: String? = null, streakDays: Int = 0) {
             val intent = Intent(context, AppBlockedActivity::class.java).apply {
                 putExtra(EXTRA_APP_NAME, appName)
                 putExtra(EXTRA_DAILY_LIMIT, dailyLimit)
                 putExtra(EXTRA_STREAK_DAYS, streakDays)
+                customReason?.let { putExtra(EXTRA_CUSTOM_REASON, it) }
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or
                         Intent.FLAG_ACTIVITY_NO_HISTORY)
@@ -267,7 +272,7 @@ private fun AppBlockedScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "⏰ Tiempo Agotado",
+                        text = stringResource(R.string.app_blocked_time_up_title),
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontSize = 32.sp
                         ),
@@ -277,7 +282,7 @@ private fun AppBlockedScreen(
                     )
 
                     Text(
-                        text = "Has alcanzado tu límite diario",
+                        text = stringResource(R.string.app_blocked_daily_limit_subtitle),
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center
@@ -342,13 +347,13 @@ private fun AppBlockedScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(horizontalAlignment = Alignment.Start) {
                                 Text(
-                                    text = "$dailyLimit minutos",
+                                    text = stringResource(R.string.app_blocked_daily_limit_minutes, dailyLimit),
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = "Límite diario alcanzado",
+                                    text = stringResource(R.string.app_blocked_daily_limit_reached),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.White.copy(alpha = 0.6f)
                                 )
@@ -373,15 +378,15 @@ private fun AppBlockedScreen(
                 ) {
                     StatCard(
                         icon = Icons.Filled.EmojiEvents,
-                        value = "¡Logro!",
-                        label = "Meta cumplida",
+                        value = stringResource(R.string.app_blocked_stat_achievement_value),
+                        label = stringResource(R.string.app_blocked_stat_achievement_label),
                         color = Color(0xFFFFD700),
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
                         icon = Icons.Filled.RestartAlt,
                         value = "00:00",
-                        label = "Reinicio mañana",
+                        label = stringResource(R.string.app_blocked_stat_reset_label),
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
@@ -412,7 +417,7 @@ private fun AppBlockedScreen(
                             modifier = Modifier.size(48.dp)
                         )
                         Text(
-                            text = "¡Excelente autocontrol! Estás construyendo hábitos más saludables.",
+                            text = stringResource(R.string.app_blocked_motivation_message),
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.White,
                             fontWeight = FontWeight.Medium,
@@ -436,18 +441,38 @@ private fun AppBlockedScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "💡 Sugerencias para aprovechar tu tiempo",
+                        text = stringResource(R.string.app_blocked_suggestions_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold
                     )
 
                     val suggestions = listOf(
-                        SuggestionItem(Icons.Outlined.Book, "Lee un libro", "Expande tu conocimiento"),
-                        SuggestionItem(Icons.Outlined.DirectionsWalk, "Sal a caminar", "Mueve tu cuerpo"),
-                        SuggestionItem(Icons.Outlined.SelfImprovement, "Medita", "Calma tu mente"),
-                        SuggestionItem(Icons.Outlined.FitnessCenter, "Ejercicio", "Mantente activo"),
-                        SuggestionItem(Icons.Outlined.Palette, "Hobby creativo", "Explora tu creatividad")
+                        SuggestionItem(
+                            Icons.Outlined.Book,
+                            stringResource(R.string.app_blocked_suggestion_read_title),
+                            stringResource(R.string.app_blocked_suggestion_read_desc)
+                        ),
+                        SuggestionItem(
+                            Icons.Outlined.DirectionsWalk,
+                            stringResource(R.string.app_blocked_suggestion_walk_title),
+                            stringResource(R.string.app_blocked_suggestion_walk_desc)
+                        ),
+                        SuggestionItem(
+                            Icons.Outlined.SelfImprovement,
+                            stringResource(R.string.app_blocked_suggestion_meditate_title),
+                            stringResource(R.string.app_blocked_suggestion_meditate_desc)
+                        ),
+                        SuggestionItem(
+                            Icons.Outlined.FitnessCenter,
+                            stringResource(R.string.app_blocked_suggestion_exercise_title),
+                            stringResource(R.string.app_blocked_suggestion_exercise_desc)
+                        ),
+                        SuggestionItem(
+                            Icons.Outlined.Palette,
+                            stringResource(R.string.app_blocked_suggestion_creative_title),
+                            stringResource(R.string.app_blocked_suggestion_creative_desc)
+                        )
                     )
 
                     suggestions.take(3).forEachIndexed { index, suggestion ->
@@ -492,7 +517,7 @@ private fun AppBlockedScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Abrir Momentum")
+                            Text(stringResource(R.string.app_blocked_open_momentum))
                         }
                     }
 
@@ -512,7 +537,11 @@ private fun AppBlockedScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = if (countdown > 0) "Cerrar en $countdown..." else "Cerrar",
+                            text = if (countdown > 0) {
+                                stringResource(R.string.app_blocked_close_in, countdown)
+                            } else {
+                                stringResource(R.string.app_blocked_close)
+                            },
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     }
@@ -538,7 +567,7 @@ private fun AppBlockedScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "🚨 Desbloqueo de emergencia",
+                                text = stringResource(R.string.app_blocked_emergency_unlock),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )

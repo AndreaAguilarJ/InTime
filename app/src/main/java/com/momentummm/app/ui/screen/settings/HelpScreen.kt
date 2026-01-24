@@ -14,12 +14,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.annotation.StringRes
+import com.momentummm.app.R
 
 data class FAQItem(
-    val question: String,
-    val answer: String,
+    @StringRes val questionRes: Int,
+    @StringRes val answerRes: Int,
     val icon: ImageVector = Icons.Default.HelpOutline
 )
 
@@ -30,56 +33,62 @@ fun HelpScreen(
 ) {
     val context = LocalContext.current
     
+    // Strings para usar en lambdas
+    val supportEmailUri = stringResource(R.string.help_support_email_uri)
+    val emailSubject = stringResource(R.string.help_support_email_subject)
+    val emailChooserTitle = stringResource(R.string.help_send_email_chooser)
+    val guideUrl = stringResource(R.string.help_guide_url)
+    
     val faqItems = remember {
         listOf(
             FAQItem(
-                question = "¿Cómo configuro límites de tiempo para aplicaciones?",
-                answer = "Ve a Ajustes > Funciones > Bienestar Digital > Límites de aplicaciones. Allí puedes seleccionar las apps que deseas limitar y establecer un tiempo máximo de uso diario.",
+                questionRes = R.string.help_faq_q1,
+                answerRes = R.string.help_faq_a1,
                 icon = Icons.Default.Timer
             ),
             FAQItem(
-                question = "¿Cómo funciona el Modo Mínimo?",
-                answer = "El Modo Mínimo convierte tu teléfono en una herramienta básica, ocultando apps distractoras y mostrando solo las esenciales. Puedes configurar qué apps quieres que aparezcan en Ajustes > Gestionar aplicaciones.",
+                questionRes = R.string.help_faq_q2,
+                answerRes = R.string.help_faq_a2,
                 icon = Icons.Default.PhoneAndroid
             ),
             FAQItem(
-                question = "¿Qué es el bloqueo dentro de apps?",
-                answer = "Esta función te permite bloquear contenido específico dentro de las apps (como Reels en Instagram o Shorts en YouTube) sin bloquear toda la aplicación. Requiere habilitar el servicio de accesibilidad.",
+                questionRes = R.string.help_faq_q3,
+                answerRes = R.string.help_faq_a3,
                 icon = Icons.Default.VideoLibrary
             ),
             FAQItem(
-                question = "¿Cómo protejo mi configuración con contraseña?",
-                answer = "Ve a Ajustes > Funciones > Seguridad y Privacidad > Protección por Contraseña. Configura un PIN numérico para proteger tus ajustes y evitar que alguien desactive los límites.",
+                questionRes = R.string.help_faq_q4,
+                answerRes = R.string.help_faq_a4,
                 icon = Icons.Default.Lock
             ),
             FAQItem(
-                question = "¿Por qué la app necesita el permiso de Accesibilidad?",
-                answer = "El permiso de Accesibilidad es necesario para detectar y bloquear contenido específico dentro de apps (como Reels o Shorts) y para bloquear sitios web. Sin este permiso, estas funciones no pueden operar.",
+                questionRes = R.string.help_faq_q5,
+                answerRes = R.string.help_faq_a5,
                 icon = Icons.Default.Accessibility
             ),
             FAQItem(
-                question = "¿Por qué la app necesita el permiso de Uso de aplicaciones?",
-                answer = "Este permiso permite a Momentum monitorear tu uso de apps para mostrarte estadísticas precisas y hacer cumplir los límites de tiempo que configures.",
+                questionRes = R.string.help_faq_q6,
+                answerRes = R.string.help_faq_a6,
                 icon = Icons.Default.BarChart
             ),
             FAQItem(
-                question = "¿Cómo funciona 'Mi vida en semanas'?",
-                answer = "Esta visualización muestra tu vida dividida en semanas, desde tu nacimiento hasta una expectativa de vida promedio. Te ayuda a reflexionar sobre el tiempo y a tomar decisiones más conscientes sobre cómo lo usas.",
+                questionRes = R.string.help_faq_q7,
+                answerRes = R.string.help_faq_a7,
                 icon = Icons.Default.CalendarMonth
             ),
             FAQItem(
-                question = "¿Cómo configuro los widgets?",
-                answer = "Mantén presionada la pantalla de inicio de tu teléfono, selecciona 'Widgets', busca 'Momentum' y arrastra el widget que prefieras a tu pantalla. Puedes configurar los colores en Ajustes > Configuración de widgets.",
+                questionRes = R.string.help_faq_q8,
+                answerRes = R.string.help_faq_a8,
                 icon = Icons.Default.Widgets
             ),
             FAQItem(
-                question = "¿Mis datos se sincronizan entre dispositivos?",
-                answer = "Sí, si has iniciado sesión con tu cuenta, tus configuraciones y datos se sincronizan automáticamente en la nube. Puedes ver el estado de sincronización en Ajustes > Sincronización.",
+                questionRes = R.string.help_faq_q9,
+                answerRes = R.string.help_faq_a9,
                 icon = Icons.Default.Sync
             ),
             FAQItem(
-                question = "¿Cómo desactivo los límites temporalmente?",
-                answer = "Si tienes protección por contraseña activada, deberás ingresar tu PIN para desactivar los límites. Esto es intencional para evitar que desactives los límites impulsivamente.",
+                questionRes = R.string.help_faq_q10,
+                answerRes = R.string.help_faq_a10,
                 icon = Icons.Default.LockOpen
             )
         )
@@ -88,12 +97,12 @@ fun HelpScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ayuda") },
+                title = { Text(stringResource(R.string.help_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.help_back_cd)
                         )
                     }
                 }
@@ -110,7 +119,7 @@ fun HelpScreen(
             // Sección de Preguntas Frecuentes
             item {
                 Text(
-                    text = "Preguntas Frecuentes",
+                    text = stringResource(R.string.help_faq_section_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
@@ -126,7 +135,7 @@ fun HelpScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "¿Necesitas más ayuda?",
+                    text = stringResource(R.string.help_contact_section_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
@@ -139,15 +148,20 @@ fun HelpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:soporte@momentum-app.com")
-                            putExtra(Intent.EXTRA_SUBJECT, "Soporte Momentum App")
+                            data = Uri.parse(supportEmailUri)
+                            putExtra(Intent.EXTRA_SUBJECT, emailSubject)
                         }
-                        context.startActivity(Intent.createChooser(intent, "Enviar correo"))
+                        context.startActivity(
+                            Intent.createChooser(
+                                intent,
+                                emailChooserTitle
+                            )
+                        )
                     }
                 ) {
                     ListItem(
-                        headlineContent = { Text("Contactar Soporte") },
-                        supportingContent = { Text("Envíanos un correo con tus dudas") },
+                        headlineContent = { Text(stringResource(R.string.help_contact_support_title)) },
+                        supportingContent = { Text(stringResource(R.string.help_contact_support_subtitle)) },
                         leadingContent = {
                             Icon(
                                 imageVector = Icons.Default.Email,
@@ -169,13 +183,16 @@ fun HelpScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://momentum-app.com/guia"))
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse(guideUrl)
+                        )
                         context.startActivity(intent)
                     }
                 ) {
                     ListItem(
-                        headlineContent = { Text("Guía Completa Online") },
-                        supportingContent = { Text("Tutoriales detallados y consejos") },
+                        headlineContent = { Text(stringResource(R.string.help_online_guide_title)) },
+                        supportingContent = { Text(stringResource(R.string.help_online_guide_subtitle)) },
                         leadingContent = {
                             Icon(
                                 imageVector = Icons.Default.MenuBook,
@@ -228,14 +245,18 @@ private fun ExpandableFAQCard(faq: FAQItem) {
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = faq.question,
+                    text = stringResource(faq.questionRes),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (isExpanded) "Colapsar" else "Expandir"
+                    contentDescription = if (isExpanded) {
+                        stringResource(R.string.help_collapse_cd)
+                    } else {
+                        stringResource(R.string.help_expand_cd)
+                    }
                 )
             }
             
@@ -244,7 +265,7 @@ private fun ExpandableFAQCard(faq: FAQItem) {
                 Divider()
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = faq.answer,
+                    text = stringResource(faq.answerRes),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

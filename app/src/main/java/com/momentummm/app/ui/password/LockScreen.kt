@@ -14,12 +14,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.momentummm.app.R
 import com.momentummm.app.security.AppLockManager
 import com.momentummm.app.security.BiometricPromptManager
 import com.momentummm.app.security.BiometricResult
@@ -48,6 +50,12 @@ fun LockScreen(
     
     val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsState()
     val isBiometricAvailable = viewModel.isBiometricAvailable()
+    val biometricFailedMessage = stringResource(R.string.lock_screen_biometric_failed)
+    val tooManyAttemptsMessage = stringResource(
+        R.string.lock_screen_too_many_attempts,
+        remainingLockoutTime / 1000 / 60
+    )
+    val incorrectPasswordMessage = stringResource(R.string.lock_screen_password_incorrect)
 
     // Observar resultados de biometría
     LaunchedEffect(Unit) {
@@ -57,7 +65,7 @@ fun LockScreen(
                     appLockManager.unlockApp()
                 }
                 is BiometricResult.AuthenticationFailed -> {
-                    errorMessage = "Autenticación biométrica fallida"
+                    errorMessage = biometricFailedMessage
                 }
                 is BiometricResult.AuthenticationError -> {
                     errorMessage = result.error
@@ -93,19 +101,19 @@ fun LockScreen(
                 // Icono de candado
                 Icon(
                     imageVector = Icons.Default.Lock,
-                    contentDescription = "Bloqueado",
+                    contentDescription = stringResource(R.string.lock_screen_locked_cd),
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
 
                 Text(
-                    text = "Aplicación Bloqueada",
+                    text = stringResource(R.string.lock_screen_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
-                    text = "Ingresa tu contraseña para continuar",
+                    text = stringResource(R.string.lock_screen_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -120,8 +128,8 @@ fun LockScreen(
                         password = it
                         errorMessage = null
                     },
-                    label = { Text("Contraseña") },
-                    placeholder = { Text("Ingresa tu contraseña") },
+                    label = { Text(stringResource(R.string.lock_screen_password_label)) },
+                    placeholder = { Text(stringResource(R.string.lock_screen_password_placeholder)) },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Done
@@ -140,9 +148,9 @@ fun LockScreen(
                                     } else {
                                         viewModel.updateRemainingLockoutTime()
                                         if (remainingLockoutTime > 0) {
-                                            errorMessage = "Demasiados intentos fallidos. Intenta en ${remainingLockoutTime / 1000 / 60} minutos"
+                                            errorMessage = tooManyAttemptsMessage
                                         } else {
-                                            errorMessage = "Contraseña incorrecta"
+                                            errorMessage = incorrectPasswordMessage
                                         }
                                         password = ""
                                     }
@@ -154,7 +162,11 @@ fun LockScreen(
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                                contentDescription = if (passwordVisible) {
+                                    stringResource(R.string.lock_screen_hide_password)
+                                } else {
+                                    stringResource(R.string.lock_screen_show_password)
+                                }
                             )
                         }
                     },
@@ -183,7 +195,10 @@ fun LockScreen(
                         )
                     ) {
                         Text(
-                            text = "Bloqueado por ${remainingLockoutTime / 1000 / 60} minuto(s)",
+                            text = stringResource(
+                                R.string.lock_screen_temporarily_locked,
+                                remainingLockoutTime / 1000 / 60
+                            ),
                             modifier = Modifier.padding(12.dp),
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             style = MaterialTheme.typography.bodyMedium,
@@ -207,9 +222,9 @@ fun LockScreen(
                                 } else {
                                     viewModel.updateRemainingLockoutTime()
                                     if (remainingLockoutTime > 0) {
-                                        errorMessage = "Demasiados intentos fallidos. Intenta en ${remainingLockoutTime / 1000 / 60} minutos"
+                                        errorMessage = tooManyAttemptsMessage
                                     } else {
-                                        errorMessage = "Contraseña incorrecta"
+                                        errorMessage = incorrectPasswordMessage
                                     }
                                     password = ""
                                 }
@@ -225,19 +240,22 @@ fun LockScreen(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
-                        Text("Desbloquear")
+                        Text(stringResource(R.string.lock_screen_unlock))
                     }
                 }
 
                 // Botón de biometría (si está disponible)
                 if (isBiometricAvailable && activity != null && remainingLockoutTime == 0L) {
+                    val biometricTitle = stringResource(R.string.lock_screen_biometric_title)
+                    val biometricSubtitle = stringResource(R.string.lock_screen_biometric_subtitle)
+                    val biometricDescription = stringResource(R.string.lock_screen_biometric_description)
                     OutlinedButton(
                         onClick = {
                             biometricPromptManager.showBiometricPrompt(
                                 activity = activity,
-                                title = "Desbloquear InTime",
-                                subtitle = "Usa tu huella o face ID",
-                                description = "Verifica tu identidad para continuar"
+                                title = biometricTitle,
+                                subtitle = biometricSubtitle,
+                                description = biometricDescription
                             )
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -248,7 +266,7 @@ fun LockScreen(
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Usar Biometría")
+                        Text(stringResource(R.string.lock_screen_use_biometric))
                     }
                 }
 
@@ -256,7 +274,7 @@ fun LockScreen(
 
                 // Nota de ayuda
                 Text(
-                    text = "Si olvidaste tu contraseña, desinstala y reinstala la aplicación",
+                    text = stringResource(R.string.lock_screen_help_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center

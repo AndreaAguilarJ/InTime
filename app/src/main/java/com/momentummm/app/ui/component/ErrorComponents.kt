@@ -9,8 +9,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.momentummm.app.R
 import com.momentummm.app.util.NetworkUtils
 
 @Composable
@@ -50,7 +52,7 @@ fun OfflineIndicator(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Sin conexión a internet\nFunciones limitadas disponibles",
+                        text = stringResource(R.string.offline_indicator_message),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
@@ -66,7 +68,7 @@ fun OfflineIndicator(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "Reintentar",
+                        contentDescription = stringResource(R.string.offline_indicator_retry_cd),
                         tint = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
@@ -77,9 +79,10 @@ fun OfflineIndicator(
 
 @Composable
 fun LoadingIndicator(
-    message: String = "Cargando...",
+    message: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val displayMessage = message ?: stringResource(R.string.loading_indicator_message)
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -91,7 +94,7 @@ fun LoadingIndicator(
             CircularProgressIndicator()
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = message,
+                text = displayMessage,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )

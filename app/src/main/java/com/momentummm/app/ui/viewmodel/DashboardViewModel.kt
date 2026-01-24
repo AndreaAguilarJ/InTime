@@ -64,19 +64,24 @@ class DashboardViewModel(
                 // Check permissions first
                 val hasPermission = PermissionUtils.hasUsageStatsPermission(context)
                 
-                // Load quote of the day (always available)
-                val quote = quotesRepository.getRandomQuote()
+                // Load quote of the day en background
+                val quote = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    quotesRepository.getRandomQuote()
+                }
                 
                 if (hasPermission) {
-                    // Load usage stats
-                    val totalScreenTime = usageStatsRepository.getTotalScreenTime()
-                    val topApps = usageStatsRepository.getTodayUsageStats().take(5)
+                    // Load usage stats en background (Dispatchers.IO para operaciones I/O)
+                    val (totalScreenTime, topApps) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        val time = usageStatsRepository.getTotalScreenTime()
+                        val apps = usageStatsRepository.getTodayUsageStats().take(5)
+                        time to apps
+                    }
                     
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         totalScreenTime = LifeWeeksCalculator.formatTimeFromMillis(totalScreenTime),
                         quoteOfTheDay = quote,
-                        topApps = topApps,
+                        topApps = topApps as List<com.momentummm.app.data.repository.AppUsageInfo>,
                         hasUsagePermission = true
                     )
                 } else {

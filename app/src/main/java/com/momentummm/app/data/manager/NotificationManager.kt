@@ -54,6 +54,9 @@ class SmartNotificationManager @Inject constructor(
         const val NOTIFICATION_ID_GOAL_ACHIEVED = 2005
         const val NOTIFICATION_ID_MILESTONE = 2006
         const val NOTIFICATION_ID_SCREEN_TIME_REMINDER = 2007
+        const val NOTIFICATION_ID_STREAK_WARNING = 2008
+        const val NOTIFICATION_ID_GRACE_DAY_USED = 2009
+        const val NOTIFICATION_ID_GRACE_DAY_LOW = 2010
 
         // Umbrales
         const val WARNING_THRESHOLD_PERCENT = 80 // Avisar cuando se usa el 80% del límite
@@ -65,6 +68,7 @@ class SmartNotificationManager @Inject constructor(
         val WEEKLY_SUMMARY_ENABLED = booleanPreferencesKey("weekly_summary")
         val ACHIEVEMENTS_ENABLED = booleanPreferencesKey("achievements_notifications")
         val SCREEN_TIME_REMINDERS_ENABLED = booleanPreferencesKey("screen_time_reminders")
+        val STREAK_WARNINGS_ENABLED = booleanPreferencesKey("streak_warnings")
     }
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -250,6 +254,23 @@ class SmartNotificationManager @Inject constructor(
     }
     
     /**
+     * Enviar una notificación de prueba inmediata
+     */
+    fun sendTestNotification() {
+        val title = "🔔 ¡Notificaciones Activas!"
+        val message = "Las notificaciones de InTime están funcionando correctamente. Recibirás alertas sobre tus metas y límites."
+        
+        showNotification(
+            channelId = CHANNEL_ID_MOTIVATION,
+            notificationId = 9999,
+            title = title,
+            message = message,
+            icon = R.drawable.ic_goal,
+            priority = NotificationCompat.PRIORITY_HIGH
+        )
+    }
+    
+    /**
      * 3. Motivación diaria con frases
      */
     fun sendDailyMotivation() {
@@ -372,6 +393,102 @@ class SmartNotificationManager @Inject constructor(
         )
     }
     
+    // ================== PROTECCIÓN DE RACHAS ==================
+    
+    /**
+     * Notificación de advertencia de racha - cuando está cerca de romperla
+     */
+    fun showStreakWarningNotification(
+        appName: String,
+        remainingMinutes: Int,
+        currentStreak: Int
+    ) {
+        scope.launch {
+            try {
+                if (!isNotificationEnabled(STREAK_WARNINGS_ENABLED)) return@launch
+                
+                val title = "⚠️ ¡Tu racha de $currentStreak días está en riesgo!"
+                val message = "Te quedan solo $remainingMinutes minutos de uso en $appName. " +
+                        "Cierra la app para proteger tu racha."
+                
+                showNotification(
+                    channelId = CHANNEL_ID_LIMITS,
+                    notificationId = NOTIFICATION_ID_STREAK_WARNING,
+                    title = title,
+                    message = message,
+                    icon = R.drawable.ic_streak,
+                    priority = NotificationCompat.PRIORITY_HIGH
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    /**
+     * Notificación cuando se usa un día de gracia
+     */
+    fun showGraceDayUsedNotification(graceDaysRemaining: Int) {
+        scope.launch {
+            try {
+                if (!isNotificationEnabled(STREAK_WARNINGS_ENABLED)) return@launch
+                
+                val title = "🛡️ Día de Gracia Usado"
+                val message = if (graceDaysRemaining > 0) {
+                    "Tu racha está protegida. Te quedan $graceDaysRemaining días de gracia esta semana."
+                } else {
+                    "Tu racha está protegida. ¡Era tu último día de gracia de esta semana!"
+                }
+                
+                showNotification(
+                    channelId = CHANNEL_ID_GOALS,
+                    notificationId = NOTIFICATION_ID_GRACE_DAY_USED,
+                    title = title,
+                    message = message,
+                    icon = R.drawable.ic_goal,
+                    priority = NotificationCompat.PRIORITY_DEFAULT
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    /**
+     * Notificación cuando quedan pocos días de gracia
+     */
+    fun showGraceDaysLowNotification(graceDaysRemaining: Int) {
+        scope.launch {
+            try {
+                if (!isNotificationEnabled(STREAK_WARNINGS_ENABLED)) return@launch
+                
+                if (graceDaysRemaining <= 1) {
+                    val title = if (graceDaysRemaining == 0) {
+                        "🚨 Sin Días de Gracia"
+                    } else {
+                        "⚠️ Último Día de Gracia"
+                    }
+                    val message = if (graceDaysRemaining == 0) {
+                        "No tienes días de gracia esta semana. Si superas tus límites, perderás tu racha."
+                    } else {
+                        "Te queda solo 1 día de gracia esta semana. ¡Úsalo con cuidado!"
+                    }
+                    
+                    showNotification(
+                        channelId = CHANNEL_ID_LIMITS,
+                        notificationId = NOTIFICATION_ID_GRACE_DAY_LOW,
+                        title = title,
+                        message = message,
+                        icon = R.drawable.ic_streak,
+                        priority = NotificationCompat.PRIORITY_DEFAULT
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     /**
      * Recordatorio inteligente de tiempo de pantalla
      */
@@ -408,82 +525,42 @@ class SmartNotificationManager @Inject constructor(
      */
     private fun scheduleAllNotifications() {
         // Chequeo de límites cada 30 minutos
-        schedulePeriodicWork(
-            workName = "app_limits_check",
-            workerClass = AppLimitsCheckWorker::class.java,
-            intervalHours = 0,
-            intervalMinutes = 30
-        )
+        scheduleAppLimitsCheck()
 
         // Motivación diaria a las 9 AM
-        scheduleDailyWork(
-            workName = "daily_motivation",
-            workerClass = DailyMotivationWorker::class.java,
-            hour = 9,
-            minute = 0
-        )
+        scheduleDailyMotivation()
 
         // Resumen semanal los domingos a las 8 PM
-        scheduleWeeklyWork(
-            workName = "weekly_summary",
-            workerClass = WeeklySummaryWorker::class.java,
-            dayOfWeek = Calendar.SUNDAY,
-            hour = 20,
-            minute = 0
-        )
+        scheduleWeeklySummary()
 
         // Chequeo de logros cada 2 horas
-        schedulePeriodicWork(
-            workName = "achievements_check",
-            workerClass = AchievementsCheckWorker::class.java,
-            intervalHours = 2
-        )
+        scheduleAchievementsCheck()
 
         // Recordatorio de pantalla cada 3 horas (de 9 AM a 9 PM)
-        schedulePeriodicWork(
-            workName = "screen_time_reminder",
-            workerClass = ScreenTimeReminderWorker::class.java,
-            intervalHours = 3
-        )
+        scheduleScreenTimeReminder()
     }
 
-    private fun schedulePeriodicWork(
-        workName: String,
-        workerClass: Class<out ListenableWorker>,
-        intervalHours: Long = 1,
-        intervalMinutes: Long = 0
-    ) {
+    private fun scheduleAppLimitsCheck() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
             .build()
 
-        val workRequest = if (intervalMinutes > 0) {
-            PeriodicWorkRequestBuilder<ListenableWorker>(intervalMinutes, TimeUnit.MINUTES)
-                .setConstraints(constraints)
-                .build()
-        } else {
-            PeriodicWorkRequestBuilder<ListenableWorker>(intervalHours, TimeUnit.HOURS)
-                .setConstraints(constraints)
-                .build()
-        }
+        val workRequest = PeriodicWorkRequestBuilder<AppLimitsCheckWorker>(30, TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            workName,
+            "app_limits_check",
             ExistingPeriodicWorkPolicy.KEEP,
-            workRequest as PeriodicWorkRequest
+            workRequest
         )
     }
 
-    private fun scheduleDailyWork(
-        workName: String,
-        workerClass: Class<out ListenableWorker>,
-        hour: Int,
-        minute: Int
-    ) {
+    private fun scheduleDailyMotivation() {
         val currentDate = Calendar.getInstance()
         val dueDate = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
+            set(Calendar.HOUR_OF_DAY, 9)
+            set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             if (before(currentDate)) {
                 add(Calendar.DAY_OF_MONTH, 1)
@@ -492,7 +569,7 @@ class SmartNotificationManager @Inject constructor(
 
         val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
 
-        val workRequest = PeriodicWorkRequestBuilder<ListenableWorker>(1, TimeUnit.DAYS)
+        val workRequest = PeriodicWorkRequestBuilder<DailyMotivationWorker>(1, TimeUnit.DAYS)
             .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
             .setConstraints(
                 Constraints.Builder()
@@ -502,24 +579,18 @@ class SmartNotificationManager @Inject constructor(
             .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            workName,
+            "daily_motivation",
             ExistingPeriodicWorkPolicy.KEEP,
-            workRequest as PeriodicWorkRequest
+            workRequest
         )
     }
-    
-    private fun scheduleWeeklyWork(
-        workName: String,
-        workerClass: Class<out ListenableWorker>,
-        dayOfWeek: Int,
-        hour: Int,
-        minute: Int
-    ) {
+
+    private fun scheduleWeeklySummary() {
         val currentDate = Calendar.getInstance()
         val dueDate = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_WEEK, dayOfWeek)
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
+            set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+            set(Calendar.HOUR_OF_DAY, 20)
+            set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             if (before(currentDate)) {
                 add(Calendar.WEEK_OF_YEAR, 1)
@@ -528,7 +599,7 @@ class SmartNotificationManager @Inject constructor(
 
         val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
 
-        val workRequest = PeriodicWorkRequestBuilder<ListenableWorker>(7, TimeUnit.DAYS)
+        val workRequest = PeriodicWorkRequestBuilder<WeeklySummaryWorker>(7, TimeUnit.DAYS)
             .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
             .setConstraints(
                 Constraints.Builder()
@@ -538,9 +609,41 @@ class SmartNotificationManager @Inject constructor(
             .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            workName,
+            "weekly_summary",
             ExistingPeriodicWorkPolicy.KEEP,
-            workRequest as PeriodicWorkRequest
+            workRequest
+        )
+    }
+
+    private fun scheduleAchievementsCheck() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+            .build()
+
+        val workRequest = PeriodicWorkRequestBuilder<AchievementsCheckWorker>(2, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "achievements_check",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    private fun scheduleScreenTimeReminder() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+            .build()
+
+        val workRequest = PeriodicWorkRequestBuilder<ScreenTimeReminderWorker>(3, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "screen_time_reminder",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
         )
     }
 

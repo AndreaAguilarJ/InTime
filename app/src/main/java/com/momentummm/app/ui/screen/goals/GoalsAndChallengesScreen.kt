@@ -19,11 +19,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.annotation.StringRes
+import com.momentummm.app.R
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.data.entity.Goal as DbGoal
 import com.momentummm.app.data.entity.Challenge as DbChallenge
@@ -61,28 +64,28 @@ data class Challenge(
     val currentStreak: Int = 0
 )
 
-enum class GoalPeriod(val displayName: String) {
-    DAILY("Diario"),
-    WEEKLY("Semanal"),
-    MONTHLY("Mensual")
+enum class GoalPeriod(@StringRes val displayNameRes: Int) {
+    DAILY(R.string.goal_period_daily),
+    WEEKLY(R.string.goal_period_weekly),
+    MONTHLY(R.string.goal_period_monthly)
 }
 
-enum class GoalCategory(val displayName: String, val color: Color) {
-    SCREEN_TIME("Tiempo de pantalla", Color(0xFF2196F3)),
-    SOCIAL_MEDIA("Redes sociales", Color(0xFF9C27B0)),
-    PRODUCTIVITY("Productividad", Color(0xFF4CAF50)),
-    FOCUS("Enfoque", Color(0xFFFF5722)),
-    DIGITAL_DETOX("Desintoxicación", Color(0xFF607D8B))
+enum class GoalCategory(@StringRes val displayNameRes: Int, val color: Color) {
+    SCREEN_TIME(R.string.goal_category_screen_time, Color(0xFF2196F3)),
+    SOCIAL_MEDIA(R.string.goal_category_social_media, Color(0xFF9C27B0)),
+    PRODUCTIVITY(R.string.goal_category_productivity, Color(0xFF4CAF50)),
+    FOCUS(R.string.goal_category_focus, Color(0xFFFF5722)),
+    DIGITAL_DETOX(R.string.goal_category_digital_detox, Color(0xFF607D8B))
 }
 
 enum class ChallengeIcon {
     PHONE_OFF, TIMER, NATURE, BOOK, MEDITATION, EXERCISE
 }
 
-enum class ChallengeDifficulty(val displayName: String, val color: Color) {
-    EASY("Fácil", Color(0xFF4CAF50)),
-    MEDIUM("Medio", Color(0xFFFF9800)),
-    HARD("Difícil", Color(0xFFF44336))
+enum class ChallengeDifficulty(@StringRes val displayNameRes: Int, val color: Color) {
+    EASY(R.string.challenge_difficulty_easy, Color(0xFF4CAF50)),
+    MEDIUM(R.string.challenge_difficulty_medium, Color(0xFFFF9800)),
+    HARD(R.string.challenge_difficulty_hard, Color(0xFFF44336))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,12 +143,12 @@ fun GoalsAndChallengesScreen(
             ) {
                 Column {
                     Text(
-                        text = "Metas y Desafíos",
+                        text = stringResource(R.string.goals_header_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Establece objetivos y completa desafíos",
+                        text = stringResource(R.string.goals_header_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -184,12 +187,12 @@ fun GoalsAndChallengesScreen(
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { viewModel.selectTab(0) },
-                    text = { Text("Metas") }
+                    text = { Text(stringResource(R.string.goals_tab_goals)) }
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { viewModel.selectTab(1) },
-                    text = { Text("Desafíos") }
+                    text = { Text(stringResource(R.string.goals_tab_challenges)) }
                 )
             }
         }
@@ -204,7 +207,7 @@ fun GoalsAndChallengesScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Metas Activas",
+                            text = stringResource(R.string.goals_active_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -214,7 +217,7 @@ fun GoalsAndChallengesScreen(
                             size = ButtonSize.Small,
                             icon = Icons.Filled.Add
                         ) {
-                            Text("Nueva Meta")
+                            Text(stringResource(R.string.goals_new_goal_button))
                         }
                     }
                 }
@@ -251,13 +254,13 @@ fun GoalsAndChallengesScreen(
                                     tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                                 )
                                 Text(
-                                    text = "Sin metas por ahora",
+                                    text = stringResource(R.string.goals_empty_title),
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "Define tu primer objetivo para empezar a avanzar",
+                                    text = stringResource(R.string.goals_empty_subtitle),
                                     style = MaterialTheme.typography.bodyMedium,
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -268,7 +271,7 @@ fun GoalsAndChallengesScreen(
                                     style = ButtonStyle.Primary,
                                     icon = Icons.Filled.Add
                                 ) {
-                                    Text("Crear Mi Primera Meta")
+                                    Text(stringResource(R.string.goals_empty_action))
                                 }
                             }
                         }
@@ -280,7 +283,7 @@ fun GoalsAndChallengesScreen(
                 // Challenges Tab
                 item {
                     Text(
-                        text = "Desafíos Activos",
+                        text = stringResource(R.string.goals_challenges_active_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -302,7 +305,7 @@ fun GoalsAndChallengesScreen(
 
                 item {
                     Text(
-                        text = "Desafíos Disponibles",
+                        text = stringResource(R.string.goals_challenges_available_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 16.dp)
@@ -340,13 +343,13 @@ fun GoalsAndChallengesScreen(
                                     tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)
                                 )
                                 Text(
-                                    text = "Sin desafíos disponibles",
+                                    text = stringResource(R.string.goals_challenges_empty_title),
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "Los desafíos gamificados aparecerán aquí próximamente",
+                                    text = stringResource(R.string.goals_challenges_empty_subtitle),
                                     style = MaterialTheme.typography.bodyMedium,
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -357,7 +360,7 @@ fun GoalsAndChallengesScreen(
                                     style = ButtonStyle.Outline,
                                     icon = Icons.Filled.Refresh
                                 ) {
-                                    Text("Actualizar")
+                                    Text(stringResource(R.string.goals_challenges_refresh_button))
                                 }
                             }
                         }
@@ -442,7 +445,7 @@ private fun PremiumGoalsUpsellScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         Text(
-            text = "Metas y Desafíos",
+            text = stringResource(R.string.goals_premium_title),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
@@ -451,7 +454,7 @@ private fun PremiumGoalsUpsellScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Establece metas personalizadas y completa desafíos gamificados",
+            text = stringResource(R.string.goals_premium_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -460,12 +463,12 @@ private fun PremiumGoalsUpsellScreen(
         Spacer(modifier = Modifier.height(32.dp))
         
         val features = listOf(
-            "Metas personalizadas diarias, semanales y mensuales",
-            "Desafíos gamificados de desintoxicación digital",
-            "Sistema de recompensas y badges",
-            "Seguimiento automático de progreso",
-            "Recordatorios inteligentes",
-            "Análisis de cumplimiento de objetivos"
+            stringResource(R.string.goals_premium_feature_1),
+            stringResource(R.string.goals_premium_feature_2),
+            stringResource(R.string.goals_premium_feature_3),
+            stringResource(R.string.goals_premium_feature_4),
+            stringResource(R.string.goals_premium_feature_5),
+            stringResource(R.string.goals_premium_feature_6)
         )
         
         features.forEach { feature ->
@@ -495,7 +498,7 @@ private fun PremiumGoalsUpsellScreen(
             size = ButtonSize.Large,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Actualizar a Premium")
+            Text(stringResource(R.string.goals_premium_cta))
         }
     }
 }
@@ -514,7 +517,7 @@ private fun QuickStatsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Resumen",
+                text = stringResource(R.string.goals_summary_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -527,28 +530,28 @@ private fun QuickStatsCard(
             ) {
                 StatItem(
                     value = goalsCompleted.toString(),
-                    label = "Metas\ncompletadas",
+                    label = stringResource(R.string.goals_summary_completed),
                     icon = Icons.Filled.CheckCircle,
                     color = MaterialTheme.colorScheme.primary
                 )
                 
                 StatItem(
                     value = goalsActive.toString(),
-                    label = "Metas\nactivas",
+                    label = stringResource(R.string.goals_summary_active),
                     icon = Icons.Filled.Flag,
                     color = MaterialTheme.colorScheme.secondary
                 )
                 
                 StatItem(
                     value = challengesCompleted.toString(),
-                    label = "Desafíos\ncompletados",
+                    label = stringResource(R.string.goals_summary_challenges_completed),
                     icon = Icons.Filled.EmojiEvents,
                     color = MaterialTheme.colorScheme.tertiary
                 )
                 
                 StatItem(
                     value = streakDays.toString(),
-                    label = "Días de\nracha",
+                    label = stringResource(R.string.goals_summary_streak_days),
                     icon = Icons.Filled.Whatshot,
                     color = Color(0xFFFF5722)
                 )
@@ -646,7 +649,7 @@ private fun GoalCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = goal.period.displayName,
+                        text = stringResource(goal.period.displayNameRes),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         color = goal.category.color,
@@ -664,13 +667,21 @@ private fun GoalCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${goal.currentValue / 60}h ${goal.currentValue % 60}m",
+                        text = stringResource(
+                            R.string.goals_progress_current,
+                            goal.currentValue / 60,
+                            goal.currentValue % 60
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = progressColor,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Meta: ${goal.targetValue / 60}h ${goal.targetValue % 60}m",
+                        text = stringResource(
+                            R.string.goals_progress_target,
+                            goal.targetValue / 60,
+                            goal.targetValue % 60
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -694,7 +705,10 @@ private fun GoalCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${(progress * 100).toInt()}% completado",
+                    text = stringResource(
+                        R.string.goals_progress_completed,
+                        (progress * 100).toInt()
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -716,7 +730,7 @@ private fun GoalCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "¡Completado!",
+                                text = stringResource(R.string.goals_completed_badge),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold
@@ -773,7 +787,7 @@ private fun ChallengeCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = challenge.difficulty.displayName,
+                        text = stringResource(challenge.difficulty.displayNameRes),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         color = challenge.difficulty.color,
@@ -805,7 +819,10 @@ private fun ChallengeCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 
                 Text(
-                    text = "${challenge.durationDays} días",
+                    text = stringResource(
+                        R.string.goals_challenge_duration_days,
+                        challenge.durationDays
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -813,7 +830,10 @@ private fun ChallengeCard(
                 Spacer(modifier = Modifier.weight(1f))
                 
                 Text(
-                    text = "Recompensa: ${challenge.reward}",
+                    text = stringResource(
+                        R.string.goals_challenge_reward,
+                        challenge.reward
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
@@ -832,7 +852,11 @@ private fun ChallengeCard(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Text(
-                    text = "Día ${(challenge.progress * challenge.durationDays).toInt() + 1} de ${challenge.durationDays}",
+                    text = stringResource(
+                        R.string.goals_challenge_day_progress,
+                        (challenge.progress * challenge.durationDays).toInt() + 1,
+                        challenge.durationDays
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -845,7 +869,7 @@ private fun ChallengeCard(
                     size = ButtonSize.Small,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Unirse al Desafío")
+                    Text(stringResource(R.string.goals_challenge_join_button))
                 }
             } else {
                 Spacer(modifier = Modifier.height(12.dp))
@@ -868,7 +892,7 @@ private fun ChallengeCard(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "¡Desafío Completado!",
+                            text = stringResource(R.string.goals_challenge_completed_badge),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Bold

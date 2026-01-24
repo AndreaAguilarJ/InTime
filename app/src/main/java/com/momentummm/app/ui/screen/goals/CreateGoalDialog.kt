@@ -11,11 +11,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.momentummm.app.R
 import com.momentummm.app.ui.system.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,7 +37,7 @@ fun GoalsScreen(
     ) {
         // Header
         Text(
-            text = "Mis Metas",
+            text = stringResource(R.string.goals_screen_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -49,7 +51,7 @@ fun GoalsScreen(
             style = ButtonStyle.Primary,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Agregar Meta")
+            Text(stringResource(R.string.goals_add_button))
         }
     }
 
@@ -70,12 +72,15 @@ fun GoalsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Nueva Meta",
+                            text = stringResource(R.string.goals_create_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         IconButton(onClick = { showDialog = false }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Cerrar")
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.goals_close_cd)
+                            )
                         }
                     }
 
@@ -89,8 +94,8 @@ fun GoalsScreen(
                             title = it
                             showError = false
                         },
-                        label = { Text("Título de la meta") },
-                        placeholder = { Text("Ej: Reducir tiempo de pantalla") },
+                        label = { Text(stringResource(R.string.goals_title_label)) },
+                        placeholder = { Text(stringResource(R.string.goals_title_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         isError = showError && title.isBlank()
                     )
@@ -104,8 +109,8 @@ fun GoalsScreen(
                             description = it
                             showError = false
                         },
-                        label = { Text("Descripción") },
-                        placeholder = { Text("Describe tu objetivo...") },
+                        label = { Text(stringResource(R.string.goals_description_label)) },
+                        placeholder = { Text(stringResource(R.string.goals_description_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2,
                         maxLines = 3,
@@ -118,7 +123,7 @@ fun GoalsScreen(
 
                     Column {
                         Text(
-                            text = "Tiempo objetivo",
+                            text = stringResource(R.string.goals_target_time_label),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Medium
                         )
@@ -135,7 +140,7 @@ fun GoalsScreen(
                                         showError = false
                                     }
                                 },
-                                label = { Text("Horas") },
+                                label = { Text(stringResource(R.string.goals_hours_label)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.weight(1f),
                                 isError = showError && targetHours.isBlank() && targetMinutes.isBlank()
@@ -149,7 +154,7 @@ fun GoalsScreen(
                                         showError = false
                                     }
                                 },
-                                label = { Text("Minutos") },
+                                label = { Text(stringResource(R.string.goals_minutes_label)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.weight(1f),
                                 isError = showError && targetHours.isBlank() && targetMinutes.isBlank()
@@ -162,7 +167,7 @@ fun GoalsScreen(
 
                     Column {
                         Text(
-                            text = "Período",
+                            text = stringResource(R.string.goals_period_label),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Medium
                         )
@@ -175,7 +180,7 @@ fun GoalsScreen(
                                 FilterChip(
                                     selected = selectedPeriod == period,
                                     onClick = { selectedPeriod = period },
-                                    label = { Text(period.displayName) },
+                                    label = { Text(stringResource(period.displayNameRes)) },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -187,7 +192,7 @@ fun GoalsScreen(
 
                     Column {
                         Text(
-                            text = "Categoría",
+                            text = stringResource(R.string.goals_category_label),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Medium
                         )
@@ -204,7 +209,7 @@ fun GoalsScreen(
                                     onClick = { selectedCategory = category },
                                     label = {
                                         Text(
-                                            text = category.displayName,
+                                            text = stringResource(category.displayNameRes),
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                     },
@@ -219,7 +224,7 @@ fun GoalsScreen(
 
                     if (showError) {
                         Text(
-                            text = "Por favor completa todos los campos obligatorios",
+                            text = stringResource(R.string.goals_required_error),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -235,7 +240,7 @@ fun GoalsScreen(
                             style = ButtonStyle.Outline,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Cancelar")
+                            Text(stringResource(R.string.goals_cancel_button))
                         }
 
                         MomentumButton(
@@ -267,7 +272,7 @@ fun GoalsScreen(
                             style = ButtonStyle.Primary,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Crear Meta")
+                            Text(stringResource(R.string.goals_create_button))
                         }
                     }
                 }

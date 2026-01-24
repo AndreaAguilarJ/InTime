@@ -2,6 +2,7 @@ package com.momentummm.app
 
 import android.app.Application
 import android.content.Context
+import android.os.StrictMode
 import androidx.work.Configuration
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.repository.UserRepository
@@ -154,21 +155,47 @@ class MomentumApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         
+        // Inicialización en background para no bloquear el hilo principal
+        CoroutineScope(Dispatchers.Default).launch {
+            // Inicializar managers no críticos en background
+            billingManager.startConnection()
+            
+            // Inicializar sistema de notificaciones inteligentes
+            smartNotificationManager
+            
+            // Initialize Appwrite quotes if needed
+            seedDefaultQuotesIfNeeded()
+        }
+        
+        // Habilitar StrictMode en modo debug para detectar operaciones lentas en el hilo principal
+        // NOTA: Deshabilitado penaltyFlashScreen para evitar flashes rojos molestos
+        // Las violaciones se registran solo en logcat
+        if (com.momentummm.app.BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .detectNetwork()
+                    .detectCustomSlowCalls()
+                    .penaltyLog() // Solo log violations, sin flash
+                    .build()
+            )
+            
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy.Builder()
+                    .detectLeakedSqlLiteObjects()
+                    .detectLeakedClosableObjects()
+                    .detectActivityLeaks()
+                    .penaltyLog()
+                    .build()
+            )
+        }
+        
         // Remove manual WorkManager initialization to avoid double initialization crash.
         // WorkManager is auto-initialized via App Startup when Configuration.Provider is implemented.
 
         // Start widget update worker
         com.momentummm.app.worker.WidgetUpdateWorker.startPeriodicUpdate(this)
-        
-        // Initialize enhanced features
-        billingManager.startConnection()
-
-        // Inicializar sistema de notificaciones inteligentes
-        // Se auto-programa al instanciarse
-        smartNotificationManager
-
-        // Initialize Appwrite quotes if needed
-        seedDefaultQuotesIfNeeded()
     }
 
     override val workManagerConfiguration: Configuration

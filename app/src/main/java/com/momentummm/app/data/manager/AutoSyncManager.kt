@@ -98,23 +98,47 @@ class AutoSyncManager(
         }
 
         try {
-            _syncStatus.value = SyncStatus.Syncing
+            // Timeout de 10 segundos para prevenir ANR
+            withTimeout(10000L) {
+                _syncStatus.value = SyncStatus.Syncing
 
-            val userId = appwriteService.currentUser.value?.id ?: run {
-                println("AutoSyncManager: No se pudo obtener el ID del usuario")
-                _syncStatus.value = SyncStatus.Failed
-                return
-            }
+                val userId = appwriteService.currentUser.value?.id ?: run {
+                    println("AutoSyncManager: No se pudo obtener el ID del usuario")
+                    _syncStatus.value = SyncStatus.Failed
+                    return@withTimeout
+                }
 
-            println("AutoSyncManager: Iniciando sincronización para usuario: $userId")
+                println("AutoSyncManager: Iniciando sincronización para usuario: $userId")
 
-            // Recopilar todos los datos
-            val userSettings = userRepository.getUserSettings().first()
-            val widgetColors = UserPreferencesRepository.getWidgetColors(context)
-            val goals = goalsRepository.getAllGoals().first()
-            val appLimits = appLimitRepository.getAllLimits().first()
-            val whitelistedApps = appWhitelistRepository.getAllWhitelistedApps().first()
-            val customQuotes = quotesRepository.getAllQuotes().first()
+                // Recopilar todos los datos en background con timeout individual
+                val userSettings = withContext(Dispatchers.IO) {
+                    withTimeoutOrNull(2000L) {
+                        userRepository.getUserSettings().first()
+                    }
+                }
+                val widgetColors = withContext(Dispatchers.IO) {
+                    UserPreferencesRepository.getWidgetColors(context)
+                }
+                val goals = withContext(Dispatchers.IO) {
+                    withTimeoutOrNull(2000L) {
+                        goalsRepository.getAllGoals().first()
+                    } ?: emptyList()
+                }
+                val appLimits = withContext(Dispatchers.IO) {
+                    withTimeoutOrNull(2000L) {
+                        appLimitRepository.getAllLimits().first()
+                    } ?: emptyList()
+                }
+                val whitelistedApps = withContext(Dispatchers.IO) {
+                    withTimeoutOrNull(2000L) {
+                        appWhitelistRepository.getAllWhitelistedApps().first()
+                    } ?: emptyList()
+                }
+                val customQuotes = withContext(Dispatchers.IO) {
+                    withTimeoutOrNull(2000L) {
+                        quotesRepository.getAllQuotes().first()
+                    } ?: emptyList()
+                }
 
             println("AutoSyncManager: Datos recopilados - Goals: ${goals.size}, Limits: ${appLimits.size}, Whitelist: ${whitelistedApps.size}")
 
@@ -197,9 +221,9 @@ class AutoSyncManager(
                             )
                             _syncStatus.value = SyncStatus.Success
                             saveLastSyncTime()
-                            println("AutoSyncManager: ✅ Sincronización exitosa (actualización)")
+                            println("AutoSyncManager: OK Sincronización exitosa (actualización)")
                         } catch (e: Exception) {
-                            println("AutoSyncManager: ❌ Error al actualizar documento - ${e.message}")
+                            println("AutoSyncManager: X Error al actualizar documento - ${e.message}")
                             e.printStackTrace()
                             _syncStatus.value = SyncStatus.Failed
                         }
@@ -215,9 +239,9 @@ class AutoSyncManager(
                             )
                             _syncStatus.value = SyncStatus.Success
                             saveLastSyncTime()
-                            println("AutoSyncManager: ✅ Sincronización exitosa (creación)")
+                            println("AutoSyncManager: OK Sincronización exitosa (creación)")
                         } catch (e: Exception) {
-                            println("AutoSyncManager: ❌ Error al crear documento - ${e.message}")
+                            println("AutoSyncManager: X Error al crear documento - ${e.message}")
                             e.printStackTrace()
                             _syncStatus.value = SyncStatus.Failed
                         }
@@ -234,9 +258,9 @@ class AutoSyncManager(
                         )
                         _syncStatus.value = SyncStatus.Success
                         saveLastSyncTime()
-                        println("AutoSyncManager: ✅ Sincronización exitosa (primer documento)")
+                        println("AutoSyncManager: OK Sincronización exitosa (primer documento)")
                     } catch (e: Exception) {
-                        println("AutoSyncManager: ❌ Error al crear primer documento - ${e.message}")
+                        println("AutoSyncManager: X Error al crear primer documento - ${e.message}")
                         println("AutoSyncManager: Detalles del error:")
                         e.printStackTrace()
                         _syncStatus.value = SyncStatus.Failed
@@ -246,13 +270,18 @@ class AutoSyncManager(
             } catch (e: Exception) {
                 e.printStackTrace()
                 _syncStatus.value = SyncStatus.Failed
-                println("AutoSyncManager: ❌ Error general al sincronizar con Appwrite - ${e.message}")
+                println("AutoSyncManager: Error al sincronizar con Appwrite")
             }
+            
+            } // Cierre del withTimeout
 
+        } catch (e: TimeoutCancellationException) {
+            _syncStatus.value = SyncStatus.Failed
+            println("AutoSyncManager: Timeout de sincronizacion")
         } catch (e: Exception) {
             _syncStatus.value = SyncStatus.Failed
             e.printStackTrace()
-            println("AutoSyncManager: ❌ Error general en sincronización - ${e.message}")
+            println("AutoSyncManager: Error general en sincronizacion")
         }
     }
 

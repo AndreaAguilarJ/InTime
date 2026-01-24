@@ -17,10 +17,13 @@ class MomentumAccessibilityService : AccessibilityService() {
     @Inject
     lateinit var inAppBlockRepository: InAppBlockRepository
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    // Usar Dispatchers.Default para operaciones de background, no Main
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var lastBlockTime: Long = 0
+    private var lastProcessedTime: Long = 0
     // Reducimos el cooldown a 1.5s para ser más agresivos pero permitir salir
-    private val BLOCK_COOLDOWN = 1500L 
+    private val BLOCK_COOLDOWN = 1500L
+    private val PROCESS_THROTTLE = 300L // Throttle de eventos para evitar sobrecarga 
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -47,22 +50,32 @@ class MomentumAccessibilityService : AccessibilityService() {
         // Ignorar nuestra propia app
         if (packageName == this.packageName) return
 
+        // Throttling: no procesar eventos muy rápido
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastProcessedTime < PROCESS_THROTTLE) return
+        lastProcessedTime = currentTime
+
         serviceScope.launch {
             try {
-                // Optimización: Verificar primero si hay reglas para este paquete antes de escanear el árbol
-                val rules = inAppBlockRepository.getEnabledRulesForPackage(packageName)
-                if (rules.isEmpty()) return@launch
-
-                // Obtenemos el nodo raíz de la ventana activa
-                // Usamos rootInActiveWindow que es más fiable que event.source
-                val rootNode = rootInActiveWindow ?: event.source ?: return@launch
-
-                for (rule in rules) {
-                    if (shouldBlockContent(rootNode, rule.ruleId)) {
-                        handleBlock(rule.appName, rule.featureName)
-                        break // Si bloqueamos una, ya no es necesario seguir buscando
+                // Timeout de 1 segundo para prevenir ANR
+                withTimeoutOrNull(1000L) {
+                    // Optimización: Verificar primero si hay reglas para este paquete antes de escanear el árbol
+                    val rules = withContext(Dispatchers.IO) {
+                        inAppBlockRepository.getEnabledRulesForPackage(packageName)
                     }
-                }
+                    if (rules.isEmpty()) return@withTimeoutOrNull
+
+                    // Obtenemos el nodo raíz de la ventana activa
+                    // Usamos rootInActiveWindow que es más fiable que event.source
+                    val rootNode = rootInActiveWindow ?: event.source ?: return@withTimeoutOrNull
+
+                    for (rule in rules) {
+                        if (shouldBlockContent(rootNode, rule.ruleId)) {
+                            handleBlock(rule.appName, rule.featureName)
+                            break // Si bloqueamos una, ya no es necesario seguir buscando
+                        }
+                    }
+                } ?: Log.w(TAG, "processAccessibilityEvent timeout - operación cancelada")
             } catch (e: Exception) {
                 Log.e(TAG, "Error procesando evento de accesibilidad", e)
             }

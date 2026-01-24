@@ -11,9 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.momentummm.app.R
 import com.momentummm.app.BuildConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,10 +34,13 @@ fun AboutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Acerca de") },
+                title = { Text(stringResource(R.string.about_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.about_back_cd)
+                        )
                     }
                 }
             )
@@ -81,19 +86,23 @@ fun AboutScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Momentum",
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Tu Vida en Semanas",
+                        text = stringResource(R.string.about_tagline),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     packageInfo?.let {
                         Text(
-                            text = "Versión ${it.versionName} (${it.longVersionCode})",
+                            text = stringResource(
+                                R.string.about_version_format,
+                                it.versionName ?: "",
+                                it.longVersionCode
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -115,12 +124,12 @@ fun AboutScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Acerca de Momentum",
+                            text = stringResource(R.string.about_section_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Momentum te ayuda a visualizar tu vida en semanas y gestionar tu tiempo digital de manera consciente. Cada semana cuenta.",
+                            text = stringResource(R.string.about_section_description),
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Justify
                         )
@@ -138,39 +147,39 @@ fun AboutScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Características principales",
+                            text = stringResource(R.string.about_features_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         
                         FeatureItem(
                             icon = Icons.Default.CalendarMonth,
-                            title = "Visualización de vida",
-                            description = "Ve tu vida en 4,160 semanas"
+                            title = stringResource(R.string.about_feature_life_title),
+                            description = stringResource(R.string.about_feature_life_desc)
                         )
                         
                         FeatureItem(
                             icon = Icons.Default.PhoneAndroid,
-                            title = "Bienestar digital",
-                            description = "Monitorea y controla tu tiempo en apps"
+                            title = stringResource(R.string.about_feature_digital_title),
+                            description = stringResource(R.string.about_feature_digital_desc)
                         )
                         
                         FeatureItem(
                             icon = Icons.Default.Psychology,
-                            title = "Sesiones de enfoque",
-                            description = "Concentración profunda con temporizador"
+                            title = stringResource(R.string.about_feature_focus_title),
+                            description = stringResource(R.string.about_feature_focus_desc)
                         )
                         
                         FeatureItem(
                             icon = Icons.Default.Block,
-                            title = "Límites de aplicaciones",
-                            description = "Establece límites saludables"
+                            title = stringResource(R.string.about_feature_limits_title),
+                            description = stringResource(R.string.about_feature_limits_desc)
                         )
                         
                         FeatureItem(
                             icon = Icons.Default.Sync,
-                            title = "Sincronización en la nube",
-                            description = "Mantén tus datos seguros con Appwrite"
+                            title = stringResource(R.string.about_feature_sync_title),
+                            description = stringResource(R.string.about_feature_sync_desc)
                         )
                     }
                 }
@@ -184,13 +193,13 @@ fun AboutScreen(
                 ) {
                     InfoCard(
                         icon = Icons.Default.Code,
-                        title = "Versión",
+                        title = stringResource(R.string.about_info_version_title),
                         value = packageInfo?.versionName ?: "1.0",
                         modifier = Modifier.weight(1f)
                     )
                     InfoCard(
                         icon = Icons.Default.Build,
-                        title = "Build",
+                        title = stringResource(R.string.about_info_build_title),
                         value = "${packageInfo?.longVersionCode ?: 1}",
                         modifier = Modifier.weight(1f)
                     )
@@ -217,12 +226,12 @@ fun AboutScreen(
                             tint = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "Desarrollado con ❤️",
+                            text = stringResource(R.string.about_developed_with_love),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = "Hecho para ayudarte a vivir más conscientemente",
+                            text = stringResource(R.string.about_developed_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                             textAlign = TextAlign.Center
@@ -241,7 +250,7 @@ fun AboutScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Legal",
+                            text = stringResource(R.string.about_legal_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -255,7 +264,7 @@ fun AboutScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Política de privacidad")
+                                Text(stringResource(R.string.about_privacy_policy))
                                 Icon(
                                     Icons.Default.ChevronRight,
                                     contentDescription = null,
@@ -273,7 +282,7 @@ fun AboutScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Términos de servicio")
+                                Text(stringResource(R.string.about_terms_of_service))
                                 Icon(
                                     Icons.Default.ChevronRight,
                                     contentDescription = null,
@@ -288,7 +297,7 @@ fun AboutScreen(
             // Copyright
             item {
                 Text(
-                    text = "© 2026 Momentum\nTodos los derechos reservados",
+                    text = stringResource(R.string.about_copyright, 2026),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

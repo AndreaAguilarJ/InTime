@@ -15,9 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,10 +53,13 @@ fun PermissionsSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Permisos de la aplicación") },
+                title = { Text(stringResource(R.string.permissions_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back)
+                        )
                     }
                 }
             )
@@ -86,14 +91,14 @@ fun PermissionsSettingsScreen(
                         )
                         Column {
                             Text(
-                                text = "Permisos necesarios",
+                                text = stringResource(R.string.permissions_header_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Para que Momentum funcione correctamente, necesita acceso a ciertos permisos del sistema. Toca cada opción para configurarlos.",
+                                text = stringResource(R.string.permissions_header_subtitle),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -105,7 +110,7 @@ fun PermissionsSettingsScreen(
             // Sección: Permisos esenciales
             item {
                 Text(
-                    text = "Permisos esenciales",
+                    text = stringResource(R.string.permissions_section_essential),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -116,8 +121,8 @@ fun PermissionsSettingsScreen(
             // 1. Estadísticas de uso
             item {
                 PermissionCard(
-                    title = "Estadísticas de uso",
-                    description = "Necesario para monitorear el tiempo de uso de aplicaciones y establecer límites",
+                    title = stringResource(R.string.permission_usage_stats_title),
+                    description = stringResource(R.string.permission_usage_stats_desc),
                     icon = Icons.Default.BarChart,
                     isGranted = hasUsageStatsPermission.value,
                     onClick = {
@@ -129,8 +134,8 @@ fun PermissionsSettingsScreen(
             // 2. Superponer sobre otras apps
             item {
                 PermissionCard(
-                    title = "Superponer sobre otras apps",
-                    description = "Necesario para mostrar bloqueos cuando alcances los límites de tiempo",
+                    title = stringResource(R.string.permission_overlay_title),
+                    description = stringResource(R.string.permission_overlay_desc),
                     icon = Icons.Default.Layers,
                     isGranted = hasOverlayPermission.value,
                     onClick = {
@@ -142,8 +147,8 @@ fun PermissionsSettingsScreen(
             // 3. Notificaciones
             item {
                 PermissionCard(
-                    title = "Notificaciones",
-                    description = "Para enviarte recordatorios, alertas de metas y notificaciones de progreso",
+                    title = stringResource(R.string.permission_notifications_title),
+                    description = stringResource(R.string.permission_notifications_desc),
                     icon = Icons.Default.Notifications,
                     isGranted = hasNotificationPermission.value,
                     onClick = {
@@ -155,8 +160,8 @@ fun PermissionsSettingsScreen(
             // 4. Servicio de Accesibilidad - Bloqueo de Sitios Web
             item {
                 PermissionCard(
-                    title = "Bloqueo de sitios web",
-                    description = "Servicio de accesibilidad para detectar y bloquear sitios web en navegadores (contenido adulto, distracciones, etc.)",
+                    title = stringResource(R.string.permission_web_block_title),
+                    description = stringResource(R.string.permission_web_block_desc),
                     icon = Icons.Default.Security,
                     isGranted = hasAccessibilityPermission.value,
                     onClick = {
@@ -168,7 +173,7 @@ fun PermissionsSettingsScreen(
             // Sección: Permisos opcionales
             item {
                 Text(
-                    text = "Permisos opcionales",
+                    text = stringResource(R.string.permissions_section_optional),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -179,8 +184,8 @@ fun PermissionsSettingsScreen(
             // 5. Launcher predeterminado (Modo teléfono mínimo)
             item {
                 PermissionCard(
-                    title = "Launcher predeterminado",
-                    description = "Para usar el modo teléfono mínimo como pantalla de inicio",
+                    title = stringResource(R.string.permission_default_launcher_title),
+                    description = stringResource(R.string.permission_default_launcher_desc),
                     icon = Icons.Default.Home,
                     isGranted = isDefaultLauncher.value,
                     onClick = {
@@ -192,8 +197,8 @@ fun PermissionsSettingsScreen(
             // 6. Contactos y llamadas
             item {
                 PermissionCard(
-                    title = "Contactos y llamadas",
-                    description = "Para funcionalidades del modo teléfono mínimo (llamadas y SMS)",
+                    title = stringResource(R.string.permission_contacts_calls_title),
+                    description = stringResource(R.string.permission_contacts_calls_desc),
                     icon = Icons.Default.Contacts,
                     isGranted = false, // Se puede mejorar checkeando estos permisos
                     onClick = {
@@ -205,8 +210,8 @@ fun PermissionsSettingsScreen(
             // 7. Cámara y multimedia
             item {
                 PermissionCard(
-                    title = "Cámara y multimedia",
-                    description = "Para funcionalidades adicionales del modo teléfono mínimo",
+                    title = stringResource(R.string.permission_camera_media_title),
+                    description = stringResource(R.string.permission_camera_media_desc),
                     icon = Icons.Default.CameraAlt,
                     isGranted = false,
                     onClick = {
@@ -230,12 +235,12 @@ fun PermissionsSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Configuración completa de permisos",
+                            text = stringResource(R.string.permissions_full_settings_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Accede a la configuración del sistema para gestionar todos los permisos de la aplicación manualmente.",
+                            text = stringResource(R.string.permissions_full_settings_desc),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Button(
@@ -244,7 +249,7 @@ fun PermissionsSettingsScreen(
                         ) {
                             Icon(Icons.Default.Settings, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Abrir configuración")
+                            Text(stringResource(R.string.permissions_open_settings))
                         }
                     }
                 }
@@ -264,7 +269,7 @@ fun PermissionsSettingsScreen(
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Actualizar estado de permisos")
+                    Text(stringResource(R.string.permissions_refresh_status))
                 }
             }
         }
@@ -311,14 +316,14 @@ fun PermissionCard(
                     if (isGranted) {
                         Icon(
                             Icons.Default.CheckCircle,
-                            contentDescription = "Concedido",
+                            contentDescription = stringResource(R.string.permissions_granted_cd),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
                         Icon(
                             Icons.Default.Warning,
-                            contentDescription = "No concedido",
+                            contentDescription = stringResource(R.string.permissions_not_granted_cd),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
@@ -332,7 +337,11 @@ fun PermissionCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = if (isGranted) "✓ Concedido" else "✗ No concedido - Toca para configurar",
+                    text = if (isGranted) {
+                        stringResource(R.string.permissions_status_granted)
+                    } else {
+                        stringResource(R.string.permissions_status_not_granted)
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Medium
@@ -341,7 +350,7 @@ fun PermissionCard(
 
             Icon(
                 Icons.Default.ChevronRight,
-                contentDescription = "Ir a configuración",
+                contentDescription = stringResource(R.string.permissions_go_to_settings),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

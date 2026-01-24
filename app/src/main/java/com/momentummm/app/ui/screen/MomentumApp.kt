@@ -52,6 +52,7 @@ import com.momentummm.app.security.AppLockManager
 import com.momentummm.app.security.BiometricPromptManager
 import com.momentummm.app.ui.password.LockScreen
 import androidx.compose.ui.zIndex
+import androidx.compose.material.icons.filled.Groups
 import javax.inject.Inject
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -60,6 +61,7 @@ sealed class Screen(val route: String, val icon: ImageVector, val titleRes: Int)
     object MyLife : Screen("my_life", Icons.Filled.Person, R.string.nav_my_life)
     object Analytics : Screen("analytics", Icons.Filled.Analytics, R.string.nav_analytics)
     object Focus : Screen("focus", Icons.Filled.Psychology, R.string.nav_focus)
+    object Community : Screen("community", Icons.Filled.Groups, R.string.nav_community)
     object Settings : Screen("settings", Icons.Filled.Settings, R.string.nav_settings)
     object MinimalPhone : Screen("minimal_phone", Icons.Filled.PhoneAndroid, R.string.nav_minimal_phone)
     object Subscription : Screen("subscription", Icons.Filled.Star, R.string.nav_subscription)
@@ -314,6 +316,7 @@ private fun MainAppContent(
             val screens = listOf(
                 Screen.Today,
                 Screen.Analytics,
+                Screen.Community,
                 Screen.Focus,
                 Screen.MinimalPhone,
                 Screen.Settings
@@ -389,6 +392,14 @@ private fun MainAppContent(
                         }
                     )
                 }
+                composable(Screen.Community.route) {
+                    com.momentummm.app.ui.screen.community.CommunityScreen(
+                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        onUpgradeClick = {
+                            navController.navigate(Screen.Subscription.route)
+                        }
+                    )
+                }
                 composable(Screen.MinimalPhone.route) {
                     MinimalPhoneScreen(
                         minimalPhoneManager = minimalPhoneManager,
@@ -443,6 +454,7 @@ private fun MainAppContent(
                                 "app_whitelist" -> navController.navigate("app_whitelist")
                                 
                                 // Personalización y Datos
+                                "language_settings" -> navController.navigate("language_settings")
                                 "gamification_settings" -> navController.navigate("gamification_settings")
                                 "notification_settings" -> navController.navigate("notification_settings")
                                 "mi_vida_en_semanas" -> navController.navigate("mi_vida_en_semanas")
@@ -469,10 +481,9 @@ private fun MainAppContent(
                 }
 
                 composable("mi_vida_en_semanas") {
-                    val viewModel: com.momentummm.app.ui.viewmodel.LifeWeeksViewModel = viewModel(
-                        factory = LifeWeeksViewModelFactory(application.userRepository)
+                    com.momentummm.app.ui.screen.settings.LifeWeeksSettingsScreen(
+                        onBackClick = { navController.popBackStack() }
                     )
-                    LifeWeeksScreen(viewModel = viewModel)
                 }
 
                 composable("backup_settings") {
@@ -568,6 +579,12 @@ private fun MainAppContent(
                     )
                 }
 
+                composable("language_settings") {
+                    com.momentummm.app.ui.screen.settings.LanguageSettingsScreen(
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
                 composable("permissions_settings") {
                     com.momentummm.app.ui.screen.settings.PermissionsSettingsScreen(
                         onBackClick = { navController.popBackStack() }
@@ -623,6 +640,13 @@ private fun MainAppContent(
                 composable("password_setup") {
                     com.momentummm.app.ui.password.PasswordProtectionSetupScreen(
                         onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                // Smart Blocking (Bloqueo Inteligente)
+                composable("smart_blocking") {
+                    com.momentummm.app.ui.screen.settings.SmartBlockingScreen(
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
             }

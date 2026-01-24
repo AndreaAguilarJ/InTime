@@ -1,9 +1,16 @@
 package com.momentummm.app.data.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "website_blocks")
+@Entity(
+    tableName = "website_blocks",
+    indices = [
+        Index(value = ["isEnabled"]),
+        Index(value = ["url"], unique = true)
+    ]
+)
 data class WebsiteBlock(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val url: String, // URL o dominio a bloquear (ej: "pornhub.com", "facebook.com")

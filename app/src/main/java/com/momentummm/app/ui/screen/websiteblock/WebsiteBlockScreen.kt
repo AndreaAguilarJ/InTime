@@ -12,10 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.momentummm.app.R
 import com.momentummm.app.data.entity.WebsiteBlock
 import com.momentummm.app.data.entity.WebsiteCategory
 
@@ -42,18 +44,27 @@ fun WebsiteBlockScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Bloqueo de Sitios Web") },
+                title = { Text(stringResource(R.string.website_block_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.website_block_back_cd)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { showCategoryDialog = true }) {
-                        Icon(Icons.Filled.Category, contentDescription = "Agregar categoría")
+                        Icon(
+                            Icons.Filled.Category,
+                            contentDescription = stringResource(R.string.website_block_add_category_cd)
+                        )
                     }
                     IconButton(onClick = { showAddDialog = true }) {
-                        Icon(Icons.Filled.Add, contentDescription = "Agregar sitio")
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = stringResource(R.string.website_block_add_site_cd)
+                        )
                     }
                 }
             )
@@ -140,8 +151,15 @@ fun WebsiteBlockScreen(
     selectedBlockForDelete?.let { block ->
         AlertDialog(
             onDismissRequest = { selectedBlockForDelete = null },
-            title = { Text("Eliminar bloqueo") },
-            text = { Text("¿Estás seguro de que quieres eliminar el bloqueo para ${block.displayName}?") },
+            title = { Text(stringResource(R.string.website_block_delete_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.website_block_delete_message,
+                        block.displayName
+                    )
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -149,12 +167,15 @@ fun WebsiteBlockScreen(
                         selectedBlockForDelete = null
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        stringResource(R.string.website_block_delete_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { selectedBlockForDelete = null }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.website_block_cancel_button))
                 }
             }
         )
@@ -178,17 +199,17 @@ private fun WebsiteBlockStatsCard(stats: WebsiteBlockStats) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 StatItem(
-                    label = "Total",
+                    label = stringResource(R.string.website_block_stat_total),
                     value = stats.totalBlocks.toString(),
                     icon = Icons.Filled.Language
                 )
                 StatItem(
-                    label = "Activos",
+                    label = stringResource(R.string.website_block_stat_active),
                     value = stats.enabledBlocks.toString(),
                     icon = Icons.Filled.Block
                 )
                 StatItem(
-                    label = "Adultos",
+                    label = stringResource(R.string.website_block_stat_adult),
                     value = stats.adultContentBlocked.toString(),
                     icon = Icons.Filled.Warning
                 )
@@ -238,13 +259,13 @@ private fun InfoCard() {
             )
             Column {
                 Text(
-                    text = "Sobre el bloqueo de sitios",
+                    text = stringResource(R.string.website_block_info_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Los sitios bloqueados serán interceptados cuando los abras en navegadores compatibles. Puedes desbloquearlos temporalmente desde la notificación de bloqueo.",
+                    text = stringResource(R.string.website_block_info_message),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                 )
@@ -282,7 +303,7 @@ private fun CategoryHeader(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "($count activos)",
+                text = stringResource(R.string.website_block_active_count, count),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -291,7 +312,7 @@ private fun CategoryHeader(
         IconButton(onClick = onDeleteCategory) {
             Icon(
                 Icons.Filled.Delete,
-                contentDescription = "Eliminar categoría",
+                contentDescription = stringResource(R.string.website_block_delete_category_cd),
                 tint = MaterialTheme.colorScheme.error
             )
         }
@@ -338,7 +359,7 @@ private fun WebsiteBlockItem(
                 IconButton(onClick = onDelete) {
                     Icon(
                         Icons.Filled.Delete,
-                        contentDescription = "Eliminar",
+                        contentDescription = stringResource(R.string.website_block_delete_cd),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }
@@ -363,19 +384,19 @@ private fun EmptyState(onAddClick: () -> Unit) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
         Text(
-            text = "No hay sitios bloqueados",
+            text = stringResource(R.string.website_block_empty_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = "Agrega sitios web para bloquear el acceso a contenido que te distrae",
+            text = stringResource(R.string.website_block_empty_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
         Button(onClick = onAddClick) {
             Icon(Icons.Filled.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Agregar sitio")
+            Text(stringResource(R.string.website_block_add_site_button))
         }
     }
 }
@@ -392,14 +413,15 @@ private fun getCategoryIcon(category: WebsiteCategory): ImageVector {
     }
 }
 
+@Composable
 private fun getCategoryName(category: WebsiteCategory): String {
     return when (category) {
-        WebsiteCategory.ADULT_CONTENT -> "Contenido Adulto"
-        WebsiteCategory.SOCIAL_MEDIA -> "Redes Sociales"
-        WebsiteCategory.ENTERTAINMENT -> "Entretenimiento"
-        WebsiteCategory.GAMING -> "Juegos"
-        WebsiteCategory.NEWS -> "Noticias"
-        WebsiteCategory.SHOPPING -> "Compras"
-        WebsiteCategory.CUSTOM -> "Personalizado"
+        WebsiteCategory.ADULT_CONTENT -> stringResource(R.string.website_block_category_adult)
+        WebsiteCategory.SOCIAL_MEDIA -> stringResource(R.string.website_block_category_social)
+        WebsiteCategory.ENTERTAINMENT -> stringResource(R.string.website_block_category_entertainment)
+        WebsiteCategory.GAMING -> stringResource(R.string.website_block_category_gaming)
+        WebsiteCategory.NEWS -> stringResource(R.string.website_block_category_news)
+        WebsiteCategory.SHOPPING -> stringResource(R.string.website_block_category_shopping)
+        WebsiteCategory.CUSTOM -> stringResource(R.string.website_block_category_custom)
     }
 }

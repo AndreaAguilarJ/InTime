@@ -2,8 +2,12 @@ package com.momentummm.app.data.manager
 
 import com.momentummm.app.data.dao.UserDao
 import com.momentummm.app.data.entity.UserSettings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
@@ -17,6 +21,30 @@ import javax.inject.Singleton
 class GamificationManager @Inject constructor(
     private val userDao: UserDao
 ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    
+    init {
+        // Asegurar que existan UserSettings al iniciar
+        scope.launch {
+            ensureUserSettingsExist()
+        }
+    }
+    
+    /**
+     * Crea UserSettings por defecto si no existen
+     */
+    private suspend fun ensureUserSettingsExist() {
+        val existing = userDao.getUserSettingsSync()
+        if (existing == null) {
+            userDao.insertUserSettings(UserSettings(
+                id = 1,
+                birthDate = null,
+                isOnboardingCompleted = false,
+                hasSeenTutorial = false
+            ))
+        }
+    }
+    
     /**
      * Data class para eventos de gamificación (subir de nivel, etc.)
      */

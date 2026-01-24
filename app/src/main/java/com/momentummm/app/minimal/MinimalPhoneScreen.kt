@@ -1,9 +1,15 @@
 package com.momentummm.app.minimal
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
@@ -12,17 +18,23 @@ import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,33 +59,50 @@ fun MinimalPhoneScreen(
     var showExitConfirm by remember { mutableStateOf(false) }
     
     if (isMinimalModeEnabled) {
-        when (currentScreen) {
-            MinimalScreen.Home -> {
-                MinimalLauncherContent(
-                    minimalPhoneManager = minimalPhoneManager,
-                    onSettingsClick = onSettingsClick,
-                    onExitMinimalMode = onExitMinimalMode,
-                    onDialerClick = { currentScreen = MinimalScreen.Dialer },
-                    onAppListClick = { currentScreen = MinimalScreen.AppList },
-                    modifier = modifier
-                )
-            }
-            MinimalScreen.Dialer -> {
-                MinimalDialerScreen(
-                    onCall = { phoneNumber ->
-                        minimalPhoneManager.makePhoneCall(phoneNumber)
-                        currentScreen = MinimalScreen.Home
-                    },
-                    onBack = { currentScreen = MinimalScreen.Home },
-                    modifier = modifier
-                )
-            }
-            MinimalScreen.AppList -> {
-                MinimalAppListScreen(
-                    minimalPhoneManager = minimalPhoneManager,
-                    onBack = { currentScreen = MinimalScreen.Home },
-                    modifier = modifier
-                )
+        AnimatedContent(
+            targetState = currentScreen,
+            transitionSpec = {
+                when {
+                    targetState == MinimalScreen.Home -> {
+                        slideInHorizontally { -it } + fadeIn() togetherWith 
+                        slideOutHorizontally { it } + fadeOut()
+                    }
+                    else -> {
+                        slideInHorizontally { it } + fadeIn() togetherWith 
+                        slideOutHorizontally { -it } + fadeOut()
+                    }
+                }.using(SizeTransform(clip = false))
+            },
+            label = "screen_transition"
+        ) { targetScreen ->
+            when (targetScreen) {
+                MinimalScreen.Home -> {
+                    MinimalLauncherContent(
+                        minimalPhoneManager = minimalPhoneManager,
+                        onSettingsClick = onSettingsClick,
+                        onExitMinimalMode = onExitMinimalMode,
+                        onDialerClick = { currentScreen = MinimalScreen.Dialer },
+                        onAppListClick = { currentScreen = MinimalScreen.AppList },
+                        modifier = modifier
+                    )
+                }
+                MinimalScreen.Dialer -> {
+                    MinimalDialerScreen(
+                        onCall = { phoneNumber ->
+                            minimalPhoneManager.makePhoneCall(phoneNumber)
+                            currentScreen = MinimalScreen.Home
+                        },
+                        onBack = { currentScreen = MinimalScreen.Home },
+                        modifier = modifier
+                    )
+                }
+                MinimalScreen.AppList -> {
+                    MinimalAppListScreen(
+                        minimalPhoneManager = minimalPhoneManager,
+                        onBack = { currentScreen = MinimalScreen.Home },
+                        modifier = modifier
+                    )
+                }
             }
         }
     } else {
@@ -104,10 +133,15 @@ private fun MinimalLauncherContent(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val hapticFeedback = LocalHapticFeedback.current
     var showExitConfirm by remember { mutableStateOf(false) }
     val customApp by minimalPhoneManager.customApp.collectAsState()
     val customAppInfo = remember(customApp) { minimalPhoneManager.getCustomAppInfo() }
     var showAppSelector by remember { mutableStateOf(false) }
+
+    // Animación de entrada
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { isVisible = true }
 
     // Obtener datos de semanas de vida
     val context = LocalContext.current
@@ -125,179 +159,247 @@ private fun MinimalLauncherContent(
 
     val essentialApps = listOf(
         EssentialApp("Teléfono", Icons.Default.Phone) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             if (!minimalPhoneManager.openDialer()) {
-                // Fallback al marcador interno
                 onDialerClick()
             }
         },
         EssentialApp("Mensajes", Icons.Default.Message) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             minimalPhoneManager.openMessages()
         },
         EssentialApp("Contactos", Icons.Default.Contacts) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             minimalPhoneManager.openContacts()
         },
-        EssentialApp("Configuración", Icons.Default.Settings) {
+        EssentialApp("Ajustes", Icons.Default.Settings) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             if (!minimalPhoneManager.openSettings()) {
-                // Fallback: abrir configuración de la app
                 onSettingsClick()
             }
         }
     )
-    
-    Column(
+
+    // Fondo con gradiente sutil
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = getCurrentDate(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            TextButton(
-                onClick = { showExitConfirm = true },
-                contentPadding = PaddingValues(8.dp)
-            ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Salir",
-                    modifier = Modifier.size(20.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
                 )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // Reloj con barra de progreso circular de semanas de vida
+            )
+    ) {
         Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(280.dp)
+            // Header minimalista
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+                    initialOffsetY = { -it },
+                    animationSpec = tween(500)
+                )
             ) {
-                // Barra de progreso circular de semanas de vida
-                lifeWeeksData?.let { data ->
-                    CircularLifeWeeksProgress(
-                        progressPercentage = data.progressPercentage,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                // Reloj en el centro
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Hora actual
-                    var currentTime by remember { mutableStateOf(getCurrentTime()) }
-
-                    LaunchedEffect(Unit) {
-                        while (true) {
-                            currentTime = getCurrentTime()
-                            kotlinx.coroutines.delay(1000)
-                        }
-                    }
-
                     Text(
-                        text = currentTime,
-                        style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+                        text = getCurrentDate(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    lifeWeeksData?.let { data ->
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "${data.progressPercentage.toInt()}% vivido",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    
+                    FilledTonalIconButton(
+                        onClick = { 
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            showExitConfirm = true 
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Salir del modo mínimo",
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
         
-        // Essential apps grid (4 apps + 1 custom slot)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Primera fila: Teléfono y Mensajes
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Spacer(modifier = Modifier.height(8.dp))
+        
+            // Reloj con barra de progreso circular de semanas de vida
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(animationSpec = tween(700, delayMillis = 200)) + scaleIn(
+                    initialScale = 0.8f,
+                    animationSpec = tween(700, delayMillis = 200)
+                )
             ) {
-                EssentialAppCard(
-                    app = essentialApps[0],
-                    modifier = Modifier.weight(1f)
-                )
-                EssentialAppCard(
-                    app = essentialApps[1],
-                    modifier = Modifier.weight(1f)
-                )
-            }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(260.dp)
+                    ) {
+                        // Barra de progreso circular de semanas de vida
+                        lifeWeeksData?.let { data ->
+                            CircularLifeWeeksProgress(
+                                progressPercentage = data.progressPercentage,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
 
-            // Segunda fila: Contactos y Configuración
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                EssentialAppCard(
-                    app = essentialApps[2],
-                    modifier = Modifier.weight(1f)
-                )
-                EssentialAppCard(
-                    app = essentialApps[3],
-                    modifier = Modifier.weight(1f)
-                )
-            }
+                        // Reloj en el centro
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Hora actual con animación
+                            var currentTime by remember { mutableStateOf(getCurrentTime()) }
 
-            // Tercera fila: App personalizada (centrada)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                if (customAppInfo != null) {
-                    CustomAppCard(
-                        appInfo = customAppInfo,
-                        onClick = { minimalPhoneManager.openCustomApp() },
-                        onLongClick = { showAppSelector = true },
-                        modifier = Modifier.widthIn(min = 160.dp, max = 180.dp)
-                    )
-                } else {
-                    AddCustomAppCard(
-                        onClick = { showAppSelector = true },
-                        modifier = Modifier.widthIn(min = 160.dp, max = 180.dp)
-                    )
+                            LaunchedEffect(Unit) {
+                                while (true) {
+                                    currentTime = getCurrentTime()
+                                    kotlinx.coroutines.delay(1000)
+                                }
+                            }
+
+                            Text(
+                                text = currentTime,
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    fontSize = 52.sp,
+                                    letterSpacing = 2.sp
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Light
+                            )
+
+                            lifeWeeksData?.let { data ->
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                ) {
+                                    Text(
+                                        text = "${data.progressPercentage.toInt()}% de vida",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        
+            // Essential apps grid - diseño mejorado
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(animationSpec = tween(500, delayMillis = 400)) + slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(500, delayMillis = 400)
+                )
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Grid 2x2 para apps esenciales
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        essentialApps.take(2).forEach { app ->
+                            EssentialAppCard(
+                                app = app,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        essentialApps.drop(2).forEach { app ->
+                            EssentialAppCard(
+                                app = app,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    // App personalizada centrada
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        if (customAppInfo != null) {
+                            CustomAppCard(
+                                appInfo = customAppInfo,
+                                onClick = { 
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    minimalPhoneManager.openCustomApp() 
+                                },
+                                onLongClick = { showAppSelector = true },
+                                modifier = Modifier.widthIn(min = 150.dp, max = 170.dp)
+                            )
+                        } else {
+                            AddCustomAppCard(
+                                onClick = { showAppSelector = true },
+                                modifier = Modifier.widthIn(min = 150.dp, max = 170.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Botón para ver todas las apps - más discreto
+                    FilledTonalButton(
+                        onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onAppListClick()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Icon(
+                            Icons.Rounded.Apps,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Todas las apps",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+            }
+        
+            Spacer(modifier = Modifier.height(8.dp))
         }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        OutlinedButton(
-            onClick = onAppListClick,
-            modifier = Modifier.fillMaxWidth(0.8f)
-        ) {
-            Text(
-                "Ver todas las apps",
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(8.dp))
     }
 
     if (showAppSelector) {
@@ -317,21 +419,40 @@ private fun MinimalLauncherContent(
     if (showExitConfirm) {
         AlertDialog(
             onDismissRequest = { showExitConfirm = false },
-            title = { Text("Salir del modo mínimo") },
-            text = { Text("¿Seguro que quieres salir? Se restaurará la experiencia completa de Momentum.") },
+            icon = { 
+                Icon(
+                    Icons.Default.Close, 
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = { 
+                Text(
+                    "¿Salir del modo mínimo?",
+                    textAlign = TextAlign.Center
+                ) 
+            },
+            text = { 
+                Text(
+                    "Se restaurará la experiencia completa de Momentum con todas las funciones.",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ) 
+            },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         showExitConfirm = false
                         onExitMinimalMode()
                     }
                 ) {
-                    Text("Salir")
+                    Text("Sí, salir")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showExitConfirm = false }) {
-                    Text("Cancelar")
+                OutlinedButton(onClick = { showExitConfirm = false }) {
+                    Text("Continuar aquí")
                 }
             }
         )
@@ -344,10 +465,18 @@ private fun CircularLifeWeeksProgress(
     modifier: Modifier = Modifier
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
-    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+
+    // Animación suave del progreso
+    val animatedProgress by animateFloatAsState(
+        targetValue = progressPercentage,
+        animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
+        label = "progress_animation"
+    )
 
     Canvas(modifier = modifier) {
-        val strokeWidth = 12.dp.toPx()
+        val strokeWidth = 10.dp.toPx()
         val diameter = size.minDimension - strokeWidth
         val radius = diameter / 2
         val topLeft = Offset(
@@ -366,10 +495,13 @@ private fun CircularLifeWeeksProgress(
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
 
-        // Círculo de progreso (semanas vividas)
-        val sweepAngle = (progressPercentage / 100f) * 360f
+        // Círculo de progreso con gradiente (semanas vividas)
+        val sweepAngle = (animatedProgress / 100f) * 360f
         drawArc(
-            color = primaryColor,
+            brush = Brush.sweepGradient(
+                colors = listOf(primaryColor, tertiaryColor, primaryColor),
+                center = Offset(size.width / 2, size.height / 2)
+            ),
             startAngle = -90f,
             sweepAngle = sweepAngle,
             useCenter = false,
@@ -378,14 +510,22 @@ private fun CircularLifeWeeksProgress(
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
 
-        // Punto indicador en el progreso actual
+        // Punto indicador brillante en el progreso actual
         val angleInRadians = Math.toRadians((sweepAngle - 90).toDouble())
         val indicatorX = (size.width / 2) + (radius * Math.cos(angleInRadians)).toFloat()
         val indicatorY = (size.height / 2) + (radius * Math.sin(angleInRadians)).toFloat()
 
+        // Halo exterior
+        drawCircle(
+            color = primaryColor.copy(alpha = 0.3f),
+            radius = strokeWidth,
+            center = Offset(indicatorX, indicatorY)
+        )
+        
+        // Punto central
         drawCircle(
             color = primaryColor,
-            radius = strokeWidth / 2,
+            radius = strokeWidth / 2 + 2.dp.toPx(),
             center = Offset(indicatorX, indicatorY)
         )
     }
@@ -462,35 +602,62 @@ private fun EssentialAppCard(
     app: EssentialApp,
     modifier: Modifier = Modifier
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "card_scale"
+    )
+
     Card(
         onClick = app.onClick,
         modifier = modifier
             .aspectRatio(1f)
-            .heightIn(min = 100.dp),
+            .heightIn(min = 90.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+        shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 8.dp
-        )
+            defaultElevation = 1.dp,
+            pressedElevation = 4.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        interactionSource = interactionSource
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = app.icon,
-                contentDescription = app.name,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        imageVector = app.icon,
+                        contentDescription = app.name,
+                        modifier = Modifier.size(26.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = app.name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

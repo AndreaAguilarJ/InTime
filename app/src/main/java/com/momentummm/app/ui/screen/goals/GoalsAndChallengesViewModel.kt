@@ -1,12 +1,15 @@
 package com.momentummm.app.ui.screen.goals
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.momentummm.app.data.repository.GoalsRepository
 import com.momentummm.app.data.entity.Goal
 import com.momentummm.app.data.entity.Challenge
 import com.momentummm.app.notification.GoalNotificationManager
+import com.momentummm.app.R
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -15,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GoalsAndChallengesViewModel @Inject constructor(
     private val goalsRepository: GoalsRepository,
-    private val notificationManager: GoalNotificationManager
+    private val notificationManager: GoalNotificationManager,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GoalsUiState())
@@ -122,8 +126,12 @@ class GoalsAndChallengesViewModel @Inject constructor(
             if (newChallenge != null && newChallenge.isCompleted && oldChallenge?.isCompleted == false) {
                 // Challenge completed!
                 notificationManager.showAchievementNotification(
-                    "¡Desafío Completado!",
-                    "Has completado el desafío: ${newChallenge.title}. Recompensa: ${newChallenge.reward}"
+                    context.getString(R.string.goals_notification_challenge_completed_title),
+                    context.getString(
+                        R.string.goals_notification_challenge_completed_message,
+                        newChallenge.title,
+                        newChallenge.reward
+                    )
                 )
             }
         }
@@ -154,16 +162,16 @@ class GoalsAndChallengesViewModel @Inject constructor(
         if (newGoal.currentStreak > oldGoal.currentStreak) {
             when (newGoal.currentStreak) {
                 7 -> notificationManager.showAchievementNotification(
-                    "¡Racha de 7 días!",
-                    "Has mantenido tu meta durante una semana completa"
+                    context.getString(R.string.goals_notification_streak_7_title),
+                    context.getString(R.string.goals_notification_streak_7_message)
                 )
                 30 -> notificationManager.showAchievementNotification(
-                    "¡Racha de 30 días!",
-                    "Un mes completo cumpliendo tu meta. ¡Increíble!"
+                    context.getString(R.string.goals_notification_streak_30_title),
+                    context.getString(R.string.goals_notification_streak_30_message)
                 )
                 100 -> notificationManager.showAchievementNotification(
-                    "¡Racha Centenaria!",
-                    "100 días consecutivos. Eres una leyenda."
+                    context.getString(R.string.goals_notification_streak_100_title),
+                    context.getString(R.string.goals_notification_streak_100_message)
                 )
             }
 
@@ -179,8 +187,8 @@ class GoalsAndChallengesViewModel @Inject constructor(
         // Check for completion achievements
         if (newGoal.currentValue >= newGoal.targetValue && oldGoal.currentValue < oldGoal.targetValue) {
             notificationManager.showAchievementNotification(
-                "¡Meta Completada!",
-                "Has alcanzado tu objetivo en: ${newGoal.title}"
+                context.getString(R.string.goals_notification_goal_completed_title),
+                context.getString(R.string.goals_notification_goal_completed_message, newGoal.title)
             )
         }
     }
@@ -218,8 +226,8 @@ class GoalsAndChallengesViewModel @Inject constructor(
         if (!hasScreenTimeGoal) {
             recommendations.add(
                 GoalRecommendation(
-                    title = "Controla tu tiempo de pantalla",
-                    description = "Establece un límite diario para el uso del dispositivo",
+                    title = context.getString(R.string.goals_recommendation_screen_time_title),
+                    description = context.getString(R.string.goals_recommendation_screen_time_desc),
                     category = "SCREEN_TIME",
                     suggestedTarget = 240, // 4 hours
                     priority = GoalPriority.HIGH
@@ -230,8 +238,8 @@ class GoalsAndChallengesViewModel @Inject constructor(
         if (!hasSocialMediaGoal) {
             recommendations.add(
                 GoalRecommendation(
-                    title = "Reduce las redes sociales",
-                    description = "Limita el tiempo en aplicaciones de redes sociales",
+                    title = context.getString(R.string.goals_recommendation_social_title),
+                    description = context.getString(R.string.goals_recommendation_social_desc),
                     category = "SOCIAL_MEDIA",
                     suggestedTarget = 60, // 1 hour
                     priority = GoalPriority.MEDIUM
@@ -242,8 +250,8 @@ class GoalsAndChallengesViewModel @Inject constructor(
         if (!hasProductivityGoal) {
             recommendations.add(
                 GoalRecommendation(
-                    title = "Aumenta tu productividad",
-                    description = "Dedica tiempo a aplicaciones de trabajo y estudio",
+                    title = context.getString(R.string.goals_recommendation_productivity_title),
+                    description = context.getString(R.string.goals_recommendation_productivity_desc),
                     category = "PRODUCTIVITY",
                     suggestedTarget = 120, // 2 hours
                     priority = GoalPriority.MEDIUM

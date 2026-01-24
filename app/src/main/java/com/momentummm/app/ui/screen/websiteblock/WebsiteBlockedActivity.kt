@@ -10,16 +10,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.momentummm.app.R
 import com.momentummm.app.ui.theme.MomentumTheme
 
 class WebsiteBlockedActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val blockedUrl = intent.getStringExtra("blocked_url") ?: "Sitio desconocido"
+        val blockedUrl = intent.getStringExtra("blocked_url")
+            ?: getString(R.string.website_blocked_unknown_site)
 
         setContent {
             MomentumTheme {
@@ -58,7 +61,7 @@ private fun WebsiteBlockedScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Sitio Bloqueado",
+                text = stringResource(R.string.website_blocked_title),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.error
@@ -67,7 +70,7 @@ private fun WebsiteBlockedScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Has intentado acceder a:",
+                text = stringResource(R.string.website_blocked_attempt_message),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
@@ -92,7 +95,7 @@ private fun WebsiteBlockedScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Este sitio está bloqueado para ayudarte a mantener el enfoque y evitar distracciones.",
+                text = stringResource(R.string.website_blocked_description),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -104,13 +107,13 @@ private fun WebsiteBlockedScreen(
                 onClick = onClose,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Entendido")
+                Text(stringResource(R.string.website_blocked_acknowledge))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Puedes gestionar tus sitios bloqueados desde Configuración > Bloqueo de sitios web",
+                text = stringResource(R.string.website_blocked_manage_hint),
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)

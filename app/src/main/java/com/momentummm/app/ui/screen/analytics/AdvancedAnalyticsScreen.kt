@@ -19,10 +19,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.annotation.StringRes
+import com.momentummm.app.R
 import com.momentummm.app.data.repository.UsageStatsRepository
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.ui.viewmodel.AdvancedAnalyticsViewModel
@@ -31,15 +34,15 @@ import com.momentummm.app.ui.viewmodel.TimePeriod
 import com.momentummm.app.ui.viewmodel.AppCategory as VMAppCategory
 
 // Mantener enums locales para compatibilidad con UI
-enum class AppCategory(val displayName: String, val color: Color) {
-    Social("Social", Color(0xFF4267B2)),
-    Entertainment("Entretenimiento", Color(0xFFFF1744)),
-    Productivity("Productividad", Color(0xFF4CAF50)),
-    Games("Juegos", Color(0xFF9C27B0)),
-    Communication("Comunicación", Color(0xFF2196F3)),
-    News("Noticias", Color(0xFFFF9800)),
-    Health("Salud", Color(0xFF009688)),
-    Other("Otros", Color(0xFF607D8B))
+enum class AppCategory(@StringRes val displayNameRes: Int, val color: Color) {
+    Social(R.string.analytics_category_social, Color(0xFF4267B2)),
+    Entertainment(R.string.analytics_category_entertainment, Color(0xFFFF1744)),
+    Productivity(R.string.analytics_category_productivity, Color(0xFF4CAF50)),
+    Games(R.string.analytics_category_games, Color(0xFF9C27B0)),
+    Communication(R.string.analytics_category_communication, Color(0xFF2196F3)),
+    News(R.string.analytics_category_news, Color(0xFFFF9800)),
+    Health(R.string.analytics_category_health, Color(0xFF009688)),
+    Other(R.string.analytics_category_other, Color(0xFF607D8B))
 }
 
 // Data classes locales para la UI
@@ -193,12 +196,12 @@ fun AdvancedAnalyticsScreen(
             ) {
                 Column {
                     Text(
-                        text = "Análisis Avanzado",
+                        text = stringResource(R.string.analytics_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Insights detallados de tu uso digital",
+                        text = stringResource(R.string.analytics_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -211,7 +214,7 @@ fun AdvancedAnalyticsScreen(
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(
                             Icons.Filled.Refresh,
-                            contentDescription = "Actualizar",
+                            contentDescription = stringResource(R.string.analytics_refresh_cd),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.padding(8.dp)
                         )
@@ -227,7 +230,7 @@ fun AdvancedAnalyticsScreen(
             ) {
                 items(TimePeriod.values()) { period ->
                     MomentumChip(
-                        text = period.displayName,
+                        text = stringResource(period.displayNameRes),
                         isSelected = uiState.selectedPeriod == period,
                         onClick = { viewModel.selectPeriod(period) }
                     )
@@ -260,7 +263,7 @@ fun AdvancedAnalyticsScreen(
             // Key insights - USANDO DATOS REALES
             if (insights.isNotEmpty()) {
                 Text(
-                    text = "Insights Clave",
+                    text = stringResource(R.string.analytics_key_insights_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -293,7 +296,7 @@ fun AdvancedAnalyticsScreen(
             // App usage list - USANDO DATOS REALES
             if (usageData.isNotEmpty()) {
                 Text(
-                    text = "Uso por Aplicación",
+                    text = stringResource(R.string.analytics_usage_by_app_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -340,7 +343,7 @@ private fun PermissionRequiredScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Permiso Requerido",
+            text = stringResource(R.string.analytics_permission_title),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
@@ -349,7 +352,7 @@ private fun PermissionRequiredScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Para ver estadísticas avanzadas, necesitamos acceso a los datos de uso de tu dispositivo.",
+            text = stringResource(R.string.analytics_permission_message),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -358,7 +361,7 @@ private fun PermissionRequiredScreen() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "Por favor, ve a Configuración y habilita el acceso a estadísticas de uso.",
+            text = stringResource(R.string.analytics_permission_instruction),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -395,7 +398,7 @@ private fun PremiumUpsellScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         Text(
-            text = "Análisis Avanzado",
+            text = stringResource(R.string.analytics_title),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
@@ -404,7 +407,7 @@ private fun PremiumUpsellScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Desbloquea insights detallados sobre tu uso digital con Premium",
+            text = stringResource(R.string.analytics_premium_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -413,12 +416,12 @@ private fun PremiumUpsellScreen(
         Spacer(modifier = Modifier.height(32.dp))
         
         val features = listOf(
-            "Gráficos de uso semanal y mensual",
-            "Análisis por categorías de apps",
-            "Insights de productividad",
-            "Comparación de períodos",
-            "Exportación de datos",
-            "Alertas inteligentes"
+            stringResource(R.string.analytics_premium_feature_1),
+            stringResource(R.string.analytics_premium_feature_2),
+            stringResource(R.string.analytics_premium_feature_3),
+            stringResource(R.string.analytics_premium_feature_4),
+            stringResource(R.string.analytics_premium_feature_5),
+            stringResource(R.string.analytics_premium_feature_6)
         )
         
         features.forEach { feature ->
@@ -448,7 +451,7 @@ private fun PremiumUpsellScreen(
             size = ButtonSize.Large,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Actualizar a Premium")
+            Text(stringResource(R.string.analytics_premium_cta))
         }
     }
 }
@@ -465,7 +468,7 @@ private fun WeeklyUsageChart(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Tiempo de Pantalla Semanal",
+                text = stringResource(R.string.analytics_weekly_screen_time_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -496,7 +499,10 @@ private fun WeeklyUsageChart(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "${dayData.screenTime}h",
+                            text = stringResource(
+                                R.string.analytics_hours_format,
+                                dayData.screenTime
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -633,7 +639,7 @@ private fun CategoryBreakdownChart(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Uso por Categoría",
+                text = stringResource(R.string.analytics_usage_by_category_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -691,7 +697,7 @@ private fun CategoryBreakdownChart(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = category.displayName,
+                                text = stringResource(category.displayNameRes),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.weight(1f)
                             )
@@ -751,12 +757,20 @@ private fun AppUsageCard(
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = "${app.totalTime / 60}h ${app.totalTime % 60}m • ${app.sessions} sesiones",
+                    text = stringResource(
+                        R.string.analytics_app_usage_time_sessions,
+                        app.totalTime / 60,
+                        app.totalTime % 60,
+                        app.sessions
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Última vez: ${app.lastUsed}",
+                    text = stringResource(
+                        R.string.analytics_app_usage_last_used,
+                        app.lastUsed
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -833,13 +847,13 @@ private fun ProductivityInsightsCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Insight de Productividad",
+                    text = stringResource(R.string.analytics_productivity_insight_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Tu productividad aumenta un 23% los martes. Considera programar tareas importantes ese día.",
+                    text = stringResource(R.string.analytics_productivity_insight_message),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -864,7 +878,7 @@ private fun SummaryStatsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Resumen Estadístico",
+                text = stringResource(R.string.analytics_summary_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -886,7 +900,7 @@ private fun SummaryStatsCard(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Tiempo de Pantalla Total",
+                        text = stringResource(R.string.analytics_summary_total_screen_time),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -903,7 +917,7 @@ private fun SummaryStatsCard(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Promedio Diario",
+                        text = stringResource(R.string.analytics_summary_daily_average),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -927,13 +941,16 @@ private fun SummaryStatsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Desbloqueos Totales",
+                    text = stringResource(R.string.analytics_summary_total_pickups),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Text(
-                    text = "$totalPickups veces",
+                    text = stringResource(
+                        R.string.analytics_summary_pickups_times,
+                        totalPickups
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -949,7 +966,7 @@ private fun SummaryStatsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "App Más Usada",
+                    text = stringResource(R.string.analytics_summary_top_app),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

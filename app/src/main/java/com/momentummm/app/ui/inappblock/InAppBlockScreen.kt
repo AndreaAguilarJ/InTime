@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.momentummm.app.R
 import com.momentummm.app.accessibility.MomentumAccessibilityService
 import com.momentummm.app.data.entity.BlockType
 import com.momentummm.app.data.entity.InAppBlockRule
@@ -79,10 +81,13 @@ fun InAppBlockScreen(
     Scaffold(
         topBar = {
             LargeTopAppBar(
-                title = { Text("Bloqueador de funciones") },
+                title = { Text(stringResource(R.string.in_app_block_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            stringResource(R.string.in_app_block_back_cd)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -117,12 +122,12 @@ fun InAppBlockScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Bloqueo de Funciones Específicas",
+                            text = stringResource(R.string.in_app_block_hero_title),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            text = "Bloquea funciones como Reels, Shorts y más sin bloquear toda la app",
+                            text = stringResource(R.string.in_app_block_hero_subtitle),
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         )
@@ -157,12 +162,12 @@ fun InAppBlockScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "El monitoreo está desactivado",
+                                text = stringResource(R.string.in_app_block_monitoring_disabled_title),
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFE65100)
                             )
                             Text(
-                                text = "Toca aquí para activar",
+                                text = stringResource(R.string.in_app_block_monitoring_disabled_subtitle),
                                 fontSize = 13.sp,
                                 color = Color(0xFFEF6C00)
                             )
@@ -184,7 +189,7 @@ fun InAppBlockScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Sistema activo",
+                        text = stringResource(R.string.in_app_block_monitoring_active),
                         fontSize = 13.sp,
                         color = Color(0xFF2E7D32)
                     )
@@ -198,12 +203,15 @@ fun InAppBlockScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                placeholder = { Text("Buscar apps o funciones") },
+                placeholder = { Text(stringResource(R.string.in_app_block_search_placeholder)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (searchQuery.isNotBlank()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Limpiar")
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = stringResource(R.string.in_app_block_clear_search)
+                            )
                         }
                     }
                 }
@@ -227,11 +235,11 @@ fun InAppBlockScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "No hay reglas todavía",
+                        text = stringResource(R.string.in_app_block_empty_title),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Agrega reglas para bloquear funciones dentro de tus apps favoritas.",
+                        text = stringResource(R.string.in_app_block_empty_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -252,11 +260,11 @@ fun InAppBlockScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Sin resultados",
+                        text = stringResource(R.string.in_app_block_no_results_title),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "No encontramos coincidencias para tu búsqueda.",
+                        text = stringResource(R.string.in_app_block_no_results_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -317,14 +325,20 @@ fun AppBlockSection(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "$enabledCount de ${rules.size} activas",
+                        text = stringResource(
+                            R.string.in_app_block_enabled_count,
+                            enabledCount,
+                            rules.size
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 AssistChip(
                     onClick = { },
-                    label = { Text("${rules.size} reglas") },
+                    label = {
+                        Text(stringResource(R.string.in_app_block_rules_count, rules.size))
+                    },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Tune,
@@ -459,15 +473,16 @@ fun getBlockTypeIcon(blockType: BlockType) = when (blockType) {
     BlockType.CUSTOM -> Icons.Default.Settings
 }
 
+@Composable
 fun getBlockTypeDescription(blockType: BlockType) = when (blockType) {
-    BlockType.REELS -> "Videos cortos en formato vertical"
-    BlockType.SHORTS -> "Videos cortos de YouTube"
-    BlockType.EXPLORE -> "Descubre contenido nuevo"
-    BlockType.SEARCH -> "Búsqueda dentro de la app"
-    BlockType.FOR_YOU -> "Página personalizada de contenido"
-    BlockType.DISCOVER -> "Descubre historias y contenido"
-    BlockType.STORIES -> "Historias de 24 horas"
-    BlockType.FEED -> "Feed principal de la app"
-    BlockType.CUSTOM -> "Regla personalizada"
+    BlockType.REELS -> stringResource(R.string.block_type_reels_desc)
+    BlockType.SHORTS -> stringResource(R.string.block_type_shorts_desc)
+    BlockType.EXPLORE -> stringResource(R.string.block_type_explore_desc)
+    BlockType.SEARCH -> stringResource(R.string.block_type_search_desc)
+    BlockType.FOR_YOU -> stringResource(R.string.block_type_for_you_desc)
+    BlockType.DISCOVER -> stringResource(R.string.block_type_discover_desc)
+    BlockType.STORIES -> stringResource(R.string.block_type_stories_desc)
+    BlockType.FEED -> stringResource(R.string.block_type_feed_desc)
+    BlockType.CUSTOM -> stringResource(R.string.block_type_custom_desc)
 }
 

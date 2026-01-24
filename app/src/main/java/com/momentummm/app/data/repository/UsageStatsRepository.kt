@@ -26,7 +26,21 @@ class UsageStatsRepository @Inject constructor(
     private val usageStatsManager: UsageStatsManager? =
         context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
 
+    // Cache para evitar consultas repetidas
+    private var cachedTodayStats: List<AppUsageInfo>? = null
+    private var lastCacheTime: Long = 0L
+    private val CACHE_DURATION_MS = 30_000L // 30 segundos de caché
+
+    // Cache del PackageManager para evitar lookups repetidos
+    private val appNameCache = mutableMapOf<String, String>()
+
     fun getTodayUsageStats(): List<AppUsageInfo> {
+        val now = System.currentTimeMillis()
+        cachedTodayStats?.let { cached ->
+            if (now - lastCacheTime < CACHE_DURATION_MS) {
+                return cached
+            }
+        }
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
@@ -35,7 +49,15 @@ class UsageStatsRepository @Inject constructor(
         val startTime = calendar.timeInMillis
         val endTime = System.currentTimeMillis()
 
-        return getUsageStats(startTime, endTime)
+        val stats = getUsageStats(startTime, endTime)
+        cachedTodayStats = stats
+        lastCacheTime = System.currentTimeMillis()
+        return stats
+    }
+
+    fun invalidateCache() {
+        cachedTodayStats = null
+        lastCacheTime = 0L
     }
 
     fun getWeeklyUsageStats(): List<AppUsageInfo> {
@@ -56,20 +78,31 @@ class UsageStatsRepository @Inject constructor(
 
         val packageManager = context.packageManager
         
-        return usageStats
+        // Agrupar por packageName para sumar todos los usos de la misma app
+        val aggregatedStats = usageStats
             .filter { it.totalTimeInForeground > 60000 } // Filtrar apps con menos de 1 minuto de uso
-            .mapNotNull { stats ->
+            .groupBy { it.packageName }
+            .mapNotNull { (packageName, statsList) ->
                 try {
-                    val appInfo = packageManager.getApplicationInfo(stats.packageName, 0)
-                    val appName = packageManager.getApplicationLabel(appInfo).toString()
+                    val appInfo = packageManager.getApplicationInfo(packageName, 0)
                     
                     // Incluir apps importantes y apps no del sistema
-                    if (shouldIncludeApp(stats.packageName, appInfo)) {
+                    if (shouldIncludeApp(packageName, appInfo)) {
+                        // Usar caché para nombres de apps
+                        val appName = appNameCache.getOrPut(packageName) {
+                            packageManager.getApplicationLabel(appInfo).toString()
+                        }
+                        
+                        // Sumar todo el tiempo de uso de todas las entradas de esta app
+                        val totalTime = statsList.sumOf { it.totalTimeInForeground }
+                        // Usar el último tiempo de uso más reciente
+                        val lastUsed = statsList.maxOf { it.lastTimeUsed }
+                        
                         AppUsageInfo(
-                            packageName = stats.packageName,
+                            packageName = packageName,
                             appName = appName,
-                            totalTimeInMillis = stats.totalTimeInForeground,
-                            lastTimeUsed = stats.lastTimeUsed
+                            totalTimeInMillis = totalTime,
+                            lastTimeUsed = lastUsed
                         )
                     } else null
                 } catch (e: PackageManager.NameNotFoundException) {
@@ -77,6 +110,8 @@ class UsageStatsRepository @Inject constructor(
                 }
             }
             .sortedByDescending { it.totalTimeInMillis }
+        
+        return aggregatedStats
     }
 
     private fun shouldIncludeApp(packageName: String, appInfo: ApplicationInfo): Boolean {

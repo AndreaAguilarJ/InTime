@@ -1,0 +1,892 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Momentum</string>
+    
+    <!-- Navigation -->
+    <string name="nav_today">Today</string>
+    <string name="nav_my_life">My Life</string>
+    <string name="nav_analytics">Analytics</string>
+    <string name="nav_focus">Focus</string>
+    <string name="nav_community">Community</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_minimal_phone">Minimal Phone</string>
+    <string name="nav_subscription">Premium</string>
+    
+    <!-- Dashboard -->
+    <string name="screen_time_today">Screen time today</string>
+    <string name="most_used_apps">Most used apps</string>
+    <string name="quote_of_the_day">Quote of the day</string>
+    <string name="hours_short">h</string>
+    <string name="minutes_short">m</string>
+    
+    <!-- Life in Weeks -->
+    <string name="my_life_in_weeks">My Life in Weeks</string>
+    <string name="weeks_lived">Weeks lived</string>
+    <string name="weeks_remaining">Weeks remaining</string>
+    <string name="customize_colors">Customize colors</string>
+    <string name="save_to_gallery">Save to gallery</string>
+    <string name="set_as_wallpaper">Set as wallpaper</string>
+    
+    <!-- Onboarding -->
+    <string name="welcome_title">Welcome to Momentum</string>
+    <string name="welcome_subtitle">Your companion for mindful time use</string>
+    <string name="birth_date_title">What is your date of birth?</string>
+    <string name="birth_date_subtitle">This will help us create your personal visualization</string>
+    <string name="permission_title">Required permissions</string>
+    <string name="permission_subtitle">To monitor your screen time we need access to usage data</string>
+    <string name="continue_button">Continue</string>
+    <string name="grant_permission">Grant permission</string>
+    
+    <!-- Settings -->
+    <string name="app_limits">App limits</string>
+    <string name="manage_apps">Manage apps</string>
+    <string name="notifications">Notifications</string>
+    <string name="widget_settings">Widget settings</string>
+    <string name="about">About</string>
+    <string name="logout">Sign out</string>
+    <string name="account_settings">Account settings</string>
+    
+    <!-- Widgets -->
+    <string name="life_weeks_widget_name">My Life in Weeks</string>
+    <string name="life_weeks_widget_description">Visualize your life progress in weeks</string>
+    <string name="quote_widget_name">Motivational Quote</string>
+    <string name="quote_widget_description">Daily inspiration for your home screen</string>
+    <string name="year_progress_widget_name">Year Progress</string>
+    <string name="year_progress_widget_description">View the days passed and remaining in the current year</string>
+    
+    <!-- Minimal Phone / Launcher -->
+    <string name="minimal_phone_title">Minimal Phone</string>
+    <string name="minimal_launcher_title">Momentum Minimal</string>
+    <string name="launcher_settings">Launcher settings</string>
+    <string name="set_as_default_launcher">Set as default launcher</string>
+    <string name="is_default_launcher">Default launcher</string>
+    <string name="not_default_launcher">Not default launcher</string>
+    <string name="auto_enable_minimal">Auto-enable Minimal Mode</string>
+    <string name="launcher_management">Launcher management</string>
+    <string name="view_installed_launchers">View installed launchers</string>
+    <string name="open_system_settings">Open system settings</string>
+    <string name="minimal_mode_active">Minimal Mode Active</string>
+    <string name="exit_minimal_mode">Exit minimal mode</string>
+    <string name="activate_minimal_mode">Activate minimal mode</string>
+    <string name="minimal_phone_features">Minimal mode features</string>
+    <string name="essential_apps_only">Only essential apps available</string>
+    <string name="simplified_interface">Simplified interface</string>
+    <string name="less_distractions">Fewer distractions</string>
+    <string name="focus_communication">Focus on communication</string>
+    <string name="phone_app">Phone</string>
+    <string name="messages_app">Messages</string>
+    <string name="contacts_app">Contacts</string>
+    <string name="settings_app">Settings</string>
+    <string name="dialer_title">Dialer</string>
+    <string name="enter_number">Enter a number</string>
+    <string name="call_button">Call</string>
+    <string name="back_button">← Back</string>
+    <string name="delete_button">Delete</string>
+    <string name="launcher_instructions">Instructions</string>
+    <string name="launcher_setup_steps">1. Tap \'Set as default launcher\'\n2. Select \'Momentum\' in the list\n3. Choose \'Always\' if you want it permanent\n4. Activate minimal mode for a simplified experience</string>
+    <string name="momentum_launcher_description">Momentum is your main launcher</string>
+    <string name="set_momentum_as_default">Set Momentum as default launcher</string>
+    <string name="this_app">This app</string>
+    <string name="default_launcher">Default</string>
+    <string name="installed_launchers">Installed launchers</string>
+    <string name="minimal_mode_configuration">Minimal Mode configuration</string>
+    <string name="auto_enable_description">Automatically enable when opening the launcher</string>
+    <string name="toggle_minimal_mode">Enable/disable minimal mode</string>
+
+    <!-- Authentication -->
+    <string name="create_account">Create account</string>
+    <string name="sign_in">Sign in</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="forgot_password">Forgot your password?</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    
+    <!-- Permissions -->
+    <string name="usage_stats_permission_rationale">This app needs access to usage data to show screen time statistics and help you manage your digital time more consciously.</string>
+    
+    <!-- Error messages -->
+    <string name="error_network">Connection error. Check your internet connection.</string>
+    <string name="error_authentication">Authentication error. Check your credentials.</string>
+    <string name="error_generic">An error occurred. Try again.</string>
+    
+    <!-- Success messages -->
+    <string name="account_created_success">Account created successfully</string>
+    <string name="login_success">Signed in successfully</string>
+    <string name="settings_saved">Settings saved</string>
+    
+    <!-- Tutorial -->
+    <string name="tutorial_title">App tutorial</string>
+    <string name="tutorial_description">Learn how to use all features</string>
+    <string name="tutorial_skip">Skip</string>
+    <string name="tutorial_next">Next</string>
+    <string name="tutorial_previous">Previous</string>
+    <string name="tutorial_finish">Start!</string>
+
+    <!-- Website Blocking -->
+    <string name="website_block_service_description">Service to block distracting websites in browsers. Momentum needs this permission to detect when you access blocked sites and help you stay focused.</string>
+    <string name="website_blocked_title">Site Blocked</string>
+    <string name="website_blocked_message">This site is blocked to help you stay focused</string>
+    <string name="enable_accessibility_service">Enable accessibility service</string>
+    <string name="accessibility_service_description">To block websites, you need to enable Momentum\'s accessibility service in system settings</string>
+
+        <!-- App Blocked -->
+        <string name="app_blocked_default_app_name">App</string>
+        <string name="app_blocked_time_up_title">⏰ Time’s Up</string>
+        <string name="app_blocked_daily_limit_subtitle">You’ve reached your daily limit</string>
+        <string name="app_blocked_daily_limit_minutes">%1$d minutes</string>
+        <string name="app_blocked_daily_limit_reached">Daily limit reached</string>
+        <string name="app_blocked_stat_achievement_value">Achievement!</string>
+        <string name="app_blocked_stat_achievement_label">Goal reached</string>
+        <string name="app_blocked_stat_reset_label">Resets tomorrow</string>
+        <string name="app_blocked_motivation_message">Great self-control! You’re building healthier habits.</string>
+        <string name="app_blocked_suggestions_title">💡 Suggestions to use your time well</string>
+        <string name="app_blocked_suggestion_read_title">Read a book</string>
+        <string name="app_blocked_suggestion_read_desc">Expand your knowledge</string>
+        <string name="app_blocked_suggestion_walk_title">Go for a walk</string>
+        <string name="app_blocked_suggestion_walk_desc">Move your body</string>
+        <string name="app_blocked_suggestion_meditate_title">Meditate</string>
+        <string name="app_blocked_suggestion_meditate_desc">Calm your mind</string>
+        <string name="app_blocked_suggestion_exercise_title">Exercise</string>
+        <string name="app_blocked_suggestion_exercise_desc">Stay active</string>
+        <string name="app_blocked_suggestion_creative_title">Creative hobby</string>
+        <string name="app_blocked_suggestion_creative_desc">Explore your creativity</string>
+        <string name="app_blocked_open_momentum">Open Momentum</string>
+        <string name="app_blocked_close_in">Closing in %1$d...</string>
+        <string name="app_blocked_close">Close</string>
+        <string name="app_blocked_emergency_unlock">🚨 Emergency unlock</string>
+
+        <!-- Lock Screen -->
+        <string name="lock_screen_biometric_failed">Biometric authentication failed</string>
+        <string name="lock_screen_locked_cd">Locked</string>
+        <string name="lock_screen_title">App Locked</string>
+        <string name="lock_screen_subtitle">Enter your password to continue</string>
+        <string name="lock_screen_password_label">Password</string>
+        <string name="lock_screen_password_placeholder">Enter your password</string>
+        <string name="lock_screen_too_many_attempts">Too many failed attempts. Try again in %1$d minutes</string>
+        <string name="lock_screen_password_incorrect">Incorrect password</string>
+        <string name="lock_screen_hide_password">Hide password</string>
+        <string name="lock_screen_show_password">Show password</string>
+        <string name="lock_screen_temporarily_locked">Locked for %1$d minute(s)</string>
+        <string name="lock_screen_unlock">Unlock</string>
+        <string name="lock_screen_biometric_title">Unlock InTime</string>
+        <string name="lock_screen_biometric_subtitle">Use your fingerprint or Face ID</string>
+        <string name="lock_screen_biometric_description">Verify your identity to continue</string>
+        <string name="lock_screen_use_biometric">Use biometrics</string>
+        <string name="lock_screen_help_note">If you forgot your password, uninstall and reinstall the app</string>
+
+        <!-- In-App Blocking -->
+        <string name="in_app_block_title">Function blocker</string>
+        <string name="in_app_block_back_cd">Back</string>
+        <string name="in_app_block_hero_title">Specific Feature Blocking</string>
+        <string name="in_app_block_hero_subtitle">Block features like Reels, Shorts and more without blocking the whole app</string>
+        <string name="in_app_block_monitoring_disabled_title">Monitoring is disabled</string>
+        <string name="in_app_block_monitoring_disabled_subtitle">Tap here to enable</string>
+        <string name="in_app_block_monitoring_active">System active</string>
+        <string name="in_app_block_search_placeholder">Search apps or features</string>
+        <string name="in_app_block_clear_search">Clear</string>
+        <string name="in_app_block_empty_title">No rules yet</string>
+        <string name="in_app_block_empty_subtitle">Add rules to block features inside your favorite apps.</string>
+        <string name="in_app_block_no_results_title">No results</string>
+        <string name="in_app_block_no_results_subtitle">We couldn’t find matches for your search.</string>
+        <string name="in_app_block_enabled_count">%1$d of %2$d enabled</string>
+        <string name="in_app_block_rules_count">%1$d rules</string>
+        <string name="block_type_reels_desc">Short vertical videos</string>
+        <string name="block_type_shorts_desc">YouTube short videos</string>
+        <string name="block_type_explore_desc">Discover new content</string>
+        <string name="block_type_search_desc">Search within the app</string>
+        <string name="block_type_for_you_desc">Personalized content feed</string>
+        <string name="block_type_discover_desc">Discover stories and content</string>
+        <string name="block_type_stories_desc">24-hour stories</string>
+        <string name="block_type_feed_desc">Main app feed</string>
+        <string name="block_type_custom_desc">Custom rule</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_category_account">Account</string>
+    <string name="settings_category_features">Features</string>
+    <string name="settings_category_information">Information</string>
+    <string name="settings_account_subtitle">Manage your profile and personal data</string>
+    <string name="settings_help_title">Help</string>
+    <string name="settings_help_subtitle">FAQs and support</string>
+    <string name="settings_logout_subtitle">Sign out of your current account</string>
+    <string name="settings_tutorial_subtitle">Learn to use all Momentum features</string>
+    <string name="settings_security_privacy_title">Security &amp; Privacy</string>
+    <string name="settings_protection_active_title">Protection active</string>
+    <string name="settings_protection_active_on_subtitle">The app is protected</string>
+    <string name="settings_protection_active_off_subtitle">Enable to protect your settings</string>
+    <string name="settings_password_protection_title">Password protection</string>
+    <string name="settings_password_configured">Password configured</string>
+    <string name="settings_password_configure">Set a numeric password</string>
+    <string name="settings_configured">Configured</string>
+    <string name="settings_digital_wellbeing_title">Digital Wellbeing</string>
+    <string name="settings_app_limits_subtitle">Set maximum usage time per app</string>
+    <string name="settings_in_app_blocking_title">In-app blocking</string>
+    <string name="settings_in_app_blocking_subtitle">Block Reels, Shorts, and specific content</string>
+    <string name="settings_website_blocks_title">Website blocking</string>
+    <string name="settings_website_blocks_subtitle">Block distracting websites</string>
+    <string name="settings_app_whitelist_subtitle">Apps allowed in Minimal Mode</string>
+    <string name="settings_personalization_data_title">Personalization &amp; Data</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_subtitle">Change app language</string>
+    <string name="settings_gamification_title">Gamification</string>
+    <string name="settings_gamification_subtitle">Levels, XP, streaks and TimeCoins</string>
+    <string name="settings_notifications_subtitle">Configure alerts and reminders</string>
+    <string name="settings_life_in_weeks_subtitle">Visualize your life and reflect on time</string>
+    <string name="settings_theme_title">Personalization</string>
+    <string name="settings_theme_subtitle">Themes and app appearance</string>
+    <string name="settings_widgets_subtitle">Customize home screen widgets</string>
+    <string name="settings_sync_title">Sync</string>
+    <string name="settings_sync_subtitle">View status and sync data to the cloud</string>
+    <string name="settings_about_subtitle">Information about Momentum</string>
+    <string name="settings_permissions_title">Permissions</string>
+    <string name="settings_permissions_subtitle">Manage app permissions</string>
+    <string name="settings_expand">Expand</string>
+    <string name="settings_collapse">Collapse</string>
+
+    <!-- Account Settings -->
+    <string name="account_settings_back_cd">Back</string>
+    <string name="account_settings_ok_button">OK</string>
+    <string name="account_settings_profile_info_title">Profile information</string>
+    <string name="account_settings_default_user_name">User</string>
+    <string name="account_settings_default_email">email@example.com</string>
+    <string name="account_settings_section_title">Account settings</string>
+    <string name="account_settings_change_password_title">Change password</string>
+    <string name="account_settings_change_password_subtitle">Update your access password</string>
+    <string name="account_settings_personal_data_title">Personal data</string>
+    <string name="account_settings_birthdate_label">Date of birth</string>
+    <string name="account_settings_not_configured">Not set</string>
+    <string name="account_settings_edit_button">Edit</string>
+    <string name="account_settings_onboarding_completed">Onboarding completed</string>
+    <string name="account_settings_yes">Yes</string>
+    <string name="account_settings_no">No</string>
+    <string name="account_settings_complete_button">Complete</string>
+    <string name="account_settings_display_preferences_title">Display preferences</string>
+    <string name="account_settings_widget_colors_title">Widget colors</string>
+    <string name="account_settings_widget_colors_subtitle">Customize your visualization colors</string>
+    <string name="account_settings_customize_button">Customize</string>
+    <string name="account_settings_actions_title">Account actions</string>
+    <string name="account_settings_logout_subtitle">Sign out on this device</string>
+    <string name="account_settings_delete_account_title">Delete account</string>
+    <string name="account_settings_delete_account_subtitle">This action cannot be undone</string>
+    <string name="account_settings_logout_title">Sign out</string>
+    <string name="account_settings_logout_message">Are you sure you want to sign out?</string>
+    <string name="account_settings_cancel_button">Cancel</string>
+    <string name="account_settings_delete_account_message">Are you sure you want to delete your account? This action cannot be undone and you will lose all your data.</string>
+    <string name="account_settings_delete_button">Delete</string>
+    <string name="account_settings_birthdate_updated">Birth date updated successfully</string>
+    <string name="account_settings_login_required_birthdate">You must sign in to update your birth date</string>
+    <string name="account_settings_update_error">Update error: %1$s</string>
+    <string name="account_settings_logout_error">Sign out error: %1$s</string>
+    <string name="account_settings_delete_account_error">Delete account error: %1$s</string>
+
+    <!-- Backup Settings -->
+    <string name="backup_settings_back_cd">Back</string>
+    <string name="backup_settings_title">Backup &amp; Export</string>
+    <string name="backup_settings_cloud_title">Cloud Backup</string>
+    <string name="backup_settings_last_backup">Last backup: %1$s</string>
+    <string name="backup_settings_no_backups">No backups</string>
+    <string name="backup_settings_syncing">Backing up... %1$d%%</string>
+    <string name="backup_settings_backup_button">Back up</string>
+    <string name="backup_settings_restore_button">Restore</string>
+    <string name="backup_settings_export_title">Export Data</string>
+    <string name="backup_settings_export_usage_title">Usage Data</string>
+    <string name="backup_settings_export_usage_desc">CSV with app statistics</string>
+    <string name="backup_settings_export_focus_title">Focus Sessions</string>
+    <string name="backup_settings_export_focus_desc">CSV with session history</string>
+    <string name="backup_settings_export_complete_title">Complete Report</string>
+    <string name="backup_settings_export_complete_desc">PDF with detailed analysis</string>
+    <string name="backup_settings_auto_title">Automatic Backup</string>
+    <string name="backup_settings_auto_subtitle">Back up data automatically every 24 hours</string>
+    <string name="backup_settings_export_message">Do you want to export the selected data? The file will be saved and you can share it.</string>
+    <string name="backup_settings_export_button">Export</string>
+    <string name="backup_settings_cancel_button">Cancel</string>
+
+    <!-- Sync Settings -->
+    <string name="sync_settings_title">Sync</string>
+    <string name="sync_settings_back_cd">Back</string>
+    <string name="sync_settings_status_title">Sync status</string>
+    <string name="sync_settings_status_idle_cd">Idle</string>
+    <string name="sync_settings_status_success_cd">Synced</string>
+    <string name="sync_settings_status_failed_cd">Error</string>
+    <string name="sync_settings_status_idle">Not synced</string>
+    <string name="sync_settings_status_syncing">Syncing...</string>
+    <string name="sync_settings_status_success">Sync successful</string>
+    <string name="sync_settings_status_failed">Sync failed. Your data is saved locally.</string>
+    <string name="sync_settings_last_sync_label">Last sync:</string>
+    <string name="sync_settings_never">Never</string>
+    <string name="sync_settings_sync_now">Sync now</string>
+    <string name="sync_settings_info_title">What is synced</string>
+    <string name="sync_settings_info_list">Color settings, Birth date, Goals and challenges, App limits, Whitelisted apps, Custom quotes, Widget preferences</string>
+    <string name="sync_settings_auto_note">Sync runs automatically each time you close the app.</string>
+
+    <!-- Language Settings -->
+    <string name="language_screen_info">Select the app language. Changes will apply immediately.</string>
+    <string name="language_dialog_title">Change language</string>
+    <string name="language_dialog_message">Do you want to change the app language? Changes will apply immediately and the app will restart.</string>
+
+    <!-- Notification Settings -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_header_title">Customize your notifications</string>
+    <string name="notifications_header_subtitle">Choose which notifications you want to receive to improve your digital wellbeing</string>
+    <string name="notification_app_limits_title">App Limits</string>
+    <string name="notification_app_limits_desc">We notify you when you approach or exceed usage limits</string>
+    <string name="notification_daily_motivation_title">Daily Motivation</string>
+    <string name="notification_daily_motivation_desc">Receive an inspiring quote every morning</string>
+    <string name="notification_weekly_summary_title">Weekly Summary</string>
+    <string name="notification_weekly_summary_desc">Summary of your device usage every Sunday</string>
+    <string name="notification_achievements_title">Achievements &amp; Goals</string>
+    <string name="notification_achievements_desc">Celebrate your achievements and streaks</string>
+    <string name="notification_screen_time_reminders_title">Wellbeing Reminders</string>
+    <string name="notification_screen_time_reminders_desc">We remind you to take breaks when you use the device a lot</string>
+    <string name="notification_test_title">Want to try it?</string>
+    <string name="notification_send_test">Send test notification</string>
+    <string name="notification_info_text">Smart notifications are designed to help you keep a healthy balance with technology without being intrusive.</string>
+
+    <!-- Theme Settings -->
+    <string name="theme_settings_title">Theme Settings</string>
+    <string name="theme_mode_title">Theme Mode</string>
+    <string name="theme_mode_system">Automatic</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="theme_mode_system_desc">Follow system settings</string>
+    <string name="theme_mode_light_desc">Always light theme</string>
+    <string name="theme_mode_dark_desc">Always dark theme</string>
+    <string name="theme_dynamic_colors_title">Dynamic Colors</string>
+    <string name="theme_dynamic_colors_subtitle">Use wallpaper colors (Android 12+)</string>
+    <string name="theme_custom_primary_title">Custom Primary Color</string>
+    <string name="theme_custom_primary_subtitle">Customize the app\'s primary color</string>
+    <string name="color_indigo">Indigo</string>
+    <string name="color_violet">Violet</string>
+    <string name="color_cyan">Cyan</string>
+    <string name="color_emerald">Emerald</string>
+    <string name="color_amber">Amber</string>
+    <string name="color_red">Red</string>
+    <string name="color_pink">Pink</string>
+    <string name="color_brown">Brown</string>
+    <string name="theme_reset_default">Reset to Default Color</string>
+    <string name="theme_preview_title">Preview</string>
+    <string name="theme_preview_primary">Primary</string>
+    <string name="theme_preview_secondary">Secondary</string>
+
+    <!-- Premium Themes Shop -->
+    <string name="premium_themes_back_cd">Back</string>
+    <string name="premium_themes_title">Theme Shop</string>
+    <string name="premium_themes_level_format">Lv.%1$d</string>
+    <string name="premium_themes_section_title">Premium Themes</string>
+    <string name="premium_themes_section_subtitle">Unlock exclusive themes with your TimeCoins</string>
+    <string name="premium_themes_unlock_title">Unlock %1$s</string>
+    <string name="premium_themes_purchase_question">Do you want to buy this theme for %1$d TimeCoins?</string>
+    <string name="premium_themes_balance_label">Your balance:</string>
+    <string name="premium_themes_after_purchase_label">After purchase:</string>
+    <string name="premium_themes_buy_button">🪙 Buy for %1$d</string>
+    <string name="premium_themes_cancel_button">Cancel</string>
+    <string name="premium_themes_insufficient_coins_title">Not enough TimeCoins</string>
+    <string name="premium_themes_insufficient_coins_message">You need %1$d TimeCoins to unlock %2$s.</string>
+    <string name="premium_themes_current_balance">Your current balance: %1$d TimeCoins</string>
+    <string name="premium_themes_missing_balance">Missing: %1$d TimeCoins</string>
+    <string name="premium_themes_insufficient_coins_tip">💡 Tip: Complete focus sessions to earn more TimeCoins</string>
+    <string name="premium_themes_understood_button">Got it</string>
+    <string name="premium_themes_level_required_title">Level required</string>
+    <string name="premium_themes_level_required_message">You need to reach level %1$d to unlock %2$s.</string>
+    <string name="premium_themes_current_level">Your current level: %1$d</string>
+    <string name="premium_themes_level_required_tip">💡 Tip: Earn XP by completing focus sessions and keep your streak to level up</string>
+    <string name="premium_themes_success_message">Theme unlocked and applied!</string>
+    <string name="premium_themes_unlocked_label">Unlocked</string>
+    <string name="premium_themes_locked_cd">Locked</string>
+    <string name="premium_themes_how_to_earn_title">How to earn TimeCoins</string>
+    <string name="premium_themes_earn_focus_minute">Focus minute</string>
+    <string name="premium_themes_earn_focus_minute_reward">+1 🪙</string>
+    <string name="premium_themes_earn_session_completed">Session completed</string>
+    <string name="premium_themes_earn_session_completed_reward">+25 🪙</string>
+    <string name="premium_themes_earn_perfect_day">Perfect day</string>
+    <string name="premium_themes_earn_perfect_day_reward">+50 🪙</string>
+    <string name="premium_themes_earn_streak_bonus">Streak bonus</string>
+    <string name="premium_themes_earn_streak_bonus_reward">x1.5 - x2.0</string>
+    <string name="premium_themes_earn_level_up">Level up</string>
+    <string name="premium_themes_earn_level_up_reward">+50-500 🪙</string>
+
+    <string name="premium_theme_name_neon_purple">Neon Purple</string>
+    <string name="premium_theme_desc_neon_purple">Vibrant and modern</string>
+    <string name="premium_theme_name_ocean_blue">Ocean Blue</string>
+    <string name="premium_theme_desc_ocean_blue">Calm and productive</string>
+    <string name="premium_theme_name_forest_green">Forest Green</string>
+    <string name="premium_theme_desc_forest_green">Natural and relaxing</string>
+    <string name="premium_theme_name_sunset_orange">Sunset Orange</string>
+    <string name="premium_theme_desc_sunset_orange">Energetic and warm</string>
+    <string name="premium_theme_name_cherry_blossom">Cherry Blossom</string>
+    <string name="premium_theme_desc_cherry_blossom">Elegant and subtle</string>
+    <string name="premium_theme_name_midnight_gold">Midnight Gold</string>
+    <string name="premium_theme_desc_midnight_gold">Luxurious and exclusive</string>
+    <string name="premium_theme_name_cyber_red">Cyber Red</string>
+    <string name="premium_theme_desc_cyber_red">Intense and powerful</string>
+    <string name="premium_theme_name_arctic_ice">Arctic Ice</string>
+    <string name="premium_theme_desc_arctic_ice">Fresh and clean</string>
+    <string name="premium_theme_name_galaxy_dark">Galaxy Dark</string>
+    <string name="premium_theme_desc_galaxy_dark">Mysterious and deep</string>
+    <string name="premium_theme_name_legendary_rainbow">Legendary Rainbow</string>
+    <string name="premium_theme_desc_legendary_rainbow">The most exclusive theme</string>
+
+    <!-- Gamification Settings -->
+    <string name="gamification_error_app_not_initialized">Error: Application not initialized</string>
+    <string name="gamification_title">Gamification</string>
+    <string name="gamification_category_settings">Settings</string>
+    <string name="gamification_active_title">Gamification active</string>
+    <string name="gamification_active_subtitle">Earn XP, level up, and get TimeCoins</string>
+    <string name="gamification_xp_notifications_title">XP notifications</string>
+    <string name="gamification_xp_notifications_subtitle">Show when you earn XP and level up</string>
+    <string name="gamification_streak_reminders_title">Streak reminders</string>
+    <string name="gamification_streak_reminders_subtitle">Warn before you lose your daily streak</string>
+    <string name="gamification_category_sync">Sync</string>
+    <string name="gamification_sync_title">Sync to cloud</string>
+    <string name="gamification_sync_subtitle">Save your progress to Appwrite</string>
+    <string name="gamification_restore_title">Restore from cloud</string>
+    <string name="gamification_restore_subtitle">Recover your saved progress</string>
+    <string name="gamification_category_actions">Actions</string>
+    <string name="gamification_reset_title">Reset progress</string>
+    <string name="gamification_reset_subtitle">Start over from level 1</string>
+    <string name="gamification_reset_dialog_title">Reset progress?</string>
+    <string name="gamification_reset_dialog_message">This action will delete all your gamification progress:\n\n• Level and XP\n• TimeCoins\n• Streaks\n• Stats\n\nThis action cannot be undone.</string>
+    <string name="gamification_reset_confirm">Reset</string>
+    <string name="gamification_sync_dialog_title">Sync progress</string>
+    <string name="gamification_sync_dialog_message">Your gamification progress will be saved to the cloud and you can restore it on any device.</string>
+    <string name="gamification_sync_confirm">Sync now</string>
+    <string name="gamification_level_format">Level %1$d</string>
+    <string name="gamification_stat_total_xp">Total XP</string>
+    <string name="gamification_stat_current_streak">Current streak</string>
+    <string name="gamification_stat_focus">Focus</string>
+    <string name="gamification_stat_perfect_days">Perfect days</string>
+    <string name="gamification_info_title">💡 How it works</string>
+    <string name="gamification_info_xp_title">XP</string>
+    <string name="gamification_info_xp_desc">Earn 5 XP for each minute of focus. Complete sessions for extra bonuses.</string>
+    <string name="gamification_info_timecoins_title">TimeCoins</string>
+    <string name="gamification_info_timecoins_desc">Earn 1 coin per minute. Use them for emergency unlocks or future rewards.</string>
+    <string name="gamification_info_streaks_title">Streaks</string>
+    <string name="gamification_info_streaks_desc">Keep your daily streak for XP multipliers (up to x2.0 with 30+ days).</string>
+    <string name="gamification_info_perfect_days_title">Perfect days</string>
+    <string name="gamification_info_perfect_days_desc">Complete all your daily goals to earn 500 extra XP.</string>
+
+    <!-- Permissions Settings -->
+    <string name="permissions_title">App permissions</string>
+    <string name="permissions_header_title">Required permissions</string>
+    <string name="permissions_header_subtitle">For Momentum to work correctly, it needs access to certain system permissions. Tap each option to configure them.</string>
+    <string name="permissions_section_essential">Essential permissions</string>
+    <string name="permission_usage_stats_title">Usage stats</string>
+    <string name="permission_usage_stats_desc">Required to monitor app usage time and set limits</string>
+    <string name="permission_overlay_title">Display over other apps</string>
+    <string name="permission_overlay_desc">Required to show blocks when you reach time limits</string>
+    <string name="permission_notifications_title">Notifications</string>
+    <string name="permission_notifications_desc">To send reminders, goal alerts, and progress notifications</string>
+    <string name="permission_web_block_title">Website blocking</string>
+    <string name="permission_web_block_desc">Accessibility service to detect and block websites in browsers (adult content, distractions, etc.)</string>
+    <string name="permissions_section_optional">Optional permissions</string>
+    <string name="permission_default_launcher_title">Default launcher</string>
+    <string name="permission_default_launcher_desc">To use Minimal Phone mode as the home screen</string>
+    <string name="permission_contacts_calls_title">Contacts and calls</string>
+    <string name="permission_contacts_calls_desc">For Minimal Phone mode features (calls and SMS)</string>
+    <string name="permission_camera_media_title">Camera and media</string>
+    <string name="permission_camera_media_desc">For additional Minimal Phone mode features</string>
+    <string name="permissions_full_settings_title">Full permissions settings</string>
+    <string name="permissions_full_settings_desc">Open system settings to manage all app permissions manually.</string>
+    <string name="permissions_open_settings">Open settings</string>
+    <string name="permissions_refresh_status">Refresh permission status</string>
+    <string name="permissions_granted_cd">Granted</string>
+    <string name="permissions_not_granted_cd">Not granted</string>
+    <string name="permissions_status_granted">✓ Granted</string>
+    <string name="permissions_status_not_granted">✗ Not granted - Tap to configure</string>
+    <string name="permissions_go_to_settings">Go to settings</string>
+
+    <!-- Common Actions -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_change">Change</string>
+    <string name="action_back">Back</string>
+    <string name="action_selected">Selected</string>
+    <string name="dialog_logout_message">Are you sure you want to sign out? Your local data will remain synced.</string>
+
+    <!-- TimeCoins -->
+    <string name="timecoins_get_more_cd">Get more</string>
+    <string name="timecoins_earned_format">+%1$d TimeCoins</string>
+    <string name="timecoins_balance_title">Your Balance</string>
+    <string name="timecoins_earn_more">Earn more</string>
+    <string name="timecoins_earn_more_subtitle">by completing sessions</string>
+
+    <!-- Gamification Header -->
+    <string name="gamification_header_streak_days">%1$d days</string>
+    <string name="gamification_header_xp_label">XP: %1$s</string>
+    <string name="gamification_header_xp_to_next_level">%1$s to Level %2$d</string>
+    <string name="gamification_header_total_focus">Total focus</string>
+    <string name="gamification_header_sessions">Sessions</string>
+    <string name="gamification_header_perfect_days">Perfect days</string>
+    <string name="gamification_event_xp_format">%1$s%2$d XP</string>
+    <string name="gamification_event_coins_format">+%1$d 🪙</string>
+    <string name="gamification_event_close_cd">Close</string>
+
+    <!-- Emergency Unlock -->
+    <string name="emergency_unlock_title">⚠️ Emergency Unlock</string>
+    <string name="emergency_unlock_question_line1">Do you really need to access</string>
+    <string name="emergency_unlock_question_line2">right now?</string>
+    <string name="emergency_unlock_streak_risk">Your %1$d-day streak is at risk</string>
+    <string name="emergency_unlock_streak_warning">Think twice before giving up</string>
+    <string name="emergency_unlock_premium_title">Premium Unlock</string>
+    <string name="emergency_unlock_premium_subtitle">Instant access for 15 minutes</string>
+    <string name="emergency_unlock_premium_price">$0.99 USD</string>
+    <string name="emergency_unlock_shame_title">Shame Unlock</string>
+    <string name="emergency_unlock_shame_subtitle">Share your slip on social media</string>
+    <string name="emergency_unlock_shame_price">FREE</string>
+    <string name="emergency_unlock_shame_badge">🤡 VIRAL</string>
+    <string name="emergency_unlock_shame_preparing">Preparing your moment of shame...</string>
+    <string name="emergency_unlock_shame_share_ready">The share picker will open</string>
+    <string name="emergency_unlock_cancel_button">No thanks, I’ll stay strong 💪</string>
+    <string name="emergency_unlock_motivation_quote">“The pain of discipline weighs grams,&#10;regret weighs tons”</string>
+    <string name="emergency_unlock_confirm_payment_title">Confirm payment</string>
+    <string name="emergency_unlock_confirm_shame_title">Are you sure?</string>
+    <string name="emergency_unlock_confirm_payment_message">You will be charged $0.99 USD for 15 minutes of access to %1$s.</string>
+    <string name="emergency_unlock_confirm_shame_message">An image with the text “I failed my dopamine diet in InTime 🤡” will be generated and the share picker will open to post on your social networks.&#10;&#10;Your friends will see it! 😱</string>
+    <string name="emergency_unlock_confirm_payment_button">Pay $0.99</string>
+    <string name="emergency_unlock_confirm_shame_button">Yes, post my shame 🤡</string>
+    <string name="emergency_unlock_confirm_default_button">Confirm</string>
+    <string name="emergency_unlock_cancel">Cancel</string>
+
+    <!-- Error Components -->
+    <string name="offline_indicator_message">No internet connection&#10;Limited features available</string>
+    <string name="offline_indicator_retry_cd">Retry</string>
+    <string name="loading_indicator_message">Loading...</string>
+
+    <!-- Website Blocked Screen -->
+    <string name="website_blocked_unknown_site">Unknown site</string>
+    <string name="website_blocked_attempt_message">You tried to access:</string>
+    <string name="website_blocked_description">This site is blocked to help you stay focused and avoid distractions.</string>
+    <string name="website_blocked_acknowledge">Got it</string>
+    <string name="website_blocked_manage_hint">You can manage blocked sites in Settings > Website blocking</string>
+
+    <!-- Help Screen -->
+    <string name="help_title">Help</string>
+    <string name="help_back_cd">Back</string>
+    <string name="help_faq_section_title">Frequently Asked Questions</string>
+    <string name="help_contact_section_title">Need more help?</string>
+    <string name="help_support_email_uri">mailto:support@momentum-app.com</string>
+    <string name="help_support_email_subject">Momentum App Support</string>
+    <string name="help_send_email_chooser">Send email</string>
+    <string name="help_contact_support_title">Contact Support</string>
+    <string name="help_contact_support_subtitle">Email us your questions</string>
+    <string name="help_guide_url">https://momentum-app.com/guide</string>
+    <string name="help_online_guide_title">Full Online Guide</string>
+    <string name="help_online_guide_subtitle">Detailed tutorials and tips</string>
+    <string name="help_expand_cd">Expand</string>
+    <string name="help_collapse_cd">Collapse</string>
+
+    <string name="help_faq_q1">How do I set time limits for apps?</string>
+    <string name="help_faq_a1">Go to Settings > Features > Digital Wellbeing > App limits. There you can select the apps you want to limit and set a maximum daily time.</string>
+    <string name="help_faq_q2">How does Minimal Mode work?</string>
+    <string name="help_faq_a2">Minimal Mode turns your phone into a basic tool by hiding distracting apps and showing only essentials. You can choose which apps appear in Settings > Manage apps.</string>
+    <string name="help_faq_q3">What is in-app blocking?</string>
+    <string name="help_faq_a3">This feature lets you block specific content inside apps (like Reels in Instagram or Shorts in YouTube) without blocking the whole app. It requires enabling the accessibility service.</string>
+    <string name="help_faq_q4">How do I protect my settings with a password?</string>
+    <string name="help_faq_a4">Go to Settings > Features > Security and Privacy > Password Protection. Set a numeric PIN to protect your settings and prevent disabling limits.</string>
+    <string name="help_faq_q5">Why does the app need Accessibility permission?</string>
+    <string name="help_faq_a5">Accessibility permission is required to detect and block specific content inside apps (like Reels or Shorts) and to block websites. Without it, those features cannot work.</string>
+    <string name="help_faq_q6">Why does the app need Usage Access permission?</string>
+    <string name="help_faq_a6">This permission allows Momentum to monitor your app usage to show accurate statistics and enforce the time limits you set.</string>
+    <string name="help_faq_q7">How does “My life in weeks” work?</string>
+    <string name="help_faq_a7">This visualization shows your life divided into weeks, from your birth to an average life expectancy. It helps you reflect on time and make more conscious choices about how you use it.</string>
+    <string name="help_faq_q8">How do I set up widgets?</string>
+    <string name="help_faq_a8">Long-press your home screen, select “Widgets”, search for “Momentum”, and drag the widget you want to your screen. You can adjust colors in Settings > Widget settings.</string>
+    <string name="help_faq_q9">Do my data sync across devices?</string>
+    <string name="help_faq_a9">Yes. If you’re signed in, your settings and data sync automatically in the cloud. You can check sync status in Settings > Sync.</string>
+    <string name="help_faq_q10">How do I temporarily disable limits?</string>
+    <string name="help_faq_a10">If password protection is enabled, you must enter your PIN to disable limits. This is intentional to prevent impulsive disabling.</string>
+
+    <!-- Widget Settings -->
+    <string name="widget_settings_title">Widget Settings</string>
+    <string name="widget_settings_back_cd">Back</string>
+    <string name="widget_settings_available_title">Available Widgets</string>
+    <string name="widget_settings_available_subtitle">Long-press the home screen to add widgets</string>
+    <string name="widget_settings_widget_life_weeks_title">My Life in Weeks</string>
+    <string name="widget_settings_widget_life_weeks_desc">Visualization of your life divided into weeks</string>
+    <string name="widget_settings_widget_quote_title">Motivational Quote</string>
+    <string name="widget_settings_widget_quote_desc">An inspiring quote that changes daily</string>
+    <string name="widget_settings_widget_year_progress_title">Year Progress</string>
+    <string name="widget_settings_widget_year_progress_desc">Percentage of the year elapsed</string>
+    <string name="widget_settings_lived_color_title">Lived Weeks Color</string>
+    <string name="widget_settings_lived_color_subtitle">Color for the weeks you’ve already lived</string>
+    <string name="widget_settings_future_color_title">Future Weeks Color</string>
+    <string name="widget_settings_future_color_subtitle">Color for the weeks you haven’t lived yet</string>
+    <string name="widget_settings_refresh_button">Refresh All Widgets</string>
+    <string name="widget_settings_selected_cd">Selected</string>
+
+    <string name="widget_color_green">Green</string>
+    <string name="widget_color_blue">Blue</string>
+    <string name="widget_color_purple">Purple</string>
+    <string name="widget_color_orange">Orange</string>
+    <string name="widget_color_pink">Pink</string>
+    <string name="widget_color_cyan">Cyan</string>
+    <string name="widget_color_amber">Amber</string>
+    <string name="widget_color_brown">Brown</string>
+    <string name="widget_color_blue_gray">Blue gray</string>
+    <string name="widget_color_indigo">Indigo</string>
+    <string name="widget_color_teal">Teal</string>
+    <string name="widget_color_red">Red</string>
+    <string name="widget_color_light_gray">Light gray</string>
+    <string name="widget_color_medium_gray">Medium gray</string>
+    <string name="widget_color_gray">Gray</string>
+    <string name="widget_color_dark_gray">Dark gray</string>
+    <string name="widget_color_almost_white">Almost white</string>
+    <string name="widget_color_very_light_gray">Very light gray</string>
+
+    <!-- About Screen -->
+    <string name="about_title">About</string>
+    <string name="about_back_cd">Back</string>
+    <string name="about_tagline">Your Life in Weeks</string>
+    <string name="about_version_format">Version %1$s (%2$d)</string>
+    <string name="about_section_title">About Momentum</string>
+    <string name="about_section_description">Momentum helps you visualize your life in weeks and manage your digital time consciously. Every week counts.</string>
+    <string name="about_features_title">Key features</string>
+    <string name="about_feature_life_title">Life visualization</string>
+    <string name="about_feature_life_desc">See your life in 4,160 weeks</string>
+    <string name="about_feature_digital_title">Digital wellbeing</string>
+    <string name="about_feature_digital_desc">Monitor and control your app time</string>
+    <string name="about_feature_focus_title">Focus sessions</string>
+    <string name="about_feature_focus_desc">Deep focus with a timer</string>
+    <string name="about_feature_limits_title">App limits</string>
+    <string name="about_feature_limits_desc">Set healthy limits</string>
+    <string name="about_feature_sync_title">Cloud sync</string>
+    <string name="about_feature_sync_desc">Keep your data safe with Appwrite</string>
+    <string name="about_info_version_title">Version</string>
+    <string name="about_info_build_title">Build</string>
+    <string name="about_developed_with_love">Built with ❤️</string>
+    <string name="about_developed_subtitle">Made to help you live more consciously</string>
+    <string name="about_legal_title">Legal</string>
+    <string name="about_privacy_policy">Privacy policy</string>
+    <string name="about_terms_of_service">Terms of service</string>
+    <string name="about_copyright">© %1$d Momentum&#10;All rights reserved</string>
+
+    <!-- Tutorial Screen -->
+    <string name="tutorial_step_welcome_title">Welcome to the tutorial</string>
+    <string name="tutorial_step_welcome_desc">A quick guide to set up and personalize Momentum for your preferences</string>
+    <string name="tutorial_step_welcome_tip_1">You can access this tutorial anytime from Settings</string>
+    <string name="tutorial_step_welcome_tip_2">All changes are saved automatically</string>
+    <string name="tutorial_step_birthdate_title">Your date of birth</string>
+    <string name="tutorial_step_birthdate_desc">We’ll use it to calculate lived and remaining weeks in your life visualization</string>
+    <string name="tutorial_step_birthdate_tip_1">This information is used to calculate your life progress</string>
+    <string name="tutorial_step_birthdate_tip_2">The widget and all visualizations update automatically</string>
+    <string name="tutorial_step_colors_title">Customize your colors</string>
+    <string name="tutorial_step_colors_desc">Choose colors to represent lived weeks and future weeks</string>
+    <string name="tutorial_step_colors_tip_1">Colors apply immediately to your widget</string>
+    <string name="tutorial_step_colors_tip_2">You can change these colors later from My Life</string>
+    <string name="tutorial_step_done_title">All set!</string>
+    <string name="tutorial_step_done_desc">You’ve successfully set up Momentum. Explore the different sections to discover all features.</string>
+    <string name="tutorial_step_done_tip_1">Visit “My Life” to see your full visualization</string>
+    <string name="tutorial_step_done_tip_2">Use “Focus” for productivity sessions</string>
+    <string name="tutorial_step_done_tip_3">Check “Analytics” for detailed statistics</string>
+    <string name="tutorial_topbar_title">Usage Tutorial</string>
+    <string name="tutorial_step_progress">Step %1$d of %2$d</string>
+    <string name="tutorial_tips_title">Helpful tips</string>
+    <string name="tutorial_start">Get started!</string>
+    <string name="tutorial_customize_experience">Customize your experience</string>
+    <string name="tutorial_lived_weeks_title">Lived weeks</string>
+    <string name="tutorial_future_weeks_title">Future weeks</string>
+    <string name="tutorial_birthdate_title">Your date of birth</string>
+    <string name="tutorial_birthdate_subtitle">This helps us calculate your life progress</string>
+    <string name="tutorial_birthdate_select_button">Select date</string>
+    <string name="tutorial_birthdate_progress_title">📊 Your progress</string>
+    <string name="tutorial_birthdate_years_label">years</string>
+    <string name="tutorial_birthdate_weeks_lived_label">weeks lived</string>
+    <string name="tutorial_birthdate_life_percent">%1$d%% of an estimated 90-year life</string>
+    <string name="tutorial_color_red">Red</string>
+    <string name="tutorial_color_turquoise">Turquoise</string>
+    <string name="tutorial_color_blue">Blue</string>
+    <string name="tutorial_color_green">Green</string>
+    <string name="tutorial_color_coral">Coral</string>
+    <string name="tutorial_color_purple">Purple</string>
+
+    <!-- Goals & Challenges -->
+    <string name="goal_period_daily">Daily</string>
+    <string name="goal_period_weekly">Weekly</string>
+    <string name="goal_period_monthly">Monthly</string>
+    <string name="goal_category_screen_time">Screen time</string>
+    <string name="goal_category_social_media">Social media</string>
+    <string name="goal_category_productivity">Productivity</string>
+    <string name="goal_category_focus">Focus</string>
+    <string name="goal_category_digital_detox">Digital detox</string>
+    <string name="challenge_difficulty_easy">Easy</string>
+    <string name="challenge_difficulty_medium">Medium</string>
+    <string name="challenge_difficulty_hard">Hard</string>
+
+    <string name="goals_header_title">Goals &amp; Challenges</string>
+    <string name="goals_header_subtitle">Set goals and complete challenges</string>
+    <string name="goals_tab_goals">Goals</string>
+    <string name="goals_tab_challenges">Challenges</string>
+    <string name="goals_active_title">Active Goals</string>
+    <string name="goals_new_goal_button">New Goal</string>
+    <string name="goals_empty_title">No goals yet</string>
+    <string name="goals_empty_subtitle">Define your first goal to start progressing</string>
+    <string name="goals_empty_action">Create My First Goal</string>
+    <string name="goals_challenges_active_title">Active Challenges</string>
+    <string name="goals_challenges_available_title">Available Challenges</string>
+    <string name="goals_challenges_empty_title">No challenges available</string>
+    <string name="goals_challenges_empty_subtitle">Gamified challenges will appear here soon</string>
+    <string name="goals_challenges_refresh_button">Refresh</string>
+    <string name="goals_premium_title">Goals &amp; Challenges</string>
+    <string name="goals_premium_subtitle">Set personalized goals and complete gamified challenges</string>
+    <string name="goals_premium_feature_1">Daily, weekly, and monthly custom goals</string>
+    <string name="goals_premium_feature_2">Gamified digital detox challenges</string>
+    <string name="goals_premium_feature_3">Rewards and badges system</string>
+    <string name="goals_premium_feature_4">Automatic progress tracking</string>
+    <string name="goals_premium_feature_5">Smart reminders</string>
+    <string name="goals_premium_feature_6">Goal completion analytics</string>
+    <string name="goals_premium_cta">Upgrade to Premium</string>
+    <string name="goals_summary_title">Summary</string>
+    <string name="goals_summary_completed">Goals&#10;completed</string>
+    <string name="goals_summary_active">Goals&#10;active</string>
+    <string name="goals_summary_challenges_completed">Challenges&#10;completed</string>
+    <string name="goals_summary_streak_days">Streak&#10;days</string>
+    <string name="goals_progress_current">%1$dh %2$dm</string>
+    <string name="goals_progress_target">Target: %1$dh %2$dm</string>
+    <string name="goals_progress_completed">%1$d%% completed</string>
+    <string name="goals_completed_badge">Completed!</string>
+    <string name="goals_challenge_duration_days">%1$d days</string>
+    <string name="goals_challenge_reward">Reward: %1$s</string>
+    <string name="goals_challenge_day_progress">Day %1$d of %2$d</string>
+    <string name="goals_challenge_join_button">Join Challenge</string>
+    <string name="goals_challenge_completed_badge">Challenge Completed!</string>
+
+    <string name="goals_screen_title">My Goals</string>
+    <string name="goals_add_button">Add Goal</string>
+    <string name="goals_create_title">New Goal</string>
+    <string name="goals_close_cd">Close</string>
+    <string name="goals_title_label">Goal title</string>
+    <string name="goals_title_placeholder">E.g., Reduce screen time</string>
+    <string name="goals_description_label">Description</string>
+    <string name="goals_description_placeholder">Describe your goal...</string>
+    <string name="goals_target_time_label">Target time</string>
+    <string name="goals_hours_label">Hours</string>
+    <string name="goals_minutes_label">Minutes</string>
+    <string name="goals_period_label">Period</string>
+    <string name="goals_category_label">Category</string>
+    <string name="goals_required_error">Please complete all required fields</string>
+    <string name="goals_cancel_button">Cancel</string>
+    <string name="goals_create_button">Create</string>
+    <string name="goals_target_minutes_label">Target time (minutes)</string>
+
+    <string name="goals_notification_challenge_completed_title">Challenge Completed!</string>
+    <string name="goals_notification_challenge_completed_message">You completed the challenge: %1$s. Reward: %2$s</string>
+    <string name="goals_notification_streak_7_title">7-day streak!</string>
+    <string name="goals_notification_streak_7_message">You kept your goal for a full week</string>
+    <string name="goals_notification_streak_30_title">30-day streak!</string>
+    <string name="goals_notification_streak_30_message">A full month meeting your goal. Amazing!</string>
+    <string name="goals_notification_streak_100_title">100-day streak!</string>
+    <string name="goals_notification_streak_100_message">100 consecutive days. You’re a legend.</string>
+    <string name="goals_notification_goal_completed_title">Goal Completed!</string>
+    <string name="goals_notification_goal_completed_message">You reached your goal in: %1$s</string>
+
+    <string name="goals_recommendation_screen_time_title">Control your screen time</string>
+    <string name="goals_recommendation_screen_time_desc">Set a daily limit for device usage</string>
+    <string name="goals_recommendation_social_title">Reduce social media</string>
+    <string name="goals_recommendation_social_desc">Limit time spent on social media apps</string>
+    <string name="goals_recommendation_productivity_title">Boost your productivity</string>
+    <string name="goals_recommendation_productivity_desc">Spend time on work and study apps</string>
+
+    <!-- Website Block Screen -->
+    <string name="website_block_title">Website Blocking</string>
+    <string name="website_block_back_cd">Back</string>
+    <string name="website_block_add_category_cd">Add category</string>
+    <string name="website_block_add_site_cd">Add site</string>
+    <string name="website_block_delete_title">Delete block</string>
+    <string name="website_block_delete_message">Are you sure you want to delete the block for %1$s?</string>
+    <string name="website_block_delete_confirm">Delete</string>
+    <string name="website_block_cancel_button">Cancel</string>
+    <string name="website_block_stat_total">Total</string>
+    <string name="website_block_stat_active">Active</string>
+    <string name="website_block_stat_adult">Adult</string>
+    <string name="website_block_info_title">About website blocking</string>
+    <string name="website_block_info_message">Blocked sites will be intercepted when opened in supported browsers. You can temporarily unlock them from the block notification.</string>
+    <string name="website_block_active_count">(%1$d active)</string>
+    <string name="website_block_delete_category_cd">Delete category</string>
+    <string name="website_block_delete_cd">Delete</string>
+    <string name="website_block_empty_title">No blocked sites</string>
+    <string name="website_block_empty_subtitle">Add websites to block access to distracting content</string>
+    <string name="website_block_add_site_button">Add site</string>
+    <string name="website_block_category_adult">Adult content</string>
+    <string name="website_block_category_social">Social media</string>
+    <string name="website_block_category_entertainment">Entertainment</string>
+    <string name="website_block_category_gaming">Gaming</string>
+    <string name="website_block_category_news">News</string>
+    <string name="website_block_category_shopping">Shopping</string>
+    <string name="website_block_category_custom">Custom</string>
+
+    <!-- Analytics -->
+    <string name="analytics_category_social">Social</string>
+    <string name="analytics_category_entertainment">Entertainment</string>
+    <string name="analytics_category_productivity">Productivity</string>
+    <string name="analytics_category_games">Games</string>
+    <string name="analytics_category_communication">Communication</string>
+    <string name="analytics_category_news">News</string>
+    <string name="analytics_category_health">Health</string>
+    <string name="analytics_category_other">Other</string>
+
+    <string name="analytics_period_today">Today</string>
+    <string name="analytics_period_last_week">Last week</string>
+    <string name="analytics_period_last_month">Last month</string>
+    <string name="analytics_period_last_year">Last year</string>
+    <string name="analytics_today_label">Today</string>
+
+    <string name="analytics_insight_avg_daily_title">Daily average</string>
+    <string name="analytics_insight_avg_daily_desc">Your screen time this week</string>
+    <string name="analytics_insight_top_app_title">Top app</string>
+    <string name="analytics_insight_top_app_desc">%1$s leads your usage time</string>
+    <string name="analytics_insight_pickups_title">Pickups</string>
+    <string name="analytics_insight_pickups_desc">Times you unlocked your phone today</string>
+    <string name="analytics_insight_peak_time_title">Peak time</string>
+    <string name="analytics_insight_peak_time_desc">Your most active time</string>
+    <string name="analytics_insight_productivity_title">Productivity</string>
+    <string name="analytics_insight_productivity_desc">Time in productive apps</string>
+    <string name="analytics_insight_social_title">Social media</string>
+    <string name="analytics_insight_social_desc">Time on social apps</string>
+
+    <string name="analytics_last_used_one_min">1 min ago</string>
+    <string name="analytics_last_used_more_than_week">More than 1 week ago</string>
+
+    <string name="analytics_title">Advanced Analytics</string>
+    <string name="analytics_subtitle">Detailed insights into your digital usage</string>
+    <string name="analytics_refresh_cd">Refresh</string>
+    <string name="analytics_key_insights_title">Key insights</string>
+    <string name="analytics_usage_by_app_title">Usage by App</string>
+    <string name="analytics_permission_title">Permission Required</string>
+    <string name="analytics_permission_message">To view advanced stats, we need access to your device usage data.</string>
+    <string name="analytics_permission_instruction">Please go to Settings and enable Usage Access.</string>
+    <string name="analytics_premium_subtitle">Unlock detailed insights about your digital usage with Premium</string>
+    <string name="analytics_premium_feature_1">Weekly and monthly usage charts</string>
+    <string name="analytics_premium_feature_2">App category analysis</string>
+    <string name="analytics_premium_feature_3">Productivity insights</string>
+    <string name="analytics_premium_feature_4">Period comparisons</string>
+    <string name="analytics_premium_feature_5">Data export</string>
+    <string name="analytics_premium_feature_6">Smart alerts</string>
+    <string name="analytics_premium_cta">Upgrade to Premium</string>
+    <string name="analytics_weekly_screen_time_title">Weekly Screen Time</string>
+    <string name="analytics_hours_format">%1$.1fh</string>
+    <string name="analytics_usage_by_category_title">Usage by Category</string>
+    <string name="analytics_app_usage_time_sessions">%1$dh %2$dm • %3$d sessions</string>
+    <string name="analytics_app_usage_last_used">Last used: %1$s</string>
+    <string name="analytics_productivity_insight_title">Productivity insight</string>
+    <string name="analytics_productivity_insight_message">Your productivity increases by 23% on Tuesdays. Consider scheduling important tasks that day.</string>
+    <string name="analytics_summary_title">Statistical Summary</string>
+    <string name="analytics_summary_total_screen_time">Total Screen Time</string>
+    <string name="analytics_summary_daily_average">Daily Average</string>
+    <string name="analytics_summary_total_pickups">Total Pickups</string>
+    <string name="analytics_summary_pickups_times">%1$d times</string>
+    <string name="analytics_summary_top_app">Top App</string>
+
+    <plurals name="analytics_last_used_minutes">
+        <item quantity="one">%1$d min ago</item>
+        <item quantity="other">%1$d mins ago</item>
+    </plurals>
+    <plurals name="analytics_last_used_hours">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="analytics_last_used_days">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+</resources>

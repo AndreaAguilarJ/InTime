@@ -17,16 +17,18 @@ object LifeWeeksCalculator {
         val progressPercentage: Float
     )
     
-    fun calculateLifeWeeks(birthDate: Date): LifeWeeksData {
+    fun calculateLifeWeeks(birthDate: Date, lifeExpectancy: Int = 80): LifeWeeksData {
+        val totalWeeksInLife = lifeExpectancy * 52
         val currentDate = Date()
         val ageInMillis = currentDate.time - birthDate.time
         val ageInDays = TimeUnit.MILLISECONDS.toDays(ageInMillis)
         val weeksLived = (ageInDays / 7).toInt()
-        val weeksRemaining = maxOf(0, TOTAL_WEEKS_IN_80_YEARS - weeksLived)
+        val weeksRemaining = maxOf(0, totalWeeksInLife - weeksLived)
         val currentAge = (ageInDays / 365).toInt()
-        val progressPercentage = (weeksLived.toFloat() / TOTAL_WEEKS_IN_80_YEARS) * 100f
+        val progressPercentage = (weeksLived.toFloat() / totalWeeksInLife) * 100f
         
         return LifeWeeksData(
+            totalWeeks = totalWeeksInLife,
             weeksLived = weeksLived,
             weeksRemaining = weeksRemaining,
             currentAge = currentAge,

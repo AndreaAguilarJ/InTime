@@ -15,9 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.R
 import com.momentummm.app.data.manager.ThemeManager
 import kotlinx.coroutines.launch
 
@@ -52,12 +54,12 @@ fun ThemeSettingsScreen(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver"
+                        contentDescription = stringResource(R.string.action_back)
                     )
                 }
                 
                 Text(
-                    text = "Configuración de Tema",
+                    text = stringResource(R.string.theme_settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 8.dp)
@@ -82,7 +84,7 @@ fun ThemeSettingsScreen(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "Modo de Tema",
+                            text = stringResource(R.string.theme_mode_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -117,9 +119,9 @@ fun ThemeSettingsScreen(
                                 Column {
                                     Text(
                                         text = when (mode) {
-                                            ThemeManager.ThemeMode.SYSTEM -> "Automático"
-                                            ThemeManager.ThemeMode.LIGHT -> "Claro"
-                                            ThemeManager.ThemeMode.DARK -> "Oscuro"
+                                            ThemeManager.ThemeMode.SYSTEM -> stringResource(R.string.theme_mode_system)
+                                            ThemeManager.ThemeMode.LIGHT -> stringResource(R.string.theme_mode_light)
+                                            ThemeManager.ThemeMode.DARK -> stringResource(R.string.theme_mode_dark)
                                         },
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
@@ -127,9 +129,9 @@ fun ThemeSettingsScreen(
                                     
                                     Text(
                                         text = when (mode) {
-                                            ThemeManager.ThemeMode.SYSTEM -> "Sigue la configuración del sistema"
-                                            ThemeManager.ThemeMode.LIGHT -> "Tema claro siempre"
-                                            ThemeManager.ThemeMode.DARK -> "Tema oscuro siempre"
+                                            ThemeManager.ThemeMode.SYSTEM -> stringResource(R.string.theme_mode_system_desc)
+                                            ThemeManager.ThemeMode.LIGHT -> stringResource(R.string.theme_mode_light_desc)
+                                            ThemeManager.ThemeMode.DARK -> stringResource(R.string.theme_mode_dark_desc)
                                         },
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -165,13 +167,13 @@ fun ThemeSettingsScreen(
                         
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Colores Dinámicos",
+                                text = stringResource(R.string.theme_dynamic_colors_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             
                             Text(
-                                text = "Usar colores del fondo de pantalla (Android 12+)",
+                                text = stringResource(R.string.theme_dynamic_colors_subtitle),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -201,14 +203,14 @@ fun ThemeSettingsScreen(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "Color Principal Personalizado",
+                            text = stringResource(R.string.theme_custom_primary_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         
                         Text(
-                            text = "Personaliza el color principal de la aplicación",
+                            text = stringResource(R.string.theme_custom_primary_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)
@@ -218,14 +220,14 @@ fun ThemeSettingsScreen(
                         
                         // Color presets
                         val colorPresets = listOf(
-                            "#6366F1" to "Índigo",
-                            "#8B5CF6" to "Violeta", 
-                            "#06B6D4" to "Cian",
-                            "#10B981" to "Esmeralda",
-                            "#F59E0B" to "Ámbar",
-                            "#EF4444" to "Rojo",
-                            "#EC4899" to "Rosa",
-                            "#8B5A2B" to "Marrón"
+                            "#6366F1" to stringResource(R.string.color_indigo),
+                            "#8B5CF6" to stringResource(R.string.color_violet),
+                            "#06B6D4" to stringResource(R.string.color_cyan),
+                            "#10B981" to stringResource(R.string.color_emerald),
+                            "#F59E0B" to stringResource(R.string.color_amber),
+                            "#EF4444" to stringResource(R.string.color_red),
+                            "#EC4899" to stringResource(R.string.color_pink),
+                            "#8B5A2B" to stringResource(R.string.color_brown)
                         )
                         
                         LazyColumn(
@@ -263,7 +265,7 @@ fun ThemeSettingsScreen(
                                     if (customPrimaryColor == colorHex) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
-                                            contentDescription = "Seleccionado",
+                                            contentDescription = stringResource(R.string.action_selected),
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
@@ -282,7 +284,7 @@ fun ThemeSettingsScreen(
                             },
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         ) {
-                            Text("Restablecer al Color por Defecto")
+                            Text(stringResource(R.string.theme_reset_default))
                         }
                     }
                 }
@@ -301,7 +303,7 @@ fun ThemeSettingsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Vista Previa",
+                            text = stringResource(R.string.theme_preview_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -316,14 +318,14 @@ fun ThemeSettingsScreen(
                                 onClick = { },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Primario")
+                                Text(stringResource(R.string.theme_preview_primary))
                             }
                             
                             OutlinedButton(
                                 onClick = { },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Secundario")
+                                Text(stringResource(R.string.theme_preview_secondary))
                             }
                         }
                         

@@ -11,6 +11,10 @@ class UserRepository(private val userDao: UserDao) {
         return userDao.getUserSettings()
     }
 
+    suspend fun getUserSettingsSync(): UserSettings? {
+        return userDao.getUserSettingsSync()
+    }
+
     suspend fun saveUserSettings(userSettings: UserSettings) {
         userDao.insertUserSettings(userSettings)
     }

@@ -1,5 +1,6 @@
 package com.momentummm.app.ui.screen.settings
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,8 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.momentummm.app.R
 import com.momentummm.app.data.manager.BackupSyncManager
 import com.momentummm.app.data.manager.ExportManager
 import kotlinx.coroutines.launch
@@ -54,12 +57,12 @@ fun BackupSettingsScreen(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver"
+                        contentDescription = stringResource(R.string.backup_settings_back_cd)
                     )
                 }
                 
                 Text(
-                    text = "Respaldo y Exportación",
+                    text = stringResource(R.string.backup_settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 8.dp)
@@ -96,14 +99,16 @@ fun BackupSettingsScreen(
                             
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Respaldo en la Nube",
+                                    text = stringResource(R.string.backup_settings_cloud_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 
                                 Text(
-                                    text = lastSyncTime?.let { "Último respaldo: $it" } ?: "Sin respaldos",
+                                    text = lastSyncTime?.let {
+                                        stringResource(R.string.backup_settings_last_backup, it)
+                                    } ?: stringResource(R.string.backup_settings_no_backups),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                                 )
@@ -122,7 +127,10 @@ fun BackupSettingsScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             Text(
-                                text = "Respaldando... ${(backupProgress * 100).toInt()}%",
+                                text = stringResource(
+                                    R.string.backup_settings_syncing,
+                                    (backupProgress * 100).toInt()
+                                ),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -149,7 +157,7 @@ fun BackupSettingsScreen(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Respaldar")
+                                Text(stringResource(R.string.backup_settings_backup_button))
                             }
                             
                             OutlinedButton(
@@ -167,7 +175,7 @@ fun BackupSettingsScreen(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Restaurar")
+                                Text(stringResource(R.string.backup_settings_restore_button))
                             }
                         }
                     }
@@ -197,7 +205,7 @@ fun BackupSettingsScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             
                             Text(
-                                text = "Exportar Datos",
+                                text = stringResource(R.string.backup_settings_export_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -207,9 +215,24 @@ fun BackupSettingsScreen(
                         
                         // Export options
                         val exportOptions = listOf(
-                            ExportOption("usage", "Datos de Uso", "CSV con estadísticas de aplicaciones", Icons.Default.Apps),
-                            ExportOption("focus", "Sesiones de Enfoque", "CSV con historial de sesiones", Icons.Default.Psychology),
-                            ExportOption("complete", "Reporte Completo", "PDF con análisis detallado", Icons.Default.PictureAsPdf)
+                            ExportOption(
+                                "usage",
+                                R.string.backup_settings_export_usage_title,
+                                R.string.backup_settings_export_usage_desc,
+                                Icons.Default.Apps
+                            ),
+                            ExportOption(
+                                "focus",
+                                R.string.backup_settings_export_focus_title,
+                                R.string.backup_settings_export_focus_desc,
+                                Icons.Default.Psychology
+                            ),
+                            ExportOption(
+                                "complete",
+                                R.string.backup_settings_export_complete_title,
+                                R.string.backup_settings_export_complete_desc,
+                                Icons.Default.PictureAsPdf
+                            )
                         )
                         
                         exportOptions.forEach { option ->
@@ -239,13 +262,13 @@ fun BackupSettingsScreen(
                                     
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = option.title,
+                                            text = stringResource(option.titleRes),
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = FontWeight.Medium
                                         )
                                         
                                         Text(
-                                            text = option.description,
+                                            text = stringResource(option.descriptionRes),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -288,14 +311,14 @@ fun BackupSettingsScreen(
                             
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Respaldo Automático",
+                                    text = stringResource(R.string.backup_settings_auto_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 
                                 Text(
-                                    text = "Respaldar datos automáticamente cada 24 horas",
+                                    text = stringResource(R.string.backup_settings_auto_subtitle),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                                 )
@@ -325,9 +348,9 @@ fun BackupSettingsScreen(
     if (showExportDialog) {
         AlertDialog(
             onDismissRequest = { showExportDialog = false },
-            title = { Text("Exportar Datos") },
+            title = { Text(stringResource(R.string.backup_settings_export_title)) },
             text = { 
-                Text("¿Deseas exportar los datos seleccionados? El archivo se guardará y podrás compartirlo.")
+                Text(stringResource(R.string.backup_settings_export_message))
             },
             confirmButton = {
                 TextButton(
@@ -362,12 +385,12 @@ fun BackupSettingsScreen(
                         showExportDialog = false
                     }
                 ) {
-                    Text("Exportar")
+                    Text(stringResource(R.string.backup_settings_export_button))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showExportDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.backup_settings_cancel_button))
                 }
             }
         )
@@ -376,7 +399,7 @@ fun BackupSettingsScreen(
 
 data class ExportOption(
     val type: String,
-    val title: String,
-    val description: String,
+    @StringRes val titleRes: Int,
+    @StringRes val descriptionRes: Int,
     val icon: ImageVector
 )

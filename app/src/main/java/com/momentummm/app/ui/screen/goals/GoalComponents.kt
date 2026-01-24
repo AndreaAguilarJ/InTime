@@ -8,11 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.momentummm.app.R
 import com.momentummm.app.ui.system.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +43,7 @@ fun CreateGoalDialog(
             ) {
                 // Header
                 Text(
-                    text = "Nueva Meta",
+                    text = stringResource(R.string.goals_create_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -52,7 +54,7 @@ fun CreateGoalDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Título de la meta") },
+                    label = { Text(stringResource(R.string.goals_title_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -61,7 +63,7 @@ fun CreateGoalDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripción") },
+                    label = { Text(stringResource(R.string.goals_description_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )
@@ -70,7 +72,7 @@ fun CreateGoalDialog(
                 OutlinedTextField(
                     value = targetValue,
                     onValueChange = { if (it.all { char -> char.isDigit() }) targetValue = it },
-                    label = { Text("Tiempo objetivo (minutos)") },
+                    label = { Text(stringResource(R.string.goals_target_minutes_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true
@@ -82,10 +84,10 @@ fun CreateGoalDialog(
                     onExpandedChange = { showPeriodDropdown = !showPeriodDropdown }
                 ) {
                     OutlinedTextField(
-                        value = selectedPeriod.displayName,
+                        value = stringResource(selectedPeriod.displayNameRes),
                         onValueChange = { },
                         readOnly = true,
-                        label = { Text("Periodo") },
+                        label = { Text(stringResource(R.string.goals_period_label)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showPeriodDropdown) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -97,7 +99,7 @@ fun CreateGoalDialog(
                     ) {
                         GoalPeriod.entries.forEach { period ->
                             DropdownMenuItem(
-                                text = { Text(period.displayName) },
+                                text = { Text(stringResource(period.displayNameRes)) },
                                 onClick = {
                                     selectedPeriod = period
                                     showPeriodDropdown = false
@@ -113,10 +115,10 @@ fun CreateGoalDialog(
                     onExpandedChange = { showCategoryDropdown = !showCategoryDropdown }
                 ) {
                     OutlinedTextField(
-                        value = selectedCategory.displayName,
+                        value = stringResource(selectedCategory.displayNameRes),
                         onValueChange = { },
                         readOnly = true,
-                        label = { Text("Categoría") },
+                        label = { Text(stringResource(R.string.goals_category_label)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showCategoryDropdown) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -128,7 +130,7 @@ fun CreateGoalDialog(
                     ) {
                         GoalCategory.entries.forEach { category ->
                             DropdownMenuItem(
-                                text = { Text(category.displayName) },
+                                text = { Text(stringResource(category.displayNameRes)) },
                                 onClick = {
                                     selectedCategory = category
                                     showCategoryDropdown = false
@@ -148,7 +150,7 @@ fun CreateGoalDialog(
                         style = ButtonStyle.Outline,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancelar")
+                            Text(stringResource(R.string.goals_cancel_button))
                     }
 
                     MomentumButton(
@@ -167,7 +169,7 @@ fun CreateGoalDialog(
                         modifier = Modifier.weight(1f),
                         enabled = title.isNotBlank() && targetValue.isNotBlank()
                     ) {
-                        Text("Crear")
+                        Text(stringResource(R.string.goals_create_button))
                     }
                 }
             }

@@ -1,18 +1,23 @@
 package com.momentummm.app.minimal
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,6 +31,7 @@ fun MinimalDialerScreen(
     modifier: Modifier = Modifier
 ) {
     var phoneNumber by remember { mutableStateOf("") }
+    val hapticFeedback = LocalHapticFeedback.current
     
     val dialpadButtons = listOf(
         DialpadButton("1", ""),
@@ -45,107 +51,168 @@ fun MinimalDialerScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Header
+        // Header minimalista
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(onClick = onBack) {
-                Text("← Volver")
+            FilledTonalIconButton(
+                onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onBack()
+                },
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.ArrowBack, 
+                    contentDescription = "Volver",
+                    modifier = Modifier.size(20.dp)
+                )
             }
             Text(
                 text = "Marcador",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
-            Spacer(modifier = Modifier.width(48.dp))
+            Spacer(modifier = Modifier.width(40.dp))
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
-        // Phone number display
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+        // Display de número de teléfono
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 80.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ) {
-            Text(
-                text = if (phoneNumber.isEmpty()) "Ingresa un número" else phoneNumber,
-                style = MaterialTheme.typography.headlineLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                color = if (phoneNumber.isEmpty()) {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        // Dialpad
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(dialpadButtons) { button ->
-                DialpadButtonComponent(
-                    button = button,
-                    onClick = { phoneNumber += button.number }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = if (phoneNumber.isEmpty()) "Ingresa un número" else formatPhoneNumber(phoneNumber),
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        letterSpacing = 2.sp
+                    ),
+                    textAlign = TextAlign.Center,
+                    color = if (phoneNumber.isEmpty()) {
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    fontWeight = FontWeight.Light
                 )
             }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // Action buttons
+        // Dialpad
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(dialpadButtons) { button ->
+                DialpadButtonComponent(
+                    button = button,
+                    onClick = { 
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        phoneNumber += button.number 
+                    }
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Botones de acción
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Backspace button
-            FilledTonalButton(
+            // Backspace
+            FilledTonalIconButton(
                 onClick = {
                     if (phoneNumber.isNotEmpty()) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         phoneNumber = phoneNumber.dropLast(1)
                     }
                 },
                 modifier = Modifier.size(64.dp),
-                shape = CircleShape
+                shape = CircleShape,
+                enabled = phoneNumber.isNotEmpty()
             ) {
-                Icon(Icons.Default.Backspace, contentDescription = "Borrar")
+                Icon(
+                    Icons.Default.Backspace, 
+                    contentDescription = "Borrar",
+                    modifier = Modifier.size(24.dp)
+                )
             }
             
-            // Call button
-            Button(
+            // Call button con animación
+            val callButtonScale by animateFloatAsState(
+                targetValue = if (phoneNumber.isNotEmpty()) 1f else 0.9f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                label = "call_scale"
+            )
+            
+            FloatingActionButton(
                 onClick = { 
                     if (phoneNumber.isNotEmpty()) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         onCall(phoneNumber)
                         phoneNumber = ""
                     }
                 },
-                enabled = phoneNumber.isNotEmpty(),
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier
+                    .size(72.dp)
+                    .graphicsLayer {
+                        scaleX = callButtonScale
+                        scaleY = callButtonScale
+                    },
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                containerColor = if (phoneNumber.isNotEmpty()) 
+                    MaterialTheme.colorScheme.primary 
+                else 
+                    MaterialTheme.colorScheme.surfaceVariant
             ) {
-                Icon(Icons.Default.Call, contentDescription = "Llamar")
+                Icon(
+                    Icons.Default.Call, 
+                    contentDescription = "Llamar",
+                    modifier = Modifier.size(28.dp),
+                    tint = if (phoneNumber.isNotEmpty())
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
             }
+            
+            // Spacer para balance visual
+            Spacer(modifier = Modifier.size(64.dp))
         }
         
         Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+// Formatea el número de teléfono para mejor legibilidad
+private fun formatPhoneNumber(number: String): String {
+    return when {
+        number.length <= 3 -> number
+        number.length <= 6 -> "${number.take(3)} ${number.drop(3)}"
+        number.length <= 10 -> "${number.take(3)} ${number.drop(3).take(3)} ${number.drop(6)}"
+        else -> number
     }
 }
 
@@ -156,12 +223,12 @@ private fun DialpadButtonComponent(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    Surface(
         onClick = onClick,
         modifier = modifier.aspectRatio(1f),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 1.dp
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -171,13 +238,15 @@ private fun DialpadButtonComponent(
             Text(
                 text = button.number,
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Light,
+                color = MaterialTheme.colorScheme.onSurface
             )
             if (button.letters.isNotEmpty()) {
                 Text(
                     text = button.letters,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    letterSpacing = 1.sp
                 )
             }
         }

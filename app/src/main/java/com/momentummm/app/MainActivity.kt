@@ -1,8 +1,9 @@
 package com.momentummm.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.util.Log
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -16,11 +17,13 @@ import com.momentummm.app.minimal.LauncherManager
 import com.momentummm.app.minimal.MinimalPhoneManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var launcherManager: LauncherManager
     private lateinit var minimalPhoneManager: MinimalPhoneManager
@@ -70,9 +73,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        // Guardar datos cuando la app pasa a background
-        lifecycleScope.launch {
-            autoSyncManager.forceSyncNow()
+        // Guardar datos cuando la app pasa a background (no bloqueante)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                withTimeoutOrNull(3000L) {
+                    autoSyncManager.forceSyncNow()
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error en sync onPause", e)
+            }
         }
     }
 

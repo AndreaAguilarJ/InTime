@@ -22,10 +22,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.R
 import com.momentummm.app.data.manager.BillingManager
 import com.momentummm.app.util.SocialShareUtils
 import kotlinx.coroutines.delay
@@ -49,6 +51,19 @@ fun EmergencyUnlockScreen(
     var isProcessing by remember { mutableStateOf(false) }
     var shameCountdown by remember { mutableStateOf(3) }
     var showShameCountdown by remember { mutableStateOf(false) }
+    val confirmPaymentTitle = stringResource(R.string.emergency_unlock_confirm_payment_title)
+    val confirmShameTitle = stringResource(R.string.emergency_unlock_confirm_shame_title)
+    val confirmPaymentMessage = stringResource(
+        R.string.emergency_unlock_confirm_payment_message,
+        blockedAppName
+    )
+    val confirmShameMessage = stringResource(R.string.emergency_unlock_confirm_shame_message)
+    val confirmPaymentButton = stringResource(R.string.emergency_unlock_confirm_payment_button)
+    val confirmShameButton = stringResource(R.string.emergency_unlock_confirm_shame_button)
+    val confirmDefaultButton = stringResource(R.string.emergency_unlock_confirm_default_button)
+    val cancelText = stringResource(R.string.emergency_unlock_cancel)
+    val premiumPrice = stringResource(R.string.emergency_unlock_premium_price)
+    val shamePrice = stringResource(R.string.emergency_unlock_shame_price)
 
     // Animación de entrada
     var isVisible by remember { mutableStateOf(false) }
@@ -126,7 +141,7 @@ fun EmergencyUnlockScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "⚠️ Desbloqueo de Emergencia",
+                        text = stringResource(R.string.emergency_unlock_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -134,7 +149,7 @@ fun EmergencyUnlockScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "¿Realmente necesitas acceder a",
+                        text = stringResource(R.string.emergency_unlock_question_line1),
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center
@@ -147,7 +162,7 @@ fun EmergencyUnlockScreen(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "ahora mismo?",
+                        text = stringResource(R.string.emergency_unlock_question_line2),
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center
@@ -178,13 +193,16 @@ fun EmergencyUnlockScreen(
                             Text("🔥", fontSize = 32.sp)
                             Column {
                                 Text(
-                                    text = "Tu racha de $currentStreakDays días está en riesgo",
+                                    text = stringResource(
+                                        R.string.emergency_unlock_streak_risk,
+                                        currentStreakDays
+                                    ),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFFF6666)
                                 )
                                 Text(
-                                    text = "Piénsalo dos veces antes de rendirte",
+                                    text = stringResource(R.string.emergency_unlock_streak_warning),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.White.copy(alpha = 0.6f)
                                 )
@@ -205,9 +223,9 @@ fun EmergencyUnlockScreen(
                 UnlockOptionCard(
                     icon = Icons.Filled.CreditCard,
                     iconTint = Color(0xFF6366F1),
-                    title = "Desbloqueo Premium",
-                    subtitle = "Acceso instantáneo por 15 minutos",
-                    price = "$0.99 USD",
+                    title = stringResource(R.string.emergency_unlock_premium_title),
+                    subtitle = stringResource(R.string.emergency_unlock_premium_subtitle),
+                    price = premiumPrice,
                     backgroundColor = Color(0xFF6366F1).copy(alpha = 0.1f),
                     borderColor = Color(0xFF6366F1).copy(alpha = 0.3f),
                     onClick = {
@@ -226,13 +244,13 @@ fun EmergencyUnlockScreen(
                 UnlockOptionCard(
                     icon = Icons.Filled.Share,
                     iconTint = Color(0xFFFF6666),
-                    title = "Desbloqueo de la Vergüenza",
-                    subtitle = "Comparte tu fallo en redes sociales",
-                    price = "GRATIS",
+                    title = stringResource(R.string.emergency_unlock_shame_title),
+                    subtitle = stringResource(R.string.emergency_unlock_shame_subtitle),
+                    price = shamePrice,
                     priceColor = Color(0xFF10B981),
                     backgroundColor = Color(0xFFFF4444).copy(alpha = 0.1f),
                     borderColor = Color(0xFFFF4444).copy(alpha = 0.3f),
-                    badge = "🤡 VIRAL",
+                    badge = stringResource(R.string.emergency_unlock_shame_badge),
                     onClick = {
                         selectedOption = UnlockOption.SHAME_SHARE
                         showConfirmDialog = true
@@ -254,7 +272,7 @@ fun EmergencyUnlockScreen(
                         fontSize = 80.sp
                     )
                     Text(
-                        text = "Preparando tu momento de vergüenza...",
+                        text = stringResource(R.string.emergency_unlock_shame_preparing),
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         textAlign = TextAlign.Center
@@ -266,7 +284,7 @@ fun EmergencyUnlockScreen(
                         color = Color(0xFFFF4444)
                     )
                     Text(
-                        text = "Se abrirá el selector para compartir",
+                        text = stringResource(R.string.emergency_unlock_shame_share_ready),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.6f)
                     )
@@ -295,11 +313,11 @@ fun EmergencyUnlockScreen(
                     ) {
                         Icon(Icons.Filled.Close, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Mejor no, me quedo fuerte 💪")
+                        Text(stringResource(R.string.emergency_unlock_cancel_button))
                     }
 
                     Text(
-                        text = "\"El dolor de la disciplina pesa gramos,\nel arrepentimiento pesa toneladas\"",
+                        text = stringResource(R.string.emergency_unlock_motivation_quote),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.5f),
                         textAlign = TextAlign.Center,
@@ -322,8 +340,8 @@ fun EmergencyUnlockScreen(
             title = {
                 Text(
                     text = when (selectedOption) {
-                        UnlockOption.PAYMENT -> "Confirmar pago"
-                        UnlockOption.SHAME_SHARE -> "¿Estás seguro?"
+                        UnlockOption.PAYMENT -> confirmPaymentTitle
+                        UnlockOption.SHAME_SHARE -> confirmShameTitle
                         null -> ""
                     }
                 )
@@ -331,8 +349,8 @@ fun EmergencyUnlockScreen(
             text = {
                 Text(
                     text = when (selectedOption) {
-                        UnlockOption.PAYMENT -> "Se cobrará $0.99 USD por 15 minutos de acceso a $blockedAppName."
-                        UnlockOption.SHAME_SHARE -> "Se generará una imagen con el texto \"Fallé mi dieta de dopamina en InTime 🤡\" y se abrirá el selector para compartir en tus redes sociales.\n\n¡Tus amigos te verán! 😱"
+                        UnlockOption.PAYMENT -> confirmPaymentMessage
+                        UnlockOption.SHAME_SHARE -> confirmShameMessage
                         null -> ""
                     }
                 )
@@ -361,16 +379,16 @@ fun EmergencyUnlockScreen(
                 ) {
                     Text(
                         when (selectedOption) {
-                            UnlockOption.PAYMENT -> "Pagar $0.99"
-                            UnlockOption.SHAME_SHARE -> "Sí, publicar mi vergüenza 🤡"
-                            null -> "Confirmar"
+                            UnlockOption.PAYMENT -> confirmPaymentButton
+                            UnlockOption.SHAME_SHARE -> confirmShameButton
+                            null -> confirmDefaultButton
                         }
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmDialog = false }) {
-                    Text("Cancelar", color = Color.White.copy(alpha = 0.7f))
+                    Text(cancelText, color = Color.White.copy(alpha = 0.7f))
                 }
             }
         )

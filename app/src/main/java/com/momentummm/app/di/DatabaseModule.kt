@@ -12,6 +12,12 @@ import com.momentummm.app.data.dao.PasswordProtectionDao
 import com.momentummm.app.data.dao.QuoteDao
 import com.momentummm.app.data.dao.UserDao
 import com.momentummm.app.data.dao.WebsiteBlockDao
+import com.momentummm.app.data.dao.SmartBlockingConfigDao
+import com.momentummm.app.data.dao.ContextBlockRuleDao
+import com.momentummm.app.data.dao.FriendDao
+import com.momentummm.app.data.dao.LeaderboardDao
+import com.momentummm.app.data.dao.SharedAchievementDao
+import com.momentummm.app.data.dao.CommunitySettingsDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -94,4 +100,36 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun providePasswordProtectionDao(db: AppDatabase): PasswordProtectionDao = db.passwordProtectionDao()
+
+    // ========================================================================
+    // SMART BLOCKING DAOs
+    // ========================================================================
+
+    @Provides
+    @Singleton
+    fun provideSmartBlockingConfigDao(db: AppDatabase): SmartBlockingConfigDao = db.smartBlockingConfigDao()
+
+    @Provides
+    @Singleton
+    fun provideContextBlockRuleDao(db: AppDatabase): ContextBlockRuleDao = db.contextBlockRuleDao()
+
+    // ========================================================================
+    // COMMUNITY DAOs
+    // ========================================================================
+
+    @Provides
+    @Singleton
+    fun provideFriendDao(db: AppDatabase): FriendDao = db.friendDao()
+
+    @Provides
+    @Singleton
+    fun provideLeaderboardDao(db: AppDatabase): LeaderboardDao = db.leaderboardDao()
+
+    @Provides
+    @Singleton
+    fun provideSharedAchievementDao(db: AppDatabase): SharedAchievementDao = db.sharedAchievementDao()
+
+    @Provides
+    @Singleton
+    fun provideCommunitySettingsDao(db: AppDatabase): CommunitySettingsDao = db.communitySettingsDao()
 }

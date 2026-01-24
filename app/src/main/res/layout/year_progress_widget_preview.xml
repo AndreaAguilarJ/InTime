@@ -21,7 +21,7 @@
             android:gravity="center"
             android:letterSpacing="0.05" />
 
-        <Space
+        <View
             android:layout_width="1dp"
             android:layout_height="12dp" />
 
@@ -33,7 +33,7 @@
             android:textStyle="bold"
             android:textColor="@android:color/white" />
 
-        <Space
+        <View
             android:layout_width="1dp"
             android:layout_height="16dp" />
 
@@ -46,7 +46,7 @@
             android:progressTint="#00E5FF"
             android:progressBackgroundTint="#333333" />
 
-        <Space
+        <View
             android:layout_width="1dp"
             android:layout_height="20dp" />
 

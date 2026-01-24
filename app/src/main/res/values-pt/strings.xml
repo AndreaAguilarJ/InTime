@@ -1,0 +1,892 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Momentum</string>
+    
+    <!-- Navigation -->
+    <string name="nav_today">Hoje</string>
+    <string name="nav_my_life">Minha Vida</string>
+    <string name="nav_analytics">Análise</string>
+    <string name="nav_focus">Foco</string>
+    <string name="nav_community">Comunidade</string>
+    <string name="nav_settings">Configurações</string>
+    <string name="nav_minimal_phone">Telefone Mínimo</string>
+    <string name="nav_subscription">Premium</string>
+    
+    <!-- Dashboard -->
+    <string name="screen_time_today">Tempo de tela hoje</string>
+    <string name="most_used_apps">Apps mais usadas</string>
+    <string name="quote_of_the_day">Frase do dia</string>
+    <string name="hours_short">h</string>
+    <string name="minutes_short">m</string>
+    
+    <!-- Life in Weeks -->
+    <string name="my_life_in_weeks">Minha Vida em Semanas</string>
+    <string name="weeks_lived">Semanas vividas</string>
+    <string name="weeks_remaining">Semanas restantes</string>
+    <string name="customize_colors">Personalizar cores</string>
+    <string name="save_to_gallery">Salvar na galeria</string>
+    <string name="set_as_wallpaper">Definir como papel de parede</string>
+    
+    <!-- Onboarding -->
+    <string name="welcome_title">Bem-vindo ao Momentum</string>
+    <string name="welcome_subtitle">Seu companheiro para um uso consciente do tempo</string>
+    <string name="birth_date_title">Qual é sua data de nascimento?</string>
+    <string name="birth_date_subtitle">Isso nos ajudará a criar sua visualização pessoal</string>
+    <string name="permission_title">Permissões necessárias</string>
+    <string name="permission_subtitle">Para monitorar seu tempo de tela, precisamos de acesso aos dados de uso</string>
+    <string name="continue_button">Continuar</string>
+    <string name="grant_permission">Conceder permissão</string>
+    
+    <!-- Settings -->
+    <string name="app_limits">Limites de aplicativos</string>
+    <string name="manage_apps">Gerenciar aplicativos</string>
+    <string name="notifications">Notificações</string>
+    <string name="widget_settings">Configurações de widgets</string>
+    <string name="about">Sobre</string>
+    <string name="logout">Sair</string>
+    <string name="account_settings">Configurações da conta</string>
+    
+    <!-- Widgets -->
+    <string name="life_weeks_widget_name">Minha Vida em Semanas</string>
+    <string name="life_weeks_widget_description">Visualize seu progresso de vida em semanas</string>
+    <string name="quote_widget_name">Frase Motivacional</string>
+    <string name="quote_widget_description">Inspiração diária para sua tela inicial</string>
+    <string name="year_progress_widget_name">Progresso do Ano</string>
+    <string name="year_progress_widget_description">Visualize os dias passados e restantes do ano atual</string>
+    
+    <!-- Minimal Phone / Launcher -->
+    <string name="minimal_phone_title">Telefone Mínimo</string>
+    <string name="minimal_launcher_title">Momentum Minimal</string>
+    <string name="launcher_settings">Configurações do Launcher</string>
+    <string name="set_as_default_launcher">Definir como Launcher padrão</string>
+    <string name="is_default_launcher">Launcher padrão</string>
+    <string name="not_default_launcher">Não é Launcher padrão</string>
+    <string name="auto_enable_minimal">Ativar automaticamente o Modo Mínimo</string>
+    <string name="launcher_management">Gerenciamento de Launchers</string>
+    <string name="view_installed_launchers">Ver launchers instalados</string>
+    <string name="open_system_settings">Abrir configurações do sistema</string>
+    <string name="minimal_mode_active">Modo Mínimo Ativo</string>
+    <string name="exit_minimal_mode">Sair do modo mínimo</string>
+    <string name="activate_minimal_mode">Ativar modo mínimo</string>
+    <string name="minimal_phone_features">Recursos do modo mínimo</string>
+    <string name="essential_apps_only">Apenas apps essenciais disponíveis</string>
+    <string name="simplified_interface">Interface simplificada</string>
+    <string name="less_distractions">Menos distrações</string>
+    <string name="focus_communication">Foco na comunicação</string>
+    <string name="phone_app">Telefone</string>
+    <string name="messages_app">Mensagens</string>
+    <string name="contacts_app">Contatos</string>
+    <string name="settings_app">Configurações</string>
+    <string name="dialer_title">Discador</string>
+    <string name="enter_number">Digite um número</string>
+    <string name="call_button">Ligar</string>
+    <string name="back_button">← Voltar</string>
+    <string name="delete_button">Excluir</string>
+    <string name="launcher_instructions">Instruções</string>
+    <string name="launcher_setup_steps">1. Toque em \'Definir como Launcher padrão\'\n2. Selecione \'Momentum\' na lista\n3. Marque \'Usar sempre\' se quiser que seja permanente\n4. Ative o modo mínimo para uma experiência simplificada</string>
+    <string name="momentum_launcher_description">Momentum é seu launcher principal</string>
+    <string name="set_momentum_as_default">Defina o Momentum como launcher padrão</string>
+    <string name="this_app">Este aplicativo</string>
+    <string name="default_launcher">Padrão</string>
+    <string name="installed_launchers">Launchers instalados</string>
+    <string name="minimal_mode_configuration">Configuração do Modo Mínimo</string>
+    <string name="auto_enable_description">Ativar automaticamente ao abrir o launcher</string>
+    <string name="toggle_minimal_mode">Ativar/desativar o modo mínimo</string>
+
+    <!-- Authentication -->
+    <string name="create_account">Criar conta</string>
+    <string name="sign_in">Entrar</string>
+    <string name="email">E-mail</string>
+    <string name="password">Senha</string>
+    <string name="name">Nome</string>
+    <string name="confirm_password">Confirmar senha</string>
+    <string name="forgot_password">Esqueceu sua senha?</string>
+    <string name="already_have_account">Já tem uma conta?</string>
+    <string name="dont_have_account">Não tem uma conta?</string>
+    
+    <!-- Permissions -->
+    <string name="usage_stats_permission_rationale">Este aplicativo precisa de acesso aos dados de uso para mostrar estatísticas de tempo de tela e ajudar você a gerenciar seu tempo digital de forma mais consciente.</string>
+    
+    <!-- Error messages -->
+    <string name="error_network">Erro de conexão. Verifique sua conexão com a internet.</string>
+    <string name="error_authentication">Erro de autenticação. Verifique suas credenciais.</string>
+    <string name="error_generic">Ocorreu um erro. Tente novamente.</string>
+    
+    <!-- Success messages -->
+    <string name="account_created_success">Conta criada com sucesso</string>
+    <string name="login_success">Login realizado com sucesso</string>
+    <string name="settings_saved">Configurações salvas</string>
+    
+    <!-- Tutorial -->
+    <string name="tutorial_title">Tutorial do app</string>
+    <string name="tutorial_description">Aprenda a usar todas as funções</string>
+    <string name="tutorial_skip">Pular</string>
+    <string name="tutorial_next">Próximo</string>
+    <string name="tutorial_previous">Anterior</string>
+    <string name="tutorial_finish">Começar!</string>
+
+    <!-- Website Blocking -->
+    <string name="website_block_service_description">Serviço para bloquear sites distrativos nos navegadores. O Momentum precisa desta permissão para detectar quando você acessa sites bloqueados e ajudar a manter o foco.</string>
+    <string name="website_blocked_title">Site Bloqueado</string>
+    <string name="website_blocked_message">Este site está bloqueado para ajudar você a manter o foco</string>
+    <string name="enable_accessibility_service">Ativar serviço de acessibilidade</string>
+    <string name="accessibility_service_description">Para bloquear sites, você precisa ativar o serviço de acessibilidade do Momentum nas configurações do sistema</string>
+
+    <!-- App Blocked -->
+    <string name="app_blocked_default_app_name">Aplicativo</string>
+    <string name="app_blocked_time_up_title">⏰ Tempo esgotado</string>
+    <string name="app_blocked_daily_limit_subtitle">Você atingiu seu limite diário</string>
+    <string name="app_blocked_daily_limit_minutes">%1$d minutos</string>
+    <string name="app_blocked_daily_limit_reached">Limite diário atingido</string>
+    <string name="app_blocked_stat_achievement_value">Conquista!</string>
+    <string name="app_blocked_stat_achievement_label">Meta cumprida</string>
+    <string name="app_blocked_stat_reset_label">Reinicia amanhã</string>
+    <string name="app_blocked_motivation_message">Excelente autocontrole! Você está construindo hábitos mais saudáveis.</string>
+    <string name="app_blocked_suggestions_title">💡 Sugestões para aproveitar seu tempo</string>
+    <string name="app_blocked_suggestion_read_title">Leia um livro</string>
+    <string name="app_blocked_suggestion_read_desc">Amplie seu conhecimento</string>
+    <string name="app_blocked_suggestion_walk_title">Saia para caminhar</string>
+    <string name="app_blocked_suggestion_walk_desc">Movimente seu corpo</string>
+    <string name="app_blocked_suggestion_meditate_title">Medite</string>
+    <string name="app_blocked_suggestion_meditate_desc">Acalme sua mente</string>
+    <string name="app_blocked_suggestion_exercise_title">Exercício</string>
+    <string name="app_blocked_suggestion_exercise_desc">Mantenha-se ativo</string>
+    <string name="app_blocked_suggestion_creative_title">Hobby criativo</string>
+    <string name="app_blocked_suggestion_creative_desc">Explore sua criatividade</string>
+    <string name="app_blocked_open_momentum">Abrir Momentum</string>
+    <string name="app_blocked_close_in">Fechando em %1$d...</string>
+    <string name="app_blocked_close">Fechar</string>
+    <string name="app_blocked_emergency_unlock">🚨 Desbloqueio de emergência</string>
+
+    <!-- Lock Screen -->
+    <string name="lock_screen_biometric_failed">Falha na autenticação biométrica</string>
+    <string name="lock_screen_locked_cd">Bloqueado</string>
+    <string name="lock_screen_title">Aplicativo bloqueado</string>
+    <string name="lock_screen_subtitle">Digite sua senha para continuar</string>
+    <string name="lock_screen_password_label">Senha</string>
+    <string name="lock_screen_password_placeholder">Digite sua senha</string>
+    <string name="lock_screen_too_many_attempts">Muitas tentativas falhas. Tente novamente em %1$d minutos</string>
+    <string name="lock_screen_password_incorrect">Senha incorreta</string>
+    <string name="lock_screen_hide_password">Ocultar senha</string>
+    <string name="lock_screen_show_password">Mostrar senha</string>
+    <string name="lock_screen_temporarily_locked">Bloqueado por %1$d minuto(s)</string>
+    <string name="lock_screen_unlock">Desbloquear</string>
+    <string name="lock_screen_biometric_title">Desbloquear InTime</string>
+    <string name="lock_screen_biometric_subtitle">Use sua impressão digital ou Face ID</string>
+    <string name="lock_screen_biometric_description">Verifique sua identidade para continuar</string>
+    <string name="lock_screen_use_biometric">Usar biometria</string>
+    <string name="lock_screen_help_note">Se você esqueceu sua senha, desinstale e reinstale o aplicativo</string>
+
+    <!-- In-App Blocking -->
+    <string name="in_app_block_title">Bloqueador de funções</string>
+    <string name="in_app_block_back_cd">Voltar</string>
+    <string name="in_app_block_hero_title">Bloqueio de funções específicas</string>
+    <string name="in_app_block_hero_subtitle">Bloqueie funções como Reels, Shorts e mais sem bloquear o app inteiro</string>
+    <string name="in_app_block_monitoring_disabled_title">O monitoramento está desativado</string>
+    <string name="in_app_block_monitoring_disabled_subtitle">Toque aqui para ativar</string>
+    <string name="in_app_block_monitoring_active">Sistema ativo</string>
+    <string name="in_app_block_search_placeholder">Buscar apps ou funções</string>
+    <string name="in_app_block_clear_search">Limpar</string>
+    <string name="in_app_block_empty_title">Ainda não há regras</string>
+    <string name="in_app_block_empty_subtitle">Adicione regras para bloquear funções dentro dos seus apps favoritos.</string>
+    <string name="in_app_block_no_results_title">Sem resultados</string>
+    <string name="in_app_block_no_results_subtitle">Não encontramos correspondências para sua busca.</string>
+    <string name="in_app_block_enabled_count">%1$d de %2$d ativas</string>
+    <string name="in_app_block_rules_count">%1$d regras</string>
+    <string name="block_type_reels_desc">Vídeos curtos em formato vertical</string>
+    <string name="block_type_shorts_desc">Vídeos curtos do YouTube</string>
+    <string name="block_type_explore_desc">Descubra conteúdo novo</string>
+    <string name="block_type_search_desc">Busca dentro do app</string>
+    <string name="block_type_for_you_desc">Feed personalizado de conteúdo</string>
+    <string name="block_type_discover_desc">Descubra histórias e conteúdo</string>
+    <string name="block_type_stories_desc">Histórias de 24 horas</string>
+    <string name="block_type_feed_desc">Feed principal do app</string>
+    <string name="block_type_custom_desc">Regra personalizada</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_category_account">Conta</string>
+    <string name="settings_category_features">Funções</string>
+    <string name="settings_category_information">Informações</string>
+    <string name="settings_account_subtitle">Gerenciar seu perfil e dados pessoais</string>
+    <string name="settings_help_title">Ajuda</string>
+    <string name="settings_help_subtitle">Perguntas frequentes e suporte</string>
+    <string name="settings_logout_subtitle">Sair da sua conta atual</string>
+    <string name="settings_tutorial_subtitle">Aprenda a usar todas as funções do Momentum</string>
+    <string name="settings_security_privacy_title">Segurança e Privacidade</string>
+    <string name="settings_protection_active_title">Proteção ativa</string>
+    <string name="settings_protection_active_on_subtitle">O app está protegido</string>
+    <string name="settings_protection_active_off_subtitle">Ative para proteger suas configurações</string>
+    <string name="settings_password_protection_title">Proteção por senha</string>
+    <string name="settings_password_configured">Senha configurada</string>
+    <string name="settings_password_configure">Configure uma senha numérica</string>
+    <string name="settings_configured">Configurado</string>
+    <string name="settings_digital_wellbeing_title">Bem-estar digital</string>
+    <string name="settings_app_limits_subtitle">Configure tempo máximo de uso por app</string>
+    <string name="settings_in_app_blocking_title">Bloqueio dentro de apps</string>
+    <string name="settings_in_app_blocking_subtitle">Bloqueie Reels, Shorts e conteúdo específico</string>
+    <string name="settings_website_blocks_title">Bloqueio de sites</string>
+    <string name="settings_website_blocks_subtitle">Bloquear sites distrativos</string>
+    <string name="settings_app_whitelist_subtitle">Apps permitidos no Modo Mínimo</string>
+    <string name="settings_personalization_data_title">Personalização e Dados</string>
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_subtitle">Alterar o idioma do aplicativo</string>
+    <string name="settings_gamification_title">Gamificação</string>
+    <string name="settings_gamification_subtitle">Níveis, XP, sequências e TimeCoins</string>
+    <string name="settings_notifications_subtitle">Configurar alertas e lembretes</string>
+    <string name="settings_life_in_weeks_subtitle">Visualize sua vida e reflita sobre o tempo</string>
+    <string name="settings_theme_title">Personalização</string>
+    <string name="settings_theme_subtitle">Temas e aparência do aplicativo</string>
+    <string name="settings_widgets_subtitle">Personalizar widgets da tela inicial</string>
+    <string name="settings_sync_title">Sincronização</string>
+    <string name="settings_sync_subtitle">Ver status e sincronizar dados com a nuvem</string>
+    <string name="settings_about_subtitle">Informações sobre Momentum</string>
+    <string name="settings_permissions_title">Permissões</string>
+    <string name="settings_permissions_subtitle">Gerenciar permissões do aplicativo</string>
+    <string name="settings_expand">Expandir</string>
+    <string name="settings_collapse">Recolher</string>
+
+    <!-- Account Settings -->
+    <string name="account_settings_back_cd">Voltar</string>
+    <string name="account_settings_ok_button">OK</string>
+    <string name="account_settings_profile_info_title">Informações do perfil</string>
+    <string name="account_settings_default_user_name">Usuário</string>
+    <string name="account_settings_default_email">email@exemplo.com</string>
+    <string name="account_settings_section_title">Configurações da conta</string>
+    <string name="account_settings_change_password_title">Alterar senha</string>
+    <string name="account_settings_change_password_subtitle">Atualize sua senha de acesso</string>
+    <string name="account_settings_personal_data_title">Dados pessoais</string>
+    <string name="account_settings_birthdate_label">Data de nascimento</string>
+    <string name="account_settings_not_configured">Não configurada</string>
+    <string name="account_settings_edit_button">Editar</string>
+    <string name="account_settings_onboarding_completed">Onboarding concluído</string>
+    <string name="account_settings_yes">Sim</string>
+    <string name="account_settings_no">Não</string>
+    <string name="account_settings_complete_button">Concluir</string>
+    <string name="account_settings_display_preferences_title">Preferências de visualização</string>
+    <string name="account_settings_widget_colors_title">Cores do widget</string>
+    <string name="account_settings_widget_colors_subtitle">Personalize as cores da sua visualização</string>
+    <string name="account_settings_customize_button">Personalizar</string>
+    <string name="account_settings_actions_title">Ações da conta</string>
+    <string name="account_settings_logout_subtitle">Sair deste dispositivo</string>
+    <string name="account_settings_delete_account_title">Excluir conta</string>
+    <string name="account_settings_delete_account_subtitle">Esta ação não pode ser desfeita</string>
+    <string name="account_settings_logout_title">Sair</string>
+    <string name="account_settings_logout_message">Tem certeza de que deseja sair?</string>
+    <string name="account_settings_cancel_button">Cancelar</string>
+    <string name="account_settings_delete_account_message">Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita e você perderá todos os seus dados.</string>
+    <string name="account_settings_delete_button">Excluir</string>
+    <string name="account_settings_birthdate_updated">Data de nascimento atualizada com sucesso</string>
+    <string name="account_settings_login_required_birthdate">Você precisa entrar para atualizar sua data de nascimento</string>
+    <string name="account_settings_update_error">Erro ao atualizar: %1$s</string>
+    <string name="account_settings_logout_error">Erro ao sair: %1$s</string>
+    <string name="account_settings_delete_account_error">Erro ao excluir conta: %1$s</string>
+
+    <!-- Backup Settings -->
+    <string name="backup_settings_back_cd">Voltar</string>
+    <string name="backup_settings_title">Backup e Exportação</string>
+    <string name="backup_settings_cloud_title">Backup na Nuvem</string>
+    <string name="backup_settings_last_backup">Último backup: %1$s</string>
+    <string name="backup_settings_no_backups">Sem backups</string>
+    <string name="backup_settings_syncing">Fazendo backup... %1$d%%</string>
+    <string name="backup_settings_backup_button">Fazer backup</string>
+    <string name="backup_settings_restore_button">Restaurar</string>
+    <string name="backup_settings_export_title">Exportar Dados</string>
+    <string name="backup_settings_export_usage_title">Dados de Uso</string>
+    <string name="backup_settings_export_usage_desc">CSV com estatísticas de aplicativos</string>
+    <string name="backup_settings_export_focus_title">Sessões de Foco</string>
+    <string name="backup_settings_export_focus_desc">CSV com histórico de sessões</string>
+    <string name="backup_settings_export_complete_title">Relatório Completo</string>
+    <string name="backup_settings_export_complete_desc">PDF com análise detalhada</string>
+    <string name="backup_settings_auto_title">Backup Automático</string>
+    <string name="backup_settings_auto_subtitle">Fazer backup automaticamente a cada 24 horas</string>
+    <string name="backup_settings_export_message">Deseja exportar os dados selecionados? O arquivo será salvo e você poderá compartilhá-lo.</string>
+    <string name="backup_settings_export_button">Exportar</string>
+    <string name="backup_settings_cancel_button">Cancelar</string>
+
+    <!-- Sync Settings -->
+    <string name="sync_settings_title">Sincronização</string>
+    <string name="sync_settings_back_cd">Voltar</string>
+    <string name="sync_settings_status_title">Estado da sincronização</string>
+    <string name="sync_settings_status_idle_cd">Inativo</string>
+    <string name="sync_settings_status_success_cd">Sincronizado</string>
+    <string name="sync_settings_status_failed_cd">Erro</string>
+    <string name="sync_settings_status_idle">Não sincronizado</string>
+    <string name="sync_settings_status_syncing">Sincronizando...</string>
+    <string name="sync_settings_status_success">Sincronização bem-sucedida</string>
+    <string name="sync_settings_status_failed">Erro ao sincronizar. Seus dados estão salvos localmente.</string>
+    <string name="sync_settings_last_sync_label">Última sincronização:</string>
+    <string name="sync_settings_never">Nunca</string>
+    <string name="sync_settings_sync_now">Sincronizar agora</string>
+    <string name="sync_settings_info_title">O que é sincronizado?</string>
+    <string name="sync_settings_info_list">• Configurações de cores&#10;• Data de nascimento&#10;• Metas e desafios&#10;• Limites de aplicativos&#10;• Apps na lista de permissões&#10;• Frases personalizadas&#10;• Preferências do widget</string>
+    <string name="sync_settings_auto_note">A sincronização é feita automaticamente toda vez que você fecha o aplicativo.</string>
+
+    <!-- Language Settings -->
+    <string name="language_screen_info">Selecione o idioma do aplicativo. As mudanças serão aplicadas imediatamente.</string>
+    <string name="language_dialog_title">Alterar idioma</string>
+    <string name="language_dialog_message">Deseja alterar o idioma do aplicativo? As mudanças serão aplicadas imediatamente e o app será reiniciado.</string>
+
+    <!-- Notification Settings -->
+    <string name="notifications_title">Notificações</string>
+    <string name="notifications_header_title">Personalize suas notificações</string>
+    <string name="notifications_header_subtitle">Escolha quais notificações deseja receber para melhorar seu bem-estar digital</string>
+    <string name="notification_app_limits_title">Limites de aplicativos</string>
+    <string name="notification_app_limits_desc">Avisamos quando você se aproxima ou ultrapassa os limites de uso</string>
+    <string name="notification_daily_motivation_title">Motivação diária</string>
+    <string name="notification_daily_motivation_desc">Receba uma frase inspiradora todas as manhãs</string>
+    <string name="notification_weekly_summary_title">Resumo semanal</string>
+    <string name="notification_weekly_summary_desc">Resumo do uso do dispositivo todo domingo</string>
+    <string name="notification_achievements_title">Conquistas e metas</string>
+    <string name="notification_achievements_desc">Celebre suas conquistas e sequências</string>
+    <string name="notification_screen_time_reminders_title">Lembretes de bem-estar</string>
+    <string name="notification_screen_time_reminders_desc">Lembramos você de fazer pausas quando usa muito o dispositivo</string>
+    <string name="notification_test_title">Quer testar?</string>
+    <string name="notification_send_test">Enviar notificação de teste</string>
+    <string name="notification_info_text">As notificações inteligentes são projetadas para ajudar você a manter um equilíbrio saudável com a tecnologia, sem serem intrusivas.</string>
+
+    <!-- Theme Settings -->
+    <string name="theme_settings_title">Configurações de Tema</string>
+    <string name="theme_mode_title">Modo de Tema</string>
+    <string name="theme_mode_system">Automático</string>
+    <string name="theme_mode_light">Claro</string>
+    <string name="theme_mode_dark">Escuro</string>
+    <string name="theme_mode_system_desc">Seguir a configuração do sistema</string>
+    <string name="theme_mode_light_desc">Tema claro sempre</string>
+    <string name="theme_mode_dark_desc">Tema escuro sempre</string>
+    <string name="theme_dynamic_colors_title">Cores Dinâmicas</string>
+    <string name="theme_dynamic_colors_subtitle">Usar cores do papel de parede (Android 12+)</string>
+    <string name="theme_custom_primary_title">Cor Principal Personalizada</string>
+    <string name="theme_custom_primary_subtitle">Personalize a cor principal do aplicativo</string>
+    <string name="color_indigo">Índigo</string>
+    <string name="color_violet">Violeta</string>
+    <string name="color_cyan">Ciano</string>
+    <string name="color_emerald">Esmeralda</string>
+    <string name="color_amber">Âmbar</string>
+    <string name="color_red">Vermelho</string>
+    <string name="color_pink">Rosa</string>
+    <string name="color_brown">Marrom</string>
+    <string name="theme_reset_default">Restaurar para a cor padrão</string>
+    <string name="theme_preview_title">Pré-visualização</string>
+    <string name="theme_preview_primary">Primário</string>
+    <string name="theme_preview_secondary">Secundário</string>
+
+    <!-- Premium Themes Shop -->
+    <string name="premium_themes_back_cd">Voltar</string>
+    <string name="premium_themes_title">Loja de Temas</string>
+    <string name="premium_themes_level_format">Nv.%1$d</string>
+    <string name="premium_themes_section_title">Temas Premium</string>
+    <string name="premium_themes_section_subtitle">Desbloqueie temas exclusivos com seus TimeCoins</string>
+    <string name="premium_themes_unlock_title">Desbloquear %1$s</string>
+    <string name="premium_themes_purchase_question">Deseja comprar este tema por %1$d TimeCoins?</string>
+    <string name="premium_themes_balance_label">Seu saldo:</string>
+    <string name="premium_themes_after_purchase_label">Após a compra:</string>
+    <string name="premium_themes_buy_button">🪙 Comprar por %1$d</string>
+    <string name="premium_themes_cancel_button">Cancelar</string>
+    <string name="premium_themes_insufficient_coins_title">TimeCoins insuficientes</string>
+    <string name="premium_themes_insufficient_coins_message">Você precisa de %1$d TimeCoins para desbloquear %2$s.</string>
+    <string name="premium_themes_current_balance">Seu saldo atual: %1$d TimeCoins</string>
+    <string name="premium_themes_missing_balance">Faltam: %1$d TimeCoins</string>
+    <string name="premium_themes_insufficient_coins_tip">💡 Dica: Complete sessões de foco para ganhar mais TimeCoins</string>
+    <string name="premium_themes_understood_button">Entendido</string>
+    <string name="premium_themes_level_required_title">Nível insuficiente</string>
+    <string name="premium_themes_level_required_message">Você precisa alcançar o nível %1$d para desbloquear %2$s.</string>
+    <string name="premium_themes_current_level">Seu nível atual: %1$d</string>
+    <string name="premium_themes_level_required_tip">💡 Dica: Ganhe XP completando sessões de foco e mantenha sua sequência para subir de nível</string>
+    <string name="premium_themes_success_message">Tema desbloqueado e aplicado!</string>
+    <string name="premium_themes_unlocked_label">Desbloqueado</string>
+    <string name="premium_themes_locked_cd">Bloqueado</string>
+    <string name="premium_themes_how_to_earn_title">Como ganhar TimeCoins</string>
+    <string name="premium_themes_earn_focus_minute">Minuto de foco</string>
+    <string name="premium_themes_earn_focus_minute_reward">+1 🪙</string>
+    <string name="premium_themes_earn_session_completed">Sessão concluída</string>
+    <string name="premium_themes_earn_session_completed_reward">+25 🪙</string>
+    <string name="premium_themes_earn_perfect_day">Dia perfeito</string>
+    <string name="premium_themes_earn_perfect_day_reward">+50 🪙</string>
+    <string name="premium_themes_earn_streak_bonus">Bônus de sequência</string>
+    <string name="premium_themes_earn_streak_bonus_reward">x1.5 - x2.0</string>
+    <string name="premium_themes_earn_level_up">Subir de nível</string>
+    <string name="premium_themes_earn_level_up_reward">+50-500 🪙</string>
+
+    <string name="premium_theme_name_neon_purple">Roxo Neon</string>
+    <string name="premium_theme_desc_neon_purple">Vibrante e moderno</string>
+    <string name="premium_theme_name_ocean_blue">Azul Oceano</string>
+    <string name="premium_theme_desc_ocean_blue">Calma e produtividade</string>
+    <string name="premium_theme_name_forest_green">Verde Floresta</string>
+    <string name="premium_theme_desc_forest_green">Natural e relaxante</string>
+    <string name="premium_theme_name_sunset_orange">Laranja Pôr do Sol</string>
+    <string name="premium_theme_desc_sunset_orange">Energético e acolhedor</string>
+    <string name="premium_theme_name_cherry_blossom">Flor de Cerejeira</string>
+    <string name="premium_theme_desc_cherry_blossom">Elegante e sutil</string>
+    <string name="premium_theme_name_midnight_gold">Ouro da Meia-Noite</string>
+    <string name="premium_theme_desc_midnight_gold">Luxuoso e exclusivo</string>
+    <string name="premium_theme_name_cyber_red">Vermelho Cibernético</string>
+    <string name="premium_theme_desc_cyber_red">Intenso e poderoso</string>
+    <string name="premium_theme_name_arctic_ice">Gelo Ártico</string>
+    <string name="premium_theme_desc_arctic_ice">Fresco e limpo</string>
+    <string name="premium_theme_name_galaxy_dark">Galáxia Sombria</string>
+    <string name="premium_theme_desc_galaxy_dark">Misterioso e profundo</string>
+    <string name="premium_theme_name_legendary_rainbow">Arco-íris Lendário</string>
+    <string name="premium_theme_desc_legendary_rainbow">O tema mais exclusivo</string>
+
+    <!-- Gamification Settings -->
+    <string name="gamification_error_app_not_initialized">Erro: Aplicativo não inicializado</string>
+    <string name="gamification_title">Gamificação</string>
+    <string name="gamification_category_settings">Configurações</string>
+    <string name="gamification_active_title">Gamificação ativa</string>
+    <string name="gamification_active_subtitle">Ganhe XP, suba de nível e obtenha TimeCoins</string>
+    <string name="gamification_xp_notifications_title">Notificações de XP</string>
+    <string name="gamification_xp_notifications_subtitle">Mostrar quando ganhar XP e subir de nível</string>
+    <string name="gamification_streak_reminders_title">Lembretes de sequência</string>
+    <string name="gamification_streak_reminders_subtitle">Avisar antes de perder sua sequência diária</string>
+    <string name="gamification_category_sync">Sincronização</string>
+    <string name="gamification_sync_title">Sincronizar com a nuvem</string>
+    <string name="gamification_sync_subtitle">Salvar seu progresso no Appwrite</string>
+    <string name="gamification_restore_title">Restaurar da nuvem</string>
+    <string name="gamification_restore_subtitle">Recuperar seu progresso salvo</string>
+    <string name="gamification_category_actions">Ações</string>
+    <string name="gamification_reset_title">Reiniciar progresso</string>
+    <string name="gamification_reset_subtitle">Recomeçar do nível 1</string>
+    <string name="gamification_reset_dialog_title">Reiniciar progresso?</string>
+    <string name="gamification_reset_dialog_message">Esta ação apagará todo o seu progresso de gamificação:\n\n• Nível e XP\n• TimeCoins\n• Sequências\n• Estatísticas\n\nEsta ação não pode ser desfeita.</string>
+    <string name="gamification_reset_confirm">Reiniciar</string>
+    <string name="gamification_sync_dialog_title">Sincronizar progresso</string>
+    <string name="gamification_sync_dialog_message">Seu progresso de gamificação será salvo na nuvem e poderá ser recuperado em qualquer dispositivo.</string>
+    <string name="gamification_sync_confirm">Sincronizar agora</string>
+    <string name="gamification_level_format">Nível %1$d</string>
+    <string name="gamification_stat_total_xp">XP total</string>
+    <string name="gamification_stat_current_streak">Sequência atual</string>
+    <string name="gamification_stat_focus">Foco</string>
+    <string name="gamification_stat_perfect_days">Dias perfeitos</string>
+    <string name="gamification_info_title">💡 Como funciona</string>
+    <string name="gamification_info_xp_title">XP</string>
+    <string name="gamification_info_xp_desc">Ganhe 5 XP por cada minuto de foco. Complete sessões para bônus extras.</string>
+    <string name="gamification_info_timecoins_title">TimeCoins</string>
+    <string name="gamification_info_timecoins_desc">Ganhe 1 coin por minuto. Use para desbloqueios de emergência ou futuras recompensas.</string>
+    <string name="gamification_info_streaks_title">Sequências</string>
+    <string name="gamification_info_streaks_desc">Mantenha sua sequência diária para multiplicadores de XP (até x2,0 com 30+ dias).</string>
+    <string name="gamification_info_perfect_days_title">Dias perfeitos</string>
+    <string name="gamification_info_perfect_days_desc">Complete todas as suas metas diárias para ganhar 500 XP extra.</string>
+
+    <!-- Permissions Settings -->
+    <string name="permissions_title">Permissões do aplicativo</string>
+    <string name="permissions_header_title">Permissões necessárias</string>
+    <string name="permissions_header_subtitle">Para que o Momentum funcione corretamente, precisa de acesso a certas permissões do sistema. Toque em cada opção para configurá-las.</string>
+    <string name="permissions_section_essential">Permissões essenciais</string>
+    <string name="permission_usage_stats_title">Estatísticas de uso</string>
+    <string name="permission_usage_stats_desc">Necessário para monitorar o tempo de uso de aplicativos e definir limites</string>
+    <string name="permission_overlay_title">Sobrepor a outros apps</string>
+    <string name="permission_overlay_desc">Necessário para mostrar bloqueios quando você atingir os limites de tempo</string>
+    <string name="permission_notifications_title">Notificações</string>
+    <string name="permission_notifications_desc">Para enviar lembretes, alertas de metas e notificações de progresso</string>
+    <string name="permission_web_block_title">Bloqueio de sites</string>
+    <string name="permission_web_block_desc">Serviço de acessibilidade para detectar e bloquear sites em navegadores (conteúdo adulto, distrações, etc.)</string>
+    <string name="permissions_section_optional">Permissões opcionais</string>
+    <string name="permission_default_launcher_title">Launcher padrão</string>
+    <string name="permission_default_launcher_desc">Para usar o modo telefone mínimo como tela inicial</string>
+    <string name="permission_contacts_calls_title">Contatos e chamadas</string>
+    <string name="permission_contacts_calls_desc">Para funcionalidades do modo telefone mínimo (chamadas e SMS)</string>
+    <string name="permission_camera_media_title">Câmera e mídia</string>
+    <string name="permission_camera_media_desc">Para funcionalidades adicionais do modo telefone mínimo</string>
+    <string name="permissions_full_settings_title">Configuração completa de permissões</string>
+    <string name="permissions_full_settings_desc">Acesse as configurações do sistema para gerenciar todas as permissões do aplicativo manualmente.</string>
+    <string name="permissions_open_settings">Abrir configurações</string>
+    <string name="permissions_refresh_status">Atualizar status de permissões</string>
+    <string name="permissions_granted_cd">Concedido</string>
+    <string name="permissions_not_granted_cd">Não concedido</string>
+    <string name="permissions_status_granted">✓ Concedido</string>
+    <string name="permissions_status_not_granted">✗ Não concedido - Toque para configurar</string>
+    <string name="permissions_go_to_settings">Ir para configurações</string>
+
+    <!-- Common Actions -->
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_change">Alterar</string>
+    <string name="action_back">Voltar</string>
+    <string name="action_selected">Selecionado</string>
+    <string name="dialog_logout_message">Tem certeza de que deseja sair? Seus dados locais permanecerão sincronizados.</string>
+
+    <!-- TimeCoins -->
+    <string name="timecoins_get_more_cd">Obter mais</string>
+    <string name="timecoins_earned_format">+%1$d TimeCoins</string>
+    <string name="timecoins_balance_title">Seu saldo</string>
+    <string name="timecoins_earn_more">Ganhe mais</string>
+    <string name="timecoins_earn_more_subtitle">completando sessões</string>
+
+    <!-- Gamification Header -->
+    <string name="gamification_header_streak_days">%1$d dias</string>
+    <string name="gamification_header_xp_label">XP: %1$s</string>
+    <string name="gamification_header_xp_to_next_level">%1$s para o Nível %2$d</string>
+    <string name="gamification_header_total_focus">Foco total</string>
+    <string name="gamification_header_sessions">Sessões</string>
+    <string name="gamification_header_perfect_days">Dias perfeitos</string>
+    <string name="gamification_event_xp_format">%1$s%2$d XP</string>
+    <string name="gamification_event_coins_format">+%1$d 🪙</string>
+    <string name="gamification_event_close_cd">Fechar</string>
+
+    <!-- Emergency Unlock -->
+    <string name="emergency_unlock_title">⚠️ Desbloqueio de Emergência</string>
+    <string name="emergency_unlock_question_line1">Você realmente precisa acessar</string>
+    <string name="emergency_unlock_question_line2">agora mesmo?</string>
+    <string name="emergency_unlock_streak_risk">Sua sequência de %1$d dias está em risco</string>
+    <string name="emergency_unlock_streak_warning">Pense duas vezes antes de desistir</string>
+    <string name="emergency_unlock_premium_title">Desbloqueio Premium</string>
+    <string name="emergency_unlock_premium_subtitle">Acesso instantâneo por 15 minutos</string>
+    <string name="emergency_unlock_premium_price">$0.99 USD</string>
+    <string name="emergency_unlock_shame_title">Desbloqueio da Vergonha</string>
+    <string name="emergency_unlock_shame_subtitle">Compartilhe sua falha nas redes sociais</string>
+    <string name="emergency_unlock_shame_price">GRÁTIS</string>
+    <string name="emergency_unlock_shame_badge">🤡 VIRAL</string>
+    <string name="emergency_unlock_shame_preparing">Preparando seu momento de vergonha...</string>
+    <string name="emergency_unlock_shame_share_ready">O seletor de compartilhamento será aberto</string>
+    <string name="emergency_unlock_cancel_button">Melhor não, vou continuar firme 💪</string>
+    <string name="emergency_unlock_motivation_quote">“A dor da disciplina pesa gramas,&#10;o arrependimento pesa toneladas”</string>
+    <string name="emergency_unlock_confirm_payment_title">Confirmar pagamento</string>
+    <string name="emergency_unlock_confirm_shame_title">Tem certeza?</string>
+    <string name="emergency_unlock_confirm_payment_message">Será cobrado $0.99 USD por 15 minutos de acesso a %1$s.</string>
+    <string name="emergency_unlock_confirm_shame_message">Será gerada uma imagem com o texto “Falhei na minha dieta de dopamina no InTime 🤡” e o seletor de compartilhamento será aberto para postar nas suas redes sociais.&#10;&#10;Seus amigos vão ver! 😱</string>
+    <string name="emergency_unlock_confirm_payment_button">Pagar $0.99</string>
+    <string name="emergency_unlock_confirm_shame_button">Sim, publicar minha vergonha 🤡</string>
+    <string name="emergency_unlock_confirm_default_button">Confirmar</string>
+    <string name="emergency_unlock_cancel">Cancelar</string>
+
+    <!-- Error Components -->
+    <string name="offline_indicator_message">Sem conexão com a internet&#10;Funções limitadas disponíveis</string>
+    <string name="offline_indicator_retry_cd">Tentar novamente</string>
+    <string name="loading_indicator_message">Carregando...</string>
+
+    <!-- Website Blocked Screen -->
+    <string name="website_blocked_unknown_site">Site desconhecido</string>
+    <string name="website_blocked_attempt_message">Você tentou acessar:</string>
+    <string name="website_blocked_description">Este site está bloqueado para ajudar você a manter o foco e evitar distrações.</string>
+    <string name="website_blocked_acknowledge">Entendi</string>
+    <string name="website_blocked_manage_hint">Você pode gerenciar seus sites bloqueados em Configurações > Bloqueio de sites</string>
+
+    <!-- Help Screen -->
+    <string name="help_title">Ajuda</string>
+    <string name="help_back_cd">Voltar</string>
+    <string name="help_faq_section_title">Perguntas frequentes</string>
+    <string name="help_contact_section_title">Precisa de mais ajuda?</string>
+    <string name="help_support_email_uri">mailto:suporte@momentum-app.com</string>
+    <string name="help_support_email_subject">Suporte Momentum App</string>
+    <string name="help_send_email_chooser">Enviar e-mail</string>
+    <string name="help_contact_support_title">Falar com o suporte</string>
+    <string name="help_contact_support_subtitle">Envie um e-mail com suas dúvidas</string>
+    <string name="help_guide_url">https://momentum-app.com/guia</string>
+    <string name="help_online_guide_title">Guia online completo</string>
+    <string name="help_online_guide_subtitle">Tutoriais detalhados e dicas</string>
+    <string name="help_expand_cd">Expandir</string>
+    <string name="help_collapse_cd">Recolher</string>
+
+    <string name="help_faq_q1">Como configuro limites de tempo para aplicativos?</string>
+    <string name="help_faq_a1">Vá em Configurações > Funções > Bem-estar digital > Limites de aplicativos. Lá você pode selecionar os apps que deseja limitar e definir um tempo máximo diário.</string>
+    <string name="help_faq_q2">Como funciona o Modo Mínimo?</string>
+    <string name="help_faq_a2">O Modo Mínimo transforma seu telefone em uma ferramenta básica, ocultando apps distrativos e mostrando apenas os essenciais. Você pode escolher quais apps aparecem em Configurações > Gerenciar aplicativos.</string>
+    <string name="help_faq_q3">O que é o bloqueio dentro de apps?</string>
+    <string name="help_faq_a3">Essa função permite bloquear conteúdos específicos dentro dos apps (como Reels no Instagram ou Shorts no YouTube) sem bloquear o app inteiro. Requer ativar o serviço de acessibilidade.</string>
+    <string name="help_faq_q4">Como protejo minhas configurações com senha?</string>
+    <string name="help_faq_a4">Vá em Configurações > Funções > Segurança e privacidade > Proteção por senha. Configure um PIN numérico para proteger os ajustes e evitar desativar limites.</string>
+    <string name="help_faq_q5">Por que o app precisa de permissão de Acessibilidade?</string>
+    <string name="help_faq_a5">A permissão de Acessibilidade é necessária para detectar e bloquear conteúdos específicos dentro de apps (como Reels ou Shorts) e para bloquear sites. Sem ela, essas funções não funcionam.</string>
+    <string name="help_faq_q6">Por que o app precisa da permissão de Uso de aplicativos?</string>
+    <string name="help_faq_a6">Essa permissão permite que o Momentum monitore o uso de apps para mostrar estatísticas precisas e aplicar os limites de tempo configurados.</string>
+    <string name="help_faq_q7">Como funciona “Minha vida em semanas”?</string>
+    <string name="help_faq_a7">Essa visualização mostra sua vida dividida em semanas, do nascimento até uma expectativa média de vida. Ajuda a refletir sobre o tempo e tomar decisões mais conscientes sobre como usá-lo.</string>
+    <string name="help_faq_q8">Como configuro os widgets?</string>
+    <string name="help_faq_a8">Mantenha pressionada a tela inicial, selecione “Widgets”, procure “Momentum” e arraste o widget desejado. Você pode ajustar as cores em Configurações > Configuração de widgets.</string>
+    <string name="help_faq_q9">Meus dados sincronizam entre dispositivos?</string>
+    <string name="help_faq_a9">Sim. Se você estiver logado, suas configurações e dados sincronizam automaticamente na nuvem. Você pode ver o status em Configurações > Sincronização.</string>
+    <string name="help_faq_q10">Como desativo os limites temporariamente?</string>
+    <string name="help_faq_a10">Se a proteção por senha estiver ativada, você precisará inserir o PIN para desativar os limites. Isso evita desativação impulsiva.</string>
+
+    <!-- Widget Settings -->
+    <string name="widget_settings_title">Configuração de widgets</string>
+    <string name="widget_settings_back_cd">Voltar</string>
+    <string name="widget_settings_available_title">Widgets disponíveis</string>
+    <string name="widget_settings_available_subtitle">Mantenha pressionada a tela inicial para adicionar widgets</string>
+    <string name="widget_settings_widget_life_weeks_title">Minha Vida em Semanas</string>
+    <string name="widget_settings_widget_life_weeks_desc">Visualização da sua vida dividida em semanas</string>
+    <string name="widget_settings_widget_quote_title">Citação motivacional</string>
+    <string name="widget_settings_widget_quote_desc">Uma frase inspiradora que muda diariamente</string>
+    <string name="widget_settings_widget_year_progress_title">Progresso do ano</string>
+    <string name="widget_settings_widget_year_progress_desc">Percentual do ano já passado</string>
+    <string name="widget_settings_lived_color_title">Cor das semanas vividas</string>
+    <string name="widget_settings_lived_color_subtitle">Cor para as semanas que você já viveu</string>
+    <string name="widget_settings_future_color_title">Cor das semanas futuras</string>
+    <string name="widget_settings_future_color_subtitle">Cor para as semanas que você ainda não viveu</string>
+    <string name="widget_settings_refresh_button">Atualizar todos os widgets</string>
+    <string name="widget_settings_selected_cd">Selecionado</string>
+
+    <string name="widget_color_green">Verde</string>
+    <string name="widget_color_blue">Azul</string>
+    <string name="widget_color_purple">Roxo</string>
+    <string name="widget_color_orange">Laranja</string>
+    <string name="widget_color_pink">Rosa</string>
+    <string name="widget_color_cyan">Ciano</string>
+    <string name="widget_color_amber">Âmbar</string>
+    <string name="widget_color_brown">Marrom</string>
+    <string name="widget_color_blue_gray">Cinza azulado</string>
+    <string name="widget_color_indigo">Índigo</string>
+    <string name="widget_color_teal">Verde-azulado</string>
+    <string name="widget_color_red">Vermelho</string>
+    <string name="widget_color_light_gray">Cinza claro</string>
+    <string name="widget_color_medium_gray">Cinza médio</string>
+    <string name="widget_color_gray">Cinza</string>
+    <string name="widget_color_dark_gray">Cinza escuro</string>
+    <string name="widget_color_almost_white">Quase branco</string>
+    <string name="widget_color_very_light_gray">Cinza muito claro</string>
+
+    <!-- About Screen -->
+    <string name="about_title">Sobre</string>
+    <string name="about_back_cd">Voltar</string>
+    <string name="about_tagline">Sua Vida em Semanas</string>
+    <string name="about_version_format">Versão %1$s (%2$d)</string>
+    <string name="about_section_title">Sobre o Momentum</string>
+    <string name="about_section_description">O Momentum ajuda você a visualizar sua vida em semanas e gerenciar seu tempo digital de forma consciente. Cada semana conta.</string>
+    <string name="about_features_title">Principais recursos</string>
+    <string name="about_feature_life_title">Visualização da vida</string>
+    <string name="about_feature_life_desc">Veja sua vida em 4.160 semanas</string>
+    <string name="about_feature_digital_title">Bem-estar digital</string>
+    <string name="about_feature_digital_desc">Monitore e controle seu tempo em apps</string>
+    <string name="about_feature_focus_title">Sessões de foco</string>
+    <string name="about_feature_focus_desc">Concentração profunda com temporizador</string>
+    <string name="about_feature_limits_title">Limites de aplicativos</string>
+    <string name="about_feature_limits_desc">Defina limites saudáveis</string>
+    <string name="about_feature_sync_title">Sincronização na nuvem</string>
+    <string name="about_feature_sync_desc">Mantenha seus dados seguros com Appwrite</string>
+    <string name="about_info_version_title">Versão</string>
+    <string name="about_info_build_title">Build</string>
+    <string name="about_developed_with_love">Desenvolvido com ❤️</string>
+    <string name="about_developed_subtitle">Feito para ajudar você a viver mais conscientemente</string>
+    <string name="about_legal_title">Legal</string>
+    <string name="about_privacy_policy">Política de privacidade</string>
+    <string name="about_terms_of_service">Termos de serviço</string>
+    <string name="about_copyright">© %1$d Momentum&#10;Todos os direitos reservados</string>
+
+    <!-- Tutorial Screen -->
+    <string name="tutorial_step_welcome_title">Bem-vindo ao tutorial</string>
+    <string name="tutorial_step_welcome_desc">Um guia rápido para configurar e personalizar o Momentum conforme suas preferências</string>
+    <string name="tutorial_step_welcome_tip_1">Você pode acessar este tutorial a qualquer momento em Configurações</string>
+    <string name="tutorial_step_welcome_tip_2">Todas as mudanças são salvas automaticamente</string>
+    <string name="tutorial_step_birthdate_title">Sua data de nascimento</string>
+    <string name="tutorial_step_birthdate_desc">Usaremos para calcular semanas vividas e restantes na sua visualização de vida</string>
+    <string name="tutorial_step_birthdate_tip_1">Essa informação é usada para calcular seu progresso de vida</string>
+    <string name="tutorial_step_birthdate_tip_2">O widget e todas as visualizações são atualizados automaticamente</string>
+    <string name="tutorial_step_colors_title">Personalize suas cores</string>
+    <string name="tutorial_step_colors_desc">Escolha cores para representar semanas vividas e futuras</string>
+    <string name="tutorial_step_colors_tip_1">As cores são aplicadas imediatamente ao widget</string>
+    <string name="tutorial_step_colors_tip_2">Você pode alterar essas cores depois em Minha Vida</string>
+    <string name="tutorial_step_done_title">Tudo pronto!</string>
+    <string name="tutorial_step_done_desc">Você configurou o Momentum com sucesso. Explore as seções para descobrir todas as funcionalidades.</string>
+    <string name="tutorial_step_done_tip_1">Visite “Minha Vida” para ver sua visualização completa</string>
+    <string name="tutorial_step_done_tip_2">Use “Foco” para sessões de produtividade</string>
+    <string name="tutorial_step_done_tip_3">Confira “Análises” para estatísticas detalhadas</string>
+    <string name="tutorial_topbar_title">Tutorial de uso</string>
+    <string name="tutorial_step_progress">Etapa %1$d de %2$d</string>
+    <string name="tutorial_tips_title">Dicas úteis</string>
+    <string name="tutorial_start">Começar!</string>
+    <string name="tutorial_customize_experience">Personalize sua experiência</string>
+    <string name="tutorial_lived_weeks_title">Semanas vividas</string>
+    <string name="tutorial_future_weeks_title">Semanas futuras</string>
+    <string name="tutorial_birthdate_title">Sua data de nascimento</string>
+    <string name="tutorial_birthdate_subtitle">Isso ajuda a calcular seu progresso de vida</string>
+    <string name="tutorial_birthdate_select_button">Selecionar data</string>
+    <string name="tutorial_birthdate_progress_title">📊 Seu progresso</string>
+    <string name="tutorial_birthdate_years_label">anos</string>
+    <string name="tutorial_birthdate_weeks_lived_label">semanas vividas</string>
+    <string name="tutorial_birthdate_life_percent">%1$d%% de uma vida estimada de 90 anos</string>
+    <string name="tutorial_color_red">Vermelho</string>
+    <string name="tutorial_color_turquoise">Turquesa</string>
+    <string name="tutorial_color_blue">Azul</string>
+    <string name="tutorial_color_green">Verde</string>
+    <string name="tutorial_color_coral">Coral</string>
+    <string name="tutorial_color_purple">Roxo</string>
+
+    <!-- Goals & Challenges -->
+    <string name="goal_period_daily">Diário</string>
+    <string name="goal_period_weekly">Semanal</string>
+    <string name="goal_period_monthly">Mensal</string>
+    <string name="goal_category_screen_time">Tempo de tela</string>
+    <string name="goal_category_social_media">Redes sociais</string>
+    <string name="goal_category_productivity">Produtividade</string>
+    <string name="goal_category_focus">Foco</string>
+    <string name="goal_category_digital_detox">Desintoxicação digital</string>
+    <string name="challenge_difficulty_easy">Fácil</string>
+    <string name="challenge_difficulty_medium">Médio</string>
+    <string name="challenge_difficulty_hard">Difícil</string>
+
+    <string name="goals_header_title">Metas e desafios</string>
+    <string name="goals_header_subtitle">Defina objetivos e complete desafios</string>
+    <string name="goals_tab_goals">Metas</string>
+    <string name="goals_tab_challenges">Desafios</string>
+    <string name="goals_active_title">Metas ativas</string>
+    <string name="goals_new_goal_button">Nova meta</string>
+    <string name="goals_empty_title">Sem metas por enquanto</string>
+    <string name="goals_empty_subtitle">Defina sua primeira meta para começar a avançar</string>
+    <string name="goals_empty_action">Criar minha primeira meta</string>
+    <string name="goals_challenges_active_title">Desafios ativos</string>
+    <string name="goals_challenges_available_title">Desafios disponíveis</string>
+    <string name="goals_challenges_empty_title">Sem desafios disponíveis</string>
+    <string name="goals_challenges_empty_subtitle">Os desafios gamificados aparecerão aqui em breve</string>
+    <string name="goals_challenges_refresh_button">Atualizar</string>
+    <string name="goals_premium_title">Metas e desafios</string>
+    <string name="goals_premium_subtitle">Defina metas personalizadas e complete desafios gamificados</string>
+    <string name="goals_premium_feature_1">Metas personalizadas diárias, semanais e mensais</string>
+    <string name="goals_premium_feature_2">Desafios gamificados de desintoxicação digital</string>
+    <string name="goals_premium_feature_3">Sistema de recompensas e badges</string>
+    <string name="goals_premium_feature_4">Acompanhamento automático do progresso</string>
+    <string name="goals_premium_feature_5">Lembretes inteligentes</string>
+    <string name="goals_premium_feature_6">Análises de cumprimento de metas</string>
+    <string name="goals_premium_cta">Atualizar para Premium</string>
+    <string name="goals_summary_title">Resumo</string>
+    <string name="goals_summary_completed">Metas&#10;concluídas</string>
+    <string name="goals_summary_active">Metas&#10;ativas</string>
+    <string name="goals_summary_challenges_completed">Desafios&#10;concluídos</string>
+    <string name="goals_summary_streak_days">Dias de&#10;sequência</string>
+    <string name="goals_progress_current">%1$dh %2$dm</string>
+    <string name="goals_progress_target">Meta: %1$dh %2$dm</string>
+    <string name="goals_progress_completed">%1$d%% concluído</string>
+    <string name="goals_completed_badge">Concluído!</string>
+    <string name="goals_challenge_duration_days">%1$d dias</string>
+    <string name="goals_challenge_reward">Recompensa: %1$s</string>
+    <string name="goals_challenge_day_progress">Dia %1$d de %2$d</string>
+    <string name="goals_challenge_join_button">Entrar no desafio</string>
+    <string name="goals_challenge_completed_badge">Desafio concluído!</string>
+
+    <string name="goals_screen_title">Minhas metas</string>
+    <string name="goals_add_button">Adicionar meta</string>
+    <string name="goals_create_title">Nova meta</string>
+    <string name="goals_close_cd">Fechar</string>
+    <string name="goals_title_label">Título da meta</string>
+    <string name="goals_title_placeholder">Ex: Reduzir tempo de tela</string>
+    <string name="goals_description_label">Descrição</string>
+    <string name="goals_description_placeholder">Descreva seu objetivo...</string>
+    <string name="goals_target_time_label">Tempo objetivo</string>
+    <string name="goals_hours_label">Horas</string>
+    <string name="goals_minutes_label">Minutos</string>
+    <string name="goals_period_label">Período</string>
+    <string name="goals_category_label">Categoria</string>
+    <string name="goals_required_error">Por favor, preencha todos os campos obrigatórios</string>
+    <string name="goals_cancel_button">Cancelar</string>
+    <string name="goals_create_button">Criar</string>
+    <string name="goals_target_minutes_label">Tempo objetivo (minutos)</string>
+
+    <string name="goals_notification_challenge_completed_title">Desafio concluído!</string>
+    <string name="goals_notification_challenge_completed_message">Você concluiu o desafio: %1$s. Recompensa: %2$s</string>
+    <string name="goals_notification_streak_7_title">Sequência de 7 dias!</string>
+    <string name="goals_notification_streak_7_message">Você manteve sua meta por uma semana inteira</string>
+    <string name="goals_notification_streak_30_title">Sequência de 30 dias!</string>
+    <string name="goals_notification_streak_30_message">Um mês inteiro cumprindo sua meta. Incrível!</string>
+    <string name="goals_notification_streak_100_title">Sequência de 100 dias!</string>
+    <string name="goals_notification_streak_100_message">100 dias consecutivos. Você é uma lenda.</string>
+    <string name="goals_notification_goal_completed_title">Meta concluída!</string>
+    <string name="goals_notification_goal_completed_message">Você atingiu seu objetivo em: %1$s</string>
+
+    <string name="goals_recommendation_screen_time_title">Controle seu tempo de tela</string>
+    <string name="goals_recommendation_screen_time_desc">Defina um limite diário para o uso do dispositivo</string>
+    <string name="goals_recommendation_social_title">Reduza as redes sociais</string>
+    <string name="goals_recommendation_social_desc">Limite o tempo em aplicativos de redes sociais</string>
+    <string name="goals_recommendation_productivity_title">Aumente sua produtividade</string>
+    <string name="goals_recommendation_productivity_desc">Dedique tempo a aplicativos de trabalho e estudo</string>
+
+    <!-- Website Block Screen -->
+    <string name="website_block_title">Bloqueio de sites</string>
+    <string name="website_block_back_cd">Voltar</string>
+    <string name="website_block_add_category_cd">Adicionar categoria</string>
+    <string name="website_block_add_site_cd">Adicionar site</string>
+    <string name="website_block_delete_title">Excluir bloqueio</string>
+    <string name="website_block_delete_message">Tem certeza de que deseja excluir o bloqueio de %1$s?</string>
+    <string name="website_block_delete_confirm">Excluir</string>
+    <string name="website_block_cancel_button">Cancelar</string>
+    <string name="website_block_stat_total">Total</string>
+    <string name="website_block_stat_active">Ativos</string>
+    <string name="website_block_stat_adult">Adulto</string>
+    <string name="website_block_info_title">Sobre o bloqueio de sites</string>
+    <string name="website_block_info_message">Os sites bloqueados serão interceptados ao serem abertos em navegadores compatíveis. Você pode desbloqueá-los temporariamente pela notificação de bloqueio.</string>
+    <string name="website_block_active_count">(%1$d ativos)</string>
+    <string name="website_block_delete_category_cd">Excluir categoria</string>
+    <string name="website_block_delete_cd">Excluir</string>
+    <string name="website_block_empty_title">Nenhum site bloqueado</string>
+    <string name="website_block_empty_subtitle">Adicione sites para bloquear acesso a conteúdo distrativo</string>
+    <string name="website_block_add_site_button">Adicionar site</string>
+    <string name="website_block_category_adult">Conteúdo adulto</string>
+    <string name="website_block_category_social">Redes sociais</string>
+    <string name="website_block_category_entertainment">Entretenimento</string>
+    <string name="website_block_category_gaming">Jogos</string>
+    <string name="website_block_category_news">Notícias</string>
+    <string name="website_block_category_shopping">Compras</string>
+    <string name="website_block_category_custom">Personalizado</string>
+
+    <!-- Analytics -->
+    <string name="analytics_category_social">Social</string>
+    <string name="analytics_category_entertainment">Entretenimento</string>
+    <string name="analytics_category_productivity">Produtividade</string>
+    <string name="analytics_category_games">Jogos</string>
+    <string name="analytics_category_communication">Comunicação</string>
+    <string name="analytics_category_news">Notícias</string>
+    <string name="analytics_category_health">Saúde</string>
+    <string name="analytics_category_other">Outros</string>
+
+    <string name="analytics_period_today">Hoje</string>
+    <string name="analytics_period_last_week">Última semana</string>
+    <string name="analytics_period_last_month">Último mês</string>
+    <string name="analytics_period_last_year">Último ano</string>
+    <string name="analytics_today_label">Hoje</string>
+
+    <string name="analytics_insight_avg_daily_title">Média diária</string>
+    <string name="analytics_insight_avg_daily_desc">Seu tempo de tela nesta semana</string>
+    <string name="analytics_insight_top_app_title">App mais usado</string>
+    <string name="analytics_insight_top_app_desc">%1$s lidera seu tempo de uso</string>
+    <string name="analytics_insight_pickups_title">Desbloqueios</string>
+    <string name="analytics_insight_pickups_desc">Vezes que você desbloqueou o telefone hoje</string>
+    <string name="analytics_insight_peak_time_title">Horário de pico</string>
+    <string name="analytics_insight_peak_time_desc">Seu momento de maior atividade</string>
+    <string name="analytics_insight_productivity_title">Produtividade</string>
+    <string name="analytics_insight_productivity_desc">Tempo em apps produtivos</string>
+    <string name="analytics_insight_social_title">Redes sociais</string>
+    <string name="analytics_insight_social_desc">Tempo em redes sociais</string>
+
+    <string name="analytics_last_used_one_min">há 1 min</string>
+    <string name="analytics_last_used_more_than_week">há mais de 1 semana</string>
+
+    <string name="analytics_title">Análises avançadas</string>
+    <string name="analytics_subtitle">Insights detalhados do seu uso digital</string>
+    <string name="analytics_refresh_cd">Atualizar</string>
+    <string name="analytics_key_insights_title">Insights principais</string>
+    <string name="analytics_usage_by_app_title">Uso por aplicativo</string>
+    <string name="analytics_permission_title">Permissão necessária</string>
+    <string name="analytics_permission_message">Para ver estatísticas avançadas, precisamos de acesso aos dados de uso do seu dispositivo.</string>
+    <string name="analytics_permission_instruction">Vá em Configurações e habilite o acesso às estatísticas de uso.</string>
+    <string name="analytics_premium_subtitle">Desbloqueie insights detalhados sobre seu uso digital com Premium</string>
+    <string name="analytics_premium_feature_1">Gráficos de uso semanal e mensal</string>
+    <string name="analytics_premium_feature_2">Análise por categorias de apps</string>
+    <string name="analytics_premium_feature_3">Insights de produtividade</string>
+    <string name="analytics_premium_feature_4">Comparação de períodos</string>
+    <string name="analytics_premium_feature_5">Exportação de dados</string>
+    <string name="analytics_premium_feature_6">Alertas inteligentes</string>
+    <string name="analytics_premium_cta">Atualizar para Premium</string>
+    <string name="analytics_weekly_screen_time_title">Tempo de tela semanal</string>
+    <string name="analytics_hours_format">%1$.1fh</string>
+    <string name="analytics_usage_by_category_title">Uso por categoria</string>
+    <string name="analytics_app_usage_time_sessions">%1$dh %2$dm • %3$d sessões</string>
+    <string name="analytics_app_usage_last_used">Último uso: %1$s</string>
+    <string name="analytics_productivity_insight_title">Insight de produtividade</string>
+    <string name="analytics_productivity_insight_message">Sua produtividade aumenta 23% às terças. Considere agendar tarefas importantes nesse dia.</string>
+    <string name="analytics_summary_title">Resumo estatístico</string>
+    <string name="analytics_summary_total_screen_time">Tempo de tela total</string>
+    <string name="analytics_summary_daily_average">Média diária</string>
+    <string name="analytics_summary_total_pickups">Desbloqueios totais</string>
+    <string name="analytics_summary_pickups_times">%1$d vezes</string>
+    <string name="analytics_summary_top_app">App mais usado</string>
+
+    <plurals name="analytics_last_used_minutes">
+        <item quantity="one">há %1$d min</item>
+        <item quantity="other">há %1$d min</item>
+    </plurals>
+    <plurals name="analytics_last_used_hours">
+        <item quantity="one">há %1$d hora</item>
+        <item quantity="other">há %1$d horas</item>
+    </plurals>
+    <plurals name="analytics_last_used_days">
+        <item quantity="one">há %1$d dia</item>
+        <item quantity="other">há %1$d dias</item>
+    </plurals>
+</resources>

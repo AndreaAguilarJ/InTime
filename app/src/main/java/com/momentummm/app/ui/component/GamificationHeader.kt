@@ -16,10 +16,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.R
 import com.momentummm.app.data.manager.GamificationState
 
 /**
@@ -109,7 +111,10 @@ fun GamificationHeader(
                         
                         Column {
                             Text(
-                                text = "Nivel ${gamificationState.level}",
+                                text = stringResource(
+                                    R.string.gamification_level_format,
+                                    gamificationState.level
+                                ),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -157,7 +162,10 @@ fun GamificationHeader(
                             ) {
                                 Text("🔥", fontSize = 14.sp)
                                 Text(
-                                    text = "${gamificationState.currentStreak} días",
+                                    text = stringResource(
+                                        R.string.gamification_header_streak_days,
+                                        gamificationState.currentStreak
+                                    ),
                                     style = MaterialTheme.typography.labelMedium,
                                     color = Color.White.copy(alpha = 0.9f)
                                 )
@@ -190,12 +198,19 @@ fun GamificationHeader(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "XP: ${formatNumber(gamificationState.currentXp)}",
+                            text = stringResource(
+                                R.string.gamification_header_xp_label,
+                                formatNumber(gamificationState.currentXp)
+                            ),
                             style = MaterialTheme.typography.labelMedium,
                             color = Color.White.copy(alpha = 0.9f)
                         )
                         Text(
-                            text = "${formatNumber(gamificationState.xpForNextLevel)} para Nivel ${gamificationState.level + 1}",
+                            text = stringResource(
+                                R.string.gamification_header_xp_to_next_level,
+                                formatNumber(gamificationState.xpForNextLevel),
+                                gamificationState.level + 1
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.White.copy(alpha = 0.7f)
                         )
@@ -240,17 +255,17 @@ fun GamificationHeader(
                     QuickStat(
                         emoji = "⏱️",
                         value = formatMinutesToHours(gamificationState.totalFocusMinutes),
-                        label = "Enfoque total"
+                        label = stringResource(R.string.gamification_header_total_focus)
                     )
                     QuickStat(
                         emoji = "✅",
                         value = gamificationState.totalSessions.toString(),
-                        label = "Sesiones"
+                        label = stringResource(R.string.gamification_header_sessions)
                     )
                     QuickStat(
                         emoji = "⭐",
                         value = gamificationState.perfectDays.toString(),
-                        label = "Días perfectos"
+                        label = stringResource(R.string.gamification_header_perfect_days)
                     )
                 }
             }
@@ -369,14 +384,21 @@ fun GamificationEventToast(
                     ) {
                         if (xpGained != 0) {
                             Text(
-                                text = "${if (xpGained > 0) "+" else ""}$xpGained XP",
+                                text = stringResource(
+                                    R.string.gamification_event_xp_format,
+                                    if (xpGained > 0) "+" else "",
+                                    xpGained
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White.copy(alpha = 0.9f)
                             )
                         }
                         if (coinsGained > 0) {
                             Text(
-                                text = "+$coinsGained 🪙",
+                                text = stringResource(
+                                    R.string.gamification_event_coins_format,
+                                    coinsGained
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color(0xFFFFD700)
                             )
@@ -387,7 +409,7 @@ fun GamificationEventToast(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         Icons.Filled.Close,
-                        contentDescription = "Cerrar",
+                        contentDescription = stringResource(R.string.gamification_event_close_cd),
                         tint = Color.White
                     )
                 }

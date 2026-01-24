@@ -27,14 +27,26 @@ import com.momentummm.app.data.entity.Challenge
 import com.momentummm.app.data.entity.WebsiteBlock
 import com.momentummm.app.data.entity.InAppBlockRule
 import com.momentummm.app.data.entity.PasswordProtection
+import com.momentummm.app.data.entity.SmartBlockingConfig
+import com.momentummm.app.data.entity.ContextBlockRule
+import com.momentummm.app.data.entity.Friend
+import com.momentummm.app.data.entity.LeaderboardEntry
+import com.momentummm.app.data.entity.SharedAchievement
+import com.momentummm.app.data.entity.CommunitySettings
+import com.momentummm.app.data.dao.SmartBlockingConfigDao
+import com.momentummm.app.data.dao.ContextBlockRuleDao
+import com.momentummm.app.data.dao.FriendDao
+import com.momentummm.app.data.dao.LeaderboardDao
+import com.momentummm.app.data.dao.SharedAchievementDao
+import com.momentummm.app.data.dao.CommunitySettingsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class],
-    version = 11,
+    entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class, SmartBlockingConfig::class, ContextBlockRule::class, Friend::class, LeaderboardEntry::class, SharedAchievement::class, CommunitySettings::class],
+    version = 14,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -50,6 +62,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun websiteBlockDao(): WebsiteBlockDao
     abstract fun inAppBlockRuleDao(): InAppBlockRuleDao
     abstract fun passwordProtectionDao(): PasswordProtectionDao
+    abstract fun smartBlockingConfigDao(): SmartBlockingConfigDao
+    abstract fun contextBlockRuleDao(): ContextBlockRuleDao
+    abstract fun friendDao(): FriendDao
+    abstract fun leaderboardDao(): LeaderboardDao
+    abstract fun sharedAchievementDao(): SharedAchievementDao
+    abstract fun communitySettingsDao(): CommunitySettingsDao
 
     private class AppDatabaseCallback(
         private val scope: CoroutineScope
@@ -123,6 +141,179 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // MIGRATION 11 -> 12: (ya existente, mantener vacío o agregar lógica si es necesario)
+        private val MIGRATION_11_12 = object : androidx.room.migration.Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Migraciones previas
+            }
+        }
+
+        // MIGRATION 12 -> 13: Agregar tablas de Smart Blocking
+        private val MIGRATION_12_13 = object : androidx.room.migration.Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Tabla SmartBlockingConfig
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `smart_blocking_config` (
+                        `id` INTEGER NOT NULL PRIMARY KEY,
+                        `sleepModeEnabled` INTEGER NOT NULL DEFAULT 0,
+                        `sleepStartHour` INTEGER NOT NULL DEFAULT 23,
+                        `sleepStartMinute` INTEGER NOT NULL DEFAULT 0,
+                        `sleepEndHour` INTEGER NOT NULL DEFAULT 7,
+                        `sleepEndMinute` INTEGER NOT NULL DEFAULT 0,
+                        `sleepModeIgnoreTracking` INTEGER NOT NULL DEFAULT 1,
+                        `digitalFastingEnabled` INTEGER NOT NULL DEFAULT 0,
+                        `fastingStartHour` INTEGER NOT NULL DEFAULT 9,
+                        `fastingStartMinute` INTEGER NOT NULL DEFAULT 0,
+                        `fastingEndHour` INTEGER NOT NULL DEFAULT 18,
+                        `fastingEndMinute` INTEGER NOT NULL DEFAULT 0,
+                        `fastingDailyLimitMinutes` INTEGER NOT NULL DEFAULT 30,
+                        `fastingApplyToAllApps` INTEGER NOT NULL DEFAULT 1,
+                        `fastingDaysOfWeek` TEXT NOT NULL DEFAULT '1,2,3,4,5',
+                        `nuclearModeEnabled` INTEGER NOT NULL DEFAULT 0,
+                        `nuclearModeStartDate` INTEGER,
+                        `nuclearModeEndDate` INTEGER,
+                        `nuclearModeDurationDays` INTEGER NOT NULL DEFAULT 30,
+                        `nuclearModeApps` TEXT NOT NULL DEFAULT '',
+                        `nuclearModeRequiresAppOpen` INTEGER NOT NULL DEFAULT 1,
+                        `nuclearModeUnlockWaitMinutes` INTEGER NOT NULL DEFAULT 30,
+                        `nuclearModeCurrentWaitSeconds` INTEGER NOT NULL DEFAULT 0,
+                        `contextBlockingEnabled` INTEGER NOT NULL DEFAULT 0,
+                        `streakProtectionEnabled` INTEGER NOT NULL DEFAULT 1,
+                        `graceDaysPerWeek` INTEGER NOT NULL DEFAULT 1,
+                        `graceDaysUsedThisWeek` INTEGER NOT NULL DEFAULT 0,
+                        `lastGraceDayResetDate` INTEGER,
+                        `warningBeforeStreakBreak` INTEGER NOT NULL DEFAULT 1,
+                        `warningMinutesBeforeLimit` INTEGER NOT NULL DEFAULT 5,
+                        `floatingTimerEnabled` INTEGER NOT NULL DEFAULT 0,
+                        `floatingTimerOpacity` REAL NOT NULL DEFAULT 0.8,
+                        `floatingTimerPosition` TEXT NOT NULL DEFAULT 'TOP_RIGHT',
+                        `floatingTimerSize` TEXT NOT NULL DEFAULT 'MEDIUM',
+                        `floatingTimerShowForApps` TEXT NOT NULL DEFAULT '',
+                        `communicationOnlyModeEnabled` INTEGER NOT NULL DEFAULT 0,
+                        `communicationOnlyApps` TEXT NOT NULL DEFAULT '',
+                        `communicationOnlyAllowDMs` INTEGER NOT NULL DEFAULT 1,
+                        `communicationOnlyBlockFeed` INTEGER NOT NULL DEFAULT 1,
+                        `communicationOnlyBlockStories` INTEGER NOT NULL DEFAULT 1,
+                        `communicationOnlyBlockReels` INTEGER NOT NULL DEFAULT 1,
+                        `createdAt` INTEGER NOT NULL DEFAULT 0,
+                        `updatedAt` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                
+                // Tabla ContextBlockRule
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `context_block_rules` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `ruleName` TEXT NOT NULL,
+                        `isEnabled` INTEGER NOT NULL DEFAULT 1,
+                        `contextType` TEXT NOT NULL DEFAULT 'SCHEDULE',
+                        `latitude` REAL,
+                        `longitude` REAL,
+                        `radiusMeters` INTEGER NOT NULL DEFAULT 100,
+                        `locationName` TEXT,
+                        `wifiSsid` TEXT,
+                        `scheduleStartHour` INTEGER NOT NULL DEFAULT 9,
+                        `scheduleStartMinute` INTEGER NOT NULL DEFAULT 0,
+                        `scheduleEndHour` INTEGER NOT NULL DEFAULT 18,
+                        `scheduleEndMinute` INTEGER NOT NULL DEFAULT 0,
+                        `scheduleDaysOfWeek` TEXT NOT NULL DEFAULT '1,2,3,4,5',
+                        `affectedApps` TEXT NOT NULL DEFAULT '',
+                        `applyToAllLimitedApps` INTEGER NOT NULL DEFAULT 1,
+                        `overrideDailyLimit` INTEGER NOT NULL DEFAULT 1,
+                        `contextDailyLimitMinutes` INTEGER NOT NULL DEFAULT 15,
+                        `blockCompletely` INTEGER NOT NULL DEFAULT 0,
+                        `createdAt` INTEGER NOT NULL DEFAULT 0,
+                        `updatedAt` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+            }
+        }
+
+        // MIGRATION 13 -> 14: Add Community tables
+        private val MIGRATION_13_14 = object : androidx.room.migration.Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Tabla Friends
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `friends` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `friendUserId` TEXT NOT NULL,
+                        `friendName` TEXT NOT NULL,
+                        `friendEmail` TEXT,
+                        `avatarUrl` TEXT,
+                        `status` TEXT NOT NULL DEFAULT 'PENDING',
+                        `sentByMe` INTEGER NOT NULL DEFAULT 1,
+                        `friendLevel` INTEGER NOT NULL DEFAULT 1,
+                        `friendStreak` INTEGER NOT NULL DEFAULT 0,
+                        `friendTotalFocusMinutes` INTEGER NOT NULL DEFAULT 0,
+                        `friendWeeklyFocusMinutes` INTEGER NOT NULL DEFAULT 0,
+                        `createdAt` INTEGER NOT NULL DEFAULT 0,
+                        `updatedAt` INTEGER NOT NULL DEFAULT 0,
+                        `lastSyncedAt` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_friends_friendUserId` ON `friends` (`friendUserId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_friends_status` ON `friends` (`status`)")
+                
+                // Tabla LeaderboardEntry
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `leaderboard_entries` (
+                        `odId` TEXT NOT NULL PRIMARY KEY,
+                        `userId` TEXT NOT NULL,
+                        `userName` TEXT NOT NULL,
+                        `avatarUrl` TEXT,
+                        `weeklyFocusMinutes` INTEGER NOT NULL DEFAULT 0,
+                        `weeklyPerfectDays` INTEGER NOT NULL DEFAULT 0,
+                        `currentStreak` INTEGER NOT NULL DEFAULT 0,
+                        `userLevel` INTEGER NOT NULL DEFAULT 1,
+                        `rank` INTEGER NOT NULL DEFAULT 0,
+                        `previousRank` INTEGER NOT NULL DEFAULT 0,
+                        `weekStartDate` INTEGER NOT NULL,
+                        `isFriend` INTEGER NOT NULL DEFAULT 0,
+                        `createdAt` INTEGER NOT NULL DEFAULT 0,
+                        `updatedAt` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_leaderboard_entries_weekStartDate` ON `leaderboard_entries` (`weekStartDate`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_leaderboard_entries_rank` ON `leaderboard_entries` (`rank`)")
+                
+                // Tabla SharedAchievements
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `shared_achievements` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `achievementType` TEXT NOT NULL,
+                        `achievementValue` INTEGER NOT NULL DEFAULT 0,
+                        `message` TEXT NOT NULL DEFAULT '',
+                        `isShared` INTEGER NOT NULL DEFAULT 0,
+                        `shareCount` INTEGER NOT NULL DEFAULT 0,
+                        `achievedAt` INTEGER NOT NULL DEFAULT 0,
+                        `remoteId` TEXT
+                    )
+                """.trimIndent())
+                
+                // Tabla CommunitySettings
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `community_settings` (
+                        `id` INTEGER NOT NULL PRIMARY KEY,
+                        `profileVisibility` TEXT NOT NULL DEFAULT 'FRIENDS_ONLY',
+                        `showInGlobalLeaderboard` INTEGER NOT NULL DEFAULT 1,
+                        `showStreakToFriends` INTEGER NOT NULL DEFAULT 1,
+                        `showLevelToFriends` INTEGER NOT NULL DEFAULT 1,
+                        `showFocusTimeToFriends` INTEGER NOT NULL DEFAULT 1,
+                        `notifyFriendRequests` INTEGER NOT NULL DEFAULT 1,
+                        `notifyFriendAchievements` INTEGER NOT NULL DEFAULT 1,
+                        `notifyLeaderboardChanges` INTEGER NOT NULL DEFAULT 1,
+                        `shameEnabled` INTEGER NOT NULL DEFAULT 1,
+                        `gloryEnabled` INTEGER NOT NULL DEFAULT 1,
+                        `autoShareAchievements` INTEGER NOT NULL DEFAULT 0,
+                        `createdAt` INTEGER NOT NULL DEFAULT 0,
+                        `updatedAt` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -130,7 +321,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "momentum_database"
                 ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
-                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
                     .fallbackToDestructiveMigration() // For now, allow destructive migration
                     .build()
                 INSTANCE = instance

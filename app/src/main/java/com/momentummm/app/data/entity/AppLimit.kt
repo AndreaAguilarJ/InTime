@@ -1,9 +1,13 @@
 package com.momentummm.app.data.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "app_limits")
+@Entity(
+    tableName = "app_limits",
+    indices = [Index(value = ["isEnabled"])]
+)
 data class AppLimit(
     @PrimaryKey val packageName: String,
     val appName: String,

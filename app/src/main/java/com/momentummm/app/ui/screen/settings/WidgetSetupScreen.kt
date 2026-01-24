@@ -20,9 +20,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
+import androidx.annotation.StringRes
+import com.momentummm.app.R
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.widget.LifeWeeksWidget
 import com.momentummm.app.widget.QuoteWidget
@@ -46,41 +49,41 @@ fun WidgetSetupScreen(
     // Lista de colores disponibles
     val availableColors = remember {
         listOf(
-            ColorOption("#4CAF50", "Verde", Color(0xFF4CAF50)),
-            ColorOption("#2196F3", "Azul", Color(0xFF2196F3)),
-            ColorOption("#9C27B0", "Púrpura", Color(0xFF9C27B0)),
-            ColorOption("#FF5722", "Naranja", Color(0xFFFF5722)),
-            ColorOption("#E91E63", "Rosa", Color(0xFFE91E63)),
-            ColorOption("#00BCD4", "Cian", Color(0xFF00BCD4)),
-            ColorOption("#FFC107", "Ámbar", Color(0xFFFFC107)),
-            ColorOption("#795548", "Marrón", Color(0xFF795548)),
-            ColorOption("#607D8B", "Gris Azulado", Color(0xFF607D8B)),
-            ColorOption("#3F51B5", "Índigo", Color(0xFF3F51B5)),
-            ColorOption("#009688", "Teal", Color(0xFF009688)),
-            ColorOption("#F44336", "Rojo", Color(0xFFF44336))
+            ColorOption("#4CAF50", R.string.widget_color_green, Color(0xFF4CAF50)),
+            ColorOption("#2196F3", R.string.widget_color_blue, Color(0xFF2196F3)),
+            ColorOption("#9C27B0", R.string.widget_color_purple, Color(0xFF9C27B0)),
+            ColorOption("#FF5722", R.string.widget_color_orange, Color(0xFFFF5722)),
+            ColorOption("#E91E63", R.string.widget_color_pink, Color(0xFFE91E63)),
+            ColorOption("#00BCD4", R.string.widget_color_cyan, Color(0xFF00BCD4)),
+            ColorOption("#FFC107", R.string.widget_color_amber, Color(0xFFFFC107)),
+            ColorOption("#795548", R.string.widget_color_brown, Color(0xFF795548)),
+            ColorOption("#607D8B", R.string.widget_color_blue_gray, Color(0xFF607D8B)),
+            ColorOption("#3F51B5", R.string.widget_color_indigo, Color(0xFF3F51B5)),
+            ColorOption("#009688", R.string.widget_color_teal, Color(0xFF009688)),
+            ColorOption("#F44336", R.string.widget_color_red, Color(0xFFF44336))
         )
     }
     
     val grayColors = remember {
         listOf(
-            ColorOption("#E0E0E0", "Gris Claro", Color(0xFFE0E0E0)),
-            ColorOption("#BDBDBD", "Gris Medio", Color(0xFFBDBDBD)),
-            ColorOption("#9E9E9E", "Gris", Color(0xFF9E9E9E)),
-            ColorOption("#757575", "Gris Oscuro", Color(0xFF757575)),
-            ColorOption("#F5F5F5", "Casi Blanco", Color(0xFFF5F5F5)),
-            ColorOption("#EEEEEE", "Gris muy claro", Color(0xFFEEEEEE))
+            ColorOption("#E0E0E0", R.string.widget_color_light_gray, Color(0xFFE0E0E0)),
+            ColorOption("#BDBDBD", R.string.widget_color_medium_gray, Color(0xFFBDBDBD)),
+            ColorOption("#9E9E9E", R.string.widget_color_gray, Color(0xFF9E9E9E)),
+            ColorOption("#757575", R.string.widget_color_dark_gray, Color(0xFF757575)),
+            ColorOption("#F5F5F5", R.string.widget_color_almost_white, Color(0xFFF5F5F5)),
+            ColorOption("#EEEEEE", R.string.widget_color_very_light_gray, Color(0xFFEEEEEE))
         )
     }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Configuración de Widgets") },
+                title = { Text(stringResource(R.string.widget_settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.widget_settings_back_cd)
                         )
                     }
                 }
@@ -117,13 +120,13 @@ fun WidgetSetupScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Widgets Disponibles",
+                                text = stringResource(R.string.widget_settings_available_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Text(
-                                text = "Mantén presionada la pantalla de inicio para agregar widgets",
+                                text = stringResource(R.string.widget_settings_available_subtitle),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                             )
@@ -135,7 +138,7 @@ fun WidgetSetupScreen(
             // Widgets disponibles
             item {
                 Text(
-                    text = "Widgets Disponibles",
+                    text = stringResource(R.string.widget_settings_available_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -144,24 +147,24 @@ fun WidgetSetupScreen(
             
             item {
                 WidgetPreviewCard(
-                    title = "Mi Vida en Semanas",
-                    description = "Visualización de tu vida dividida en semanas",
+                    title = stringResource(R.string.widget_settings_widget_life_weeks_title),
+                    description = stringResource(R.string.widget_settings_widget_life_weeks_desc),
                     icon = Icons.Default.CalendarMonth
                 )
             }
             
             item {
                 WidgetPreviewCard(
-                    title = "Cita Motivacional",
-                    description = "Una frase inspiradora que cambia cada día",
+                    title = stringResource(R.string.widget_settings_widget_quote_title),
+                    description = stringResource(R.string.widget_settings_widget_quote_desc),
                     icon = Icons.Default.FormatQuote
                 )
             }
             
             item {
                 WidgetPreviewCard(
-                    title = "Progreso del Año",
-                    description = "Porcentaje del año transcurrido",
+                    title = stringResource(R.string.widget_settings_widget_year_progress_title),
+                    description = stringResource(R.string.widget_settings_widget_year_progress_desc),
                     icon = Icons.Default.TrendingUp
                 )
             }
@@ -170,13 +173,13 @@ fun WidgetSetupScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Color de Semanas Vividas",
+                    text = stringResource(R.string.widget_settings_lived_color_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Color para las semanas que ya has vivido",
+                    text = stringResource(R.string.widget_settings_lived_color_subtitle),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -210,13 +213,13 @@ fun WidgetSetupScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Color de Semanas Futuras",
+                    text = stringResource(R.string.widget_settings_future_color_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Color para las semanas que aún no has vivido",
+                    text = stringResource(R.string.widget_settings_future_color_subtitle),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -265,7 +268,7 @@ fun WidgetSetupScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Actualizar Todos los Widgets")
+                    Text(stringResource(R.string.widget_settings_refresh_button))
                 }
             }
             
@@ -327,7 +330,7 @@ private fun WidgetPreviewCard(
 
 data class ColorOption(
     val hex: String,
-    val name: String,
+    @StringRes val nameRes: Int,
     val color: Color
 )
 
@@ -363,7 +366,7 @@ private fun ColorCircle(
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.Check,
-                contentDescription = "Seleccionado",
+                contentDescription = stringResource(R.string.widget_settings_selected_cd),
                 tint = if (colorOption.color.luminance() > 0.5f) Color.Black else Color.White,
                 modifier = Modifier.size(24.dp)
             )

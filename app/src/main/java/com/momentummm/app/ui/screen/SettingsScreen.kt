@@ -107,7 +107,8 @@ fun PreferenceSubCategory(
             )
             Icon(
                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = if (isExpanded) "Colapsar" else "Expandir",
+                contentDescription = if (isExpanded) stringResource(R.string.settings_collapse)
+                else stringResource(R.string.settings_expand),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -300,28 +301,28 @@ fun SettingsScreen(
         // 1. CUENTA
         // ====================================================================
         item {
-            PreferenceCategory(title = "Cuenta") {
+            PreferenceCategory(title = stringResource(R.string.settings_category_account)) {
                 PreferenceItem(
-                    title = "Configuración de cuenta",
-                    subtitle = "Gestionar tu perfil y datos personales",
+                    title = stringResource(R.string.account_settings),
+                    subtitle = stringResource(R.string.settings_account_subtitle),
                     icon = Icons.Default.AccountCircle,
                     onClick = { onNavigateToScreen("account_settings") }
                 )
                 PreferenceItem(
-                    title = "Ayuda",
-                    subtitle = "Preguntas frecuentes y soporte",
+                    title = stringResource(R.string.settings_help_title),
+                    subtitle = stringResource(R.string.settings_help_subtitle),
                     icon = Icons.Default.HelpOutline,
                     onClick = { onNavigateToScreen("help") }
                 )
                 PreferenceItem(
-                    title = "Cerrar sesión",
-                    subtitle = "Salir de tu cuenta actual",
+                    title = stringResource(R.string.logout),
+                    subtitle = stringResource(R.string.settings_logout_subtitle),
                     icon = Icons.Default.Logout,
                     onClick = { showLogoutDialog = true }
                 )
                 PreferenceItem(
-                    title = "Tutorial de la app",
-                    subtitle = "Aprende a usar todas las funciones de Momentum",
+                    title = stringResource(R.string.tutorial_title),
+                    subtitle = stringResource(R.string.settings_tutorial_subtitle),
                     icon = Icons.Default.School,
                     onClick = { onNavigateToScreen("tutorial") },
                     showDivider = false
@@ -333,18 +334,22 @@ fun SettingsScreen(
         // 2. FUNCIONES
         // ====================================================================
         item {
-            PreferenceCategory(title = "Funciones") {
+            PreferenceCategory(title = stringResource(R.string.settings_category_features)) {
                 // ------------------------------------------------------------
                 // 2.1 Seguridad y Privacidad
                 // ------------------------------------------------------------
                 PreferenceSubCategory(
-                    title = "Seguridad y Privacidad",
+                    title = stringResource(R.string.settings_security_privacy_title),
                     icon = Icons.Default.Security,
                     initiallyExpanded = true
                 ) {
                     PreferenceSwitchItem(
-                        title = "Protección activa",
-                        subtitle = if (isProtectionActive) "La app está protegida" else "Activa para proteger tu configuración",
+                        title = stringResource(R.string.settings_protection_active_title),
+                        subtitle = if (isProtectionActive) {
+                            stringResource(R.string.settings_protection_active_on_subtitle)
+                        } else {
+                            stringResource(R.string.settings_protection_active_off_subtitle)
+                        },
                         icon = Icons.Default.Shield,
                         checked = isProtectionActive,
                         onCheckedChange = { enabled ->
@@ -355,8 +360,12 @@ fun SettingsScreen(
                         enabled = isPasswordSet // Solo se puede activar si hay contraseña configurada
                     )
                     PreferenceItem(
-                        title = "Protección por Contraseña",
-                        subtitle = if (isPasswordSet) "Contraseña configurada" else "Configura una contraseña numérica",
+                        title = stringResource(R.string.settings_password_protection_title),
+                        subtitle = if (isPasswordSet) {
+                            stringResource(R.string.settings_password_configured)
+                        } else {
+                            stringResource(R.string.settings_password_configure)
+                        },
                         icon = Icons.Default.Lock,
                         onClick = {
                             if (isPasswordSet) {
@@ -370,7 +379,7 @@ fun SettingsScreen(
                             if (isPasswordSet) {
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Configurado",
+                                    contentDescription = stringResource(R.string.settings_configured),
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -388,33 +397,39 @@ fun SettingsScreen(
                 // 2.2 Bienestar Digital
                 // ------------------------------------------------------------
                 PreferenceSubCategory(
-                    title = "Bienestar Digital",
+                    title = stringResource(R.string.settings_digital_wellbeing_title),
                     icon = Icons.Default.Psychology,
                     initiallyExpanded = true
                 ) {
                     PreferenceItem(
-                        title = "Límites de aplicaciones",
-                        subtitle = "Configura tiempo máximo de uso por app",
+                        title = stringResource(R.string.app_limits),
+                        subtitle = stringResource(R.string.settings_app_limits_subtitle),
                         icon = Icons.Default.Timer,
                         onClick = { onNavigateToScreen("app_limits") }
                     )
                     PreferenceItem(
-                        title = "Bloqueo dentro de Apps",
-                        subtitle = "Bloquea Reels, Shorts y contenido específico",
+                        title = stringResource(R.string.settings_in_app_blocking_title),
+                        subtitle = stringResource(R.string.settings_in_app_blocking_subtitle),
                         icon = Icons.Default.VideoLibrary,
                         onClick = { onNavigateToScreen("in_app_blocking") }
                     )
                     PreferenceItem(
-                        title = "Bloqueo de sitios web",
-                        subtitle = "Bloquear sitios web distractores",
+                        title = stringResource(R.string.settings_website_blocks_title),
+                        subtitle = stringResource(R.string.settings_website_blocks_subtitle),
                         icon = Icons.Default.Web,
                         onClick = { onNavigateToScreen("website_blocks") }
                     )
                     PreferenceItem(
-                        title = "Gestionar aplicaciones",
-                        subtitle = "Apps permitidas en Modo Mínimo",
+                        title = stringResource(R.string.manage_apps),
+                        subtitle = stringResource(R.string.settings_app_whitelist_subtitle),
                         icon = Icons.Default.PhoneAndroid,
-                        onClick = { onNavigateToScreen("app_whitelist") },
+                        onClick = { onNavigateToScreen("app_whitelist") }
+                    )
+                    PreferenceItem(
+                        title = "Bloqueo Inteligente",
+                        subtitle = "Timer flotante, modo nuclear, sueño, ayuno digital",
+                        icon = Icons.Default.AutoAwesome,
+                        onClick = { onNavigateToScreen("smart_blocking") },
                         showDivider = false
                     )
                 }
@@ -428,43 +443,49 @@ fun SettingsScreen(
                 // 2.3 Personalización y Datos
                 // ------------------------------------------------------------
                 PreferenceSubCategory(
-                    title = "Personalización y Datos",
+                    title = stringResource(R.string.settings_personalization_data_title),
                     icon = Icons.Default.Palette,
                     initiallyExpanded = true
                 ) {
                     PreferenceItem(
-                        title = "Gamificación",
-                        subtitle = "Niveles, XP, rachas y TimeCoins",
+                        title = stringResource(R.string.settings_language_title),
+                        subtitle = stringResource(R.string.settings_language_subtitle),
+                        icon = Icons.Default.Translate,
+                        onClick = { onNavigateToScreen("language_settings") }
+                    )
+                    PreferenceItem(
+                        title = stringResource(R.string.settings_gamification_title),
+                        subtitle = stringResource(R.string.settings_gamification_subtitle),
                         icon = Icons.Default.EmojiEvents,
                         onClick = { onNavigateToScreen("gamification_settings") }
                     )
                     PreferenceItem(
-                        title = "Notificaciones",
-                        subtitle = "Configurar alertas y recordatorios",
+                        title = stringResource(R.string.notifications),
+                        subtitle = stringResource(R.string.settings_notifications_subtitle),
                         icon = Icons.Default.Notifications,
                         onClick = { onNavigateToScreen("notification_settings") }
                     )
                     PreferenceItem(
-                        title = "Mi vida en semanas",
-                        subtitle = "Visualiza tu vida y reflexiona sobre el tiempo",
+                        title = stringResource(R.string.my_life_in_weeks),
+                        subtitle = stringResource(R.string.settings_life_in_weeks_subtitle),
                         icon = Icons.Default.CalendarMonth,
                         onClick = { onNavigateToScreen("mi_vida_en_semanas") }
                     )
                     PreferenceItem(
-                        title = "Personalización",
-                        subtitle = "Temas y apariencia de la aplicación",
+                        title = stringResource(R.string.settings_theme_title),
+                        subtitle = stringResource(R.string.settings_theme_subtitle),
                         icon = Icons.Default.ColorLens,
                         onClick = { onNavigateToScreen("theme_settings") }
                     )
                     PreferenceItem(
-                        title = "Configuración de widgets",
-                        subtitle = "Personalizar widgets de pantalla de inicio",
+                        title = stringResource(R.string.widget_settings),
+                        subtitle = stringResource(R.string.settings_widgets_subtitle),
                         icon = Icons.Default.Widgets,
                         onClick = { onNavigateToScreen("widget_setup") }
                     )
                     PreferenceItem(
-                        title = "Sincronización",
-                        subtitle = "Ver estado y sincronizar datos con la nube",
+                        title = stringResource(R.string.settings_sync_title),
+                        subtitle = stringResource(R.string.settings_sync_subtitle),
                         icon = Icons.Default.Sync,
                         onClick = { onNavigateToScreen("sync_settings") },
                         showDivider = false
@@ -477,16 +498,16 @@ fun SettingsScreen(
         // 3. INFORMACIÓN
         // ====================================================================
         item {
-            PreferenceCategory(title = "Información") {
+            PreferenceCategory(title = stringResource(R.string.settings_category_information)) {
                 PreferenceItem(
-                    title = "Acerca de",
-                    subtitle = "Información sobre Momentum",
+                    title = stringResource(R.string.about),
+                    subtitle = stringResource(R.string.settings_about_subtitle),
                     icon = Icons.Default.Info,
                     onClick = { onNavigateToScreen("about") }
                 )
                 PreferenceItem(
-                    title = "Permisos",
-                    subtitle = "Gestionar permisos de la aplicación",
+                    title = stringResource(R.string.settings_permissions_title),
+                    subtitle = stringResource(R.string.settings_permissions_subtitle),
                     icon = Icons.Default.Security,
                     onClick = { onNavigateToScreen("permissions_settings") },
                     showDivider = false
@@ -513,14 +534,14 @@ fun SettingsScreen(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { 
+            title = {
                 Text(
-                    text = "Cerrar sesión",
+                    text = stringResource(R.string.logout),
                     fontWeight = FontWeight.SemiBold
-                ) 
+                )
             },
-            text = { 
-                Text("¿Estás seguro de que quieres cerrar sesión? Tus datos locales se mantendrán sincronizados.") 
+            text = {
+                Text(stringResource(R.string.dialog_logout_message))
             },
             confirmButton = {
                 TextButton(
@@ -536,12 +557,12 @@ fun SettingsScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Cerrar sesión")
+                    Text(stringResource(R.string.logout))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )

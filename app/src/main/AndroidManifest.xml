@@ -39,6 +39,12 @@
     <!-- Media permissions for Android 13+ -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    
+    <!-- Location permissions for Context Blocking -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- Camera permission for minimal phone mode -->
     <uses-permission android:name="android.permission.CAMERA" />
@@ -72,6 +78,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Momentum"
+        android:localeConfig="@xml/locales_config"
         tools:targetApi="31">
 
         <!-- Main Activity -->
@@ -84,6 +91,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Service para persistir el idioma seleccionado por el usuario -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
 
         <!-- Minimal Launcher Activity -->
         <activity
@@ -204,6 +221,28 @@
         <service
             android:name=".ui.overlay.AppBlockOverlayService"
             android:exported="false" />
+
+        <!-- Floating Timer Overlay Service -->
+        <service
+            android:name=".service.FloatingTimerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property 
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="floating_timer_overlay" />
+        </service>
+
+        <!-- Nuclear Mode Timer Service -->
+        <service
+            android:name=".service.NuclearModeService"
+            android:exported="false"
+            android:foregroundServiceType="shortService" />
+
+        <!-- Context Blocking Location Service -->
+        <service
+            android:name=".service.ContextBlockingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <!-- Accessibility Service to appear in system Accessibility settings -->
         <service

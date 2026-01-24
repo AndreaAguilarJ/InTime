@@ -69,10 +69,11 @@ class AppLimitsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 appLimitRepository.getAllLimits().collect { limits ->
-                    val remainingTimes = mutableMapOf<String, Int>()
-                    for (limit in limits) {
-                        val remaining = appLimitRepository.getRemainingTime(limit.packageName)
-                        remainingTimes[limit.packageName] = remaining
+                    // Calcular remaining times en paralelo para mejor performance
+                    val remainingTimes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                        limits.associate { limit ->
+                            limit.packageName to appLimitRepository.getRemainingTime(limit.packageName)
+                        }
                     }
                     _uiState.value = _uiState.value.copy(
                         appLimits = limits,
@@ -88,8 +89,8 @@ class AppLimitsViewModel @Inject constructor(
             }
         }
 
-        // Cargar apps disponibles en paralelo
-        viewModelScope.launch {
+        // Cargar apps disponibles en paralelo con Dispatchers.IO
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
                 val availableApps = appLimitRepository.getInstallableApps()
                 val filteredAvailable = availableApps.filter { app ->

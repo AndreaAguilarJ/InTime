@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.momentummm.app.R
 import com.momentummm.app.data.repository.AppUsageInfo
 import com.momentummm.app.data.repository.UsageStatsRepository
 import com.momentummm.app.util.LifeWeeksCalculator
@@ -42,15 +43,15 @@ data class InsightData(
     val iconName: String
 )
 
-enum class AppCategory(val displayName: String) {
-    SOCIAL("Social"),
-    ENTERTAINMENT("Entretenimiento"),
-    PRODUCTIVITY("Productividad"),
-    GAMES("Juegos"),
-    COMMUNICATION("Comunicación"),
-    NEWS("Noticias"),
-    HEALTH("Salud"),
-    OTHER("Otros")
+enum class AppCategory(@androidx.annotation.StringRes val displayNameRes: Int) {
+    SOCIAL(R.string.analytics_category_social),
+    ENTERTAINMENT(R.string.analytics_category_entertainment),
+    PRODUCTIVITY(R.string.analytics_category_productivity),
+    GAMES(R.string.analytics_category_games),
+    COMMUNICATION(R.string.analytics_category_communication),
+    NEWS(R.string.analytics_category_news),
+    HEALTH(R.string.analytics_category_health),
+    OTHER(R.string.analytics_category_other)
 }
 
 data class AdvancedAnalyticsUiState(
@@ -67,12 +68,20 @@ data class AdvancedAnalyticsUiState(
     val categoryBreakdown: Map<AppCategory, Long> = emptyMap()
 )
 
-enum class TimePeriod(val displayName: String, val days: Int) {
-    TODAY("Hoy", 1),
-    LAST_WEEK("Última semana", 7),
-    LAST_MONTH("Último mes", 30),
-    LAST_YEAR("Último año", 365)
+enum class TimePeriod(@androidx.annotation.StringRes val displayNameRes: Int, val days: Int) {
+    TODAY(R.string.analytics_period_today, 1),
+    LAST_WEEK(R.string.analytics_period_last_week, 7),
+    LAST_MONTH(R.string.analytics_period_last_month, 30),
+    LAST_YEAR(R.string.analytics_period_last_year, 365)
 }
+
+// Data class para datos procesados de analytics
+private data class ProcessedAnalyticsData(
+    val formattedTotal: String,
+    val formattedAverage: String,
+    val mostUsedApp: String,
+    val rawTotalTime: Long
+)
 
 class AdvancedAnalyticsViewModel @Inject constructor(
     private val usageStatsRepository: UsageStatsRepository,
@@ -108,26 +117,39 @@ class AdvancedAnalyticsViewModel @Inject constructor(
             try {
                 val period = _uiState.value.selectedPeriod
 
-                // Obtener datos según el período seleccionado
-                val usageStats = when (period) {
-                    TimePeriod.TODAY -> usageStatsRepository.getTodayUsageStats()
-                    TimePeriod.LAST_WEEK -> usageStatsRepository.getWeeklyUsageStats()
-                    TimePeriod.LAST_MONTH -> getUsageStatsForDays(30)
-                    TimePeriod.LAST_YEAR -> getUsageStatsForDays(365)
+                // Obtener datos según el período seleccionado - en background thread
+                val (usageStats, todayUsageStats) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    val stats = when (period) {
+                        TimePeriod.TODAY -> usageStatsRepository.getTodayUsageStats()
+                        TimePeriod.LAST_WEEK -> usageStatsRepository.getWeeklyUsageStats()
+                        TimePeriod.LAST_MONTH -> getUsageStatsForDays(30)
+                        TimePeriod.LAST_YEAR -> getUsageStatsForDays(365)
+                    }
+                    val today = usageStatsRepository.getTodayUsageStats()
+                    stats to today
                 }
 
-                val todayUsageStats = usageStatsRepository.getTodayUsageStats()
+                // Procesar datos en Default dispatcher para no bloquear Main
+                val processedData = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    // Calcular tiempo total del período
+                    val totalPeriodTime = usageStats.sumOf { it.totalTimeInMillis }
+                    val totalPeriodTimeFormatted = formatTime(totalPeriodTime)
 
-                // Calcular tiempo total del período
-                val totalPeriodTime = usageStats.sumOf { it.totalTimeInMillis }
-                val totalPeriodTimeFormatted = formatTime(totalPeriodTime)
+                    // Calcular promedio diario
+                    val averageDailyTime = totalPeriodTime / period.days
+                    val averageDailyFormatted = formatTime(averageDailyTime)
 
-                // Calcular promedio diario
-                val averageDailyTime = totalPeriodTime / period.days
-                val averageDailyFormatted = formatTime(averageDailyTime)
+                    // Obtener app más usada
+                    val mostUsedAppName = usageStats.firstOrNull()?.appName ?: "-"
 
-                // Obtener app más usada
-                val mostUsedAppName = usageStats.firstOrNull()?.appName ?: "-"
+                    // Retornar todos los datos necesarios
+                    ProcessedAnalyticsData(totalPeriodTimeFormatted, averageDailyFormatted, mostUsedAppName, totalPeriodTime)
+                }
+
+                val totalPeriodTimeFormatted = processedData.formattedTotal
+                val averageDailyFormatted = processedData.formattedAverage
+                val mostUsedAppName = processedData.mostUsedApp
+                val totalPeriodTime = processedData.rawTotalTime
 
                 // Convertir a AppUsageData con categorías
                 val topApps = usageStats.take(12).map { appInfo ->
@@ -141,8 +163,10 @@ class AdvancedAnalyticsViewModel @Inject constructor(
                     )
                 }
 
-                // Generar datos del período
-                val periodData = generatePeriodData(period)
+                // Generar datos del período - en background thread para evitar ANR
+                val periodData = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    generatePeriodData(period)
+                }
 
                 // Generar insights
                 val insights = generateInsights(usageStats, todayUsageStats, totalPeriodTime)
@@ -239,7 +263,7 @@ class AdvancedAnalyticsViewModel @Inject constructor(
                 val screenTimeHours = totalTime / (1000f * 60f * 60f)
 
                 val label = when (period) {
-                    TimePeriod.TODAY -> "Hoy"
+                    TimePeriod.TODAY -> context.getString(R.string.analytics_today_label)
                     TimePeriod.LAST_MONTH -> dateFormat.format(Date(dayStart))
                     else -> dayFormat.format(Date(dayStart)).replaceFirstChar {
                         if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
@@ -281,8 +305,8 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         val avgDaily = totalWeeklyTime / 7
         insights.add(
             InsightData(
-                title = "Promedio diario",
-                description = "Tu tiempo de pantalla esta semana",
+                title = context.getString(R.string.analytics_insight_avg_daily_title),
+                description = context.getString(R.string.analytics_insight_avg_daily_desc),
                 value = formatTime(avgDaily),
                 change = -12.5f, // Esto debería calcularse comparando con la semana anterior
                 isPositive = true,
@@ -295,8 +319,11 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         if (topApp != null) {
             insights.add(
                 InsightData(
-                    title = "App más usada",
-                    description = "${topApp.appName} lidera tu tiempo de uso",
+                    title = context.getString(R.string.analytics_insight_top_app_title),
+                    description = context.getString(
+                        R.string.analytics_insight_top_app_desc,
+                        topApp.appName
+                    ),
                     value = formatTime(topApp.totalTimeInMillis),
                     change = 18.2f,
                     isPositive = false,
@@ -309,9 +336,9 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         val totalSessions = todayStats.sumOf { estimateSessions(it.totalTimeInMillis) }
         insights.add(
             InsightData(
-                title = "Desbloqueos",
-                description = "Veces que activaste tu teléfono hoy",
-                value = "$totalSessions",
+                title = context.getString(R.string.analytics_insight_pickups_title),
+                description = context.getString(R.string.analytics_insight_pickups_desc),
+                value = totalSessions.toString(),
                 change = -8.3f,
                 isPositive = true,
                 iconName = "TouchApp"
@@ -322,8 +349,8 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         val calendar = Calendar.getInstance()
         insights.add(
             InsightData(
-                title = "Hora pico",
-                description = "Tu momento de mayor actividad",
+                title = context.getString(R.string.analytics_insight_peak_time_title),
+                description = context.getString(R.string.analytics_insight_peak_time_desc),
                 value = String.format(Locale.getDefault(), "%02d:%02d", calendar.get(Calendar.HOUR_OF_DAY), 30),
                 change = 0f,
                 isPositive = true,
@@ -338,8 +365,8 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         val productivityTime = productivityApps.sumOf { it.totalTimeInMillis }
         insights.add(
             InsightData(
-                title = "Productividad",
-                description = "Tiempo en apps productivas",
+                title = context.getString(R.string.analytics_insight_productivity_title),
+                description = context.getString(R.string.analytics_insight_productivity_desc),
                 value = formatTime(productivityTime),
                 change = 25.5f,
                 isPositive = true,
@@ -354,8 +381,8 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         val socialTime = socialApps.sumOf { it.totalTimeInMillis }
         insights.add(
             InsightData(
-                title = "Social Media",
-                description = "Tiempo en redes sociales",
+                title = context.getString(R.string.analytics_insight_social_title),
+                description = context.getString(R.string.analytics_insight_social_desc),
                 value = formatTime(socialTime),
                 change = -5.8f,
                 isPositive = true,
@@ -427,11 +454,32 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         val diff = now - timestamp
 
         return when {
-            diff < 60000 -> "hace 1 min"
-            diff < 3600000 -> "hace ${diff / 60000} min"
-            diff < 86400000 -> "hace ${diff / 3600000} hora${if (diff / 3600000 > 1) "s" else ""}"
-            diff < 604800000 -> "hace ${diff / 86400000} día${if (diff / 86400000 > 1) "s" else ""}"
-            else -> "hace más de 1 semana"
+            diff < 60000 -> context.getString(R.string.analytics_last_used_one_min)
+            diff < 3600000 -> {
+                val minutes = (diff / 60000).toInt()
+                context.resources.getQuantityString(
+                    R.plurals.analytics_last_used_minutes,
+                    minutes,
+                    minutes
+                )
+            }
+            diff < 86400000 -> {
+                val hours = (diff / 3600000).toInt()
+                context.resources.getQuantityString(
+                    R.plurals.analytics_last_used_hours,
+                    hours,
+                    hours
+                )
+            }
+            diff < 604800000 -> {
+                val days = (diff / 86400000).toInt()
+                context.resources.getQuantityString(
+                    R.plurals.analytics_last_used_days,
+                    days,
+                    days
+                )
+            }
+            else -> context.getString(R.string.analytics_last_used_more_than_week)
         }
     }
 

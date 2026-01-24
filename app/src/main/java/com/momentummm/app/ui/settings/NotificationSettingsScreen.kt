@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import android.content.Context
+import com.momentummm.app.R
 
 private val Context.notificationPrefs: DataStore<Preferences> by preferencesDataStore(name = "notification_preferences")
 
@@ -62,10 +64,13 @@ fun NotificationSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notificaciones") },
+                title = { Text(stringResource(R.string.notifications_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, "Volver")
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back)
+                        )
                     }
                 }
             )
@@ -81,13 +86,13 @@ fun NotificationSettingsScreen(
         ) {
             // Encabezado
             Text(
-                text = "Personaliza tus notificaciones",
+                text = stringResource(R.string.notifications_header_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = "Elige qué notificaciones deseas recibir para mejorar tu bienestar digital",
+                text = stringResource(R.string.notifications_header_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -97,8 +102,8 @@ fun NotificationSettingsScreen(
             // Límites de aplicaciones
             NotificationSettingItem(
                 icon = Icons.Filled.Timer,
-                title = "Límites de Aplicaciones",
-                description = "Te avisamos cuando te acercas o superas los límites de uso",
+                title = stringResource(R.string.notification_app_limits_title),
+                description = stringResource(R.string.notification_app_limits_desc),
                 checked = appLimitsEnabled,
                 onCheckedChange = { checked ->
                     scope.launch {
@@ -114,8 +119,8 @@ fun NotificationSettingsScreen(
             // Motivación diaria
             NotificationSettingItem(
                 icon = Icons.Filled.EmojiEmotions,
-                title = "Motivación Diaria",
-                description = "Recibe una frase inspiradora cada mañana",
+                title = stringResource(R.string.notification_daily_motivation_title),
+                description = stringResource(R.string.notification_daily_motivation_desc),
                 checked = dailyMotivationEnabled,
                 onCheckedChange = { checked ->
                     scope.launch {
@@ -131,8 +136,8 @@ fun NotificationSettingsScreen(
             // Resumen semanal
             NotificationSettingItem(
                 icon = Icons.Filled.BarChart,
-                title = "Resumen Semanal",
-                description = "Resumen de tu uso del dispositivo cada domingo",
+                title = stringResource(R.string.notification_weekly_summary_title),
+                description = stringResource(R.string.notification_weekly_summary_desc),
                 checked = weeklySummaryEnabled,
                 onCheckedChange = { checked ->
                     scope.launch {
@@ -148,8 +153,8 @@ fun NotificationSettingsScreen(
             // Logros y metas
             NotificationSettingItem(
                 icon = Icons.Filled.EmojiEvents,
-                title = "Logros y Metas",
-                description = "Celebra tus logros y rachas alcanzadas",
+                title = stringResource(R.string.notification_achievements_title),
+                description = stringResource(R.string.notification_achievements_desc),
                 checked = achievementsEnabled,
                 onCheckedChange = { checked ->
                     scope.launch {
@@ -165,8 +170,8 @@ fun NotificationSettingsScreen(
             // Recordatorios de tiempo de pantalla
             NotificationSettingItem(
                 icon = Icons.Filled.Alarm,
-                title = "Recordatorios de Bienestar",
-                description = "Te recordamos tomar descansos cuando usas mucho el dispositivo",
+                title = stringResource(R.string.notification_screen_time_reminders_title),
+                description = stringResource(R.string.notification_screen_time_reminders_desc),
                 checked = screenTimeRemindersEnabled,
                 onCheckedChange = { checked ->
                     scope.launch {
@@ -190,7 +195,7 @@ fun NotificationSettingsScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "¿Quieres probar?",
+                        text = stringResource(R.string.notification_test_title),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -201,13 +206,13 @@ fun NotificationSettingsScreen(
                         onClick = {
                             // Enviar notificación de prueba
                             val app = context.applicationContext as com.momentummm.app.MomentumApplication
-                            app.smartNotificationManager.sendDailyMotivation()
+                            app.smartNotificationManager.sendTestNotification()
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Filled.Notifications, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Enviar notificación de prueba")
+                        Text(stringResource(R.string.notification_send_test))
                     }
                 }
             }
@@ -232,7 +237,7 @@ fun NotificationSettingsScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Las notificaciones inteligentes están diseñadas para ayudarte a mantener un balance saludable con la tecnología, sin ser intrusivas.",
+                        text = stringResource(R.string.notification_info_text),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

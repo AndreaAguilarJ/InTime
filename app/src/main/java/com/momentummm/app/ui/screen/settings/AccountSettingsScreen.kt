@@ -57,6 +57,13 @@ fun AccountSettingsScreen(
     // Date picker dialog
     val calendar = Calendar.getInstance()
 
+    // Strings para usar en coroutines
+    val birthdateUpdatedMsg = stringResource(R.string.account_settings_birthdate_updated)
+    val loginRequiredMsg = stringResource(R.string.account_settings_login_required_birthdate)
+    val updateErrorMsgFormat = stringResource(R.string.account_settings_update_error)
+    val logoutErrorMsgFormat = stringResource(R.string.account_settings_logout_error)
+    val deleteAccountErrorMsgFormat = stringResource(R.string.account_settings_delete_account_error)
+
     if (showBirthDatePicker) {
         val datePickerDialog = DatePickerDialog(
             context,
@@ -99,12 +106,12 @@ fun AccountSettingsScreen(
                                 // Widget update failed, but data is saved
                             }
 
-                            successMessage = "Fecha de nacimiento actualizada correctamente"
+                            successMessage = birthdateUpdatedMsg
                         } else {
-                            errorMessage = "Debes iniciar sesión para actualizar tu fecha de nacimiento"
+                            errorMessage = loginRequiredMsg
                         }
                     } catch (e: Exception) {
-                        errorMessage = "Error al actualizar: ${e.message}"
+                        errorMessage = "$updateErrorMsgFormat ${e.message ?: ""}"
                     } finally {
                         isLoading = false
                     }
@@ -133,7 +140,10 @@ fun AccountSettingsScreen(
                 title = { Text(stringResource(R.string.account_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.account_settings_back_cd)
+                        )
                     }
                 }
             )
@@ -145,7 +155,7 @@ fun AccountSettingsScreen(
                     modifier = Modifier.padding(16.dp),
                     action = {
                         TextButton(onClick = { successMessage = null }) {
-                            Text("OK")
+                            Text(stringResource(R.string.account_settings_ok_button))
                         }
                     }
                 ) {
@@ -159,7 +169,7 @@ fun AccountSettingsScreen(
                     containerColor = MaterialTheme.colorScheme.error,
                     action = {
                         TextButton(onClick = { errorMessage = null }) {
-                            Text("OK")
+                            Text(stringResource(R.string.account_settings_ok_button))
                         }
                     }
                 ) {
@@ -197,7 +207,7 @@ fun AccountSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Información del perfil",
+                            text = stringResource(R.string.account_settings_profile_info_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -217,12 +227,14 @@ fun AccountSettingsScreen(
 
                             Column {
                                 Text(
-                                    text = currentUser?.name ?: "Usuario",
+                                    text = currentUser?.name
+                                        ?: stringResource(R.string.account_settings_default_user_name),
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = currentUser?.email ?: "email@ejemplo.com",
+                                    text = currentUser?.email
+                                        ?: stringResource(R.string.account_settings_default_email),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -235,7 +247,7 @@ fun AccountSettingsScreen(
             // Información de la cuenta
             item {
                 Text(
-                    text = "Configuración de cuenta",
+                    text = stringResource(R.string.account_settings_section_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -251,8 +263,12 @@ fun AccountSettingsScreen(
                     }
                 ) {
                     ListItem(
-                        headlineContent = { Text("Cambiar contraseña") },
-                        supportingContent = { Text("Actualiza tu contraseña de acceso") },
+                        headlineContent = {
+                            Text(stringResource(R.string.account_settings_change_password_title))
+                        },
+                        supportingContent = {
+                            Text(stringResource(R.string.account_settings_change_password_subtitle))
+                        },
                         leadingContent = {
                             Icon(Icons.Default.Lock, contentDescription = null)
                         },
@@ -273,7 +289,7 @@ fun AccountSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Datos personales",
+                            text = stringResource(R.string.account_settings_personal_data_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -285,7 +301,7 @@ fun AccountSettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Fecha de nacimiento",
+                                    text = stringResource(R.string.account_settings_birthdate_label),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -295,9 +311,9 @@ fun AccountSettingsScreen(
                                             val localDate = LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE)
                                             localDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                                         } catch (e: Exception) {
-                                            "No configurada"
+                                            stringResource(R.string.account_settings_not_configured)
                                         }
-                                    } ?: "No configurada",
+                                    } ?: stringResource(R.string.account_settings_not_configured),
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -315,7 +331,7 @@ fun AccountSettingsScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Editar")
+                                Text(stringResource(R.string.account_settings_edit_button))
                             }
                         }
 
@@ -328,12 +344,16 @@ fun AccountSettingsScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Onboarding completado",
+                                    text = stringResource(R.string.account_settings_onboarding_completed),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = if (userSettings?.isOnboardingCompleted == true) "Sí" else "No",
+                                    text = if (userSettings?.isOnboardingCompleted == true) {
+                                        stringResource(R.string.account_settings_yes)
+                                    } else {
+                                        stringResource(R.string.account_settings_no)
+                                    },
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -347,7 +367,7 @@ fun AccountSettingsScreen(
                                         }
                                     }
                                 ) {
-                                    Text("Completar")
+                                    Text(stringResource(R.string.account_settings_complete_button))
                                 }
                             }
                         }
@@ -365,7 +385,7 @@ fun AccountSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Preferencias de visualización",
+                            text = stringResource(R.string.account_settings_display_preferences_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -377,12 +397,12 @@ fun AccountSettingsScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Colores del widget",
+                                    text = stringResource(R.string.account_settings_widget_colors_title),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "Personaliza los colores de tu visualización",
+                                    text = stringResource(R.string.account_settings_widget_colors_subtitle),
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -392,7 +412,7 @@ fun AccountSettingsScreen(
                                     // TODO: Abrir configuración de colores
                                 }
                             ) {
-                                Text("Personalizar")
+                                Text(stringResource(R.string.account_settings_customize_button))
                             }
                         }
                     }
@@ -402,7 +422,7 @@ fun AccountSettingsScreen(
             // Acciones de cuenta
             item {
                 Text(
-                    text = "Acciones de cuenta",
+                    text = stringResource(R.string.account_settings_actions_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.error
@@ -422,7 +442,9 @@ fun AccountSettingsScreen(
                                 color = MaterialTheme.colorScheme.error
                             )
                         },
-                        supportingContent = { Text("Cerrar sesión en este dispositivo") },
+                        supportingContent = {
+                            Text(stringResource(R.string.account_settings_logout_subtitle))
+                        },
                         leadingContent = {
                             Icon(
                                 Icons.Default.Logout,
@@ -443,11 +465,13 @@ fun AccountSettingsScreen(
                     ListItem(
                         headlineContent = {
                             Text(
-                                text = "Eliminar cuenta",
+                                text = stringResource(R.string.account_settings_delete_account_title),
                                 color = MaterialTheme.colorScheme.error
                             )
                         },
-                        supportingContent = { Text("Esta acción no se puede deshacer") },
+                        supportingContent = {
+                            Text(stringResource(R.string.account_settings_delete_account_subtitle))
+                        },
                         leadingContent = {
                             Icon(
                                 Icons.Default.DeleteForever,
@@ -465,8 +489,8 @@ fun AccountSettingsScreen(
     if (showSignOutDialog) {
         AlertDialog(
             onDismissRequest = { showSignOutDialog = false },
-            title = { Text("Cerrar sesión") },
-            text = { Text("¿Estás seguro de que quieres cerrar sesión?") },
+            title = { Text(stringResource(R.string.account_settings_logout_title)) },
+            text = { Text(stringResource(R.string.account_settings_logout_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -477,7 +501,7 @@ fun AccountSettingsScreen(
                                 showSignOutDialog = false
                                 onBackClick() // Esto debería llevar de vuelta al flujo de autenticación
                             } catch (e: Exception) {
-                                errorMessage = "Error al cerrar sesión: ${e.message}"
+                                errorMessage = "$logoutErrorMsgFormat ${e.message ?: ""}"
                             } finally {
                                 isLoading = false
                             }
@@ -488,7 +512,7 @@ fun AccountSettingsScreen(
                     if (isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp))
                     } else {
-                        Text("Cerrar sesión")
+                        Text(stringResource(R.string.account_settings_logout_title))
                     }
                 }
             },
@@ -496,7 +520,7 @@ fun AccountSettingsScreen(
                 TextButton(
                     onClick = { showSignOutDialog = false }
                 ) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.account_settings_cancel_button))
                 }
             }
         )
@@ -506,9 +530,9 @@ fun AccountSettingsScreen(
     if (showDeleteAccountDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteAccountDialog = false },
-            title = { Text("Eliminar cuenta") },
+            title = { Text(stringResource(R.string.account_settings_delete_account_title)) },
             text = {
-                Text("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos.")
+                Text(stringResource(R.string.account_settings_delete_account_message))
             },
             confirmButton = {
                 TextButton(
@@ -521,7 +545,7 @@ fun AccountSettingsScreen(
                                 showDeleteAccountDialog = false
                                 onBackClick()
                             } catch (e: Exception) {
-                                errorMessage = "Error al eliminar cuenta: ${e.message}"
+                                errorMessage = "$deleteAccountErrorMsgFormat ${e.message ?: ""}"
                             } finally {
                                 isLoading = false
                             }
@@ -532,7 +556,10 @@ fun AccountSettingsScreen(
                     if (isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp))
                     } else {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                        Text(
+                            stringResource(R.string.account_settings_delete_button),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             },
@@ -540,7 +567,7 @@ fun AccountSettingsScreen(
                 TextButton(
                     onClick = { showDeleteAccountDialog = false }
                 ) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.account_settings_cancel_button))
                 }
             }
         )

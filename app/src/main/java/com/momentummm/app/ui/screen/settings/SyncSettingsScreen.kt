@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 import com.momentummm.app.data.manager.AutoSyncManager
 import kotlinx.coroutines.launch
 
@@ -27,10 +29,13 @@ fun SyncSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sincronización") },
+                title = { Text(stringResource(R.string.sync_settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.sync_settings_back_cd)
+                        )
                     }
                 }
             )
@@ -57,7 +62,7 @@ fun SyncSettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Estado de Sincronización",
+                            text = stringResource(R.string.sync_settings_status_title),
                             style = MaterialTheme.typography.titleMedium
                         )
 
@@ -65,7 +70,7 @@ fun SyncSettingsScreen(
                             AutoSyncManager.SyncStatus.Idle -> {
                                 Icon(
                                     Icons.Default.CloudOff,
-                                    contentDescription = "Inactivo",
+                                    contentDescription = stringResource(R.string.sync_settings_status_idle_cd),
                                     tint = MaterialTheme.colorScheme.outline
                                 )
                             }
@@ -75,14 +80,14 @@ fun SyncSettingsScreen(
                             AutoSyncManager.SyncStatus.Success -> {
                                 Icon(
                                     Icons.Default.CloudDone,
-                                    contentDescription = "Sincronizado",
+                                    contentDescription = stringResource(R.string.sync_settings_status_success_cd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                             AutoSyncManager.SyncStatus.Failed -> {
                                 Icon(
                                     Icons.Default.CloudOff,
-                                    contentDescription = "Error",
+                                    contentDescription = stringResource(R.string.sync_settings_status_failed_cd),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -94,10 +99,10 @@ fun SyncSettingsScreen(
                     // Mensaje de estado
                     Text(
                         text = when (syncStatus) {
-                            AutoSyncManager.SyncStatus.Idle -> "No sincronizado"
-                            AutoSyncManager.SyncStatus.Syncing -> "Sincronizando..."
-                            AutoSyncManager.SyncStatus.Success -> "Sincronización exitosa"
-                            AutoSyncManager.SyncStatus.Failed -> "Error al sincronizar. Tus datos están guardados localmente."
+                            AutoSyncManager.SyncStatus.Idle -> stringResource(R.string.sync_settings_status_idle)
+                            AutoSyncManager.SyncStatus.Syncing -> stringResource(R.string.sync_settings_status_syncing)
+                            AutoSyncManager.SyncStatus.Success -> stringResource(R.string.sync_settings_status_success)
+                            AutoSyncManager.SyncStatus.Failed -> stringResource(R.string.sync_settings_status_failed)
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = when (syncStatus) {
@@ -115,11 +120,11 @@ fun SyncSettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Última sincronización:",
+                            text = stringResource(R.string.sync_settings_last_sync_label),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = lastSyncTime ?: "Nunca",
+                            text = lastSyncTime ?: stringResource(R.string.sync_settings_never),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -151,7 +156,13 @@ fun SyncSettingsScreen(
                         Icon(Icons.Default.Sync, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    Text(if (isSyncing) "Sincronizando..." else "Sincronizar ahora")
+                    Text(
+                        if (isSyncing) {
+                            stringResource(R.string.sync_settings_status_syncing)
+                        } else {
+                            stringResource(R.string.sync_settings_sync_now)
+                        }
+                    )
                 }
             }
 
@@ -176,20 +187,14 @@ fun SyncSettingsScreen(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            text = "¿Qué se sincroniza?",
+                            text = stringResource(R.string.sync_settings_info_title),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
 
                     Text(
-                        text = "• Configuración de colores\n" +
-                                "• Fecha de nacimiento\n" +
-                                "• Metas y desafíos\n" +
-                                "• Límites de aplicaciones\n" +
-                                "• Apps en lista blanca\n" +
-                                "• Frases personalizadas\n" +
-                                "• Preferencias del widget",
+                        text = stringResource(R.string.sync_settings_info_list),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -214,7 +219,7 @@ fun SyncSettingsScreen(
                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Text(
-                        text = "La sincronización se realiza automáticamente cada vez que cierras la aplicación.",
+                        text = stringResource(R.string.sync_settings_auto_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )

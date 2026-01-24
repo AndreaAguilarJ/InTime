@@ -2,6 +2,7 @@ package com.momentummm.app.widget
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -21,18 +22,26 @@ import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.util.LifeWeeksCalculator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 class LifeWeeksWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Load data before providing content
-        val database = AppDatabase.getDatabase(context)
-        val userSettings = withContext(Dispatchers.IO) {
-            database.userDao().getUserSettingsSync()
-        }
+        // Load data before providing content with timeout to prevent ANR
+        val lifeWeeksData = withTimeoutOrNull(2000L) {
+            try {
+                val database = AppDatabase.getDatabase(context)
+                val userSettings = withContext(Dispatchers.IO) {
+                    database.userDao().getUserSettingsSync()
+                }
 
-        val lifeWeeksData = userSettings?.birthDate?.let { birthDate ->
-            LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+                userSettings?.birthDate?.let { birthDate ->
+                    LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+                }
+            } catch (e: Exception) {
+                Log.e("LifeWeeksWidget", "Error loading data", e)
+                null
+            }
         }
 
         provideContent {

@@ -16,10 +16,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.R
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.entity.UserSettings
 import com.momentummm.app.data.manager.GamificationManager
@@ -42,7 +44,7 @@ fun GamificationSettingsScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("Error: Application not initialized")
+            Text(stringResource(R.string.gamification_error_app_not_initialized))
         }
         return
     }
@@ -79,10 +81,13 @@ fun GamificationSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gamificación") },
+                title = { Text(stringResource(R.string.gamification_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back)
+                        )
                     }
                 }
             )
@@ -102,10 +107,10 @@ fun GamificationSettingsScreen(
             
             // Configuración principal
             item {
-                PreferenceCategory(title = "Configuración") {
+                PreferenceCategory(title = stringResource(R.string.gamification_category_settings)) {
                     PreferenceSwitchItem(
-                        title = "Gamificación activa",
-                        subtitle = "Ganar XP, subir de nivel y obtener TimeCoins",
+                        title = stringResource(R.string.gamification_active_title),
+                        subtitle = stringResource(R.string.gamification_active_subtitle),
                         icon = Icons.Default.EmojiEvents,
                         checked = gamificationEnabled,
                         onCheckedChange = { enabled ->
@@ -117,8 +122,8 @@ fun GamificationSettingsScreen(
                     )
                     
                     PreferenceSwitchItem(
-                        title = "Notificaciones de XP",
-                        subtitle = "Mostrar cuando ganes XP y subas de nivel",
+                        title = stringResource(R.string.gamification_xp_notifications_title),
+                        subtitle = stringResource(R.string.gamification_xp_notifications_subtitle),
                         icon = Icons.Default.Notifications,
                         checked = showXpNotifications,
                         enabled = gamificationEnabled,
@@ -131,8 +136,8 @@ fun GamificationSettingsScreen(
                     )
                     
                     PreferenceSwitchItem(
-                        title = "Recordatorios de racha",
-                        subtitle = "Avisar antes de perder tu racha diaria",
+                        title = stringResource(R.string.gamification_streak_reminders_title),
+                        subtitle = stringResource(R.string.gamification_streak_reminders_subtitle),
                         icon = Icons.Default.LocalFireDepartment,
                         checked = showStreakReminders,
                         enabled = gamificationEnabled,
@@ -149,10 +154,10 @@ fun GamificationSettingsScreen(
             
             // Sincronización
             item {
-                PreferenceCategory(title = "Sincronización") {
+                PreferenceCategory(title = stringResource(R.string.gamification_category_sync)) {
                     PreferenceItem(
-                        title = "Sincronizar con nube",
-                        subtitle = "Guardar tu progreso en Appwrite",
+                        title = stringResource(R.string.gamification_sync_title),
+                        subtitle = stringResource(R.string.gamification_sync_subtitle),
                         icon = Icons.Default.CloudSync,
                         onClick = { showSyncDialog = true },
                         trailingContent = {
@@ -166,8 +171,8 @@ fun GamificationSettingsScreen(
                     )
                     
                     PreferenceItem(
-                        title = "Restaurar desde nube",
-                        subtitle = "Recuperar tu progreso guardado",
+                        title = stringResource(R.string.gamification_restore_title),
+                        subtitle = stringResource(R.string.gamification_restore_subtitle),
                         icon = Icons.Default.CloudDownload,
                         onClick = {
                             scope.launch {
@@ -184,10 +189,10 @@ fun GamificationSettingsScreen(
             
             // Acciones
             item {
-                PreferenceCategory(title = "Acciones") {
+                PreferenceCategory(title = stringResource(R.string.gamification_category_actions)) {
                     PreferenceItem(
-                        title = "Reiniciar progreso",
-                        subtitle = "Volver a empezar desde nivel 1",
+                        title = stringResource(R.string.gamification_reset_title),
+                        subtitle = stringResource(R.string.gamification_reset_subtitle),
                         icon = Icons.Default.RestartAlt,
                         onClick = { showResetDialog = true },
                         showDivider = false
@@ -209,15 +214,10 @@ fun GamificationSettingsScreen(
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
             icon = { Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("¿Reiniciar progreso?") },
+            title = { Text(stringResource(R.string.gamification_reset_dialog_title)) },
             text = { 
                 Text(
-                    "Esta acción eliminará todo tu progreso de gamificación:\n\n" +
-                    "• Nivel y XP\n" +
-                    "• TimeCoins\n" +
-                    "• Rachas\n" +
-                    "• Estadísticas\n\n" +
-                    "Esta acción no se puede deshacer."
+                    stringResource(R.string.gamification_reset_dialog_message)
                 ) 
             },
             confirmButton = {
@@ -232,12 +232,12 @@ fun GamificationSettingsScreen(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Reiniciar")
+                    Text(stringResource(R.string.gamification_reset_confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showResetDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -248,9 +248,9 @@ fun GamificationSettingsScreen(
         AlertDialog(
             onDismissRequest = { showSyncDialog = false },
             icon = { Icon(Icons.Default.CloudSync, contentDescription = null) },
-            title = { Text("Sincronizar progreso") },
+            title = { Text(stringResource(R.string.gamification_sync_dialog_title)) },
             text = { 
-                Text("Tu progreso de gamificación se guardará en la nube y podrás recuperarlo en cualquier dispositivo.") 
+                Text(stringResource(R.string.gamification_sync_dialog_message))
             },
             confirmButton = {
                 Button(
@@ -263,12 +263,12 @@ fun GamificationSettingsScreen(
                         }
                     }
                 ) {
-                    Text("Sincronizar ahora")
+                    Text(stringResource(R.string.gamification_sync_confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showSyncDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -335,7 +335,7 @@ private fun GamificationStatsCard(state: GamificationState?) {
                             
                             Column {
                                 Text(
-                                    text = "Nivel ${state.level}",
+                                    text = stringResource(R.string.gamification_level_format, state.level),
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -376,22 +376,22 @@ private fun GamificationStatsCard(state: GamificationState?) {
                         StatItem(
                             emoji = "⚡",
                             value = "${state.totalXp}",
-                            label = "XP Total"
+                            label = stringResource(R.string.gamification_stat_total_xp)
                         )
                         StatItem(
                             emoji = "🔥",
                             value = "${state.currentStreak}",
-                            label = "Racha actual"
+                            label = stringResource(R.string.gamification_stat_current_streak)
                         )
                         StatItem(
                             emoji = "⏱️",
                             value = formatMinutes(state.totalFocusMinutes),
-                            label = "Enfoque"
+                            label = stringResource(R.string.gamification_stat_focus)
                         )
                         StatItem(
                             emoji = "⭐",
                             value = "${state.perfectDays}",
-                            label = "Días perfectos"
+                            label = stringResource(R.string.gamification_stat_perfect_days)
                         )
                     }
                 }
@@ -436,15 +436,31 @@ private fun GamificationInfoCard() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "💡 Cómo funciona",
+                text = stringResource(R.string.gamification_info_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             
-            InfoRow(emoji = "⚡", title = "XP", description = "Gana 5 XP por cada minuto de enfoque. Completa sesiones para bonos extra.")
-            InfoRow(emoji = "🪙", title = "TimeCoins", description = "Gana 1 coin por minuto. Úsalos para desbloqueos de emergencia o futuras recompensas.")
-            InfoRow(emoji = "🔥", title = "Rachas", description = "Mantén tu racha diaria para multiplicadores de XP (hasta x2.0 con 30+ días).")
-            InfoRow(emoji = "⭐", title = "Días perfectos", description = "Completa todas tus metas diarias para ganar 500 XP extra.")
+            InfoRow(
+                emoji = "⚡",
+                title = stringResource(R.string.gamification_info_xp_title),
+                description = stringResource(R.string.gamification_info_xp_desc)
+            )
+            InfoRow(
+                emoji = "🪙",
+                title = stringResource(R.string.gamification_info_timecoins_title),
+                description = stringResource(R.string.gamification_info_timecoins_desc)
+            )
+            InfoRow(
+                emoji = "🔥",
+                title = stringResource(R.string.gamification_info_streaks_title),
+                description = stringResource(R.string.gamification_info_streaks_desc)
+            )
+            InfoRow(
+                emoji = "⭐",
+                title = stringResource(R.string.gamification_info_perfect_days_title),
+                description = stringResource(R.string.gamification_info_perfect_days_desc)
+            )
         }
     }
 }

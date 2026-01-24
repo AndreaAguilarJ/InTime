@@ -26,9 +26,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.momentummm.app.R
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -61,20 +63,20 @@ fun AppTutorialScreen(
     val steps = buildList<TutorialStep> {
         add(
             TutorialStep(
-                title = "Bienvenido al Tutorial",
-                description = "Una guía rápida para configurar y personalizar Momentum según tus preferencias",
+                title = stringResource(R.string.tutorial_step_welcome_title),
+                description = stringResource(R.string.tutorial_step_welcome_desc),
                 icon = Icons.Default.Info,
                 tips = listOf(
-                    "Puedes acceder a este tutorial en cualquier momento desde Configuración",
-                    "Todos los cambios se guardan automáticamente"
+                    stringResource(R.string.tutorial_step_welcome_tip_1),
+                    stringResource(R.string.tutorial_step_welcome_tip_2)
                 )
             )
         )
         if (selectedBirthDate == null) {
             add(
                 TutorialStep(
-                    title = "Tu fecha de nacimiento",
-                    description = "La usaremos para calcular semanas vividas y restantes en tu visualización de vida",
+                    title = stringResource(R.string.tutorial_step_birthdate_title),
+                    description = stringResource(R.string.tutorial_step_birthdate_desc),
                     icon = Icons.Default.CalendarMonth,
                     content = {
                         BirthDateStepContent(
@@ -88,16 +90,16 @@ fun AppTutorialScreen(
                     },
                     requiresConfirmation = true,
                     tips = listOf(
-                        "Esta información se usa para calcular tu progreso de vida",
-                        "Se actualiza automáticamente el widget y todas las visualizaciones"
+                        stringResource(R.string.tutorial_step_birthdate_tip_1),
+                        stringResource(R.string.tutorial_step_birthdate_tip_2)
                     )
                 )
             )
         }
         add(
             TutorialStep(
-                title = "Personaliza tus colores",
-                description = "Elige colores para representar las semanas vividas y las semanas futuras",
+                title = stringResource(R.string.tutorial_step_colors_title),
+                description = stringResource(R.string.tutorial_step_colors_desc),
                 icon = Icons.Default.Palette,
                 content = {
                     ColorCustomizationStepContent(
@@ -108,20 +110,20 @@ fun AppTutorialScreen(
                     )
                 },
                 tips = listOf(
-                    "Los colores se aplican inmediatamente a tu widget",
-                    "Puedes cambiar estos colores más tarde desde Mi Vida"
+                    stringResource(R.string.tutorial_step_colors_tip_1),
+                    stringResource(R.string.tutorial_step_colors_tip_2)
                 )
             )
         )
         add(
             TutorialStep(
-                title = "¡Todo listo!",
-                description = "Has configurado exitosamente Momentum. Explora las diferentes secciones para descubrir todas las funcionalidades.",
+                title = stringResource(R.string.tutorial_step_done_title),
+                description = stringResource(R.string.tutorial_step_done_desc),
                 icon = Icons.Default.CheckCircle,
                 tips = listOf(
-                    "Visita 'Mi Vida' para ver tu visualización completa",
-                    "Usa 'Enfoque' para sesiones de productividad",
-                    "Revisa 'Análisis' para estadísticas detalladas"
+                    stringResource(R.string.tutorial_step_done_tip_1),
+                    stringResource(R.string.tutorial_step_done_tip_2),
+                    stringResource(R.string.tutorial_step_done_tip_3)
                 )
             )
         )
@@ -151,7 +153,7 @@ fun AppTutorialScreen(
         TopAppBar(
             title = { 
                 Text(
-                    "Tutorial de Uso",
+                    stringResource(R.string.tutorial_topbar_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold
                 ) 
@@ -164,7 +166,7 @@ fun AppTutorialScreen(
                     )
                 ) { 
                     Text(
-                        "Omitir",
+                        stringResource(R.string.tutorial_skip),
                         style = MaterialTheme.typography.labelLarge
                     ) 
                 }
@@ -185,7 +187,11 @@ fun AppTutorialScreen(
             
             // Texto de progreso
             Text(
-                text = "Paso ${pagerState.currentPage + 1} de ${steps.size}",
+                text = stringResource(
+                    R.string.tutorial_step_progress,
+                    pagerState.currentPage + 1,
+                    steps.size
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
@@ -351,7 +357,7 @@ private fun TutorialStepContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Consejos útiles",
+                        text = stringResource(R.string.tutorial_tips_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
@@ -439,7 +445,7 @@ private fun TutorialNavigationBar(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Anterior",
+                        stringResource(R.string.tutorial_previous),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium
                     )
@@ -470,7 +476,7 @@ private fun TutorialNavigationBar(
                     )
                 ) {
                     Text(
-                        "Siguiente",
+                        stringResource(R.string.tutorial_next),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -498,7 +504,7 @@ private fun TutorialNavigationBar(
                     )
                 ) {
                     Text(
-                        "¡Empezar!",
+                        stringResource(R.string.tutorial_start),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -569,12 +575,12 @@ private fun ColorCustomizationStepContent(
     onFutureColorChanged: (String) -> Unit
 ) {
     val colorOptions = listOf(
-        "#FF6B6B" to "Rojo",
-        "#4ECDC4" to "Turquesa",
-        "#45B7D1" to "Azul",
-        "#96CEB4" to "Verde",
-        "#FFA07A" to "Coral",
-        "#DDA0DD" to "Morado"
+        "#FF6B6B" to R.string.tutorial_color_red,
+        "#4ECDC4" to R.string.tutorial_color_turquoise,
+        "#45B7D1" to R.string.tutorial_color_blue,
+        "#96CEB4" to R.string.tutorial_color_green,
+        "#FFA07A" to R.string.tutorial_color_coral,
+        "#DDA0DD" to R.string.tutorial_color_purple
     )
     
     LazyColumn(
@@ -593,7 +599,7 @@ private fun ColorCustomizationStepContent(
         
         item {
             Text(
-                text = "Personaliza tu experiencia",
+                text = stringResource(R.string.tutorial_customize_experience),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -625,7 +631,7 @@ private fun ColorCustomizationStepContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Semanas vividas",
+                            text = stringResource(R.string.tutorial_lived_weeks_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -635,13 +641,13 @@ private fun ColorCustomizationStepContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        colorOptions.chunked(3).first().forEach { (color, name) ->
+                        colorOptions.chunked(3).first().forEach { (color, nameRes) ->
                             FilterChip(
                                 selected = livedColor == color,
                                 onClick = { onLivedColorChanged(color) },
                                 label = { 
                                     Text(
-                                        name,
+                                        stringResource(nameRes),
                                         style = MaterialTheme.typography.labelMedium
                                     ) 
                                 },
@@ -655,13 +661,13 @@ private fun ColorCustomizationStepContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        colorOptions.chunked(3).last().forEach { (color, name) ->
+                        colorOptions.chunked(3).last().forEach { (color, nameRes) ->
                             FilterChip(
                                 selected = livedColor == color,
                                 onClick = { onLivedColorChanged(color) },
                                 label = { 
                                     Text(
-                                        name,
+                                        stringResource(nameRes),
                                         style = MaterialTheme.typography.labelMedium
                                     ) 
                                 },
@@ -699,7 +705,7 @@ private fun ColorCustomizationStepContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Semanas futuras",
+                            text = stringResource(R.string.tutorial_future_weeks_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -709,13 +715,13 @@ private fun ColorCustomizationStepContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        colorOptions.chunked(3).first().forEach { (color, name) ->
+                        colorOptions.chunked(3).first().forEach { (color, nameRes) ->
                             FilterChip(
                                 selected = futureColor == color,
                                 onClick = { onFutureColorChanged(color) },
                                 label = { 
                                     Text(
-                                        name,
+                                        stringResource(nameRes),
                                         style = MaterialTheme.typography.labelMedium
                                     ) 
                                 },
@@ -729,13 +735,13 @@ private fun ColorCustomizationStepContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        colorOptions.chunked(3).last().forEach { (color, name) ->
+                        colorOptions.chunked(3).last().forEach { (color, nameRes) ->
                             FilterChip(
                                 selected = futureColor == color,
                                 onClick = { onFutureColorChanged(color) },
                                 label = { 
                                     Text(
-                                        name,
+                                        stringResource(nameRes),
                                         style = MaterialTheme.typography.labelMedium
                                     ) 
                                 },
@@ -775,7 +781,7 @@ private fun BirthDateStepContent(
         
         item {
             Text(
-                text = "Tu fecha de nacimiento",
+                text = stringResource(R.string.tutorial_birthdate_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -784,7 +790,7 @@ private fun BirthDateStepContent(
         
         item {
             Text(
-                text = "Esta información nos ayuda a calcular tu progreso de vida",
+                text = stringResource(R.string.tutorial_birthdate_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -817,7 +823,7 @@ private fun BirthDateStepContent(
                     text = selectedDate?.let {
                         val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
                         it.format(formatter)
-                    } ?: "Seleccionar fecha",
+                    } ?: stringResource(R.string.tutorial_birthdate_select_button),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -846,7 +852,7 @@ private fun BirthDateStepContent(
                         val percentageLived = (weeksLived.toFloat() / estimatedWeeksTotal * 100).toInt()
                         
                         Text(
-                            text = "📊 Tu progreso",
+                            text = stringResource(R.string.tutorial_birthdate_progress_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -870,7 +876,7 @@ private fun BirthDateStepContent(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = "años",
+                                    text = stringResource(R.string.tutorial_birthdate_years_label),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
@@ -886,7 +892,7 @@ private fun BirthDateStepContent(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = "semanas vividas",
+                                    text = stringResource(R.string.tutorial_birthdate_weeks_lived_label),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
@@ -904,7 +910,10 @@ private fun BirthDateStepContent(
                         )
                         
                         Text(
-                            text = "$percentageLived% de una vida estimada de 90 años",
+                            text = stringResource(
+                                R.string.tutorial_birthdate_life_percent,
+                                percentageLived
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         )

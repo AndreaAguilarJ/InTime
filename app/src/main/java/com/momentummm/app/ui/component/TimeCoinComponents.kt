@@ -16,9 +16,11 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.R
 
 /**
  * Contador de TimeCoins animado para el TopBar.
@@ -133,7 +135,7 @@ fun AnimatedTimeCoinCounter(
                 ) {
                     Icon(
                         Icons.Default.Add,
-                        contentDescription = "Obtener más",
+                        contentDescription = stringResource(R.string.timecoins_get_more_cd),
                         tint = Color.White,
                         modifier = Modifier
                             .size(18.dp)
@@ -225,7 +227,7 @@ fun CoinEarnedToast(
                     
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "+$amount TimeCoins",
+                            text = stringResource(R.string.timecoins_earned_format, amount),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -277,7 +279,7 @@ fun TimeCoinBalance(
             ) {
                 Column {
                     Text(
-                        text = "Tu Balance",
+                        text = stringResource(R.string.timecoins_balance_title),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -297,12 +299,12 @@ fun TimeCoinBalance(
                 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "Gana más",
+                        text = stringResource(R.string.timecoins_earn_more),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "completando sesiones",
+                        text = stringResource(R.string.timecoins_earn_more_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
