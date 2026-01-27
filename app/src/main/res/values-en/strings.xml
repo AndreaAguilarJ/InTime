@@ -542,7 +542,7 @@
     <string name="emergency_unlock_confirm_payment_title">Confirm payment</string>
     <string name="emergency_unlock_confirm_shame_title">Are you sure?</string>
     <string name="emergency_unlock_confirm_payment_message">You will be charged $0.99 USD for 15 minutes of access to %1$s.</string>
-    <string name="emergency_unlock_confirm_shame_message">An image with the text “I failed my dopamine diet in InTime 🤡” will be generated and the share picker will open to post on your social networks.&#10;&#10;Your friends will see it! 😱</string>
+    <string name="emergency_unlock_confirm_shame_message">A "shame" image will be generated and the share picker will open.&#10;&#10;📱 Share on Instagram Stories, WhatsApp, or any social network.&#10;⏰ When you return, you\'ll get 5 extra minutes!&#10;&#10;Ready to post your moment of weakness? 😅</string>
     <string name="emergency_unlock_confirm_payment_button">Pay $0.99</string>
     <string name="emergency_unlock_confirm_shame_button">Yes, post my shame 🤡</string>
     <string name="emergency_unlock_confirm_default_button">Confirm</string>

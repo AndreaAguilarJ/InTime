@@ -199,6 +199,40 @@ class AppMonitoringService : Service() {
                     Log.d(TAG, "App $currentApp está en whitelist - no se bloqueará")
                     return@withTimeoutOrNull
                 }
+                
+                // VERIFICACIÓN: Whitelist temporal para apps de compartir (durante flujo de shame share)
+                val isInShareWhitelist = withContext(Dispatchers.IO) {
+                    UserPreferencesRepository.isAppInShareWhitelist(this@AppMonitoringService, currentApp)
+                }
+                if (isInShareWhitelist) {
+                    Log.d(TAG, "App $currentApp está en share whitelist temporal - permitiendo para compartir")
+                    return@withTimeoutOrNull
+                }
+
+                // VERIFICACIÓN 5: Si la app ya está bloqueada hoy, bloquearla inmediatamente
+                if (smartBlockingManager.isAppBlockedToday(currentApp)) {
+                    // Primero verificar si tiene desbloqueo temporal activo
+                    val isTemporarilyUnlocked = withContext(Dispatchers.IO) {
+                        UserPreferencesRepository.isAppTemporarilyUnlocked(this@AppMonitoringService, currentApp)
+                    }
+                    
+                    if (isTemporarilyUnlocked) {
+                        Log.d(TAG, "App $currentApp tiene desbloqueo temporal activo - permitiendo")
+                        return@withTimeoutOrNull
+                    }
+                    
+                    // La app ya alcanzó su límite hoy - bloquear si podemos mostrar pantalla
+                    if (smartBlockingManager.canShowBlockScreen(currentApp)) {
+                        val appLimit = withContext(Dispatchers.IO) {
+                            appLimitRepository.getLimitByPackage(currentApp)
+                        }
+                        val dailyLimit = appLimit?.dailyLimitMinutes ?: 0
+                        Log.d(TAG, "App $currentApp está bloqueada hoy - mostrando pantalla de bloqueo")
+                        smartBlockingManager.registerBlockScreenShown(currentApp)
+                        blockApp(currentApp, "Ya alcanzaste tu límite de $dailyLimit minutos hoy")
+                    }
+                    return@withTimeoutOrNull
+                }
 
                 // Focus Mode: bloqueo agresivo para apps en la lista negra
                 val focusModeEnabled = withContext(Dispatchers.IO) {
@@ -275,10 +309,14 @@ class AppMonitoringService : Service() {
                                         }
                                     } else null
                                     
-                                    Log.d(TAG, "App $currentApp ha excedido su límite - bloqueando")
+                                    Log.d(TAG, "App $currentApp ha excedido su límite - bloqueando y marcando")
                                     lastCheckedApp = currentApp
                                     lastBlockedTime = currentTime
                                     warningNotifiedApps.remove(currentApp) // Reset para el próximo día
+                                    
+                                    // Marcar la app como bloqueada hoy para que no se pueda volver a abrir
+                                    smartBlockingManager.markAppAsBlocked(currentApp)
+                                    smartBlockingManager.registerBlockScreenShown(currentApp)
                                     
                                     // Ocultar timer flotante al bloquear
                                     if (floatingTimerActive) {
@@ -383,7 +421,13 @@ class AppMonitoringService : Service() {
 
             // Abrir la pantalla de bloqueo
             withContext(Dispatchers.Main) {
-                AppBlockedActivity.start(this@AppMonitoringService, appName, dailyLimit, customReason)
+                AppBlockedActivity.start(
+                    this@AppMonitoringService, 
+                    appName, 
+                    dailyLimit, 
+                    customReason,
+                    blockedPackage = blockedAppPackage
+                )
             }
 
         } catch (e: Exception) {

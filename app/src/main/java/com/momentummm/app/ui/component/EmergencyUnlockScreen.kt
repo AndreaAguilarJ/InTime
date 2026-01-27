@@ -35,14 +35,22 @@ import kotlinx.coroutines.delay
 /**
  * Pantalla de desbloqueo de emergencia con opciones virales.
  * Implementa el sistema "Shame/Glory Sharing" para viralidad.
+ * 
+ * El flujo de share ahora funciona así:
+ * 1. Usuario elige compartir → countdown de 3 segundos
+ * 2. Se activa whitelist temporal para apps de share (Instagram, WhatsApp, etc.)
+ * 3. Se abre el intent de compartir
+ * 4. Usuario comparte en la app que elija (no se bloquea porque está en whitelist temporal)
+ * 5. Cuando regresa a la app, se verifica y se otorga el tiempo extra de 5 minutos
  */
 @Composable
 fun EmergencyUnlockScreen(
     blockedAppName: String,
+    blockedPackageName: String = "",
     currentStreakDays: Int = 0,
     billingManager: BillingManager? = null,
     onUnlockWithPayment: () -> Unit,
-    onUnlockWithShame: () -> Unit,
+    onStartShare: () -> Unit,
     onCancel: () -> Unit
 ) {
     val context = LocalContext.current
@@ -78,6 +86,8 @@ fun EmergencyUnlockScreen(
                 delay(1000)
                 shameCountdown--
             }
+            // Notificar que el share va a comenzar (activa whitelist temporal)
+            onStartShare()
             // Ejecutar share
             SocialShareUtils.shareShameImage(
                 context = context,
@@ -85,7 +95,7 @@ fun EmergencyUnlockScreen(
                 shameType = SocialShareUtils.ShameType.DOPAMINE_FAIL,
                 streakDays = currentStreakDays
             )
-            onUnlockWithShame()
+            // NO cerramos aquí - esperamos que el usuario regrese después de compartir
         }
     }
 

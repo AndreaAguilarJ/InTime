@@ -541,7 +541,7 @@
     <string name="emergency_unlock_confirm_payment_title">Confirmar pago</string>
     <string name="emergency_unlock_confirm_shame_title">¿Estás seguro?</string>
     <string name="emergency_unlock_confirm_payment_message">Se cobrará $0.99 USD por 15 minutos de acceso a %1$s.</string>
-    <string name="emergency_unlock_confirm_shame_message">Se generará una imagen con el texto “Fallé mi dieta de dopamina en InTime 🤡” y se abrirá el selector para compartir en tus redes sociales.&#10;&#10;¡Tus amigos te verán! 😱</string>
+    <string name="emergency_unlock_confirm_shame_message">Se generará una imagen de "vergüenza" y se abrirá el selector para compartir.&#10;&#10;📱 Comparte en Instagram Stories, WhatsApp o cualquier red social.&#10;⏰ ¡Cuando regreses, recibirás 5 minutos extra!&#10;&#10;¿Listo para publicar tu momento de debilidad? 😅</string>
     <string name="emergency_unlock_confirm_payment_button">Pagar $0.99</string>
     <string name="emergency_unlock_confirm_shame_button">Sí, publicar mi vergüenza 🤡</string>
     <string name="emergency_unlock_confirm_default_button">Confirmar</string>
@@ -673,6 +673,12 @@
     <string name="tutorial_step_colors_desc">Elige colores para representar las semanas vividas y las semanas futuras</string>
     <string name="tutorial_step_colors_tip_1">Los colores se aplican inmediatamente a tu widget</string>
     <string name="tutorial_step_colors_tip_2">Puedes cambiar estos colores mas tarde desde Mi Vida</string>
+    <string name="tutorial_step_widget_title">Widget para tu pantalla</string>
+    <string name="tutorial_step_widget_desc">Añade el widget de vida en semanas a tu pantalla de inicio para ver tu progreso de un vistazo</string>
+    <string name="tutorial_step_widget_tip_1">Mantén presionada tu pantalla de inicio y selecciona Widgets</string>
+    <string name="tutorial_step_widget_tip_2">Busca Momentum y arrastra el widget de Vida en Semanas</string>
+    <string name="tutorial_step_widget_tip_3">El widget se actualiza automáticamente cada hora</string>
+    <string name="tutorial_step_widget_button">Añadir Widget Ahora</string>
     <string name="tutorial_step_done_title">¡Todo listo!</string>
     <string name="tutorial_step_done_desc">Has configurado exitosamente Momentum. Explora las diferentes secciones para descubrir todas las funcionalidades.</string>
     <string name="tutorial_step_done_tip_1">Visita Mi Vida para ver tu visualizacion completa</string>

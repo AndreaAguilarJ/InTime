@@ -36,6 +36,10 @@ object UserPreferencesKeys {
     
     // Temporary unlocks for Shame or Pay feature
     val TEMPORARY_UNLOCKS: Preferences.Key<Set<String>> = stringSetPreferencesKey("temporary_unlocks")
+    
+    // Whitelist temporal para apps de compartir durante el flujo de shame share
+    val SHARE_WHITELIST_EXPIRATION: Preferences.Key<Long> = longPreferencesKey("share_whitelist_expiration")
+    val SHARE_PENDING_PACKAGE: Preferences.Key<String> = stringPreferencesKey("share_pending_package")
 }
 
 object UserPreferencesRepository {
@@ -262,5 +266,99 @@ object UserPreferencesRepository {
             }.toSet()
             prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] = validUnlocks
         }
+    }
+
+    // === SHARE WHITELIST: Apps temporalmente permitidas durante el flujo de share ===
+    
+    /**
+     * Apps de compartir que estarán en whitelist temporal durante el flujo de shame share.
+     * Estas apps no serán bloqueadas mientras el usuario está compartiendo.
+     */
+    val SHARE_APPS = setOf(
+        "com.instagram.android",           // Instagram
+        "com.whatsapp",                    // WhatsApp
+        "com.twitter.android",             // Twitter
+        "com.x.android",                   // X (Twitter nuevo)
+        "com.facebook.katana",             // Facebook
+        "com.facebook.orca",               // Messenger
+        "org.telegram.messenger",          // Telegram
+        "com.snapchat.android",            // Snapchat
+        "com.google.android.apps.messaging", // Google Messages
+        "com.android.mms",                 // SMS
+        "com.samsung.android.messaging"    // Samsung Messages
+    )
+    
+    /**
+     * Duración de la whitelist temporal para compartir (2 minutos)
+     */
+    const val SHARE_WHITELIST_DURATION_MS = 2 * 60 * 1000L
+    
+    /**
+     * Activa la whitelist temporal para las apps de compartir.
+     * Se guarda el paquete de la app que queremos desbloquear después del share.
+     */
+    suspend fun enableShareWhitelist(context: Context, pendingPackageToUnlock: String) {
+        val expirationTime = System.currentTimeMillis() + SHARE_WHITELIST_DURATION_MS
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.SHARE_WHITELIST_EXPIRATION] = expirationTime
+            prefs[UserPreferencesKeys.SHARE_PENDING_PACKAGE] = pendingPackageToUnlock
+        }
+    }
+    
+    /**
+     * Desactiva la whitelist temporal de compartir.
+     */
+    suspend fun disableShareWhitelist(context: Context) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs.remove(UserPreferencesKeys.SHARE_WHITELIST_EXPIRATION)
+            prefs.remove(UserPreferencesKeys.SHARE_PENDING_PACKAGE)
+        }
+    }
+    
+    /**
+     * Verifica si una app está en la whitelist temporal de compartir.
+     * Retorna true si la app es una de las apps de share Y la whitelist está activa.
+     */
+    suspend fun isAppInShareWhitelist(context: Context, packageName: String): Boolean {
+        if (!SHARE_APPS.contains(packageName)) return false
+        
+        val prefs = context.userPreferencesDataStore.data.first()
+        val expiration = prefs[UserPreferencesKeys.SHARE_WHITELIST_EXPIRATION] ?: return false
+        
+        return System.currentTimeMillis() < expiration
+    }
+    
+    /**
+     * Obtiene el paquete pendiente que se desbloqueará después de compartir.
+     * Retorna null si no hay share pendiente o si expiró.
+     */
+    suspend fun getPendingSharePackage(context: Context): String? {
+        val prefs = context.userPreferencesDataStore.data.first()
+        val expiration = prefs[UserPreferencesKeys.SHARE_WHITELIST_EXPIRATION] ?: return null
+        
+        if (System.currentTimeMillis() >= expiration) {
+            // Expiró, limpiar
+            disableShareWhitelist(context)
+            return null
+        }
+        
+        return prefs[UserPreferencesKeys.SHARE_PENDING_PACKAGE]
+    }
+    
+    /**
+     * Confirma que el share fue exitoso y otorga el desbloqueo temporal.
+     * Retorna true si se otorgó el desbloqueo.
+     */
+    suspend fun confirmShareAndUnlock(context: Context): Boolean {
+        val pendingPackage = getPendingSharePackage(context) ?: return false
+        
+        // Desactivar whitelist de share
+        disableShareWhitelist(context)
+        
+        // Otorgar desbloqueo temporal de 5 minutos para la app bloqueada
+        val unlockExpiration = System.currentTimeMillis() + (5 * 60 * 1000L)
+        addTemporaryUnlock(context, pendingPackage, unlockExpiration)
+        
+        return true
     }
 }

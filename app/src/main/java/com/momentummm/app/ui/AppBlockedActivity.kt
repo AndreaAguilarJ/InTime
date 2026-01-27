@@ -35,12 +35,16 @@ import androidx.compose.ui.unit.sp
 import com.momentummm.app.R
 import com.momentummm.app.MainActivity
 import com.momentummm.app.data.manager.BillingManager
+import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.ui.component.EmergencyUnlockScreen
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.ui.theme.MomentumTheme
 import com.momentummm.app.util.SocialShareUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -48,6 +52,9 @@ class AppBlockedActivity : ComponentActivity() {
 
     @Inject
     lateinit var billingManager: BillingManager
+    
+    private var blockedPackageName: String = ""
+    private var pendingShareVerification = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +63,7 @@ class AppBlockedActivity : ComponentActivity() {
             ?: getString(R.string.app_blocked_default_app_name)
         val dailyLimit = intent.getIntExtra(EXTRA_DAILY_LIMIT, 0)
         val currentStreakDays = intent.getIntExtra(EXTRA_STREAK_DAYS, 0)
+        blockedPackageName = intent.getStringExtra(EXTRA_BLOCKED_PACKAGE) ?: ""
 
         setContent {
             MomentumTheme {
@@ -64,6 +72,7 @@ class AppBlockedActivity : ComponentActivity() {
                 if (showEmergencyUnlock) {
                     EmergencyUnlockScreen(
                         blockedAppName = blockedAppName,
+                        blockedPackageName = blockedPackageName,
                         currentStreakDays = currentStreakDays,
                         billingManager = billingManager,
                         onUnlockWithPayment = {
@@ -71,11 +80,24 @@ class AppBlockedActivity : ComponentActivity() {
                             billingManager.launchEmergencyUnlockPurchase(this@AppBlockedActivity)
                             finish()
                         },
-                        onUnlockWithShame = {
-                            // El share ya se ejecutó, simplemente cerrar
-                            finish()
+                        onStartShare = {
+                            // Activar la whitelist temporal para apps de compartir
+                            pendingShareVerification = true
+                            CoroutineScope(Dispatchers.IO).launch {
+                                UserPreferencesRepository.enableShareWhitelist(
+                                    this@AppBlockedActivity,
+                                    blockedPackageName
+                                )
+                            }
                         },
                         onCancel = {
+                            // Cancelar share pendiente si existe
+                            if (pendingShareVerification) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    UserPreferencesRepository.disableShareWhitelist(this@AppBlockedActivity)
+                                }
+                                pendingShareVerification = false
+                            }
                             showEmergencyUnlock = false
                         }
                     )
@@ -103,6 +125,29 @@ class AppBlockedActivity : ComponentActivity() {
             }
         }
     }
+    
+    override fun onResume() {
+        super.onResume()
+        // Verificar si el usuario regresó después de compartir
+        if (pendingShareVerification) {
+            CoroutineScope(Dispatchers.IO).launch {
+                // Verificar si hay un share pendiente y confirmar el desbloqueo
+                val unlockGranted = UserPreferencesRepository.confirmShareAndUnlock(this@AppBlockedActivity)
+                if (unlockGranted) {
+                    // El share fue exitoso, cerrar la pantalla de bloqueo
+                    runOnUiThread {
+                        android.widget.Toast.makeText(
+                            this@AppBlockedActivity,
+                            "¡Gracias por compartir! Tienes 5 minutos extra 🎉",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        finish()
+                    }
+                }
+                pendingShareVerification = false
+            }
+        }
+    }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
@@ -119,12 +164,14 @@ class AppBlockedActivity : ComponentActivity() {
         private const val EXTRA_DAILY_LIMIT = "extra_daily_limit"
         private const val EXTRA_STREAK_DAYS = "extra_streak_days"
         private const val EXTRA_CUSTOM_REASON = "extra_custom_reason"
+        private const val EXTRA_BLOCKED_PACKAGE = "extra_blocked_package"
 
-        fun start(context: Context, appName: String, dailyLimit: Int, customReason: String? = null, streakDays: Int = 0) {
+        fun start(context: Context, appName: String, dailyLimit: Int, customReason: String? = null, streakDays: Int = 0, blockedPackage: String = "") {
             val intent = Intent(context, AppBlockedActivity::class.java).apply {
                 putExtra(EXTRA_APP_NAME, appName)
                 putExtra(EXTRA_DAILY_LIMIT, dailyLimit)
                 putExtra(EXTRA_STREAK_DAYS, streakDays)
+                putExtra(EXTRA_BLOCKED_PACKAGE, blockedPackage)
                 customReason?.let { putExtra(EXTRA_CUSTOM_REASON, it) }
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or
