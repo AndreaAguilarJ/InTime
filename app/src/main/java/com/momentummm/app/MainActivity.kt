@@ -27,6 +27,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var launcherManager: LauncherManager
     private lateinit var minimalPhoneManager: MinimalPhoneManager
+    
+    // Flag para verificar si la activity está activa
+    private var isActivityActive = false
 
     @Inject
     lateinit var autoSyncManager: AutoSyncManager
@@ -36,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
         
         super.onCreate(savedInstanceState)
+        isActivityActive = true
         
         // Initialize managers
         launcherManager = LauncherManager(this)
@@ -74,19 +78,29 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         // Guardar datos cuando la app pasa a background (no bloqueante)
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                withTimeoutOrNull(3000L) {
-                    autoSyncManager.forceSyncNow()
+        if (isActivityActive && ::autoSyncManager.isInitialized) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    withTimeoutOrNull(3000L) {
+                        autoSyncManager.forceSyncNow()
+                    }
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Error en sync onPause", e)
                 }
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Error en sync onPause", e)
             }
         }
     }
 
     override fun onDestroy() {
+        isActivityActive = false
+        // Solo limpiar si el proceso no está siendo destruido
+        if (!isFinishing && ::autoSyncManager.isInitialized) {
+            try {
+                autoSyncManager.cleanup()
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error en cleanup onDestroy", e)
+            }
+        }
         super.onDestroy()
-        autoSyncManager.cleanup()
     }
 }

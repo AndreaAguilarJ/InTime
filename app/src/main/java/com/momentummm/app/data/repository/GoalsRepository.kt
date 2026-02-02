@@ -6,6 +6,7 @@ import com.momentummm.app.data.entity.Goal
 import com.momentummm.app.data.entity.Challenge
 import com.momentummm.app.data.entity.GoalProgress
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.combine
 import java.util.*
@@ -21,26 +22,48 @@ class GoalsRepository @Inject constructor(
 ) {
 
     // Goals operations
-    fun getActiveGoals(): Flow<List<Goal>> = goalDao.getActiveGoals()
+    fun getActiveGoals(): Flow<List<Goal>> = 
+        goalDao.getActiveGoals().distinctUntilChanged()
 
-    fun getAllGoals(): Flow<List<Goal>> = goalDao.getAllGoals()
+    fun getAllGoals(): Flow<List<Goal>> = 
+        goalDao.getAllGoals().distinctUntilChanged()
 
-    suspend fun getGoalById(goalId: String): Goal? = goalDao.getGoalById(goalId)
+    suspend fun getGoalById(goalId: String): Goal? = try {
+        goalDao.getGoalById(goalId)
+    } catch (e: Exception) {
+        null
+    }
 
     suspend fun createGoal(goal: Goal) {
-        goalDao.insertGoal(goal)
+        try {
+            goalDao.insertGoal(goal)
+        } catch (e: Exception) {
+            android.util.Log.e("GoalsRepository", "Error creating goal", e)
+        }
     }
 
     suspend fun updateGoal(goal: Goal) {
-        goalDao.updateGoal(goal)
+        try {
+            goalDao.updateGoal(goal)
+        } catch (e: Exception) {
+            android.util.Log.e("GoalsRepository", "Error updating goal", e)
+        }
     }
 
     suspend fun deleteGoal(goal: Goal) {
-        goalDao.deleteGoal(goal)
+        try {
+            goalDao.deleteGoal(goal)
+        } catch (e: Exception) {
+            android.util.Log.e("GoalsRepository", "Error deleting goal", e)
+        }
     }
 
     suspend fun deactivateGoal(goalId: String) {
-        goalDao.deactivateGoal(goalId)
+        try {
+            goalDao.deactivateGoal(goalId)
+        } catch (e: Exception) {
+            android.util.Log.e("GoalsRepository", "Error deactivating goal", e)
+        }
     }
 
     // Goal progress tracking
@@ -70,7 +93,11 @@ class GoalsRepository @Inject constructor(
 
         // Record daily progress
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val today = dateFormat.parse(dateFormat.format(now))!!
+        val today = try {
+            dateFormat.parse(dateFormat.format(now)) ?: now
+        } catch (e: Exception) {
+            now
+        }
 
         val progressRecord = GoalProgress(
             id = "${goalId}_${dateFormat.format(today)}",
@@ -202,9 +229,9 @@ class GoalsRepository @Inject constructor(
             if (goal.targetValue > 0) {
                 (goal.currentValue.toFloat() / goal.targetValue.toFloat()).coerceAtMost(1f)
             } else 0f
-        }.average().toFloat()
+        }.average().toFloat().takeIf { !it.isNaN() } ?: 0f
 
-        val challengeProgress = challenges.map { it.progress }.average().toFloat()
+        val challengeProgress = challenges.map { it.progress }.average().toFloat().takeIf { !it.isNaN() } ?: 0f
 
         return ((goalProgress + challengeProgress) / 2f).coerceAtMost(1f)
     }

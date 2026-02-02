@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,7 +22,7 @@ fun PasswordProtectionManageScreen(
     onNavigateToSetup: () -> Unit,
     viewModel: PasswordProtectionViewModel = hiltViewModel()
 ) {
-    val passwordProtection by viewModel.passwordProtection.collectAsState()
+    val passwordProtection by viewModel.passwordProtection.collectAsStateWithLifecycle()
 
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showDisableDialog by remember { mutableStateOf(false) }
@@ -38,7 +39,8 @@ fun PasswordProtectionManageScreen(
             )
         }
     ) { padding ->
-        if (passwordProtection == null || !passwordProtection!!.isEnabled) {
+        val protection = passwordProtection
+        if (protection == null || !protection.isEnabled) {
             // No hay contraseña configurada
             Column(
                 modifier = Modifier
@@ -126,19 +128,19 @@ fun PasswordProtectionManageScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         ProtectionStatusItem(
                             label = "Límites de Apps",
-                            isProtected = passwordProtection!!.protectAppLimits
+                            isProtected = protection.protectAppLimits
                         )
                         ProtectionStatusItem(
                             label = "Bloqueo dentro de Apps",
-                            isProtected = passwordProtection!!.protectInAppBlocking
+                            isProtected = protection.protectInAppBlocking
                         )
                         ProtectionStatusItem(
                             label = "Bloqueo de Sitios Web",
-                            isProtected = passwordProtection!!.protectWebsiteBlocking
+                            isProtected = protection.protectWebsiteBlocking
                         )
                         ProtectionStatusItem(
                             label = "Modo Minimalista",
-                            isProtected = passwordProtection!!.protectMinimalMode
+                            isProtected = protection.protectMinimalMode
                         )
                     }
                 }

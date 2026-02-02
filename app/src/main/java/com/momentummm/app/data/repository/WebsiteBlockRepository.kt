@@ -7,7 +7,9 @@ import com.momentummm.app.data.entity.WebsiteCategory
 import com.momentummm.app.data.entity.PredefinedWebsiteBlocks
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,12 +19,14 @@ class WebsiteBlockRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
-    fun getAllBlocks(): Flow<List<WebsiteBlock>> = websiteBlockDao.getAllBlocks()
+    fun getAllBlocks(): Flow<List<WebsiteBlock>> = 
+        websiteBlockDao.getAllBlocks().distinctUntilChanged()
 
-    fun getAllEnabledBlocks(): Flow<List<WebsiteBlock>> = websiteBlockDao.getAllEnabledBlocks()
+    fun getAllEnabledBlocks(): Flow<List<WebsiteBlock>> = 
+        websiteBlockDao.getAllEnabledBlocks().distinctUntilChanged()
 
     fun getBlocksByCategory(category: WebsiteCategory): Flow<List<WebsiteBlock>> =
-        websiteBlockDao.getBlocksByCategory(category)
+        websiteBlockDao.getBlocksByCategory(category).distinctUntilChanged()
 
     suspend fun getBlockByUrl(url: String): WebsiteBlock? =
         websiteBlockDao.getBlockByUrl(url)
@@ -77,15 +81,50 @@ class WebsiteBlockRepository @Inject constructor(
 
     suspend fun isUrlBlocked(url: String): Boolean {
         val normalizedUrl = normalizeUrl(url)
-        val enabledBlocks = websiteBlockDao.getAllEnabledBlocks().first()
+        val enabledBlocks = withTimeoutOrNull(5000L) { 
+            websiteBlockDao.getAllEnabledBlocks().first() 
+        } ?: emptyList()
 
         return enabledBlocks.any { block ->
             urlMatchesBlock(normalizedUrl, block.url)
         }
     }
+    
+    /**
+     * Obtiene información del bloqueo si la URL está bloqueada
+     * Devuelve null si no está bloqueada
+     */
+    suspend fun getBlockedUrlInfo(url: String): BlockedUrlInfo? {
+        val normalizedUrl = normalizeUrl(url)
+        val enabledBlocks = withTimeoutOrNull(5000L) { 
+            websiteBlockDao.getAllEnabledBlocks().first() 
+        } ?: emptyList()
+        
+        val matchingBlock = enabledBlocks.firstOrNull { block ->
+            urlMatchesBlock(normalizedUrl, block.url)
+        }
+        
+        return matchingBlock?.let {
+            BlockedUrlInfo(
+                url = normalizedUrl,
+                displayName = it.displayName,
+                category = when (it.category) {
+                    WebsiteCategory.ADULT_CONTENT -> context.getString(com.momentummm.app.R.string.website_block_category_adult)
+                    WebsiteCategory.SOCIAL_MEDIA -> context.getString(com.momentummm.app.R.string.website_block_category_social)
+                    WebsiteCategory.ENTERTAINMENT -> context.getString(com.momentummm.app.R.string.website_block_category_entertainment)
+                    WebsiteCategory.GAMING -> context.getString(com.momentummm.app.R.string.website_block_category_gaming)
+                    WebsiteCategory.NEWS -> context.getString(com.momentummm.app.R.string.website_block_category_news)
+                    WebsiteCategory.SHOPPING -> context.getString(com.momentummm.app.R.string.website_block_category_shopping)
+                    WebsiteCategory.CUSTOM -> null
+                }
+            )
+        }
+    }
 
     suspend fun getBlockedStats(): BlockedStats {
-        val allBlocks = websiteBlockDao.getAllBlocks().first()
+        val allBlocks = withTimeoutOrNull(5000L) { 
+            websiteBlockDao.getAllBlocks().first() 
+        } ?: emptyList()
         val enabledBlocks = allBlocks.filter { it.isEnabled }
 
         val byCategory = WebsiteCategory.values().associateWith { category ->
@@ -155,5 +194,14 @@ data class BlockedStats(
     val totalBlocks: Int,
     val enabledBlocks: Int,
     val blocksByCategory: Map<WebsiteCategory, Int>
+)
+
+/**
+ * Información de una URL bloqueada
+ */
+data class BlockedUrlInfo(
+    val url: String,
+    val displayName: String,
+    val category: String?
 )
 

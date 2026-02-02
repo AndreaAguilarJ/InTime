@@ -35,7 +35,10 @@ class AppMonitoringService : Service() {
     @Inject lateinit var smartNotificationManager: SmartNotificationManager
     @Inject lateinit var smartBlockingManager: SmartBlockingManager
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        Log.e(TAG, "Coroutine exception in AppMonitoringService", throwable)
+    }
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private var monitoringJob: Job? = null
 
     private val MONITORING_INTERVAL = 5000L // 5 segundos - reducir frecuencia para evitar ANR
@@ -54,13 +57,27 @@ class AppMonitoringService : Service() {
 
     private val NOTIFICATION_ID = 1001
     private val CHANNEL_ID = "app_monitoring_channel"
+    
+    // Flag para verificar si los repositorios están inicializados
+    private val areRepositoriesInitialized: Boolean
+        get() = ::appLimitRepository.isInitialized && 
+                ::appWhitelistRepository.isInitialized && 
+                ::goalsRepository.isInitialized &&
+                ::smartNotificationManager.isInitialized &&
+                ::smartBlockingManager.isInitialized
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification())
+        try {
+            createNotificationChannel()
+            startForeground(NOTIFICATION_ID, createNotification())
+        } catch (e: Exception) {
+            android.util.Log.e("AppMonitoringService", "Error in onCreate", e)
+            stopSelf()
+            return
+        }
         startMonitoring()
     }
 
@@ -77,14 +94,15 @@ class AppMonitoringService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Monitoreo de Aplicaciones",
+            getString(com.momentummm.app.R.string.notification_channel_monitoring_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Monitorea el tiempo de uso de aplicaciones"
+            description = getString(com.momentummm.app.R.string.notification_channel_monitoring_desc)
             setShowBadge(false)
         }
 
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+            ?: return
         notificationManager.createNotificationChannel(channel)
     }
 
@@ -97,8 +115,8 @@ class AppMonitoringService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Control de Aplicaciones Activo")
-            .setContentText("Monitoreando el tiempo de uso de aplicaciones")
+            .setContentTitle(getString(com.momentummm.app.R.string.notification_monitoring_title))
+            .setContentText(getString(com.momentummm.app.R.string.notification_monitoring_message))
             .setSmallIcon(android.R.drawable.ic_menu_view) // Usar icono del sistema
             .setContentIntent(pendingIntent)
             .setOngoing(true)
@@ -112,6 +130,13 @@ class AppMonitoringService : Service() {
         monitoringJob = serviceScope.launch {
             while (isActive) {
                 try {
+                    // Verificar que los repositorios estén inicializados antes de proceder
+                    if (!areRepositoriesInitialized) {
+                        Log.w(TAG, "Repositorios no inicializados aún, esperando...")
+                        delay(MONITORING_INTERVAL)
+                        continue
+                    }
+                    
                     // Actualizar estados de bloqueo inteligente
                     smartBlockingManager.refreshModeStates()
                     checkCurrentApp()
@@ -351,6 +376,7 @@ class AppMonitoringService : Service() {
                                                 val bestStreak = goals.maxOfOrNull { it.currentStreak } ?: 0
                                                 if (bestStreak > 0) {
                                                     smartNotificationManager.showStreakWarningNotification(
+                                                        packageName = currentApp,
                                                         appName = getAppName(currentApp),
                                                         remainingMinutes = effectiveLimit - usageMinutes,
                                                         currentStreak = bestStreak
@@ -376,37 +402,49 @@ class AppMonitoringService : Service() {
     }
 
     private fun getCurrentAppUsageStats(packageName: String): Long {
-        val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as? UsageStatsManager
-        val time = System.currentTimeMillis()
+        return try {
+            val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as? UsageStatsManager
+                ?: return 0L
+            val time = System.currentTimeMillis()
 
-        // Obtener estadísticas del día actual
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        calendar.set(java.util.Calendar.MINUTE, 0)
-        calendar.set(java.util.Calendar.SECOND, 0)
-        val startTime = calendar.timeInMillis
+            // Obtener estadísticas del día actual
+            val calendar = java.util.Calendar.getInstance()
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            calendar.set(java.util.Calendar.MINUTE, 0)
+            calendar.set(java.util.Calendar.SECOND, 0)
+            val startTime = calendar.timeInMillis
 
-        val usageStatsList = usageStatsManager?.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            startTime,
-            time
-        )
+            val usageStatsList = usageStatsManager.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                startTime,
+                time
+            )
 
-        return usageStatsList?.find { it.packageName == packageName }?.totalTimeInForeground ?: 0L
+            usageStatsList?.find { it.packageName == packageName }?.totalTimeInForeground ?: 0L
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting usage stats for $packageName", e)
+            0L
+        }
     }
 
     private fun getCurrentForegroundApp(): String {
-        val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as? UsageStatsManager
-        val time = System.currentTimeMillis()
+        return try {
+            val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as? UsageStatsManager
+                ?: return ""
+            val time = System.currentTimeMillis()
 
-        // Obtener estadísticas de los últimos 2 segundos
-        val usageStatsList = usageStatsManager?.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            time - 2000,
-            time
-        )
+            // Obtener estadísticas de los últimos 2 segundos
+            val usageStatsList = usageStatsManager.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                time - 2000,
+                time
+            )
 
-        return usageStatsList?.maxByOrNull { it.lastTimeUsed }?.packageName ?: ""
+            usageStatsList?.maxByOrNull { it.lastTimeUsed }?.packageName ?: ""
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting foreground app", e)
+            ""
+        }
     }
 
     private suspend fun blockApp(blockedAppPackage: String, customReason: String? = null) {
@@ -465,7 +503,8 @@ class AppMonitoringService : Service() {
                     this, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
 
-                val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                val nm = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+                    ?: return
                 val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle("Permiso necesario: Mostrar sobre otras apps")
                     .setContentText("Permite la superposición para bloquear la app cuando se exceda el límite")

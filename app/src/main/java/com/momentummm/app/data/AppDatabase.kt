@@ -16,6 +16,9 @@ import com.momentummm.app.data.dao.ChallengeDao
 import com.momentummm.app.data.dao.WebsiteBlockDao
 import com.momentummm.app.data.dao.InAppBlockRuleDao
 import com.momentummm.app.data.dao.PasswordProtectionDao
+import com.momentummm.app.data.dao.MotivationalMessageDao
+import com.momentummm.app.data.dao.MessageReactionDao
+import com.momentummm.app.data.dao.MotivationalPreferencesDao
 import com.momentummm.app.data.entity.AppUsage
 import com.momentummm.app.data.entity.Quote
 import com.momentummm.app.data.entity.UserSettings
@@ -33,6 +36,9 @@ import com.momentummm.app.data.entity.Friend
 import com.momentummm.app.data.entity.LeaderboardEntry
 import com.momentummm.app.data.entity.SharedAchievement
 import com.momentummm.app.data.entity.CommunitySettings
+import com.momentummm.app.data.entity.MotivationalMessage
+import com.momentummm.app.data.entity.MessageReaction
+import com.momentummm.app.data.entity.MotivationalPreferences
 import com.momentummm.app.data.dao.SmartBlockingConfigDao
 import com.momentummm.app.data.dao.ContextBlockRuleDao
 import com.momentummm.app.data.dao.FriendDao
@@ -45,8 +51,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class, SmartBlockingConfig::class, ContextBlockRule::class, Friend::class, LeaderboardEntry::class, SharedAchievement::class, CommunitySettings::class],
-    version = 14,
+    entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class, SmartBlockingConfig::class, ContextBlockRule::class, Friend::class, LeaderboardEntry::class, SharedAchievement::class, CommunitySettings::class, MotivationalMessage::class, MessageReaction::class, MotivationalPreferences::class],
+    version = 15,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -68,6 +74,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun leaderboardDao(): LeaderboardDao
     abstract fun sharedAchievementDao(): SharedAchievementDao
     abstract fun communitySettingsDao(): CommunitySettingsDao
+    abstract fun motivationalMessageDao(): MotivationalMessageDao
+    abstract fun messageReactionDao(): MessageReactionDao
+    abstract fun motivationalPreferencesDao(): MotivationalPreferencesDao
 
     private class AppDatabaseCallback(
         private val scope: CoroutineScope
@@ -77,7 +86,11 @@ abstract class AppDatabase : RoomDatabase() {
             super.onCreate(db)
             INSTANCE?.let { database ->
                 scope.launch {
-                    populateDatabase(database.quoteDao())
+                    try {
+                        populateDatabase(database.quoteDao())
+                    } catch (e: Exception) {
+                        android.util.Log.e("AppDatabase", "Error populating database", e)
+                    }
                 }
             }
         }
@@ -314,6 +327,86 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // MIGRATION 14 -> 15: Add Motivational Messages tables
+        private val MIGRATION_14_15 = object : androidx.room.migration.Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Tabla MotivationalMessage
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `motivational_messages` (
+                        `id` TEXT NOT NULL PRIMARY KEY,
+                        `content` TEXT NOT NULL,
+                        `category` TEXT NOT NULL,
+                        `tone` TEXT NOT NULL,
+                        `emoji` TEXT,
+                        `is_favorite` INTEGER NOT NULL DEFAULT 0,
+                        `times_shown` INTEGER NOT NULL DEFAULT 0,
+                        `last_shown_at` INTEGER,
+                        `is_custom` INTEGER NOT NULL DEFAULT 0,
+                        `is_ai_generated` INTEGER NOT NULL DEFAULT 0,
+                        `love_count` INTEGER NOT NULL DEFAULT 0,
+                        `share_count` INTEGER NOT NULL DEFAULT 0,
+                        `language` TEXT NOT NULL DEFAULT 'es',
+                        `created_at` INTEGER NOT NULL,
+                        `updated_at` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                
+                // Tabla MessageReaction
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `message_reactions` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `message_id` TEXT NOT NULL,
+                        `reaction_type` TEXT NOT NULL,
+                        `notification_opened` INTEGER NOT NULL DEFAULT 0,
+                        `notification_shown_at` INTEGER,
+                        `notification_opened_at` INTEGER,
+                        `context` TEXT,
+                        `created_at` INTEGER NOT NULL,
+                        FOREIGN KEY(`message_id`) REFERENCES `motivational_messages`(`id`) ON DELETE CASCADE
+                    )
+                """.trimIndent())
+                
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_message_reactions_message_id` ON `message_reactions` (`message_id`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_message_reactions_reaction_type` ON `message_reactions` (`reaction_type`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_message_reactions_created_at` ON `message_reactions` (`created_at`)")
+                
+                // Tabla MotivationalPreferences
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `motivational_preferences` (
+                        `id` INTEGER NOT NULL PRIMARY KEY,
+                        `enabled` INTEGER NOT NULL DEFAULT 1,
+                        `daily_frequency` INTEGER NOT NULL DEFAULT 5,
+                        `start_hour` INTEGER NOT NULL DEFAULT 8,
+                        `start_minute` INTEGER NOT NULL DEFAULT 0,
+                        `end_hour` INTEGER NOT NULL DEFAULT 22,
+                        `end_minute` INTEGER NOT NULL DEFAULT 0,
+                        `enabled_categories` TEXT NOT NULL DEFAULT 'MORNING,EVENING,ACHIEVEMENT,FOCUS,GRATITUDE,CHALLENGE,STREAK,CELEBRATION,MOTIVATION,PRODUCTIVITY,MINDFULNESS,SELF_CARE,GROWTH,RESILIENCE,WEEKEND,MONDAY,MILESTONE,COMEBACK',
+                        `enabled_tones` TEXT NOT NULL DEFAULT 'FRIENDLY,COACH,WISE,ENERGETIC,CALM,HUMOROUS,INSPIRATIONAL,PRACTICAL',
+                        `ai_generation_enabled` INTEGER NOT NULL DEFAULT 0,
+                        `ai_daily_limit` INTEGER NOT NULL DEFAULT 10,
+                        `ai_messages_generated_today` INTEGER NOT NULL DEFAULT 0,
+                        `ai_last_generation_date` INTEGER,
+                        `respect_focus_mode` INTEGER NOT NULL DEFAULT 1,
+                        `respect_dnd` INTEGER NOT NULL DEFAULT 1,
+                        `smart_timing_enabled` INTEGER NOT NULL DEFAULT 1,
+                        `send_when_inactive` INTEGER NOT NULL DEFAULT 1,
+                        `weekend_frequency` INTEGER NOT NULL DEFAULT 3,
+                        `different_weekend_schedule` INTEGER NOT NULL DEFAULT 0,
+                        `weekend_start_hour` INTEGER NOT NULL DEFAULT 10,
+                        `weekend_end_hour` INTEGER NOT NULL DEFAULT 22,
+                        `ai_personality` TEXT NOT NULL DEFAULT 'FRIENDLY_COACH',
+                        `voice_notes_enabled` INTEGER NOT NULL DEFAULT 0,
+                        `community_messages_enabled` INTEGER NOT NULL DEFAULT 0,
+                        `widget_auto_refresh` INTEGER NOT NULL DEFAULT 1,
+                        `widget_show_category` INTEGER NOT NULL DEFAULT 1,
+                        `analytics_enabled` INTEGER NOT NULL DEFAULT 1,
+                        `created_at` INTEGER NOT NULL,
+                        `updated_at` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -321,7 +414,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "momentum_database"
                 ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
-                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
                     .fallbackToDestructiveMigration() // For now, allow destructive migration
                     .build()
                 INSTANCE = instance

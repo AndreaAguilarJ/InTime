@@ -28,10 +28,14 @@ class SubscriptionRepository(
             )
             
             if (documents.documents.isNotEmpty()) {
-                val doc = documents.documents.first()
+                val doc = documents.documents.firstOrNull() ?: return null
                 val subscription = UserSubscription(
-                    userId = doc.data["userId"] as String,
-                    status = SubscriptionStatus.valueOf(doc.data["status"] as String),
+                    userId = doc.data["userId"] as? String ?: userId,
+                    status = try { 
+                        SubscriptionStatus.valueOf(doc.data["status"] as? String ?: "FREE") 
+                    } catch (e: IllegalArgumentException) { 
+                        SubscriptionStatus.FREE 
+                    },
                     expiryDate = doc.data["expiryDate"] as? String,
                     trialEndsAt = doc.data["trialEndsAt"] as? String,
                     isTrialUsed = doc.data["isTrialUsed"] as? Boolean ?: false
@@ -82,7 +86,7 @@ class SubscriptionRepository(
             )
             
             if (documents.documents.isNotEmpty()) {
-                val docId = documents.documents.first().id
+                val docId = documents.documents.firstOrNull()?.id ?: return false
                 appwriteService.databases.updateDocument(
                     databaseId = appwriteService.databaseId,
                     collectionId = "subscriptions",
@@ -145,11 +149,16 @@ class SubscriptionRepository(
             SubscriptionStatus.PREMIUM_YEARLY,
             SubscriptionStatus.TRIAL -> {
                 // Check if subscription is still valid
-                subscription.expiryDate?.let { expiryDate ->
-                    LocalDate.parse(expiryDate).isAfter(LocalDate.now())
-                } ?: subscription.trialEndsAt?.let { trialEndDate ->
-                    LocalDate.parse(trialEndDate).isAfter(LocalDate.now())
-                } ?: false
+                try {
+                    subscription.expiryDate?.let { expiryDate ->
+                        LocalDate.parse(expiryDate).isAfter(LocalDate.now())
+                    } ?: subscription.trialEndsAt?.let { trialEndDate ->
+                        LocalDate.parse(trialEndDate).isAfter(LocalDate.now())
+                    } ?: false
+                } catch (e: Exception) {
+                    // Si hay error de parsing, asumir que no es premium para seguridad
+                    false
+                }
             }
             else -> false
         }
@@ -162,13 +171,17 @@ class SubscriptionRepository(
     fun getRemainingTrialDays(): Int {
         val subscription = _userSubscription.value
         return if (subscription?.status == SubscriptionStatus.TRIAL) {
-            subscription.trialEndsAt?.let { trialEndDate ->
-                val endDate = LocalDate.parse(trialEndDate)
-                val today = LocalDate.now()
-                if (endDate.isAfter(today)) {
-                    endDate.toEpochDay().toInt() - today.toEpochDay().toInt()
-                } else 0
-            } ?: 0
+            try {
+                subscription.trialEndsAt?.let { trialEndDate ->
+                    val endDate = LocalDate.parse(trialEndDate)
+                    val today = LocalDate.now()
+                    if (endDate.isAfter(today)) {
+                        endDate.toEpochDay().toInt() - today.toEpochDay().toInt()
+                    } else 0
+                } ?: 0
+            } catch (e: Exception) {
+                0 // Si hay error de parsing, retornar 0 días
+            }
         } else 0
     }
 }

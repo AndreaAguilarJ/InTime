@@ -349,7 +349,7 @@ class ExportManager(private val context: Context) {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     }
     
-    fun shareFile(uri: Uri, fileName: String) {
+    fun shareFile(uri: Uri, fileName: String): Boolean {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = when {
                 fileName.endsWith(".pdf") -> "application/pdf"
@@ -364,6 +364,12 @@ class ExportManager(private val context: Context) {
         
         val chooser = Intent.createChooser(shareIntent, "Compartir reporte")
         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(chooser)
+        return try {
+            context.startActivity(chooser)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("ExportManager", "Error sharing file", e)
+            false
+        }
     }
 }

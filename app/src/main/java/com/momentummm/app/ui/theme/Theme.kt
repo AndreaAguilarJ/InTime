@@ -10,8 +10,8 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -65,9 +65,9 @@ fun MomentumTheme(
     val context = LocalContext.current
     val manager = themeManager ?: ThemeManager(context)
     
-    val themeMode by manager.themeMode.collectAsState(initial = ThemeManager.ThemeMode.SYSTEM)
-    val useDynamicColor by manager.useDynamicColor.collectAsState(initial = true)
-    val customPrimaryColor by manager.customPrimaryColor.collectAsState(initial = null)
+    val themeMode by manager.themeMode.collectAsStateWithLifecycle(initialValue = ThemeManager.ThemeMode.SYSTEM)
+    val useDynamicColor by manager.useDynamicColor.collectAsStateWithLifecycle(initialValue = true)
+    val customPrimaryColor by manager.customPrimaryColor.collectAsStateWithLifecycle(initialValue = null)
     
     val systemInDarkTheme = isSystemInDarkTheme()
     val darkTheme = when (themeMode) {

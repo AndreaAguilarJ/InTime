@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
 import com.momentummm.app.security.AppLockManager
 import com.momentummm.app.security.BiometricPromptManager
@@ -48,7 +49,7 @@ fun LockScreen(
     val context = LocalContext.current
     val activity = context as? FragmentActivity
     
-    val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsState()
+    val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsStateWithLifecycle()
     val isBiometricAvailable = viewModel.isBiometricAvailable()
     val biometricFailedMessage = stringResource(R.string.lock_screen_biometric_failed)
     val tooManyAttemptsMessage = stringResource(
@@ -176,10 +177,10 @@ fun LockScreen(
                     isError = errorMessage != null
                 )
 
-                // Mensaje de error
-                if (errorMessage != null) {
+                // Mensaje de error - usar let para evitar NullPointerException
+                errorMessage?.let { message ->
                     Text(
-                        text = errorMessage!!,
+                        text = message,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center

@@ -71,6 +71,6 @@ interface GoalDao {
     @Query("SELECT COUNT(*) FROM goals WHERE completion_count > 0")
     suspend fun getCompletedGoalsCount(): Int
 
-    @Query("SELECT AVG(current_streak) FROM goals WHERE is_active = 1")
+    @Query("SELECT COALESCE(AVG(current_streak), 0.0) FROM goals WHERE is_active = 1")
     suspend fun getAverageStreak(): Float
 }

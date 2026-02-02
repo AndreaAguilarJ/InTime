@@ -132,7 +132,11 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
         }
     }
 
+    private var isDestroyed = false
+    
     private fun dismissOverlay() {
+        if (isDestroyed) return // Evitar llamadas duplicadas
+        
         overlayView?.let { view ->
             try {
                 windowManager?.removeView(view)
@@ -141,7 +145,10 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
             }
         }
         overlayView = null
-        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        
+        if (lifecycleRegistry.currentState != Lifecycle.State.DESTROYED) {
+            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        }
         stopSelf()
     }
 
@@ -154,9 +161,31 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
     }
 
     override fun onDestroy() {
+        if (isDestroyed) {
+            super.onDestroy()
+            return
+        }
+        isDestroyed = true
+        
+        overlayView?.let { view ->
+            try {
+                windowManager?.removeView(view)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        overlayView = null
+        
+        try {
+            store.clear()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        
+        if (lifecycleRegistry.currentState != Lifecycle.State.DESTROYED) {
+            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        }
         super.onDestroy()
-        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
-        dismissOverlay()
     }
 }
 

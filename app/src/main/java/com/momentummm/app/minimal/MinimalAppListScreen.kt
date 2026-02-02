@@ -136,7 +136,11 @@ fun MinimalAppListScreen(
                                 val intent = context.packageManager.getLaunchIntentForPackage(app.packageName)
                                 if (intent != null) {
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    context.startActivity(intent)
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("MinimalAppList", "Error launching app: ${app.packageName}", e)
+                                    }
                                 }
                             },
                         color = MaterialTheme.colorScheme.surface,

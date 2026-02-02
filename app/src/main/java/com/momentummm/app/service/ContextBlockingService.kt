@@ -61,7 +61,10 @@ class ContextBlockingService : Service() {
         }
     }
     
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        Log.e(TAG, "Coroutine exception", throwable)
+    }
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private var locationClient: FusedLocationProviderClient? = null
     private var locationCallback: LocationCallback? = null
     private var wifiCheckJob: Job? = null
@@ -86,8 +89,24 @@ class ContextBlockingService : Service() {
         super.onCreate()
         createNotificationChannel()
         
-        val database = AppDatabase.getDatabase(applicationContext)
-        contextBlockRuleDao = database.contextBlockRuleDao()
+        // CRÍTICO: Llamar startForeground inmediatamente en onCreate para Android 12+
+        try {
+            startForeground(NOTIFICATION_ID, buildNotification())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting foreground in onCreate", e)
+            stopSelf()
+            return
+        }
+        
+        // Inicializar database en background thread para evitar ANR
+        serviceScope.launch {
+            try {
+                val database = AppDatabase.getDatabase(applicationContext)
+                contextBlockRuleDao = database.contextBlockRuleDao()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error initializing database", e)
+            }
+        }
         
         try {
             locationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -97,7 +116,7 @@ class ContextBlockingService : Service() {
     }
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(NOTIFICATION_ID, buildNotification())
+        // El servicio ya está en foreground desde onCreate
         startLocationUpdates()
         startWifiChecks()
         return START_STICKY
@@ -133,10 +152,16 @@ class ContextBlockingService : Service() {
             fastestInterval = LOCATION_UPDATE_INTERVAL / 2
         }
         
+        val callback = locationCallback
+        if (callback == null) {
+            Log.e(TAG, "Location callback is null, cannot start updates")
+            return
+        }
+        
         try {
             locationClient?.requestLocationUpdates(
                 locationRequest,
-                locationCallback!!,
+                callback,
                 Looper.getMainLooper()
             )
             Log.d(TAG, "Location updates started")
@@ -146,9 +171,14 @@ class ContextBlockingService : Service() {
     }
     
     private fun stopLocationUpdates() {
-        locationCallback?.let {
-            locationClient?.removeLocationUpdates(it)
+        try {
+            locationCallback?.let { callback ->
+                locationClient?.removeLocationUpdates(callback)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping location updates", e)
         }
+        locationCallback = null
     }
     
     private fun startWifiChecks() {

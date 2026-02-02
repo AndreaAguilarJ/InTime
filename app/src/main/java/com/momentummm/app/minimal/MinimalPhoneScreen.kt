@@ -44,6 +44,7 @@ import com.momentummm.app.util.LifeWeeksCalculator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +55,7 @@ fun MinimalPhoneScreen(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
+    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsStateWithLifecycle()
     var currentScreen by remember { mutableStateOf<MinimalScreen>(MinimalScreen.Home) }
     var showExitConfirm by remember { mutableStateOf(false) }
     
@@ -135,7 +136,7 @@ private fun MinimalLauncherContent(
     val coroutineScope = rememberCoroutineScope()
     val hapticFeedback = LocalHapticFeedback.current
     var showExitConfirm by remember { mutableStateOf(false) }
-    val customApp by minimalPhoneManager.customApp.collectAsState()
+    val customApp by minimalPhoneManager.customApp.collectAsStateWithLifecycle()
     val customAppInfo = remember(customApp) { minimalPhoneManager.getCustomAppInfo() }
     var showAppSelector by remember { mutableStateOf(false) }
 
@@ -695,7 +696,7 @@ fun AllowedAppsManagementScreen(
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(installedApps) { appInfo ->
+            items(installedApps, key = { it.packageName }) { appInfo ->
                 AppPermissionItem(
                     appInfo = appInfo,
                     onToggle = { isAllowed ->
@@ -918,7 +919,7 @@ private fun AppSelectorDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (currentSelection != null) {
-                        item {
+                        item(key = "remove_current") {
                             Card(
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.errorContainer
@@ -944,7 +945,7 @@ private fun AppSelectorDialog(
                         }
                     }
 
-                    items(filteredApps) { appInfo ->
+                    items(filteredApps, key = { it.packageName }) { appInfo ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = if (appInfo.packageName == currentSelection) {

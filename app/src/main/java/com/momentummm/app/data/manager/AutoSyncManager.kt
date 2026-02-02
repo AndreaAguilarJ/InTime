@@ -27,7 +27,13 @@ class AutoSyncManager(
     private val quotesRepository: QuotesRepository
 ) : DefaultLifecycleObserver {
 
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val supervisorJob = SupervisorJob()
+    private val scope = CoroutineScope(Dispatchers.IO + supervisorJob)
+    
+    // Flag para verificar si el manager sigue activo
+    @Volatile
+    private var isActive = true
+    
     private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
 
@@ -48,10 +54,15 @@ class AutoSyncManager(
      */
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
+        if (!isActive) return
         // Guardar todos los datos localmente y sincronizar con Appwrite
         scope.launch {
-            saveAllDataLocally()
-            syncToAppwrite()
+            try {
+                saveAllDataLocally()
+                syncToAppwrite()
+            } catch (e: Exception) {
+                android.util.Log.e("AutoSyncManager", "Error en onStop sync", e)
+            }
         }
     }
 
@@ -60,11 +71,16 @@ class AutoSyncManager(
      */
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
+        if (!isActive) return
         // Sincronizar datos desde Appwrite si han pasado más de 5 minutos
         scope.launch {
-            val shouldSync = shouldSyncFromServer()
-            if (shouldSync) {
-                syncFromAppwrite()
+            try {
+                val shouldSync = shouldSyncFromServer()
+                if (shouldSync) {
+                    syncFromAppwrite()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AutoSyncManager", "Error en onStart sync", e)
             }
         }
     }
@@ -308,7 +324,10 @@ class AutoSyncManager(
                 return
             }
 
-            val serverData = docs.documents.first().data as Map<*, *>
+            val serverData = docs.documents.first().data as? Map<*, *> ?: run {
+                _syncStatus.value = SyncStatus.Idle
+                return
+            }
 
             // Restaurar configuración del usuario
             val birthDate = (serverData["birthDate"] as? Number)?.toLong()
@@ -370,11 +389,21 @@ class AutoSyncManager(
      * Forzar sincronización manual
      */
     suspend fun forceSyncNow() {
-        saveAllDataLocally()
-        syncToAppwrite()
+        if (!isActive) return
+        try {
+            saveAllDataLocally()
+            syncToAppwrite()
+        } catch (e: Exception) {
+            android.util.Log.e("AutoSyncManager", "Error en forceSyncNow", e)
+        }
     }
 
     fun cleanup() {
-        scope.cancel()
+        isActive = false
+        try {
+            supervisorJob.cancel()
+        } catch (e: Exception) {
+            android.util.Log.e("AutoSyncManager", "Error en cleanup", e)
+        }
     }
 }

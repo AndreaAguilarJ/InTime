@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/motivational_widget_description"
+    android:initialKeyguardLayout="@layout/motivational_message_widget_preview"
+    android:initialLayout="@layout/motivational_message_widget_preview"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:previewImage="@drawable/ic_launcher_foreground"
+    android:previewLayout="@layout/motivational_message_widget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="3"
+    android:updatePeriodMillis="3600000"
+    android:widgetCategory="home_screen|keyguard" />

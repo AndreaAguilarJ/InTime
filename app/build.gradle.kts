@@ -15,8 +15,8 @@ android {
         applicationId = "com.momentummm.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "1.0.0"
+        versionCode = 13
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -130,9 +130,13 @@ dependencies {
     // Appwrite SDK (actualizado)
     implementation("io.appwrite:sdk-for-android:8.1.0")
 
+    // Google Generative AI (Gemini)
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
@@ -145,8 +149,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
     // In-app billing for purchases
-    implementation("com.android.billingclient:billing:6.1.0")
-    implementation("com.android.billingclient:billing-ktx:6.1.0")
+    implementation("com.android.billingclient:billing:7.1.1")
+    implementation("com.android.billingclient:billing-ktx:7.1.1")
 
     // DataStore for preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")

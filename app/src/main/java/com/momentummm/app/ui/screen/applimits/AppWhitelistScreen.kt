@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.data.entity.AppWhitelist
 import com.momentummm.app.data.repository.AppUsageInfo
 import com.momentummm.app.ui.system.*
@@ -23,7 +24,7 @@ fun AppWhitelistScreen(
     onNavigateBack: () -> Unit,
     viewModel: AppWhitelistViewModel = hiltViewModel()
 ) {
-    val whitelistedApps by viewModel.whitelistedApps.collectAsState()
+    val whitelistedApps by viewModel.whitelistedApps.collectAsStateWithLifecycle()
     val uiState = viewModel.uiState
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -133,7 +134,7 @@ fun AppWhitelistScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(whitelistedApps) { app ->
+                    items(whitelistedApps, key = { it.packageName }) { app ->
                         WhitelistAppCard(
                             app = app,
                             onRemove = { viewModel.removeFromWhitelist(app) }
@@ -353,7 +354,7 @@ private fun AddToWhitelistDialog(
                         }
                     } else {
                         LazyColumn(modifier = Modifier.animateContentSize()) {
-                            items(filteredApps) { app ->
+                            items(filteredApps, key = { it.packageName }) { app ->
                                 TextButton(
                                     onClick = {
                                         selectedApp = app

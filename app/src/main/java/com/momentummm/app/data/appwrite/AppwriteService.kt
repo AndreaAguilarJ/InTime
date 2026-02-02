@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
+import android.util.Log
+
+private const val TAG = "AppwriteService"
+private const val NETWORK_TIMEOUT_MS = 30_000L
 
 class AppwriteService(context: Context) {
     private val client = Client(context)
@@ -55,19 +61,25 @@ class AppwriteService(context: Context) {
     
     suspend fun createAccount(email: String, password: String, name: String): Result<User<*>> {
         return try {
-            account.create(
-                userId = "unique()",
-                email = email,
-                password = password,
-                name = name
-            )
-            // Crear sesión tras crear cuenta
-            runCatching { account.createEmailPasswordSession(email, password) }
-            val user = account.get()
-            _currentUser.value = user
-            _isLoggedIn.value = true
+            withTimeout(NETWORK_TIMEOUT_MS) {
+                account.create(
+                    userId = "unique()",
+                    email = email,
+                    password = password,
+                    name = name
+                )
+                // Crear sesión tras crear cuenta
+                runCatching { account.createEmailPasswordSession(email, password) }
+                val user = account.get()
+                _currentUser.value = user
+                _isLoggedIn.value = true
+                _isAuthReady.value = true
+                Result.success(user)
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Create account timeout", e)
             _isAuthReady.value = true
-            Result.success(user)
+            Result.failure(Exception("Connection timeout. Please check your internet connection."))
         } catch (e: Exception) {
             _isAuthReady.value = true
             Result.failure(e)
@@ -76,13 +88,22 @@ class AppwriteService(context: Context) {
     
     suspend fun login(email: String, password: String): Result<User<*>> {
         return try {
-            account.createEmailPasswordSession(email, password)
-            val user = account.get()
-            _currentUser.value = user
-            _isLoggedIn.value = true
+            withTimeout(NETWORK_TIMEOUT_MS) {
+                Log.d(TAG, "Attempting login for email: $email")
+                account.createEmailPasswordSession(email, password)
+                val user = account.get()
+                _currentUser.value = user
+                _isLoggedIn.value = true
+                _isAuthReady.value = true
+                Log.d(TAG, "Login successful for user: ${user.id}")
+                Result.success(user)
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Login timeout", e)
             _isAuthReady.value = true
-            Result.success(user)
+            Result.failure(Exception("Connection timeout. Please check your internet connection."))
         } catch (e: Exception) {
+            Log.e(TAG, "Login failed: ${e.message}", e)
             _isAuthReady.value = true
             Result.failure(e)
         }
@@ -90,7 +111,16 @@ class AppwriteService(context: Context) {
     
     suspend fun logout(): Result<Unit> {
         return try {
-            account.deleteSession("current")
+            withTimeout(NETWORK_TIMEOUT_MS) {
+                account.deleteSession("current")
+                _currentUser.value = null
+                _isLoggedIn.value = false
+                _isAuthReady.value = true
+                Result.success(Unit)
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Logout timeout", e)
+            // En caso de timeout, forzar logout local
             _currentUser.value = null
             _isLoggedIn.value = false
             _isAuthReady.value = true
@@ -103,11 +133,17 @@ class AppwriteService(context: Context) {
     
     suspend fun getCurrentUser(): Result<User<*>> {
         return try {
-            val user = account.get()
-            _currentUser.value = user
-            _isLoggedIn.value = true
+            withTimeout(NETWORK_TIMEOUT_MS) {
+                val user = account.get()
+                _currentUser.value = user
+                _isLoggedIn.value = true
+                _isAuthReady.value = true
+                Result.success(user)
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Get current user timeout", e)
             _isAuthReady.value = true
-            Result.success(user)
+            Result.failure(Exception("Connection timeout. Please check your internet connection."))
         } catch (e: Exception) {
             _currentUser.value = null
             _isLoggedIn.value = false

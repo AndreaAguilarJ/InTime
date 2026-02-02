@@ -57,20 +57,23 @@ data class FocusSessionState(
 
 class FocusTimerService : Service() {
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        android.util.Log.e("FocusTimerService", "Coroutine exception", throwable)
+    }
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + exceptionHandler)
     private var tickerJob: Job? = null
     private var xpTrackerJob: Job? = null
     private var endTimeMillis: Long? = null
     private var pausedRemainingSeconds: Int = 0
     private var lastMinuteAwarded: Int = 0
 
-    // Gamification Manager
-    private lateinit var gamificationManager: GamificationManager
-
     private val binder = FocusTimerBinder()
 
     private val _sessionState = MutableStateFlow(FocusSessionState())
     val sessionState: StateFlow<FocusSessionState> = _sessionState.asStateFlow()
+
+    // Cambiar a nullable para evitar UninitializedPropertyAccessException
+    private var gamificationManager: GamificationManager? = null
 
     override fun onBind(intent: Intent): IBinder {
         return binder
@@ -80,12 +83,27 @@ class FocusTimerService : Service() {
         super.onCreate()
         createNotificationChannel()
         
-        // Initialize GamificationManager
-        val database = AppDatabase.getDatabase(applicationContext)
-        gamificationManager = GamificationManager(database.userDao())
+        // Initialize GamificationManager de forma segura en background thread
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                val database = AppDatabase.getDatabase(applicationContext)
+                gamificationManager = GamificationManager(database.userDao(), applicationContext)
+            } catch (e: Exception) {
+                android.util.Log.e("FocusTimerService", "Error initializing GamificationManager", e)
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // CRÍTICO: Si se inicia como foreground service, DEBE llamar startForeground en 5 segundos
+        // Llamar startForeground inmediatamente para evitar ANR/crash
+        try {
+            val defaultNotification = buildNotification(0, FocusTimerStatus.IDLE)
+            startForeground(NOTIFICATION_ID, defaultNotification)
+        } catch (e: Exception) {
+            android.util.Log.e("FocusTimerService", "Error starting foreground", e)
+        }
+        
         when (intent?.action) {
             ACTION_START -> {
                 val sessionType = intent.getStringExtra(EXTRA_SESSION_TYPE)
@@ -163,13 +181,13 @@ class FocusTimerService : Service() {
                 if (current.status == FocusTimerStatus.RUNNING) {
                     val minutesCompleted = current.minutesCompleted + 1
                     
-                    // Otorgar XP por minuto
-                    val event = gamificationManager.awardFocusMinuteXp(1)
+                    // Otorgar XP por minuto - usar safe call para evitar crash
+                    val event = gamificationManager?.awardFocusMinuteXp(1)
                     
                     _sessionState.value = current.copy(
                         minutesCompleted = minutesCompleted,
-                        xpEarned = current.xpEarned + event.xpGained,
-                        coinsEarned = current.coinsEarned + event.coinsGained
+                        xpEarned = current.xpEarned + (event?.xpGained ?: 0),
+                        coinsEarned = current.coinsEarned + (event?.coinsGained ?: 0)
                     )
                     
                     lastMinuteAwarded = minutesCompleted
@@ -183,6 +201,7 @@ class FocusTimerService : Service() {
         if (current.status != FocusTimerStatus.RUNNING) return
 
         tickerJob?.cancel()
+        xpTrackerJob?.cancel() // CRÍTICO: Cancelar XP tracker también para evitar battery drain
         pausedRemainingSeconds = computeRemainingSeconds()
         _sessionState.value = current.copy(
             remainingSeconds = pausedRemainingSeconds,
@@ -249,15 +268,15 @@ class FocusTimerService : Service() {
         
         val current = _sessionState.value
         
-        // Otorgar bonus por completar sesión
+        // Otorgar bonus por completar sesión - usar safe call para evitar crash
         serviceScope.launch {
-            val bonusEvent = gamificationManager.awardSessionCompletionBonus()
+            val bonusEvent = gamificationManager?.awardSessionCompletionBonus()
             
             _sessionState.value = current.copy(
                 remainingSeconds = 0,
                 status = FocusTimerStatus.COMPLETED,
-                xpEarned = current.xpEarned + bonusEvent.xpGained,
-                coinsEarned = current.coinsEarned + bonusEvent.coinsGained
+                xpEarned = current.xpEarned + (bonusEvent?.xpGained ?: 0),
+                coinsEarned = current.coinsEarned + (bonusEvent?.coinsGained ?: 0)
             )
             
             UserPreferencesRepository.setFocusModeEnabled(this@FocusTimerService, false)
@@ -274,7 +293,8 @@ class FocusTimerService : Service() {
     }
 
     private fun updateNotification(remainingSeconds: Int, status: FocusTimerStatus) {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+            ?: return
         notificationManager.notify(NOTIFICATION_ID, buildNotification(remainingSeconds, status))
     }
 
@@ -341,7 +361,8 @@ class FocusTimerService : Service() {
             setShowBadge(false)
         }
 
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+            ?: return
         notificationManager.createNotificationChannel(channel)
     }
 

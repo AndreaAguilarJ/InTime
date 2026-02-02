@@ -9,6 +9,8 @@ import com.momentummm.app.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 
@@ -40,9 +42,14 @@ class OnboardingViewModel(
 
     init {
         viewModelScope.launch {
-            UserPreferencesRepository.isOnboardingCompletedFlow(appContext).collect { completed ->
-                _onboardingCompleted.value = completed
-            }
+            UserPreferencesRepository.isOnboardingCompletedFlow(appContext)
+                .catch { e -> 
+                    e.printStackTrace()
+                    emit(false) // Si hay error, asumir no completado
+                }
+                .collect { completed ->
+                    _onboardingCompleted.value = completed
+                }
         }
     }
 
@@ -55,7 +62,7 @@ class OnboardingViewModel(
             OnboardingStep.COMPLETED -> OnboardingStep.COMPLETED
         }
         
-        _uiState.value = _uiState.value.copy(currentStep = nextStep)
+        _uiState.update { it.copy(currentStep = nextStep) }
         
         if (nextStep == OnboardingStep.COMPLETED) {
             completeOnboarding()
@@ -63,16 +70,16 @@ class OnboardingViewModel(
     }
 
     fun updatePermissionStatus(hasPermission: Boolean) {
-        _uiState.value = _uiState.value.copy(hasUsagePermission = hasPermission)
+        _uiState.update { it.copy(hasUsagePermission = hasPermission) }
     }
 
     fun setBirthDate(birthDate: Date) {
-        _uiState.value = _uiState.value.copy(selectedBirthDate = birthDate)
+        _uiState.update { it.copy(selectedBirthDate = birthDate) }
     }
 
     fun completeOnboarding() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
             
             try {
                 val birthDate = _uiState.value.selectedBirthDate
@@ -83,12 +90,14 @@ class OnboardingViewModel(
                 UserPreferencesRepository.setOnboardingCompleted(appContext, true)
                 userRepository.completeOnboarding()
                 
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     isLoading = false,
                     isCompleted = true
-                )
+                ) }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e // Propagar cancelación para structured concurrency
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false)
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }

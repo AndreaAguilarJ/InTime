@@ -3,9 +3,8 @@ package com.momentummm.app.service
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import com.momentummm.app.R
+import com.momentummm.app.MomentumApplication
+import com.momentummm.app.data.manager.SmartNotificationManager
 import com.momentummm.app.data.repository.WebsiteBlockRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +20,22 @@ class WebsiteBlockService : AccessibilityService() {
     @Inject
     lateinit var websiteBlockRepository: WebsiteBlockRepository
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        android.util.Log.e("WebsiteBlockService", "Coroutine exception", throwable)
+    }
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler) // CAMBIO: Usar Dispatchers.IO para operaciones de BD
+    
+    // CRÍTICO: Throttling para evitar ANR por spam de eventos
+    private var lastEventTime = 0L
+    private val EVENT_THROTTLE_MS = 300L // Mínimo 300ms entre procesamiento
+    
+    // Acceso al SmartNotificationManager
+    private val smartNotificationManager: SmartNotificationManager?
+        get() = try {
+            (application as? MomentumApplication)?.smartNotificationManager
+        } catch (e: Exception) {
+            null
+        }
 
     private val browserPackages = setOf(
         "com.android.chrome",
@@ -50,6 +64,13 @@ class WebsiteBlockService : AccessibilityService() {
 
         // Solo procesar eventos de navegadores
         if (!browserPackages.contains(packageName)) return
+        
+        // CRÍTICO: Throttle para evitar ANR por spam de eventos (TYPE_WINDOW_CONTENT_CHANGED se dispara cientos de veces/segundo durante scroll)
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastEventTime < EVENT_THROTTLE_MS) {
+            return
+        }
+        lastEventTime = currentTime
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
@@ -62,31 +83,72 @@ class WebsiteBlockService : AccessibilityService() {
 
     private fun checkUrlAndBlock() {
         val rootNode = rootInActiveWindow ?: return
-        val url = extractUrl(rootNode) ?: return
+        
+        // Verificar si el repositorio está inicializado antes de procesar
+        if (!::websiteBlockRepository.isInitialized) {
+            rootNode.recycle() // CRÍTICO: Reciclar antes de return temprano
+            return
+        }
+        
+        val url = try {
+            extractUrl(rootNode)
+        } catch (e: Exception) {
+            null
+        } finally {
+            // CRÍTICO: Siempre reciclar el rootNode para evitar memory leak
+            try {
+                rootNode.recycle()
+            } catch (e: Exception) {
+                // Ignorar si ya fue reciclado
+            }
+        } ?: return
 
         serviceScope.launch {
-            val isBlocked = websiteBlockRepository.isUrlBlocked(url)
-            if (isBlocked) {
-                blockWebsite()
-                showBlockedNotification(url)
+            try {
+                // Timeout de 2 segundos para evitar ANR
+                kotlinx.coroutines.withTimeoutOrNull(2000L) {
+                    val blockedInfo = websiteBlockRepository.getBlockedUrlInfo(url)
+                    if (blockedInfo != null) {
+                        kotlinx.coroutines.withContext(Dispatchers.Main) {
+                            blockWebsite()
+                        }
+                        // Usar SmartNotificationManager para notificaciones dinámicas
+                        if (blockedInfo.category != null) {
+                            smartNotificationManager?.showWebsiteCategoryBlockedNotification(blockedInfo.category)
+                        } else {
+                            smartNotificationManager?.showWebsiteBlockedNotification(url)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Ignorar errores silenciosamente
             }
         }
     }
 
-    private fun extractUrl(node: AccessibilityNodeInfo?): String? {
-        if (node == null) return null
+    private fun extractUrl(node: AccessibilityNodeInfo?, depth: Int = 0): String? {
+        // Límite de profundidad para evitar StackOverflow en árboles muy profundos
+        if (node == null || depth > 15) return null
 
-        // Intentar obtener la URL de la barra de direcciones
-        if (node.viewIdResourceName?.contains("url_bar") == true ||
-            node.viewIdResourceName?.contains("address") == true ||
-            node.viewIdResourceName?.contains("search") == true) {
-            node.text?.toString()?.let { return it }
-        }
+        try {
+            // Intentar obtener la URL de la barra de direcciones
+            if (node.viewIdResourceName?.contains("url_bar") == true ||
+                node.viewIdResourceName?.contains("address") == true ||
+                node.viewIdResourceName?.contains("search") == true) {
+                node.text?.toString()?.let { return it }
+            }
 
-        // Buscar recursivamente en los nodos hijos
-        for (i in 0 until node.childCount) {
-            val url = extractUrl(node.getChild(i))
-            if (url != null) return url
+            // Buscar recursivamente en los nodos hijos con límite de profundidad
+            for (i in 0 until node.childCount) {
+                val child = node.getChild(i)
+                if (child != null) {
+                    val url = extractUrl(child, depth + 1)
+                    child.recycle() // CRÍTICO: Reciclar el nodo hijo para evitar memory leak
+                    if (url != null) return url
+                }
+            }
+        } catch (e: Exception) {
+            // Ignorar excepciones de nodos inválidos
         }
 
         return null
@@ -96,25 +158,6 @@ class WebsiteBlockService : AccessibilityService() {
         // Cerrar la actividad del navegador actual
         performGlobalAction(GLOBAL_ACTION_BACK)
         performGlobalAction(GLOBAL_ACTION_HOME)
-    }
-
-    private fun showBlockedNotification(url: String) {
-        val notification = NotificationCompat.Builder(this, "website_block_channel")
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setContentTitle("Sitio web bloqueado")
-            .setContentText("Has intentado acceder a un sitio bloqueado: $url")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .build()
-
-        try {
-            NotificationManagerCompat.from(this).notify(
-                System.currentTimeMillis().toInt(),
-                notification
-            )
-        } catch (_: SecurityException) {
-            // Permission not granted
-        }
     }
 
     override fun onInterrupt() {

@@ -33,7 +33,7 @@ class BillingManager(
     
     private val billingClient = BillingClient.newBuilder(context)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
         .build()
     
     enum class BillingConnectionState {
@@ -184,7 +184,13 @@ class BillingManager(
             .build()
         
         billingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
-            // Handle acknowledgment result
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                android.util.Log.d("BillingManager", "Purchase acknowledged successfully for token: ${purchase.purchaseToken.take(20)}...")
+            } else {
+                android.util.Log.e("BillingManager", "Failed to acknowledge purchase. Code: ${billingResult.responseCode}, Message: ${billingResult.debugMessage}")
+                // Si falla el acknowledge, guardar para reintentar después
+                // El usuario podría perder la compra si no se acknowledges
+            }
         }
     }
     

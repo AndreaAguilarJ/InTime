@@ -1,11 +1,14 @@
 package com.momentummm.app.data.repository
 
+import android.util.Log
 import com.momentummm.app.data.dao.PasswordProtectionDao
 import com.momentummm.app.data.entity.PasswordProtection
 import kotlinx.coroutines.flow.Flow
 import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "PasswordProtectionRepo"
 
 @Singleton
 class PasswordProtectionRepository @Inject constructor(
@@ -16,141 +19,178 @@ class PasswordProtectionRepository @Inject constructor(
     suspend fun getPasswordProtectionSync(): PasswordProtection? = passwordProtectionDao.getPasswordProtectionSync()
 
     suspend fun initializeIfNeeded() {
-        val existing = passwordProtectionDao.getPasswordProtectionSync()
-        if (existing == null) {
-            passwordProtectionDao.insert(PasswordProtection())
+        try {
+            val existing = passwordProtectionDao.getPasswordProtectionSync()
+            if (existing == null) {
+                passwordProtectionDao.insert(PasswordProtection())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing password protection", e)
         }
     }
 
     suspend fun setPassword(password: String, protections: PasswordProtectionSettings) {
-        val hash = hashPassword(password)
-        val current = passwordProtectionDao.getPasswordProtectionSync() ?: PasswordProtection()
+        try {
+            val hash = hashPassword(password)
+            val current = passwordProtectionDao.getPasswordProtectionSync() ?: PasswordProtection()
 
-        passwordProtectionDao.update(
-            current.copy(
-                passwordHash = hash,
-                isEnabled = true,
-                protectAppLimits = protections.protectAppLimits,
-                protectInAppBlocking = protections.protectInAppBlocking,
-                protectWebsiteBlocking = protections.protectWebsiteBlocking,
-                protectMinimalMode = protections.protectMinimalMode,
-                failedAttempts = 0,
-                lockoutUntil = 0
+            passwordProtectionDao.update(
+                current.copy(
+                    passwordHash = hash,
+                    isEnabled = true,
+                    protectAppLimits = protections.protectAppLimits,
+                    protectInAppBlocking = protections.protectInAppBlocking,
+                    protectWebsiteBlocking = protections.protectWebsiteBlocking,
+                    protectMinimalMode = protections.protectMinimalMode,
+                    failedAttempts = 0,
+                    lockoutUntil = 0
+                )
             )
-        )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting password", e)
+        }
     }
 
     suspend fun updateProtections(protections: PasswordProtectionSettings) {
-        val current = passwordProtectionDao.getPasswordProtectionSync() ?: return
+        try {
+            val current = passwordProtectionDao.getPasswordProtectionSync() ?: return
 
-        passwordProtectionDao.update(
-            current.copy(
-                protectAppLimits = protections.protectAppLimits,
-                protectInAppBlocking = protections.protectInAppBlocking,
-                protectWebsiteBlocking = protections.protectWebsiteBlocking,
-                protectMinimalMode = protections.protectMinimalMode
+            passwordProtectionDao.update(
+                current.copy(
+                    protectAppLimits = protections.protectAppLimits,
+                    protectInAppBlocking = protections.protectInAppBlocking,
+                    protectWebsiteBlocking = protections.protectWebsiteBlocking,
+                    protectMinimalMode = protections.protectMinimalMode
+                )
             )
-        )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating protections", e)
+        }
     }
 
     suspend fun verifyPassword(password: String): Boolean {
-        val protection = passwordProtectionDao.getPasswordProtectionSync() ?: return false
+        return try {
+            val protection = passwordProtectionDao.getPasswordProtectionSync() ?: return false
 
-        if (!protection.isEnabled || protection.passwordHash == null) {
-            return true // No hay contraseña configurada
-        }
-
-        // Verificar si hay bloqueo temporal
-        val currentTime = System.currentTimeMillis()
-        if (protection.lockoutUntil > currentTime) {
-            return false
-        }
-
-        val inputHash = hashPassword(password)
-        val isCorrect = inputHash == protection.passwordHash
-
-        if (!isCorrect) {
-            // Incrementar intentos fallidos
-            val newAttempts = protection.failedAttempts + 1
-            val lockoutTime = if (newAttempts >= 5) {
-                // Bloquear por 5 minutos después de 5 intentos fallidos
-                currentTime + (5 * 60 * 1000)
-            } else {
-                0L
+            if (!protection.isEnabled || protection.passwordHash == null) {
+                return true // No hay contraseña configurada
             }
 
-            passwordProtectionDao.update(
-                protection.copy(
-                    failedAttempts = newAttempts,
-                    lastFailedAttempt = currentTime,
-                    lockoutUntil = lockoutTime
-                )
-            )
-        } else {
-            // Resetear intentos fallidos en caso de éxito
-            passwordProtectionDao.resetFailedAttempts()
-        }
+            // Verificar si hay bloqueo temporal
+            val currentTime = System.currentTimeMillis()
+            if (protection.lockoutUntil > currentTime) {
+                return false
+            }
 
-        return isCorrect
+            val inputHash = hashPassword(password)
+            val isCorrect = inputHash == protection.passwordHash
+
+            if (!isCorrect) {
+                // Incrementar intentos fallidos
+                val newAttempts = protection.failedAttempts + 1
+                val lockoutTime = if (newAttempts >= 5) {
+                    // Bloquear por 5 minutos después de 5 intentos fallidos
+                    currentTime + (5 * 60 * 1000)
+                } else {
+                    0L
+                }
+
+                passwordProtectionDao.update(
+                    protection.copy(
+                        failedAttempts = newAttempts,
+                        lastFailedAttempt = currentTime,
+                        lockoutUntil = lockoutTime
+                    )
+                )
+            } else {
+                // Resetear intentos fallidos en caso de éxito
+                passwordProtectionDao.resetFailedAttempts()
+            }
+
+            isCorrect
+        } catch (e: Exception) {
+            Log.e(TAG, "Error verifying password", e)
+            false
+        }
     }
 
     suspend fun disablePasswordProtection(password: String): Boolean {
-        if (!verifyPassword(password)) {
-            return false
-        }
+        return try {
+            if (!verifyPassword(password)) {
+                return false
+            }
 
-        val current = passwordProtectionDao.getPasswordProtectionSync() ?: return false
-        passwordProtectionDao.update(
-            current.copy(
-                isEnabled = false,
-                passwordHash = null,
-                failedAttempts = 0,
-                lockoutUntil = 0
+            val current = passwordProtectionDao.getPasswordProtectionSync() ?: return false
+            passwordProtectionDao.update(
+                current.copy(
+                    isEnabled = false,
+                    passwordHash = null,
+                    failedAttempts = 0,
+                    lockoutUntil = 0
+                )
             )
-        )
 
-        return true
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error disabling password protection", e)
+            false
+        }
     }
 
     suspend fun changePassword(oldPassword: String, newPassword: String): Boolean {
-        if (!verifyPassword(oldPassword)) {
-            return false
-        }
+        return try {
+            if (!verifyPassword(oldPassword)) {
+                return false
+            }
 
-        val current = passwordProtectionDao.getPasswordProtectionSync() ?: return false
-        val newHash = hashPassword(newPassword)
+            val current = passwordProtectionDao.getPasswordProtectionSync() ?: return false
+            val newHash = hashPassword(newPassword)
 
-        passwordProtectionDao.update(
-            current.copy(
-                passwordHash = newHash,
-                failedAttempts = 0,
-                lockoutUntil = 0
+            passwordProtectionDao.update(
+                current.copy(
+                    passwordHash = newHash,
+                    failedAttempts = 0,
+                    lockoutUntil = 0
+                )
             )
-        )
 
-        return true
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error changing password", e)
+            false
+        }
     }
 
     suspend fun isFeatureProtected(feature: ProtectedFeature): Boolean {
-        val protection = passwordProtectionDao.getPasswordProtectionSync() ?: return false
+        return try {
+            val protection = passwordProtectionDao.getPasswordProtectionSync() ?: return false
 
-        if (!protection.isEnabled) return false
+            if (!protection.isEnabled) return false
 
-        return when (feature) {
-            ProtectedFeature.APP_LIMITS -> protection.protectAppLimits
-            ProtectedFeature.IN_APP_BLOCKING -> protection.protectInAppBlocking
-            ProtectedFeature.WEBSITE_BLOCKING -> protection.protectWebsiteBlocking
-            ProtectedFeature.MINIMAL_MODE -> protection.protectMinimalMode
+            when (feature) {
+                ProtectedFeature.APP_LIMITS -> protection.protectAppLimits
+                ProtectedFeature.IN_APP_BLOCKING -> protection.protectInAppBlocking
+                ProtectedFeature.WEBSITE_BLOCKING -> protection.protectWebsiteBlocking
+                ProtectedFeature.MINIMAL_MODE -> protection.protectMinimalMode
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking feature protection", e)
+            false
         }
     }
 
     suspend fun getRemainingLockoutTime(): Long {
-        val protection = passwordProtectionDao.getPasswordProtectionSync() ?: return 0L
-        val currentTime = System.currentTimeMillis()
+        return try {
+            val protection = passwordProtectionDao.getPasswordProtectionSync() ?: return 0L
+            val currentTime = System.currentTimeMillis()
 
-        return if (protection.lockoutUntil > currentTime) {
-            protection.lockoutUntil - currentTime
-        } else {
+            if (protection.lockoutUntil > currentTime) {
+                protection.lockoutUntil - currentTime
+            } else {
+                0L
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting remaining lockout time", e)
             0L
         }
     }
@@ -159,12 +199,16 @@ class PasswordProtectionRepository @Inject constructor(
      * Activa o desactiva la protección (toggle switch sin cambiar la contraseña)
      */
     suspend fun toggleProtection(enabled: Boolean) {
-        val current = passwordProtectionDao.getPasswordProtectionSync() ?: return
-        // Solo permite activar si hay contraseña configurada
-        if (enabled && current.passwordHash.isNullOrEmpty()) {
-            return
+        try {
+            val current = passwordProtectionDao.getPasswordProtectionSync() ?: return
+            // Solo permite activar si hay contraseña configurada
+            if (enabled && current.passwordHash.isNullOrEmpty()) {
+                return
+            }
+            passwordProtectionDao.update(current.copy(isEnabled = enabled))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error toggling protection", e)
         }
-        passwordProtectionDao.update(current.copy(isEnabled = enabled))
     }
 
     private fun hashPassword(password: String): String {

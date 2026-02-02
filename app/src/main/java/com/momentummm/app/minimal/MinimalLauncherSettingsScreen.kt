@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,9 +30,9 @@ fun MinimalLauncherSettingsScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val isDefaultLauncher by launcherManager.isDefaultLauncher.collectAsState()
-    val autoEnableMinimal by launcherManager.autoEnableMinimal.collectAsState()
-    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
+    val isDefaultLauncher by launcherManager.isDefaultLauncher.collectAsStateWithLifecycle()
+    val autoEnableMinimal by launcherManager.autoEnableMinimal.collectAsStateWithLifecycle()
+    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsStateWithLifecycle()
 
     var showLauncherList by remember { mutableStateOf(false) }
     var installedLaunchers by remember { mutableStateOf<List<LauncherInfo>>(emptyList()) }
@@ -346,7 +347,7 @@ private fun LauncherSelectionList(
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(launchers) { launcher ->
+            items(launchers, key = { it.packageName }) { launcher ->
                 LauncherItem(
                     launcher = launcher,
                     onClick = { onLauncherSelected(launcher) }

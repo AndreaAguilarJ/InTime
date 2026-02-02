@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -41,7 +42,10 @@ class SmartBlockingManager @Inject constructor(
     private val inAppBlockRuleDao: InAppBlockRuleDao
 ) {
     private val TAG = "SmartBlockingManager"
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        android.util.Log.e(TAG, "Coroutine exception", throwable)
+    }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     
     // Estados observables
     private val _config = MutableStateFlow(SmartBlockingConfig.DEFAULT)
@@ -64,6 +68,20 @@ class SmartBlockingManager @Inject constructor(
     
     // Context rules flow
     val contextRules: Flow<List<ContextBlockRule>> = contextRuleDao.getAllRules()
+    
+    // ================== TRACKING DE APPS BLOQUEADAS HOY ==================
+    // Guarda el timestamp del último bloqueo para cada app (solo se muestra pantalla 1 vez por límite)
+    private val _blockedAppsToday = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val blockedAppsToday: StateFlow<Map<String, Long>> = _blockedAppsToday.asStateFlow()
+    
+    // Guarda la última vez que se mostró la pantalla de bloqueo para cada app
+    // Usar ConcurrentHashMap para evitar ConcurrentModificationException
+    private val lastBlockScreenShownTime = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private val BLOCK_SCREEN_COOLDOWN = 3000L // 3 segundos mínimo entre pantallas de bloqueo
+    
+    // Fecha del día actual para resetear al cambiar de día
+    @Volatile
+    private var currentBlockDay: Int = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
     
     init {
         scope.launch {
@@ -95,7 +113,10 @@ class SmartBlockingManager @Inject constructor(
         if (config.isNuclearModeActive()) {
             val totalSeconds = config.nuclearModeUnlockWaitMinutes * 60
             val currentSeconds = config.nuclearModeCurrentWaitSeconds
-            _nuclearModeProgress.value = currentSeconds.toFloat() / totalSeconds.toFloat()
+            // Protección contra división por cero
+            _nuclearModeProgress.value = if (totalSeconds > 0) {
+                currentSeconds.toFloat() / totalSeconds.toFloat()
+            } else 0f
         }
     }
     
@@ -106,6 +127,13 @@ class SmartBlockingManager @Inject constructor(
         scope.launch {
             val currentConfig = configDao.getConfigSync() ?: return@launch
             updateModeStates(currentConfig)
+            
+            // Verificar si cambió el día para resetear apps bloqueadas
+            val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+            if (today != currentBlockDay) {
+                resetBlockedAppsForNewDay()
+                currentBlockDay = today
+            }
             
             // Actualizar reglas de contexto activas
             val rules = contextRuleDao.getEnabledRulesSync()
@@ -120,6 +148,64 @@ class SmartBlockingManager @Inject constructor(
             // Resetear días de gracia si es nueva semana
             checkAndResetGraceDays(currentConfig)
         }
+    }
+    
+    // ================== GESTIÓN DE APPS BLOQUEADAS ==================
+    
+    /**
+     * Marca una app como bloqueada hoy (alcanzó su límite)
+     * Usa update{} para operación atómica
+     */
+    fun markAppAsBlocked(packageName: String) {
+        _blockedAppsToday.update { currentMap ->
+            currentMap + (packageName to System.currentTimeMillis())
+        }
+        Log.d(TAG, "App marcada como bloqueada hoy: $packageName")
+    }
+    
+    /**
+     * Verifica si una app está bloqueada hoy (ya alcanzó su límite)
+     */
+    fun isAppBlockedToday(packageName: String): Boolean {
+        return _blockedAppsToday.value.containsKey(packageName)
+    }
+    
+    /**
+     * Verifica si se puede mostrar la pantalla de bloqueo (evita spam de pantallas)
+     * Retorna true si ya pasó el cooldown desde la última vez que se mostró
+     */
+    fun canShowBlockScreen(packageName: String): Boolean {
+        val lastShown = lastBlockScreenShownTime[packageName] ?: 0L
+        val now = System.currentTimeMillis()
+        return (now - lastShown) > BLOCK_SCREEN_COOLDOWN
+    }
+    
+    /**
+     * Registra que se mostró la pantalla de bloqueo para una app
+     */
+    fun registerBlockScreenShown(packageName: String) {
+        lastBlockScreenShownTime[packageName] = System.currentTimeMillis()
+    }
+    
+    /**
+     * Desbloquea una app temporalmente (por pago o shame share)
+     * Usa update{} para operación atómica
+     */
+    fun temporarilyUnblockApp(packageName: String) {
+        _blockedAppsToday.update { currentMap ->
+            currentMap - packageName
+        }
+        lastBlockScreenShownTime.remove(packageName)
+        Log.d(TAG, "App desbloqueada temporalmente: $packageName")
+    }
+    
+    /**
+     * Resetea todas las apps bloqueadas (para nuevo día)
+     */
+    private fun resetBlockedAppsForNewDay() {
+        _blockedAppsToday.value = emptyMap()
+        lastBlockScreenShownTime.clear()
+        Log.d(TAG, "Apps bloqueadas reseteadas para nuevo día")
     }
     
     private suspend fun checkAndResetGraceDays(config: SmartBlockingConfig) {
@@ -333,6 +419,10 @@ class SmartBlockingManager @Inject constructor(
     
     suspend fun setFloatingTimerPosition(position: String) {
         configDao.setFloatingTimerPosition(position)
+    }
+    
+    suspend fun setFloatingTimerSize(size: String) {
+        configDao.setFloatingTimerSize(size)
     }
     
     fun isFloatingTimerEnabled(): Boolean = _config.value.floatingTimerEnabled

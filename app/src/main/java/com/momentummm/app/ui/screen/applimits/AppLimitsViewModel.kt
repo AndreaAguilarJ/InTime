@@ -62,31 +62,28 @@ class AppLimitsViewModel @Inject constructor(
 
     fun loadData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
         }
 
         // Colección de límites en tiempo real
         viewModelScope.launch {
-            try {
-                appLimitRepository.getAllLimits().collect { limits ->
+            appLimitRepository.getAllLimits()
+                .catch { e -> 
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+                .collect { limits ->
                     // Calcular remaining times en paralelo para mejor performance
                     val remainingTimes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
                         limits.associate { limit ->
                             limit.packageName to appLimitRepository.getRemainingTime(limit.packageName)
                         }
                     }
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.update { it.copy(
                         appLimits = limits,
                         remainingTimes = remainingTimes,
                         isLoading = false
-                    )
+                    ) }
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
-            }
         }
 
         // Cargar apps disponibles en paralelo con Dispatchers.IO
@@ -103,18 +100,18 @@ class AppLimitsViewModel @Inject constructor(
                     COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
                 }.sortedBy { it.appName }
                 
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     availableApps = filteredAvailable,
                     suggestedApps = suggestedApps
-                )
+                ) }
             } catch (e: SecurityException) {
                 // Android 11+ sin <queries> adecuado puede causar visibilidad limitada; no cerrar app
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     availableApps = emptyList(),
                     suggestedApps = emptyList()
-                )
+                ) }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
 
@@ -129,18 +126,18 @@ class AppLimitsViewModel @Inject constructor(
             try {
                 appLimitRepository.addAppLimit(packageName, appName, limitMinutes)
 
-                // Actualizar la lista de apps disponibles y sugeridas
-                val currentAvailable = _uiState.value.availableApps
-                val filteredAvailable = currentAvailable.filter { it.packageName != packageName }
-                
-                val updatedSuggestedApps = filteredAvailable.filter { app ->
-                    COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
-                }.sortedBy { it.appName }
-                
-                _uiState.value = _uiState.value.copy(
-                    availableApps = filteredAvailable,
-                    suggestedApps = updatedSuggestedApps
-                )
+                // Actualizar la lista de apps disponibles y sugeridas usando update atómico
+                _uiState.update { currentState ->
+                    val filteredAvailable = currentState.availableApps.filter { it.packageName != packageName }
+                    val updatedSuggestedApps = filteredAvailable.filter { app ->
+                        COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
+                    }.sortedBy { it.appName }
+                    
+                    currentState.copy(
+                        availableApps = filteredAvailable,
+                        suggestedApps = updatedSuggestedApps
+                    )
+                }
 
                 // Reiniciar monitoreo si está activo
                 if (_uiState.value.isMonitoringActive) {
@@ -148,7 +145,7 @@ class AppLimitsViewModel @Inject constructor(
                 }
 
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -160,15 +157,14 @@ class AppLimitsViewModel @Inject constructor(
 
                 // Recalcular tiempo restante
                 val remaining = appLimitRepository.getRemainingTime(packageName)
-                val currentRemainingTimes = _uiState.value.remainingTimes.toMutableMap()
-                currentRemainingTimes[packageName] = remaining
-
-                _uiState.value = _uiState.value.copy(
-                    remainingTimes = currentRemainingTimes
-                )
+                _uiState.update { currentState ->
+                    val updatedRemainingTimes = currentState.remainingTimes.toMutableMap()
+                    updatedRemainingTimes[packageName] = remaining
+                    currentState.copy(remainingTimes = updatedRemainingTimes)
+                }
 
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -178,7 +174,7 @@ class AppLimitsViewModel @Inject constructor(
             try {
                 appLimitRepository.toggleAppLimit(packageName, enabled)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -188,29 +184,28 @@ class AppLimitsViewModel @Inject constructor(
             try {
                 appLimitRepository.removeAppLimit(appLimit)
 
-                // Agregar la app de vuelta a disponibles
-                val availableApp = AppUsageInfo(
-                    packageName = appLimit.packageName,
-                    appName = appLimit.appName,
-                    totalTimeInMillis = 0L,
-                    lastTimeUsed = 0L
-                )
+                // Agregar la app de vuelta a disponibles usando update atómico
+                _uiState.update { currentState ->
+                    val availableApp = AppUsageInfo(
+                        packageName = appLimit.packageName,
+                        appName = appLimit.appName,
+                        totalTimeInMillis = 0L,
+                        lastTimeUsed = 0L
+                    )
 
-                val currentAvailable = _uiState.value.availableApps.toMutableList()
-                currentAvailable.add(availableApp)
-                currentAvailable.sortBy { it.appName }
+                    val updatedAvailable = (currentState.availableApps + availableApp).sortedBy { it.appName }
+                    val updatedSuggestedApps = updatedAvailable.filter { app ->
+                        COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
+                    }.sortedBy { it.appName }
 
-                val updatedSuggestedApps = currentAvailable.filter { app ->
-                    COMMON_ADDICTIVE_PACKAGES.contains(app.packageName)
-                }.sortedBy { it.appName }
-
-                _uiState.value = _uiState.value.copy(
-                    availableApps = currentAvailable,
-                    suggestedApps = updatedSuggestedApps
-                )
+                    currentState.copy(
+                        availableApps = updatedAvailable,
+                        suggestedApps = updatedSuggestedApps
+                    )
+                }
 
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -224,12 +219,10 @@ class AppLimitsViewModel @Inject constructor(
                     stopMonitoring()
                 }
 
-                _uiState.value = _uiState.value.copy(
-                    isMonitoringActive = enabled
-                )
+                _uiState.update { it.copy(isMonitoringActive = enabled) }
 
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -253,36 +246,38 @@ class AppLimitsViewModel @Inject constructor(
         // Verificar si el servicio de monitoreo está activo
         // Esta implementación puede variar según cómo manejes el estado del servicio
         val isActive = isMonitoringServiceRunning()
-        _uiState.value = _uiState.value.copy(isMonitoringActive = isActive)
+        _uiState.update { it.copy(isMonitoringActive = isActive) }
     }
 
     private fun isMonitoringServiceRunning(): Boolean {
         // Implementación para verificar si el servicio está corriendo
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-        @Suppress("DEPRECATION")
-        for (service in activityManager.getRunningServices(Integer.MAX_VALUE)) {
-            if (AppMonitoringService::class.java.name == service.service.className) {
-                return true
+        return try {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager
+                ?: return false
+            @Suppress("DEPRECATION")
+            val runningServices = activityManager.getRunningServices(Integer.MAX_VALUE) ?: return false
+            for (service in runningServices) {
+                if (AppMonitoringService::class.java.name == service.service.className) {
+                    return true
+                }
             }
+            false
+        } catch (e: Exception) {
+            false
         }
-        return false
     }
 
     fun refreshRemainingTimes() {
         viewModelScope.launch {
-            val remainingTimes = mutableMapOf<String, Int>()
-            _uiState.value.appLimits.forEach { limit ->
-                val remaining = appLimitRepository.getRemainingTime(limit.packageName)
-                remainingTimes[limit.packageName] = remaining
+            val appLimits = _uiState.value.appLimits
+            val remainingTimes = appLimits.associate { limit ->
+                limit.packageName to appLimitRepository.getRemainingTime(limit.packageName)
             }
-
-            _uiState.value = _uiState.value.copy(
-                remainingTimes = remainingTimes
-            )
+            _uiState.update { it.copy(remainingTimes = remainingTimes) }
         }
     }
 
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.update { it.copy(error = null) }
     }
 }

@@ -9,6 +9,8 @@ import com.momentummm.app.util.LifeWeeksCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 
@@ -34,28 +36,36 @@ class LifeWeeksViewModel(
 
     private fun loadUserSettings() {
         viewModelScope.launch {
-            userRepository.getUserSettings().collect { settings ->
-                val birthDate = settings?.birthDate
-                val hasBirthDate = birthDate != null
+            userRepository.getUserSettings()
+                .catch { e -> 
+                    e.printStackTrace()
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        errorMessage = "Error cargando configuración"
+                    ) }
+                }
+                .collect { settings ->
+                    val birthDate = settings?.birthDate
+                    val hasBirthDate = birthDate != null
 
-                val lifeWeeksData = if (birthDate != null) {
-                    try {
-                        LifeWeeksCalculator.calculateLifeWeeks(birthDate)
-                    } catch (e: Exception) {
+                    val lifeWeeksData = if (birthDate != null) {
+                        try {
+                            LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    } else {
                         null
                     }
-                } else {
-                    null
+                    
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        userSettings = settings,
+                        lifeWeeksData = lifeWeeksData,
+                        hasBirthDate = hasBirthDate,
+                        errorMessage = if (!hasBirthDate) "No se ha configurado la fecha de nacimiento" else null
+                    ) }
                 }
-                
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    userSettings = settings,
-                    lifeWeeksData = lifeWeeksData,
-                    hasBirthDate = hasBirthDate,
-                    errorMessage = if (!hasBirthDate) "No se ha configurado la fecha de nacimiento" else null
-                )
-            }
         }
     }
 
@@ -63,20 +73,22 @@ class LifeWeeksViewModel(
         viewModelScope.launch {
             try {
                 userRepository.updateColors(livedColor, futureColor, backgroundColor)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e // Propagar cancelación
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     errorMessage = "Error al actualizar colores: ${e.message}"
-                )
+                ) }
             }
         }
     }
 
     fun showColorPicker() {
-        _uiState.value = _uiState.value.copy(showColorPicker = true)
+        _uiState.update { it.copy(showColorPicker = true) }
     }
 
     fun hideColorPicker() {
-        _uiState.value = _uiState.value.copy(showColorPicker = false)
+        _uiState.update { it.copy(showColorPicker = false) }
     }
 
     fun refreshData() {

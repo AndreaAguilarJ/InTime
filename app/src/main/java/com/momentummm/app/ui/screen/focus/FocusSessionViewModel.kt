@@ -101,7 +101,12 @@ class FocusSessionViewModel(application: Application) : AndroidViewModel(applica
         super.onCleared()
         serviceStateJob?.cancel()
         if (isBound) {
-            appContext.unbindService(connection)
+            try {
+                appContext.unbindService(connection)
+            } catch (e: Exception) {
+                // Service already unbound
+            }
+            isBound = false
         }
     }
 }

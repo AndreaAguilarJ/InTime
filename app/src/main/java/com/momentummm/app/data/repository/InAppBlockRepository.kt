@@ -6,7 +6,9 @@ import com.momentummm.app.data.entity.InAppBlockRule
 import com.momentummm.app.data.entity.BlockType
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONArray
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,9 +19,11 @@ class InAppBlockRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
-    fun getAllRules(): Flow<List<InAppBlockRule>> = inAppBlockRuleDao.getAllRules()
+    fun getAllRules(): Flow<List<InAppBlockRule>> = 
+        inAppBlockRuleDao.getAllRules().distinctUntilChanged()
 
-    fun getAllEnabledRules(): Flow<List<InAppBlockRule>> = inAppBlockRuleDao.getAllEnabledRules()
+    fun getAllEnabledRules(): Flow<List<InAppBlockRule>> = 
+        inAppBlockRuleDao.getAllEnabledRules().distinctUntilChanged()
 
     suspend fun getEnabledRulesForPackage(packageName: String): List<InAppBlockRule> =
         inAppBlockRuleDao.getEnabledRulesForPackage(packageName)
@@ -49,7 +53,9 @@ class InAppBlockRepository @Inject constructor(
      * Inicializa las reglas predeterminadas para apps populares
      */
     suspend fun initializeDefaultRules() {
-        val existingRules = inAppBlockRuleDao.getAllRules().first()
+        val existingRules = withTimeoutOrNull(5000L) { 
+            inAppBlockRuleDao.getAllRules().first() 
+        } ?: emptyList()
         if (existingRules.isNotEmpty()) {
             return // Ya hay reglas, no inicializar
         }

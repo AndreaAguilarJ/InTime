@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
 import com.momentummm.app.accessibility.MomentumAccessibilityService
 import com.momentummm.app.data.entity.BlockType
@@ -39,7 +40,7 @@ fun InAppBlockScreen(
     onNavigateBack: () -> Unit,
     viewModel: InAppBlockViewModel = hiltViewModel()
 ) {
-    val rules by viewModel.rules.collectAsState()
+    val rules by viewModel.rules.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
     val filteredRules = remember(rules, searchQuery) {
         if (searchQuery.isBlank()) {
@@ -275,7 +276,7 @@ fun InAppBlockScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     groupedRules.forEach { (packageName, appRules) ->
-                        item {
+                        item(key = packageName) {
                             AppBlockSection(
                                 appName = appRules.firstOrNull()?.appName ?: "",
                                 packageName = packageName,

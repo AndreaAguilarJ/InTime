@@ -36,18 +36,7 @@ object ErrorHandler {
         scope: CoroutineScope,
         context: Context
     ) {
-        val message = when {
-            !NetworkUtils.isNetworkAvailable(context) -> 
-                "Sin conexión a internet. Verifica tu conexión y vuelve a intentar."
-            error.message?.contains("authentication", ignoreCase = true) == true ->
-                "Error de autenticación. Verifica tus credenciales."
-            error.message?.contains("network", ignoreCase = true) == true ->
-                "Error de red. Verifica tu conexión a internet."
-            error.message?.contains("timeout", ignoreCase = true) == true ->
-                "La operación tardó demasiado. Inténtalo de nuevo."
-            else -> 
-                "Ha ocurrido un error inesperado. Inténtalo de nuevo."
-        }
+        val message = getDetailedErrorMessage(error, context)
         
         scope.launch {
             snackbarHostState.showSnackbar(
@@ -57,18 +46,36 @@ object ErrorHandler {
         }
     }
     
-    fun getErrorMessage(error: Throwable, context: Context): String {
+    private fun getDetailedErrorMessage(error: Throwable, context: Context): String {
+        val errorMsg = error.message?.lowercase() ?: ""
+        
         return when {
             !NetworkUtils.isNetworkAvailable(context) -> 
-                "Sin conexión a internet"
-            error.message?.contains("authentication", ignoreCase = true) == true ->
-                "Error de autenticación"
-            error.message?.contains("network", ignoreCase = true) == true ->
-                "Error de red"
-            error.message?.contains("timeout", ignoreCase = true) == true ->
-                "Tiempo de espera agotado"
+                "Sin conexión a internet. Verifica tu conexión y vuelve a intentar."
+            errorMsg.contains("invalid credentials") || errorMsg.contains("invalid_credentials") ->
+                "Email o contraseña incorrectos"
+            errorMsg.contains("user_not_found") || errorMsg.contains("user not found") ->
+                "No existe una cuenta con este email"
+            errorMsg.contains("user_already_exists") || errorMsg.contains("already exists") ->
+                "Ya existe una cuenta con este email"
+            errorMsg.contains("password") && errorMsg.contains("invalid") ->
+                "La contraseña es incorrecta"
+            errorMsg.contains("email") && errorMsg.contains("invalid") ->
+                "El formato del email no es válido"
+            errorMsg.contains("rate_limit") || errorMsg.contains("too many") ->
+                "Demasiados intentos. Espera unos minutos"
+            errorMsg.contains("authentication") ->
+                "Error de autenticación. Verifica tus credenciales."
+            errorMsg.contains("network") ->
+                "Error de red. Verifica tu conexión a internet."
+            errorMsg.contains("timeout") ->
+                "La operación tardó demasiado. Inténtalo de nuevo."
             else -> 
-                "Error inesperado"
+                "Ha ocurrido un error inesperado. Inténtalo de nuevo."
         }
+    }
+    
+    fun getErrorMessage(error: Throwable, context: Context): String {
+        return getDetailedErrorMessage(error, context)
     }
 }

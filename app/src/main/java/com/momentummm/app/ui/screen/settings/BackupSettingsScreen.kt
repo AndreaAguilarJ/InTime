@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.momentummm.app.R
 import com.momentummm.app.data.manager.BackupSyncManager
 import com.momentummm.app.data.manager.ExportManager
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,9 +32,9 @@ fun BackupSettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
-    val syncStatus by backupSyncManager.syncStatus.collectAsState()
-    val lastSyncTime by backupSyncManager.lastSyncTime.collectAsState()
-    val backupProgress by backupSyncManager.backupProgress.collectAsState()
+    val syncStatus by backupSyncManager.syncStatus.collectAsStateWithLifecycle()
+    val lastSyncTime by backupSyncManager.lastSyncTime.collectAsStateWithLifecycle()
+    val backupProgress by backupSyncManager.backupProgress.collectAsStateWithLifecycle()
     
     var showExportDialog by remember { mutableStateOf(false) }
     var exportType by remember { mutableStateOf("usage") }

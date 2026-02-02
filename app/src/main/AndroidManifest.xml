@@ -15,6 +15,7 @@
     <!-- App blocking overlay permissions -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Minimal phone functionality permissions -->
@@ -188,6 +189,18 @@
                 android:resource="@xml/year_progress_widget_info" />
         </receiver>
 
+        <!-- Motivational Message Widget -->
+        <receiver
+            android:name=".widget.MotivationalMessageWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/motivational_message_widget_info" />
+        </receiver>
+
         <!-- Boot Receiver to start monitoring service after device reboot -->
         <receiver
             android:name=".receiver.BootReceiver"
@@ -196,6 +209,18 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Motivational Notification Receiver for notification actions -->
+        <receiver
+            android:name=".receiver.MotivationalNotificationReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.momentummm.app.action.MOTIVATIONAL_LOVE" />
+                <action android:name="com.momentummm.app.action.MOTIVATIONAL_ANOTHER" />
+                <action android:name="com.momentummm.app.action.MOTIVATIONAL_DISMISS" />
             </intent-filter>
         </receiver>
 

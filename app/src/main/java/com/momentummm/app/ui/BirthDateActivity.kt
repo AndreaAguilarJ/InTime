@@ -16,15 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.glance.appwidget.updateAll
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.widget.LifeWeeksWidget
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import androidx.lifecycle.lifecycleScope
 
 class BirthDateActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,9 +50,9 @@ class BirthDateActivity : ComponentActivity() {
         val dialog = DatePickerDialog(this, { _, y, m, d ->
             val localDate = LocalDate.of(y, m + 1, d)
             val iso = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 UserPreferencesRepository.setDobIso(this@BirthDateActivity, iso)
-                LifeWeeksWidget().updateAll(this@BirthDateActivity)
+                LifeWeeksWidget.updateAllWidgets(this@BirthDateActivity)
             }
             finish()
         }, year, month, day)

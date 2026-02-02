@@ -65,6 +65,9 @@ interface SmartBlockingConfigDao {
     @Query("UPDATE smart_blocking_config SET floatingTimerPosition = :position, updatedAt = :timestamp WHERE id = 1")
     suspend fun setFloatingTimerPosition(position: String, timestamp: Long = System.currentTimeMillis())
     
+    @Query("UPDATE smart_blocking_config SET floatingTimerSize = :size, updatedAt = :timestamp WHERE id = 1")
+    suspend fun setFloatingTimerSize(size: String, timestamp: Long = System.currentTimeMillis())
+    
     @Query("UPDATE smart_blocking_config SET streakProtectionEnabled = :enabled, updatedAt = :timestamp WHERE id = 1")
     suspend fun setStreakProtectionEnabled(enabled: Boolean, timestamp: Long = System.currentTimeMillis())
     

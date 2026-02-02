@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.annotation.StringRes
 import com.momentummm.app.R
 import com.momentummm.app.data.repository.UsageStatsRepository
@@ -117,7 +118,7 @@ fun AdvancedAnalyticsScreen(
         )
     )
 
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Si no tiene permiso, mostrar mensaje
     if (!uiState.hasPermission && !uiState.isLoading) {
@@ -307,7 +308,7 @@ fun AdvancedAnalyticsScreen(
         items(usageData) { app ->
             AppUsageCard(
                 app = app,
-                totalTime = usageData.sumOf { it.totalTime },
+                totalTime = usageData.sumOf { it.totalTime }.coerceAtLeast(1L),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -475,7 +476,7 @@ private fun WeeklyUsageChart(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            val maxTime = data.maxOfOrNull { it.screenTime } ?: 1f
+            val maxTime = (data.maxOfOrNull { it.screenTime } ?: 1f).coerceAtLeast(1f)
             
             Row(
                 modifier = Modifier
@@ -651,7 +652,8 @@ private fun CategoryBreakdownChart(
                 .toList()
                 .sortedByDescending { it.second }
             
-            val totalTime = categoryData.sumOf { it.second }
+            // Protección contra división por cero
+            val totalTime = categoryData.sumOf { it.second }.coerceAtLeast(1L)
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -720,6 +722,9 @@ private fun AppUsageCard(
     totalTime: Long,
     modifier: Modifier = Modifier
 ) {
+    // Protección contra división por cero
+    val safeTotalTime = totalTime.coerceAtLeast(1L)
+    
     MomentumCard(
         modifier = modifier
     ) {
@@ -738,7 +743,7 @@ private fun AppUsageCard(
                 // In real app, load actual app icon
                 Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = app.appName.first().toString(),
+                        text = app.appName.firstOrNull()?.toString() ?: "?",
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -780,7 +785,7 @@ private fun AppUsageCard(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = "${(app.totalTime.toFloat() / totalTime.toFloat() * 100).toInt()}%",
+                    text = "${(app.totalTime.toFloat() / safeTotalTime.toFloat() * 100).toInt()}%",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -797,7 +802,7 @@ private fun AppUsageCard(
                         )
                 ) {
                     val animatedWidth by animateFloatAsState(
-                        targetValue = app.totalTime.toFloat() / totalTime.toFloat(),
+                        targetValue = app.totalTime.toFloat() / safeTotalTime.toFloat(),
                         animationSpec = tween(1000, easing = FastOutSlowInEasing),
                         label = "usage_bar"
                     )

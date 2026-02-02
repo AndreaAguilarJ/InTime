@@ -67,7 +67,8 @@ class GoalNotificationManager @Inject constructor(
                 description = "Notificaciones cuando completas logros"
             }
 
-            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+                ?: return
             manager.createNotificationChannels(
                 listOf(goalsChannel, challengesChannel, achievementsChannel)
             )

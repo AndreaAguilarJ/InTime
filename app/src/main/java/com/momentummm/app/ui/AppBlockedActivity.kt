@@ -42,10 +42,11 @@ import com.momentummm.app.ui.theme.MomentumTheme
 import com.momentummm.app.util.SocialShareUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.lifecycle.lifecycleScope
+import androidx.activity.OnBackPressedCallback
 
 @AndroidEntryPoint
 class AppBlockedActivity : ComponentActivity() {
@@ -58,6 +59,8 @@ class AppBlockedActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        setupBackPressedHandler()
 
         val blockedAppName = intent.getStringExtra(EXTRA_APP_NAME)
             ?: getString(R.string.app_blocked_default_app_name)
@@ -83,7 +86,7 @@ class AppBlockedActivity : ComponentActivity() {
                         onStartShare = {
                             // Activar la whitelist temporal para apps de compartir
                             pendingShareVerification = true
-                            CoroutineScope(Dispatchers.IO).launch {
+                            lifecycleScope.launch(Dispatchers.IO) {
                                 UserPreferencesRepository.enableShareWhitelist(
                                     this@AppBlockedActivity,
                                     blockedPackageName
@@ -93,7 +96,7 @@ class AppBlockedActivity : ComponentActivity() {
                         onCancel = {
                             // Cancelar share pendiente si existe
                             if (pendingShareVerification) {
-                                CoroutineScope(Dispatchers.IO).launch {
+                                lifecycleScope.launch(Dispatchers.IO) {
                                     UserPreferencesRepository.disableShareWhitelist(this@AppBlockedActivity)
                                 }
                                 pendingShareVerification = false
@@ -130,7 +133,7 @@ class AppBlockedActivity : ComponentActivity() {
         super.onResume()
         // Verificar si el usuario regresó después de compartir
         if (pendingShareVerification) {
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 // Verificar si hay un share pendiente y confirmar el desbloqueo
                 val unlockGranted = UserPreferencesRepository.confirmShareAndUnlock(this@AppBlockedActivity)
                 if (unlockGranted) {
@@ -149,14 +152,17 @@ class AppBlockedActivity : ComponentActivity() {
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        // Prevenir que el usuario vuelva a la app bloqueada
-        val launchIntent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        }
-        startActivity(launchIntent)
-        finish()
+    private fun setupBackPressedHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Prevenir que el usuario vuelva a la app bloqueada
+                val launchIntent = Intent(this@AppBlockedActivity, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+                startActivity(launchIntent)
+                finish()
+            }
+        })
     }
 
     companion object {

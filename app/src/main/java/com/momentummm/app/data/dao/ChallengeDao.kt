@@ -57,9 +57,9 @@ interface ChallengeDao {
     @Query("SELECT COUNT(*) FROM challenges WHERE is_completed = 1")
     suspend fun getCompletedChallengesCount(): Int
 
-    @Query("SELECT AVG(progress) FROM challenges WHERE is_active = 1")
+    @Query("SELECT COALESCE(AVG(progress), 0.0) FROM challenges WHERE is_active = 1")
     suspend fun getAverageChallengeProgress(): Float
 
-    @Query("SELECT MAX(current_streak) FROM challenges WHERE is_active = 1")
+    @Query("SELECT COALESCE(MAX(current_streak), 0) FROM challenges WHERE is_active = 1")
     suspend fun getMaxStreak(): Int
 }

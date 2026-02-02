@@ -3,10 +3,14 @@ package com.momentummm.app.data.appwrite.repository
 import com.momentummm.app.data.appwrite.AppwriteConfig
 import com.momentummm.app.data.appwrite.AppwriteService
 import com.momentummm.app.data.appwrite.models.AppwriteUserSettings
+import com.momentummm.app.util.NetworkConfig
+import com.momentummm.app.util.safeNetworkCall
 import io.appwrite.Query
 import io.appwrite.models.Document
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
@@ -16,40 +20,44 @@ import java.util.Locale
 class AppwriteUserRepository(private val appwriteService: AppwriteService) {
     
     suspend fun createUserSettings(userSettings: AppwriteUserSettings): Result<AppwriteUserSettings> {
-        return try {
+        return safeNetworkCall(NetworkConfig.DEFAULT_TIMEOUT_MS) {
             val currentTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
             val settingsWithTimestamp = userSettings.copy(
                 createdAt = currentTime,
                 updatedAt = currentTime
             )
             
-            val document = appwriteService.databases.createDocument(
+            appwriteService.databases.createDocument(
                 databaseId = AppwriteConfig.DATABASE_ID,
                 collectionId = AppwriteConfig.USER_SETTINGS_COLLECTION_ID,
                 documentId = "unique()",
                 data = Json.encodeToString(settingsWithTimestamp)
             )
             
-            Result.success(settingsWithTimestamp)
-        } catch (e: Exception) {
-            Result.failure(e)
+            settingsWithTimestamp
         }
     }
     
     suspend fun getUserSettings(userId: String): Flow<AppwriteUserSettings?> = flow {
         try {
-            val documents = appwriteService.databases.listDocuments(
-                databaseId = AppwriteConfig.DATABASE_ID,
-                collectionId = AppwriteConfig.USER_SETTINGS_COLLECTION_ID,
-                queries = listOf(Query.equal("userId", userId))
-            )
-            
-            if (documents.documents.isNotEmpty()) {
-                val document = documents.documents.first()
-                val settings = Json.decodeFromString<AppwriteUserSettings>(document.data.toString())
-                emit(settings)
-            } else {
-                emit(null)
+            withTimeout(NetworkConfig.DEFAULT_TIMEOUT_MS) {
+                val documents = appwriteService.databases.listDocuments(
+                    databaseId = AppwriteConfig.DATABASE_ID,
+                    collectionId = AppwriteConfig.USER_SETTINGS_COLLECTION_ID,
+                    queries = listOf(Query.equal("userId", userId))
+                )
+                
+                if (documents.documents.isNotEmpty()) {
+                    val document = documents.documents.firstOrNull()
+                    if (document != null) {
+                        val settings = Json.decodeFromString<AppwriteUserSettings>(document.data.toString())
+                        emit(settings)
+                    } else {
+                        emit(null)
+                    }
+                } else {
+                    emit(null)
+                }
             }
         } catch (e: Exception) {
             emit(null)
@@ -57,7 +65,7 @@ class AppwriteUserRepository(private val appwriteService: AppwriteService) {
     }
     
     suspend fun updateUserSettings(userId: String, userSettings: AppwriteUserSettings): Result<AppwriteUserSettings> {
-        return try {
+        return safeNetworkCall(NetworkConfig.DEFAULT_TIMEOUT_MS) {
             val documents = appwriteService.databases.listDocuments(
                 databaseId = AppwriteConfig.DATABASE_ID,
                 collectionId = AppwriteConfig.USER_SETTINGS_COLLECTION_ID,
@@ -65,7 +73,8 @@ class AppwriteUserRepository(private val appwriteService: AppwriteService) {
             )
             
             if (documents.documents.isNotEmpty()) {
-                val documentId = documents.documents.first().id
+                val documentId = documents.documents.firstOrNull()?.id 
+                    ?: throw Exception("Document unexpectedly null")
                 val currentTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
                 val updatedSettings = userSettings.copy(updatedAt = currentTime)
                 
@@ -76,23 +85,18 @@ class AppwriteUserRepository(private val appwriteService: AppwriteService) {
                     data = Json.encodeToString(updatedSettings)
                 )
                 
-                Result.success(updatedSettings)
+                updatedSettings
             } else {
                 // Create new settings if none exist
-                createUserSettings(userSettings)
+                createUserSettings(userSettings).getOrThrow()
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
     
     suspend fun completeOnboarding(userId: String): Result<Unit> {
         return try {
-            // Get current settings properly
-            var currentSettings: AppwriteUserSettings? = null
-            getUserSettings(userId).collect { settings ->
-                currentSettings = settings
-            }
+            // Get current settings using first() instead of collect() to avoid infinite suspension
+            val currentSettings = getUserSettings(userId).firstOrNull()
             
             val settings = currentSettings ?: AppwriteUserSettings(
                 userId = userId, 

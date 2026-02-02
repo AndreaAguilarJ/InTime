@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,9 +43,9 @@ fun WidgetSetupScreen(
     
     // Colores para los widgets de vida en semanas
     val livedWeeksColor by UserPreferencesRepository.getLivedWeeksColorFlow(context)
-        .collectAsState(initial = "#4CAF50")
+        .collectAsStateWithLifecycle(initialValue = "#4CAF50")
     val futureWeeksColor by UserPreferencesRepository.getFutureWeeksColorFlow(context)
-        .collectAsState(initial = "#E0E0E0")
+        .collectAsStateWithLifecycle(initialValue = "#E0E0E0")
     
     // Lista de colores disponibles
     val availableColors = remember {

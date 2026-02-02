@@ -39,26 +39,26 @@ class WebsiteBlockViewModel @Inject constructor(
 
     fun loadData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
         }
 
         viewModelScope.launch {
-            try {
-                websiteBlockRepository.getAllBlocks().collect { blocks ->
+            websiteBlockRepository.getAllBlocks()
+                .catch { e -> 
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Error desconocido"
+                    ) }
+                }
+                .collect { blocks ->
                     val stats = calculateStats(blocks)
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.update { it.copy(
                         websiteBlocks = blocks,
                         stats = stats,
                         isLoading = false,
                         error = null
-                    )
+                    ) }
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Error desconocido"
-                )
-            }
         }
     }
 
@@ -67,9 +67,9 @@ class WebsiteBlockViewModel @Inject constructor(
             try {
                 websiteBlockRepository.addWebsiteBlock(url, displayName, category)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     error = "Error al agregar sitio: ${e.message}"
-                )
+                ) }
             }
         }
     }
@@ -77,13 +77,13 @@ class WebsiteBlockViewModel @Inject constructor(
     fun addPredefinedBlocks(category: WebsiteCategory) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true)
+                _uiState.update { it.copy(isLoading = true) }
                 websiteBlockRepository.addPredefinedBlocks(category)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     error = "Error al agregar sitios predefinidos: ${e.message}",
                     isLoading = false
-                )
+                ) }
             }
         }
     }
@@ -93,9 +93,9 @@ class WebsiteBlockViewModel @Inject constructor(
             try {
                 websiteBlockRepository.toggleBlock(block.id, !block.isEnabled)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     error = "Error al cambiar estado: ${e.message}"
-                )
+                ) }
             }
         }
     }
@@ -105,9 +105,9 @@ class WebsiteBlockViewModel @Inject constructor(
             try {
                 websiteBlockRepository.deleteBlock(block)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     error = "Error al eliminar sitio: ${e.message}"
-                )
+                ) }
             }
         }
     }
@@ -117,15 +117,15 @@ class WebsiteBlockViewModel @Inject constructor(
             try {
                 websiteBlockRepository.deleteBlocksByCategory(category)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     error = "Error al eliminar categoría: ${e.message}"
-                )
+                ) }
             }
         }
     }
 
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.update { it.copy(error = null) }
     }
 
     private fun calculateStats(blocks: List<WebsiteBlock>): WebsiteBlockStats {

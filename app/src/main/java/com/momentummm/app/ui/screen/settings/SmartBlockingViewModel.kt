@@ -52,6 +52,12 @@ class SmartBlockingViewModel @Inject constructor(
             smartBlockingManager.setFloatingTimerPosition(position)
         }
     }
+    
+    fun setFloatingTimerSize(size: String) {
+        viewModelScope.launch {
+            smartBlockingManager.setFloatingTimerSize(size)
+        }
+    }
 
     // ================== VENTANA DE SUEÑO ==================
     

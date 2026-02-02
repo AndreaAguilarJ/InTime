@@ -337,67 +337,68 @@ fun PremiumThemesShopScreen(
         }
     }
 
-    // Diálogo de compra
-    if (showPurchaseDialog && selectedTheme != null) {
-        AlertDialog(
-            onDismissRequest = { showPurchaseDialog = false },
-            title = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(selectedTheme!!.emoji, fontSize = 28.sp)
-                    Text(
-                        text = stringResource(
-                            R.string.premium_themes_unlock_title,
-                            stringResource(selectedTheme!!.nameRes)
-                        )
-                    )
-                }
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = stringResource(
-                            R.string.premium_themes_purchase_question,
-                            selectedTheme!!.price
-                        )
-                    )
-                    
+    // Diálogo de compra - usar let para evitar NullPointerException
+    if (showPurchaseDialog) {
+        selectedTheme?.let { theme ->
+            AlertDialog(
+                onDismissRequest = { showPurchaseDialog = false },
+                title = {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(stringResource(R.string.premium_themes_balance_label))
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("🪙", fontSize = 16.sp)
-                            Text(
-                                text = "$currentCoins",
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFD700)
+                        Text(theme.emoji, fontSize = 28.sp)
+                        Text(
+                            text = stringResource(
+                                R.string.premium_themes_unlock_title,
+                                stringResource(theme.nameRes)
                             )
-                        }
+                        )
                     }
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(stringResource(R.string.premium_themes_after_purchase_label))
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("🪙", fontSize = 16.sp)
-                            Text(
-                                text = "${currentCoins - selectedTheme!!.price}",
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF10B981)
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = stringResource(
+                                R.string.premium_themes_purchase_question,
+                                theme.price
                             )
+                        )
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(stringResource(R.string.premium_themes_balance_label))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("🪙", fontSize = 16.sp)
+                                Text(
+                                    text = "$currentCoins",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFFD700)
+                                )
+                            }
                         }
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(stringResource(R.string.premium_themes_after_purchase_label))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("🪙", fontSize = 16.sp)
+                                Text(
+                                    text = "${currentCoins - theme.price}",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF10B981)
+                                )
+                            }
                     }
                 }
             },
@@ -405,10 +406,10 @@ fun PremiumThemesShopScreen(
                 Button(
                     onClick = {
                         scope.launch {
-                            val success = gamificationManager.spendCoins(selectedTheme!!.price)
+                            val success = gamificationManager.spendCoins(theme.price)
                             if (success) {
-                                unlockedThemes = unlockedThemes + selectedTheme!!.id
-                                themeManager.setCustomPrimaryColor(selectedTheme!!.primaryColor)
+                                unlockedThemes = unlockedThemes + theme.id
+                                themeManager.setCustomPrimaryColor(theme.primaryColor)
                                 purchaseSuccess = true
                             }
                         }
@@ -421,7 +422,7 @@ fun PremiumThemesShopScreen(
                     Text(
                         text = stringResource(
                             R.string.premium_themes_buy_button,
-                            selectedTheme!!.price
+                            theme.price
                         )
                     )
                 }
@@ -432,83 +433,88 @@ fun PremiumThemesShopScreen(
                 }
             }
         )
+        }
     }
 
-    // Diálogo de monedas insuficientes
-    if (showInsufficientCoinsDialog && selectedTheme != null) {
-        AlertDialog(
-            onDismissRequest = { showInsufficientCoinsDialog = false },
-            title = { Text(stringResource(R.string.premium_themes_insufficient_coins_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = stringResource(
-                            R.string.premium_themes_insufficient_coins_message,
-                            selectedTheme!!.price,
-                            stringResource(selectedTheme!!.nameRes)
+    // Diálogo de monedas insuficientes - usar let para evitar NullPointerException
+    if (showInsufficientCoinsDialog) {
+        selectedTheme?.let { theme ->
+            AlertDialog(
+                onDismissRequest = { showInsufficientCoinsDialog = false },
+                title = { Text(stringResource(R.string.premium_themes_insufficient_coins_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = stringResource(
+                                R.string.premium_themes_insufficient_coins_message,
+                                theme.price,
+                                stringResource(theme.nameRes)
+                            )
                         )
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.premium_themes_current_balance,
-                            currentCoins
+                        Text(
+                            text = stringResource(
+                                R.string.premium_themes_current_balance,
+                                currentCoins
+                            )
                         )
-                    )
-                    Text(
-                        stringResource(
-                            R.string.premium_themes_missing_balance,
-                            selectedTheme!!.price - currentCoins
-                        ),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.premium_themes_insufficient_coins_tip),
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                        Text(
+                            stringResource(
+                                R.string.premium_themes_missing_balance,
+                                theme.price - currentCoins
+                            ),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            stringResource(R.string.premium_themes_insufficient_coins_tip),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { showInsufficientCoinsDialog = false }) {
+                        Text(stringResource(R.string.premium_themes_understood_button))
+                    }
                 }
-            },
-            confirmButton = {
-                Button(onClick = { showInsufficientCoinsDialog = false }) {
-                    Text(stringResource(R.string.premium_themes_understood_button))
-                }
-            }
-        )
+            )
+        }
     }
 
-    // Diálogo de nivel requerido
-    if (showLevelRequiredDialog && selectedTheme != null) {
-        AlertDialog(
-            onDismissRequest = { showLevelRequiredDialog = false },
-            title = { Text(stringResource(R.string.premium_themes_level_required_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = stringResource(
-                            R.string.premium_themes_level_required_message,
-                            selectedTheme!!.requiredLevel,
-                            stringResource(selectedTheme!!.nameRes)
+    // Diálogo de nivel requerido - usar let para evitar NullPointerException
+    if (showLevelRequiredDialog) {
+        selectedTheme?.let { theme ->
+            AlertDialog(
+                onDismissRequest = { showLevelRequiredDialog = false },
+                title = { Text(stringResource(R.string.premium_themes_level_required_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = stringResource(
+                                R.string.premium_themes_level_required_message,
+                                theme.requiredLevel,
+                                stringResource(theme.nameRes)
+                            )
                         )
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.premium_themes_current_level,
-                            currentLevel
+                        Text(
+                            text = stringResource(
+                                R.string.premium_themes_current_level,
+                                currentLevel
+                            )
                         )
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.premium_themes_level_required_tip),
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            stringResource(R.string.premium_themes_level_required_tip),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { showLevelRequiredDialog = false }) {
+                        Text(stringResource(R.string.premium_themes_understood_button))
+                    }
                 }
-            },
-            confirmButton = {
-                Button(onClick = { showLevelRequiredDialog = false }) {
-                    Text(stringResource(R.string.premium_themes_understood_button))
-                }
-            }
-        )
+            )
+        }
     }
 
     // Snackbar de compra exitosa

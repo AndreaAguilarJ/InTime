@@ -117,6 +117,21 @@ fun AppTutorialScreen(
         )
         add(
             TutorialStep(
+                title = stringResource(R.string.tutorial_step_widget_title),
+                description = stringResource(R.string.tutorial_step_widget_desc),
+                icon = Icons.Default.Widgets,
+                content = {
+                    WidgetStepContent()
+                },
+                tips = listOf(
+                    stringResource(R.string.tutorial_step_widget_tip_1),
+                    stringResource(R.string.tutorial_step_widget_tip_2),
+                    stringResource(R.string.tutorial_step_widget_tip_3)
+                )
+            )
+        )
+        add(
+            TutorialStep(
                 title = stringResource(R.string.tutorial_step_done_title),
                 description = stringResource(R.string.tutorial_step_done_desc),
                 icon = Icons.Default.CheckCircle,
@@ -929,6 +944,208 @@ private fun BirthDateStepContent(
             onDateSelected = { onDateSelected(it); showDatePicker = false },
             onDismiss = { showDatePicker = false }
         )
+    }
+}
+
+/**
+ * Contenido del paso para añadir widget
+ */
+@Composable
+private fun WidgetStepContent() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var widgetAdded by remember { mutableStateOf(false) }
+    
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        item {
+            Text(
+                text = "📱", 
+                style = MaterialTheme.typography.displayLarge
+            )
+        }
+        
+        item {
+            Text(
+                text = stringResource(R.string.tutorial_step_widget_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+        
+        item {
+            Text(
+                text = stringResource(R.string.tutorial_step_widget_desc),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+        
+        // Widget preview card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = androidx.compose.ui.graphics.Color(0xFF1A1A2E)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "MI VIDA EN SEMANAS",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = androidx.compose.ui.graphics.Color.White
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Mini grid preview
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        repeat(10) { i ->
+                            androidx.compose.foundation.Canvas(
+                                modifier = Modifier.size(8.dp)
+                            ) {
+                                drawCircle(
+                                    color = if (i < 6) 
+                                        androidx.compose.ui.graphics.Color(0xFF10B981) 
+                                    else 
+                                        androidx.compose.ui.graphics.Color(0xFFE5E7EB),
+                                    radius = size.minDimension / 2
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "1234",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = androidx.compose.ui.graphics.Color(0xFF10B981)
+                            )
+                            Text(
+                                text = "vividas",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = androidx.compose.ui.graphics.Color.Gray
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "2926",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = androidx.compose.ui.graphics.Color(0xFFE5E7EB)
+                            )
+                            Text(
+                                text = "restantes",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = androidx.compose.ui.graphics.Color.Gray
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        item { Spacer(modifier = Modifier.height(8.dp)) }
+        
+        // Add widget button
+        item {
+            Button(
+                onClick = {
+                    try {
+                        val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(context)
+                        val myProvider = android.content.ComponentName(
+                            context, 
+                            com.momentummm.app.widget.LifeWeeksWidgetReceiver::class.java
+                        )
+                        
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            if (appWidgetManager.isRequestPinAppWidgetSupported) {
+                                appWidgetManager.requestPinAppWidget(myProvider, null, null)
+                                widgetAdded = true
+                            } else {
+                                android.widget.Toast.makeText(
+                                    context, 
+                                    "Mantén presionado en tu pantalla de inicio → Widgets → Momentum", 
+                                    android.widget.Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        } else {
+                            android.widget.Toast.makeText(
+                                context, 
+                                "Mantén presionado en tu pantalla de inicio, selecciona 'Widgets' y busca 'Mi Vida en Semanas'", 
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(
+                            context, 
+                            "Mantén presionado en tu pantalla de inicio → Widgets → Momentum", 
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (widgetAdded) 
+                        MaterialTheme.colorScheme.secondary 
+                    else 
+                        MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = if (widgetAdded) Icons.Default.Check else Icons.Default.AddCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = if (widgetAdded) "¡Widget añadido!" else stringResource(R.string.tutorial_step_widget_button),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+        
+        if (!widgetAdded) {
+            item {
+                Text(
+                    text = "También puedes añadirlo después desde Configuración → Mi Vida en Semanas",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 

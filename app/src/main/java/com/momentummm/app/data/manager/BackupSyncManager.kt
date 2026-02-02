@@ -51,14 +51,18 @@ class BackupSyncManager(
             _syncStatus.value = SyncStatus.Syncing
             _backupProgress.value = 0f
             
-            // Collect all user data
+            // Collect all user data con timeout para evitar bloqueo infinito
             val usageStats = usageStatsRepository.getTodayUsageStats()
             _backupProgress.value = 0.2f
             
-            val userSettings = userRepository.getUserSettings().first()
+            val userSettings = kotlinx.coroutines.withTimeoutOrNull(5000L) {
+                userRepository.getUserSettings().first()
+            }
             _backupProgress.value = 0.4f
             
-            val quotes = quotesRepository.getAllQuotes().first()
+            val quotes = kotlinx.coroutines.withTimeoutOrNull(5000L) {
+                quotesRepository.getAllQuotes().first()
+            } ?: emptyList()
             _backupProgress.value = 0.6f
             
             // Create backup data structure
@@ -130,8 +134,22 @@ class BackupSyncManager(
             _backupProgress.value = 0.2f
             
             val backupDoc = documents.first()
-            val backupJson = backupDoc.data["backupData"] as String
-            val backupData = Json.decodeFromString<BackupData>(backupJson)
+            val backupJson = backupDoc.data["backupData"] as? String
+            if (backupJson == null) {
+                _syncStatus.value = SyncStatus.Failed
+                return Result.failure(Exception("Invalid backup format"))
+            }
+            
+            // Parse JSON con manejo de errores robusto
+            val backupData = try {
+                Json { ignoreUnknownKeys = true }.decodeFromString<BackupData>(backupJson)
+            } catch (e: kotlinx.serialization.SerializationException) {
+                _syncStatus.value = SyncStatus.Failed
+                return Result.failure(Exception("Corrupted backup data: ${e.message}"))
+            } catch (e: Exception) {
+                _syncStatus.value = SyncStatus.Failed
+                return Result.failure(Exception("Failed to parse backup: ${e.message}"))
+            }
             
             _backupProgress.value = 0.4f
             
@@ -254,13 +272,19 @@ class BackupSyncManager(
                 )
             )
             
-            val backupInfoList = documents.documents.map { doc ->
-                BackupInfo(
-                    id = doc.id,
-                    timestamp = doc.data["timestamp"] as String,
-                    version = doc.data["version"] as? String ?: "1.0",
-                    size = (doc.data["backupData"] as String).length
-                )
+            val backupInfoList = documents.documents.mapNotNull { doc ->
+                try {
+                    val timestamp = doc.data["timestamp"] as? String ?: return@mapNotNull null
+                    val backupData = doc.data["backupData"] as? String ?: ""
+                    BackupInfo(
+                        id = doc.id,
+                        timestamp = timestamp,
+                        version = doc.data["version"] as? String ?: "1.0",
+                        size = backupData.length
+                    )
+                } catch (e: Exception) {
+                    null
+                }
             }
             
             Result.success(backupInfoList)

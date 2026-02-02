@@ -889,4 +889,132 @@
         <item quantity="one">%1$d day ago</item>
         <item quantity="other">%1$d days ago</item>
     </plurals>
+
+    <!-- ============ NOTIFICATION STRINGS ============ -->
+    
+    <!-- Notification Channels -->
+    <string name="notification_channel_limits_name">App Limits</string>
+    <string name="notification_channel_limits_desc">Alerts when you approach or exceed app usage limits</string>
+    <string name="notification_channel_goals_name">Goals &amp; Achievements</string>
+    <string name="notification_channel_goals_desc">Notifications about completed goals and unlocked achievements</string>
+    <string name="notification_channel_motivation_name">Daily Motivation</string>
+    <string name="notification_channel_motivation_desc">Motivational quotes to improve your digital wellbeing</string>
+    <string name="notification_channel_weekly_name">Weekly Summary</string>
+    <string name="notification_channel_weekly_desc">Summary of your device usage during the week</string>
+    <string name="notification_channel_reminders_name">Smart Reminders</string>
+    <string name="notification_channel_reminders_desc">Personalized reminders about your device usage</string>
+    <string name="notification_channel_gamification_name">Gamification</string>
+    <string name="notification_channel_gamification_desc">Levels, XP, streaks and gamification achievements</string>
+    <string name="notification_channel_monitoring_name">App Monitoring</string>
+    <string name="notification_channel_monitoring_desc">Monitors app usage time</string>
+    <string name="notification_channel_website_block_name">Website Blocking</string>
+    <string name="notification_channel_website_block_desc">Alerts when you try to access blocked websites</string>
+    
+    <!-- App Limits Notifications -->
+    <string name="notification_limit_warning_title">⚠️ %1$s - Approaching limit</string>
+    <string name="notification_limit_warning_message">You\'ve used %1$s of %2$s. %3$s remaining.</string>
+    <string name="notification_limit_reached_title">🛑 %1$s - Limit reached</string>
+    <string name="notification_limit_reached_message">You\'ve reached your limit of %1$s. Time for a break!</string>
+    
+    <!-- Weekly Summary Notifications -->
+    <string name="notification_weekly_summary_total_time">Total time: %1$s</string>
+    <string name="notification_weekly_summary_top_apps">Most used apps:</string>
+    <string name="notification_weekly_summary_app_item">%1$d. %2$s: %3$s</string>
+    <string name="notification_weekly_summary_goals">🎯 Goals completed: %1$d</string>
+    
+    <!-- Daily Motivation Notifications -->
+    <string name="notification_motivation_title">💡 Daily Inspiration</string>
+    <string name="notification_motivation_message">\"%1$s\"</string>
+    
+    <!-- Test Notification -->
+    <string name="notification_test_title_sent">🔔 Notifications Active!</string>
+    <string name="notification_test_message">InTime notifications are working correctly. You\'ll receive alerts about your goals and limits.</string>
+    
+    <!-- Achievement Notifications -->
+    <string name="notification_goal_achieved_title">🎉 Goal Achieved!</string>
+    <string name="notification_goal_achieved_message">You completed: %1$s</string>
+    <string name="notification_streak_7_title">🔥 7-Day Streak!</string>
+    <string name="notification_streak_7_message">One week on: %1$s</string>
+    <string name="notification_streak_30_title">🏆 30-Day Streak!</string>
+    <string name="notification_streak_30_message">One month on: %1$s</string>
+    <string name="notification_streak_100_title">💎 100-Day Streak!</string>
+    <string name="notification_streak_100_message">Incredible: %1$s</string>
+    <string name="notification_completion_title">⭐ %1$dx Completed</string>
+    <string name="notification_balanced_day_title">✨ Balanced Day</string>
+    <string name="notification_balanced_day_message">Healthy usage today: %1$s</string>
+    
+    <!-- Streak Protection Notifications -->
+    <string name="notification_streak_warning_title">⚠️ %1$d-day streak at risk</string>
+    <string name="notification_streak_warning_message">%1$d min left on %2$s. Protect your streak!</string>
+    <string name="notification_grace_day_used_title">🛡️ Grace Day Used</string>
+    <string name="notification_grace_day_used_message">Your streak is protected. %1$d grace days remaining.</string>
+    <string name="notification_grace_day_used_last">Your streak is protected. That was your last grace day!</string>
+    <string name="notification_grace_day_low_zero_title">🚨 No Grace Days Left</string>
+    <string name="notification_grace_day_low_one_title">⚠️ Last Grace Day</string>
+    <string name="notification_grace_day_low_zero_message">No grace days left. Exceeding limits will break your streak.</string>
+    <string name="notification_grace_day_low_one_message">1 grace day left this week.</string>
+    
+    <!-- Screen Time Notifications -->
+    <string name="notification_screen_time_title">⏰ Wellness Reminder</string>
+    <string name="notification_screen_time_message">You\'ve had %1$s of screen time today. Take a break?</string>
+    
+    <!-- Gamification Notifications -->
+    <string name="notification_level_up_title">🎊 Level Up to %1$d!</string>
+    <string name="notification_level_up_message">%1$s - You earned %2$d TimeCoins bonus</string>
+    <string name="notification_streak_started_title">🔥 Streak Started!</string>
+    <string name="notification_streak_continued_title">🔥 Streak: %1$d days</string>
+    <string name="notification_streak_broken_title">💔 Streak Lost</string>
+    <string name="notification_streak_broken_message">Your %1$d-day streak has been lost. Start again!</string>
+    <string name="notification_perfect_day_title">🌟 Perfect Day!</string>
+    <string name="notification_perfect_day_message">You completed all your daily goals. +500 XP bonus</string>
+    <string name="notification_xp_gained_title">✨ +%1$d XP</string>
+    <string name="notification_xp_gained_message">%1$s</string>
+    <string name="notification_timecoins_earned_title">🪙 +%1$d TimeCoins</string>
+    <string name="notification_achievement_unlocked_title">🏆 Achievement Unlocked!</string>
+    <string name="notification_achievement_unlocked_message">%1$s</string>
+    
+    <!-- Website Block Notifications -->
+    <string name="notification_website_blocked_title">🚫 Website Blocked</string>
+    <string name="notification_website_blocked_message">You tried to access a blocked site: %1$s</string>
+    <string name="notification_website_blocked_category_title">🚫 Category Blocked</string>
+    <string name="notification_website_blocked_category_message">This site belongs to a blocked category: %1$s</string>
+    
+    <!-- App Block Notifications -->
+    <string name="notification_app_blocked_title">🔒 %1$s Blocked</string>
+    <string name="notification_app_blocked_limit_message">You\'ve reached your daily limit of %1$d minutes</string>
+    <string name="notification_app_blocked_focus_title">🎯 Focus Mode Active</string>
+    <string name="notification_app_blocked_focus_message">%1$s is blocked during your focus session</string>
+    <string name="notification_app_blocked_nuclear_title">☢️ Nuclear Mode</string>
+    <string name="notification_app_blocked_nuclear_message">%1$s blocked for %2$d more days</string>
+    <string name="notification_app_blocked_sleep_title">😴 Time to Rest</string>
+    <string name="notification_app_blocked_sleep_message">Apps will be available tomorrow. Good night!</string>
+    <string name="notification_app_blocked_communication_title">📱 Communication Only Mode</string>
+    <string name="notification_app_blocked_communication_message">Only communication apps are allowed</string>
+    
+    <!-- Monitoring Service -->
+    <string name="notification_monitoring_title">App Control Active</string>
+    <string name="notification_monitoring_message">Monitoring app usage time</string>
+    
+    <!-- Life Weeks Notifications -->
+    <string name="notification_birthday_title">🎂 Happy Birthday!</string>
+    <string name="notification_birthday_message">Today is your birthday. You\'ve lived %1$d weeks. Make each one count!</string>
+    <string name="notification_weekly_reflection_title">📅 New Week</string>
+    <string name="notification_weekly_reflection_message">Week %1$d of your life. How will you make it memorable?</string>
+    <string name="notification_life_milestone_title">🌟 Life Milestone</string>
+    <string name="notification_life_milestone_message">You\'ve reached %1$d weeks of life. Celebrate your progress!</string>
+    
+    <!-- Focus Session Notifications -->
+    <string name="notification_focus_started_title">🎯 Focus Session Started</string>
+    <string name="notification_focus_started_message">Stay focused for %1$d minutes</string>
+    <string name="notification_focus_completed_title">✅ Session Completed!</string>
+    <string name="notification_focus_completed_message">Great work. +%1$d XP, +%2$d TimeCoins</string>
+    <string name="notification_focus_break_title">☕ Break Time</string>
+    <string name="notification_focus_break_message">Take a %1$d minute break. You deserve it.</string>
+    
+    <!-- Sync Notifications -->
+    <string name="notification_sync_completed_title">☁️ Sync Complete</string>
+    <string name="notification_sync_completed_message">Your data is backed up to the cloud</string>
+    <string name="notification_sync_failed_title">⚠️ Sync Error</string>
+    <string name="notification_sync_failed_message">Could not sync your data. Retrying...</string>
+    
 </resources>

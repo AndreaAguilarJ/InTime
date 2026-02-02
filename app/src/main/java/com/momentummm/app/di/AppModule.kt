@@ -6,6 +6,7 @@ import com.momentummm.app.data.appwrite.AppwriteService
 import com.momentummm.app.data.manager.AutoSyncManager
 import com.momentummm.app.data.manager.BillingManager
 import com.momentummm.app.data.manager.GamificationManager
+import com.momentummm.app.data.manager.MotivationalNotificationManager
 import com.momentummm.app.data.repository.*
 import com.momentummm.app.util.SocialShareHelper
 import dagger.Module
@@ -121,14 +122,38 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGamificationManager(
-        database: AppDatabase
+        database: AppDatabase,
+        @ApplicationContext context: Context
     ): GamificationManager {
-        return GamificationManager(database.userDao())
+        return GamificationManager(database.userDao(), context)
     }
 
     @Provides
     @Singleton
     fun provideSocialShareHelper(): SocialShareHelper {
         return SocialShareHelper()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMotivationalMessagesRepository(
+        database: AppDatabase,
+        @ApplicationContext context: Context
+    ): MotivationalMessagesRepository {
+        return MotivationalMessagesRepository(
+            database.motivationalMessageDao(),
+            database.messageReactionDao(),
+            database.motivationalPreferencesDao(),
+            context
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideMotivationalNotificationManager(
+        @ApplicationContext context: Context,
+        messagesRepository: MotivationalMessagesRepository
+    ): MotivationalNotificationManager {
+        return MotivationalNotificationManager(context, messagesRepository)
     }
 }

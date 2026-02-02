@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
 import com.momentummm.app.ui.viewmodel.LifeWeeksViewModel
 import com.momentummm.app.util.LifeWeeksCalculator
@@ -27,7 +28,7 @@ import com.momentummm.app.util.LifeWeeksCalculator
 fun LifeWeeksScreen(
     viewModel: LifeWeeksViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -198,10 +199,18 @@ fun LifeWeeksScreen(
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
 
+                            // Protección contra parsing de color inválido
+                            val livedColorParsed = try {
+                                Color(android.graphics.Color.parseColor(uiState.userSettings?.livedWeeksColor ?: "#6366F1"))
+                            } catch (e: Exception) { Color(0xFF6366F1) }
+                            val futureColorParsed = try {
+                                Color(android.graphics.Color.parseColor(uiState.userSettings?.futureWeeksColor ?: "#E5E7EB"))
+                            } catch (e: Exception) { Color(0xFFE5E7EB) }
+
                             LifeWeeksGrid(
                                 weeksLived = data.weeksLived,
-                                livedColor = Color(android.graphics.Color.parseColor(uiState.userSettings?.livedWeeksColor ?: "#6366F1")),
-                                futureColor = Color(android.graphics.Color.parseColor(uiState.userSettings?.futureWeeksColor ?: "#E5E7EB"))
+                                livedColor = livedColorParsed,
+                                futureColor = futureColorParsed
                             )
                         }
                     }
@@ -222,14 +231,18 @@ fun LifeWeeksScreen(
                         OutlinedButton(
                             onClick = {
                                 uiState.userSettings?.let { settings ->
-                                    val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
-                                        context = context,
-                                        weeksLived = data.weeksLived,
-                                        livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor),
-                                        futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor),
-                                        backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor)
-                                    )
-                                    com.momentummm.app.util.WallpaperGenerator.saveToGallery(context, bitmap)
+                                    try {
+                                        val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
+                                            context = context,
+                                            weeksLived = data.weeksLived,
+                                            livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor ?: "#6366F1"),
+                                            futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor ?: "#E5E7EB"),
+                                            backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor ?: "#1F2937")
+                                        )
+                                        com.momentummm.app.util.WallpaperGenerator.saveToGallery(context, bitmap)
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("LifeWeeksScreen", "Error generating wallpaper", e)
+                                    }
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -243,14 +256,18 @@ fun LifeWeeksScreen(
                     Button(
                         onClick = {
                             uiState.userSettings?.let { settings ->
-                                val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
-                                    context = context,
-                                    weeksLived = data.weeksLived,
-                                    livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor),
-                                    futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor),
-                                    backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor)
-                                )
-                                com.momentummm.app.util.WallpaperGenerator.setAsWallpaper(context, bitmap)
+                                try {
+                                    val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
+                                        context = context,
+                                        weeksLived = data.weeksLived,
+                                        livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor ?: "#6366F1"),
+                                        futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor ?: "#E5E7EB"),
+                                        backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor ?: "#1F2937")
+                                    )
+                                    com.momentummm.app.util.WallpaperGenerator.setAsWallpaper(context, bitmap)
+                                } catch (e: Exception) {
+                                    android.util.Log.e("LifeWeeksScreen", "Error setting wallpaper", e)
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth()

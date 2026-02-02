@@ -5,7 +5,9 @@ import com.momentummm.app.data.dao.AppLimitDao
 import com.momentummm.app.data.entity.AppLimit
 import com.momentummm.app.service.AppMonitoringService
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -18,9 +20,11 @@ class AppLimitRepository @Inject constructor(
     private val appWhitelistRepository: AppWhitelistRepository
 ) {
 
-    fun getAllEnabledLimits(): Flow<List<AppLimit>> = appLimitDao.getAllEnabledLimits()
+    fun getAllEnabledLimits(): Flow<List<AppLimit>> = 
+        appLimitDao.getAllEnabledLimits().distinctUntilChanged()
 
-    fun getAllLimits(): Flow<List<AppLimit>> = appLimitDao.getAllLimits()
+    fun getAllLimits(): Flow<List<AppLimit>> = 
+        appLimitDao.getAllLimits().distinctUntilChanged()
 
     suspend fun getLimitByPackage(packageName: String): AppLimit? =
         appLimitDao.getLimitByPackage(packageName)
@@ -59,7 +63,9 @@ class AppLimitRepository @Inject constructor(
      * Asegura que el servicio de monitoreo esté corriendo si hay límites habilitados
      */
     private suspend fun ensureMonitoringServiceRunning() {
-        val enabledLimits = appLimitDao.getAllEnabledLimits().first()
+        val enabledLimits = withTimeoutOrNull(5000L) { 
+            appLimitDao.getAllEnabledLimits().first() 
+        } ?: emptyList()
         if (enabledLimits.isNotEmpty()) {
             AppMonitoringService.startService(context)
         }
@@ -133,7 +139,9 @@ class AppLimitRepository @Inject constructor(
 
     // Obtener estadísticas de tiempo restante para todas las apps con límites
     suspend fun getAllRemainingTimes(): Map<String, Int> {
-        val limits = appLimitDao.getAllEnabledLimits().first()
+        val limits = withTimeoutOrNull(5000L) { 
+            appLimitDao.getAllEnabledLimits().first() 
+        } ?: emptyList()
         val remainingTimes = mutableMapOf<String, Int>()
 
         limits.forEach { limit: AppLimit ->
@@ -145,7 +153,9 @@ class AppLimitRepository @Inject constructor(
 
     // Verificar si hay apps que han excedido sus límites
     suspend fun getOverLimitApps(): List<AppLimit> {
-        val enabledLimits = appLimitDao.getAllEnabledLimits().first()
+        val enabledLimits = withTimeoutOrNull(5000L) { 
+            appLimitDao.getAllEnabledLimits().first() 
+        } ?: emptyList()
         return enabledLimits.filter { limit: AppLimit ->
             isAppOverLimit(limit.packageName)
         }
@@ -169,7 +179,9 @@ class AppLimitRepository @Inject constructor(
 
     // Obtener resumen de límites
     suspend fun getLimitsSummary(): LimitsSummary {
-        val allLimits = appLimitDao.getAllLimits().first()
+        val allLimits = withTimeoutOrNull(5000L) { 
+            appLimitDao.getAllLimits().first() 
+        } ?: emptyList()
         val enabledLimits = allLimits.filter { it.isEnabled }
         val overLimitApps = getOverLimitApps()
 

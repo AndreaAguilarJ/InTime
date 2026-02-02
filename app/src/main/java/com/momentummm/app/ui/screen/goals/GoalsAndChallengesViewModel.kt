@@ -39,16 +39,18 @@ class GoalsAndChallengesViewModel @Inject constructor(
                 goalsRepository.getActiveChallenges(),
                 goalsRepository.getAvailableChallenges()
             ) { activeGoals, activeChallenges, availableChallenges ->
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     activeGoals = activeGoals,
                     activeChallenges = activeChallenges,
                     availableChallenges = availableChallenges,
                     isLoading = false
-                )
+                ) }
 
                 // Update statistics
                 updateStatistics()
-            }.collect()
+            }
+            .catch { e -> e.printStackTrace() }
+            .collect()
         }
     }
 
@@ -57,11 +59,11 @@ class GoalsAndChallengesViewModel @Inject constructor(
         val challengeStats = goalsRepository.getChallengeStatistics()
         val achievements = goalsRepository.calculateAchievements()
 
-        _uiState.value = _uiState.value.copy(
+        _uiState.update { it.copy(
             goalStatistics = goalStats,
             challengeStatistics = challengeStats,
             achievements = achievements
-        )
+        ) }
     }
 
     fun createGoal(
@@ -87,9 +89,7 @@ class GoalsAndChallengesViewModel @Inject constructor(
             // Schedule reminder notification
             scheduleGoalReminder(goal)
 
-            _uiState.value = _uiState.value.copy(
-                showCreateGoalDialog = false
-            )
+            _uiState.update { it.copy(showCreateGoalDialog = false) }
         }
     }
 
@@ -195,11 +195,11 @@ class GoalsAndChallengesViewModel @Inject constructor(
 
     // UI State management
     fun showCreateGoalDialog() {
-        _uiState.value = _uiState.value.copy(showCreateGoalDialog = true)
+        _uiState.update { it.copy(showCreateGoalDialog = true) }
     }
 
     fun hideCreateGoalDialog() {
-        _uiState.value = _uiState.value.copy(showCreateGoalDialog = false)
+        _uiState.update { it.copy(showCreateGoalDialog = false) }
     }
 
     fun selectTab(tabIndex: Int) {
@@ -208,7 +208,7 @@ class GoalsAndChallengesViewModel @Inject constructor(
 
     fun refreshData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
             loadData()
         }
     }

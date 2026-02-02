@@ -138,10 +138,10 @@ class AppwriteFocusSessionRepository(
 
     private fun documentToFocusSession(document: Document<Map<String, Any>>): AppwriteFocusSession {
         return AppwriteFocusSession(
-            userId = document.data["userId"] as String,
-            sessionId = document.data["sessionId"] as String,
-            sessionType = document.data["sessionType"] as String,
-            date = document.data["date"] as String,
+            userId = document.data["userId"] as? String ?: "",
+            sessionId = document.data["sessionId"] as? String ?: "",
+            sessionType = document.data["sessionType"] as? String ?: "",
+            date = document.data["date"] as? String ?: "",
             startTime = document.data["startTime"] as? String,
             endTime = document.data["endTime"] as? String,
             plannedDuration = (document.data["plannedDuration"] as? Number)?.toInt() ?: 0,

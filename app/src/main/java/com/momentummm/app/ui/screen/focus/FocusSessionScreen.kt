@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.appwrite.models.AppwriteFocusSession
@@ -65,10 +66,10 @@ fun FocusSessionScreen(
     val context = LocalContext.current
     val application = context.applicationContext as MomentumApplication
     val focusRepository = application.appwriteFocusSessionRepository
-    val currentUser = application.appwriteService.currentUser.collectAsState()
+    val currentUser = application.appwriteService.currentUser.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val viewModel: FocusSessionViewModel = viewModel()
-    val focusState by viewModel.sessionState.collectAsState()
+    val focusState by viewModel.sessionState.collectAsStateWithLifecycle()
 
     var showCreateSessionDialog by remember { mutableStateOf(false) }
     var customSessions by remember { mutableStateOf<List<FocusSession>>(emptyList()) }
@@ -475,16 +476,16 @@ fun FocusSessionScreen(
         )
     }
 
-    // Diálogo de confirmación de eliminación
-    if (showDeleteConfirmation != null) {
+    // Diálogo de confirmación de eliminación - usar let para evitar NullPointerException
+    showDeleteConfirmation?.let { sessionToDelete ->
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = null },
             title = { Text("Eliminar sesión") },
-            text = { Text("¿Estás seguro de que deseas eliminar '${showDeleteConfirmation!!.name}'?") },
+            text = { Text("¿Estás seguro de que deseas eliminar '${sessionToDelete.name}'?") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        customSessions = customSessions.filter { it.id != showDeleteConfirmation!!.id }
+                        customSessions = customSessions.filter { it.id != sessionToDelete.id }
                         showDeleteConfirmation = null
                     }
                 ) {

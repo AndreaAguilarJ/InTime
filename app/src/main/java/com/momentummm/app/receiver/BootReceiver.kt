@@ -10,8 +10,12 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             Log.d(TAG, "Boot completado - iniciando AppMonitoringService")
-            // Iniciar el servicio de monitoreo después de que el dispositivo se reinicia
-            AppMonitoringService.startService(context)
+            try {
+                // Iniciar el servicio de monitoreo después de que el dispositivo se reinicia
+                AppMonitoringService.startService(context)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al iniciar AppMonitoringService después del boot", e)
+            }
         }
     }
 

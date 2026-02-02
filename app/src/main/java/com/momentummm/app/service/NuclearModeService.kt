@@ -77,7 +77,10 @@ class NuclearModeService : Service() {
     @Inject
     lateinit var smartBlockingManager: SmartBlockingManager
     
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        Log.e(TAG, "Coroutine exception", throwable)
+    }
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private var timerJob: Job? = null
     private var isAppInForeground = false
     
@@ -104,6 +107,13 @@ class NuclearModeService : Service() {
     }
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // CRÍTICO: Llamar startForeground inmediatamente para evitar ANR de 5 segundos
+        try {
+            startForeground(NOTIFICATION_ID, buildNotification())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting foreground", e)
+        }
+        
         when (intent?.action) {
             ACTION_START -> {
                 startNuclearTimer()
@@ -131,35 +141,46 @@ class NuclearModeService : Service() {
     }
     
     private fun startNuclearTimer() {
+        // Verificar si smartBlockingManager está inicializado
+        if (!::smartBlockingManager.isInitialized) {
+            Log.e(TAG, "smartBlockingManager not initialized, cannot start timer")
+            stopSelf()
+            return
+        }
+        
         startForeground(NOTIFICATION_ID, buildNotification())
         
         timerJob?.cancel()
         timerJob = serviceScope.launch {
-            val config = smartBlockingManager.config.value
-            _requiredWaitSeconds.value = config.nuclearModeUnlockWaitMinutes * 60
-            
-            while (isActive) {
-                delay(1000) // Cada segundo
+            try {
+                val config = smartBlockingManager.config.value
+                _requiredWaitSeconds.value = config.nuclearModeUnlockWaitMinutes * 60
                 
-                if (isAppInForeground) {
-                    // Solo incrementar el timer si la app está en primer plano
-                    val completed = smartBlockingManager.updateNuclearWaitProgress(1)
+                while (isActive) {
+                    delay(1000) // Cada segundo
                     
-                    val currentConfig = smartBlockingManager.config.value
-                    _currentWaitSeconds.value = currentConfig.nuclearModeCurrentWaitSeconds
-                    
-                    if (completed) {
-                        _isUnlockAvailable.value = true
-                        Log.d(TAG, "¡Tiempo de espera completado! Desbloqueo disponible")
-                        showUnlockAvailableNotification()
-                        break
-                    }
-                    
-                    // Actualizar notificación cada 30 segundos
-                    if (_currentWaitSeconds.value % 30 == 0) {
-                        updateNotification()
+                    if (isAppInForeground) {
+                        // Solo incrementar el timer si la app está en primer plano
+                        val completed = smartBlockingManager.updateNuclearWaitProgress(1)
+                        
+                        val currentConfig = smartBlockingManager.config.value
+                        _currentWaitSeconds.value = currentConfig.nuclearModeCurrentWaitSeconds
+                        
+                        if (completed) {
+                            _isUnlockAvailable.value = true
+                            Log.d(TAG, "¡Tiempo de espera completado! Desbloqueo disponible")
+                            showUnlockAvailableNotification()
+                            break
+                        }
+                        
+                        // Actualizar notificación cada 30 segundos
+                        if (_currentWaitSeconds.value % 30 == 0) {
+                            updateNotification()
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in nuclear timer", e)
             }
         }
     }
@@ -191,12 +212,20 @@ class NuclearModeService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         
-        val config = smartBlockingManager.config.value
-        val currentSeconds = config.nuclearModeCurrentWaitSeconds
-        val requiredSeconds = config.nuclearModeUnlockWaitMinutes * 60
+        // Valores por defecto si smartBlockingManager no está inicializado
+        val (currentSeconds, requiredSeconds, remainingDays) = if (::smartBlockingManager.isInitialized) {
+            val config = smartBlockingManager.config.value
+            Triple(
+                config.nuclearModeCurrentWaitSeconds,
+                config.nuclearModeUnlockWaitMinutes * 60,
+                smartBlockingManager.getNuclearModeRemainingDays()
+            )
+        } else {
+            Triple(0, 0, 0)
+        }
+        
         val remainingSeconds = (requiredSeconds - currentSeconds).coerceAtLeast(0)
         val remainingMinutes = remainingSeconds / 60
-        val remainingDays = smartBlockingManager.getNuclearModeRemainingDays()
         
         val progress = if (requiredSeconds > 0) {
             (currentSeconds * 100) / requiredSeconds
@@ -219,7 +248,8 @@ class NuclearModeService : Service() {
     }
     
     private fun updateNotification() {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+            ?: return
         notificationManager.notify(NOTIFICATION_ID, buildNotification())
     }
     
@@ -241,7 +271,8 @@ class NuclearModeService : Service() {
             .setAutoCancel(true)
             .build()
         
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+            ?: return
         notificationManager.notify(NOTIFICATION_ID + 1, notification)
     }
 }

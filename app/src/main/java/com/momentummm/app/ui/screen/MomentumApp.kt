@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -38,7 +38,6 @@ import com.momentummm.app.minimal.MinimalPhoneScreen
 import kotlinx.coroutines.launch
 import com.momentummm.app.data.UserPreferencesRepository
 import java.time.format.DateTimeFormatter
-import androidx.glance.appwidget.updateAll
 import com.momentummm.app.widget.LifeWeeksWidget
 import com.momentummm.app.ui.screen.onboarding.EnhancedOnboardingScreen
 import com.momentummm.app.ui.screen.tutorial.AppTutorialScreen
@@ -55,6 +54,8 @@ import androidx.compose.ui.zIndex
 import androidx.compose.material.icons.filled.Groups
 import javax.inject.Inject
 import dagger.hilt.android.AndroidEntryPoint
+
+import androidx.compose.runtime.saveable.rememberSaveable
 
 sealed class Screen(val route: String, val icon: ImageVector, val titleRes: Int) {
     object Today : Screen("today", Icons.Filled.Home, R.string.nav_today)
@@ -86,22 +87,27 @@ fun MomentumApp() {
     val application = context.applicationContext as MomentumApplication
     val coroutineScope = rememberCoroutineScope()
 
-    // Authentication state
-    val isLoggedIn by application.appwriteService.isLoggedIn.collectAsState()
-    val isAuthReady by application.appwriteService.isAuthReady.collectAsState()
-    var authState by remember { mutableStateOf(AuthState.Loading) }
+    // Authentication state - usar rememberSaveable para sobrevivir process death
+    val isLoggedIn by application.appwriteService.isLoggedIn.collectAsStateWithLifecycle()
+    val isAuthReady by application.appwriteService.isAuthReady.collectAsStateWithLifecycle()
+    
+    // Guardar el estado de autenticación para sobrevivir a la muerte del proceso
+    var authStateOrdinal by rememberSaveable { mutableStateOf(AuthState.Loading.ordinal) }
+    // Proteger contra IndexOutOfBoundsException si el enum cambia entre versiones
+    val authState = AuthState.entries.getOrNull(authStateOrdinal) ?: AuthState.Loading
+    
     var cachedSettings by remember { mutableStateOf<AppwriteUserSettings?>(null) }
     val onboardingCompleted by UserPreferencesRepository
         .isOnboardingCompletedFlow(context)
-        .collectAsState(initial = false)
+        .collectAsStateWithLifecycle(initialValue = false)
 
     LaunchedEffect(isAuthReady, isLoggedIn) {
-        authState = if (!isAuthReady) {
-            AuthState.Loading
+        authStateOrdinal = if (!isAuthReady) {
+            AuthState.Loading.ordinal
         } else if (isLoggedIn) {
-            AuthState.Authenticated
+            AuthState.Authenticated.ordinal
         } else {
-            AuthState.NotAuthenticated
+            AuthState.NotAuthenticated.ordinal
         }
     }
 
@@ -112,7 +118,7 @@ fun MomentumApp() {
         AuthState.NotAuthenticated -> {
             AuthenticationFlow(
                 application = application,
-                onAuthSuccess = { authState = AuthState.Authenticated }
+                onAuthSuccess = { authStateOrdinal = AuthState.Authenticated.ordinal }
             )
         }
         AuthState.Authenticated -> {
@@ -152,7 +158,16 @@ fun MomentumApp() {
                 }
             }
 
-            val startDestination = if (onboardingCompleted) "home" else "onboarding"
+            // Verificar si el tutorial debe mostrarse después del onboarding
+            val localSettings by application.userRepository.getUserSettings().collectAsStateWithLifecycle(initialValue = null)
+            val hasSeenTutorial = localSettings?.hasSeenTutorial ?: true
+            
+            val startDestination = when {
+                !onboardingCompleted -> "onboarding"
+                !hasSeenTutorial -> "tutorial_flow"
+                else -> "home"
+            }
+            
             androidx.compose.runtime.key(startDestination) {
                 val navController = rememberNavController()
                 NavHost(
@@ -166,8 +181,66 @@ fun MomentumApp() {
                         EnhancedOnboardingScreen(
                             viewModel = onboardingViewModel,
                             onCompleted = {
-                                navController.navigate("home") {
+                                // Después del onboarding, ir al tutorial
+                                navController.navigate("tutorial_flow") {
                                     popUpTo("onboarding") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+                    composable("tutorial_flow") {
+                        AppTutorialScreen(
+                            existingDobIso = cachedSettings?.birthDate,
+                            initialLivedColor = cachedSettings?.livedWeeksColor,
+                            initialFutureColor = cachedSettings?.futureWeeksColor,
+                            onBirthDateSelected = { birthDate ->
+                                val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
+                                val iso = birthDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                                coroutineScope.launch {
+                                    try {
+                                        val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = "")
+                                        val updated = existing.copy(birthDate = iso)
+                                        application.appwriteUserRepository.updateUserSettings(userId, updated)
+                                        UserPreferencesRepository.setDobIso(context, iso)
+                                        val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                        val date = dateFormatter.parse(iso)
+                                        if (date != null) {
+                                            application.userRepository.setBirthDate(date)
+                                        }
+                                        LifeWeeksWidget.updateAllWidgets(context)
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("TutorialFlow", "Error saving birth date", e)
+                                    }
+                                }
+                            },
+                            onColorPreferencesSelected = { livedColor, futureColor ->
+                                val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
+                                coroutineScope.launch {
+                                    try {
+                                        val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = cachedSettings?.birthDate ?: "")
+                                        val updated = existing.copy(livedWeeksColor = livedColor, futureWeeksColor = futureColor)
+                                        application.appwriteUserRepository.updateUserSettings(userId, updated)
+                                        UserPreferencesRepository.setWidgetColors(context, livedColor, futureColor)
+                                        application.userRepository.updateColors(livedColor, futureColor, "#FFFFFF")
+                                        LifeWeeksWidget.updateAllWidgets(context)
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("TutorialFlow", "Error saving colors", e)
+                                    }
+                                }
+                            },
+                            onCompleted = {
+                                coroutineScope.launch {
+                                    try {
+                                        application.userRepository.markTutorialAsSeen()
+                                        application.userRepository.completeOnboarding()
+                                        UserPreferencesRepository.setOnboardingCompleted(context, true)
+                                        LifeWeeksWidget.updateAllWidgets(context)
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("TutorialFlow", "Error completing tutorial", e)
+                                    }
+                                }
+                                navController.navigate("home") {
+                                    popUpTo("tutorial_flow") { inclusive = true }
                                 }
                             }
                         )
@@ -199,17 +272,20 @@ private fun AuthenticationFlow(
     application: MomentumApplication,
     onAuthSuccess: () -> Unit
 ) {
-    var currentScreen by remember { mutableStateOf(AuthScreen.Welcome) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    // Usar rememberSaveable para sobrevivir a process death
+    var currentScreenOrdinal by rememberSaveable { mutableStateOf(AuthScreen.Welcome.ordinal) }
+    // Proteger contra IndexOutOfBoundsException si el enum cambia entre versiones
+    val currentScreen = AuthScreen.entries.getOrNull(currentScreenOrdinal) ?: AuthScreen.Welcome
+    var isLoading by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
     when (currentScreen) {
         AuthScreen.Welcome -> {
             WelcomeScreen(
-                onSignUpClick = { currentScreen = AuthScreen.SignUp },
-                onSignInClick = { currentScreen = AuthScreen.SignIn }
+                onSignUpClick = { currentScreenOrdinal = AuthScreen.SignUp.ordinal },
+                onSignInClick = { currentScreenOrdinal = AuthScreen.SignIn.ordinal }
             )
         }
         AuthScreen.SignUp -> {
@@ -236,7 +312,7 @@ private fun AuthenticationFlow(
                     }
                 },
                 onBackToWelcome = {
-                    currentScreen = AuthScreen.Welcome
+                    currentScreenOrdinal = AuthScreen.Welcome.ordinal
                     errorMessage = null
                 },
                 isLoading = isLoading,
@@ -267,7 +343,7 @@ private fun AuthenticationFlow(
                     }
                 },
                 onBackToWelcome = {
-                    currentScreen = AuthScreen.Welcome
+                    currentScreenOrdinal = AuthScreen.Welcome.ordinal
                     errorMessage = null
                 },
                 isLoading = isLoading,
@@ -286,13 +362,13 @@ private fun MainAppContent(
     val navController = rememberNavController()
     val context = LocalContext.current
     val minimalPhoneManager = application.minimalPhoneManager
-    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
+    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
     // Sistema de bloqueo
     val appLockManager = application.appLockManager
     val biometricPromptManager = application.biometricPromptManager
-    val shouldShowLockScreen by appLockManager.shouldShowLockScreen.collectAsState()
+    val shouldShowLockScreen by appLockManager.shouldShowLockScreen.collectAsStateWithLifecycle()
 
     // Box para manejar la pantalla de bloqueo sobre todo lo demás
     Box(modifier = Modifier.fillMaxSize()) {
@@ -452,11 +528,14 @@ private fun MainAppContent(
                                 "in_app_blocking" -> navController.navigate("in_app_blocking")
                                 "website_blocks" -> navController.navigate("website_blocks")
                                 "app_whitelist" -> navController.navigate("app_whitelist")
+                                "smart_blocking" -> navController.navigate("smart_blocking")
                                 
                                 // Personalización y Datos
                                 "language_settings" -> navController.navigate("language_settings")
                                 "gamification_settings" -> navController.navigate("gamification_settings")
                                 "notification_settings" -> navController.navigate("notification_settings")
+                                "motivational_messages_settings" -> navController.navigate("motivational_messages_settings")
+                                "motivational_messages_library" -> navController.navigate("motivational_messages_library")
                                 "mi_vida_en_semanas" -> navController.navigate("mi_vida_en_semanas")
                                 "theme_settings" -> navController.navigate("theme_settings")
                                 "widget_setup" -> navController.navigate("widget_setup")
@@ -510,38 +589,64 @@ private fun MainAppContent(
                             val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
                             val iso = birthDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
                             coroutineScope.launch {
-                                // Guardar en Appwrite
-                                val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = "")
-                                val updated = existing.copy(birthDate = iso)
-                                application.appwriteUserRepository.updateUserSettings(userId, updated)
-                                
-                                // Guardar en preferencias del usuario
-                                UserPreferencesRepository.setDobIso(context, iso)
-                                
-                                // Guardar en base de datos local de Room
-                                val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                                val date = dateFormatter.parse(iso)
-                                if (date != null) {
-                                    application.userRepository.setBirthDate(date)
+                                try {
+                                    // Guardar en Appwrite
+                                    val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = "")
+                                    val updated = existing.copy(birthDate = iso)
+                                    application.appwriteUserRepository.updateUserSettings(userId, updated)
+                                    
+                                    // Guardar en preferencias del usuario
+                                    UserPreferencesRepository.setDobIso(context, iso)
+                                    
+                                    // Guardar en base de datos local de Room
+                                    val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                    val date = dateFormatter.parse(iso)
+                                    if (date != null) {
+                                        application.userRepository.setBirthDate(date)
+                                    }
+                                    
+                                    // Actualizar widgets con el nuevo método estático
+                                    LifeWeeksWidget.updateAllWidgets(context)
+                                } catch (e: Exception) {
+                                    android.util.Log.e("Tutorial", "Error saving birth date", e)
                                 }
-                                
-                                // Actualizar widgets
-                                LifeWeeksWidget().updateAll(context)
                             }
                         },
                         onColorPreferencesSelected = { livedColor, futureColor ->
                             val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
                             coroutineScope.launch {
-                                val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = cachedSettings?.birthDate ?: "")
-                                val updated = existing.copy(livedWeeksColor = livedColor, futureWeeksColor = futureColor)
-                                application.appwriteUserRepository.updateUserSettings(userId, updated)
-                                UserPreferencesRepository.setWidgetColors(context, livedColor, futureColor)
-                                LifeWeeksWidget().updateAll(context)
+                                try {
+                                    // Guardar en Appwrite
+                                    val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = cachedSettings?.birthDate ?: "")
+                                    val updated = existing.copy(livedWeeksColor = livedColor, futureWeeksColor = futureColor)
+                                    application.appwriteUserRepository.updateUserSettings(userId, updated)
+                                    
+                                    // Guardar en preferencias locales
+                                    UserPreferencesRepository.setWidgetColors(context, livedColor, futureColor)
+                                    
+                                    // Guardar colores en base de datos local
+                                    application.userRepository.updateColors(livedColor, futureColor, "#FFFFFF")
+                                    
+                                    // Actualizar widgets con el nuevo método estático
+                                    LifeWeeksWidget.updateAllWidgets(context)
+                                } catch (e: Exception) {
+                                    android.util.Log.e("Tutorial", "Error saving colors", e)
+                                }
                             }
                         },
                         onCompleted = {
                             coroutineScope.launch {
-                                application.userRepository.markTutorialAsSeen()
+                                try {
+                                    // Marcar tutorial como visto
+                                    application.userRepository.markTutorialAsSeen()
+                                    application.userRepository.completeOnboarding()
+                                    UserPreferencesRepository.setOnboardingCompleted(context, true)
+                                    
+                                    // Actualizar widget final con toda la configuración
+                                    LifeWeeksWidget.updateAllWidgets(context)
+                                } catch (e: Exception) {
+                                    android.util.Log.e("Tutorial", "Error completing tutorial", e)
+                                }
                             }
                             navController.popBackStack()
                         }
@@ -647,6 +752,21 @@ private fun MainAppContent(
                 composable("smart_blocking") {
                     com.momentummm.app.ui.screen.settings.SmartBlockingScreen(
                         onBackClick = { navController.popBackStack() }
+                    )
+                }
+
+                // Motivational Messages Settings
+                composable("motivational_messages_settings") {
+                    com.momentummm.app.ui.screen.settings.MotivationalMessagesSettingsScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenLibrary = { navController.navigate("motivational_messages_library") }
+                    )
+                }
+
+                // Motivational Messages Library
+                composable("motivational_messages_library") {
+                    com.momentummm.app.ui.screen.settings.MotivationalMessagesLibraryScreen(
+                        onBack = { navController.popBackStack() }
                     )
                 }
             }

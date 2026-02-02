@@ -10,9 +10,11 @@ import com.momentummm.app.data.repository.UsageStatsRepository
 import com.momentummm.app.util.LifeWeeksCalculator
 import com.momentummm.app.util.PermissionUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -90,27 +92,33 @@ class AdvancedAnalyticsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AdvancedAnalyticsUiState())
     val uiState: StateFlow<AdvancedAnalyticsUiState> = _uiState.asStateFlow()
+    
+    // Job para cancelar carga anterior cuando cambia el período
+    private var loadAnalyticsJob: Job? = null
 
     init {
         loadAnalyticsData()
     }
 
     fun selectPeriod(period: TimePeriod) {
-        _uiState.value = _uiState.value.copy(selectedPeriod = period)
+        _uiState.update { it.copy(selectedPeriod = period) }
         loadAnalyticsData()
     }
 
     fun loadAnalyticsData() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+        // Cancelar carga anterior si existe para evitar race conditions
+        loadAnalyticsJob?.cancel()
+        
+        loadAnalyticsJob = viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
 
             val hasPermission = PermissionUtils.hasUsageStatsPermission(context)
 
             if (!hasPermission) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     isLoading = false,
                     hasPermission = false
-                )
+                ) }
                 return@launch
             }
 
@@ -178,7 +186,7 @@ class AdvancedAnalyticsViewModel @Inject constructor(
                 // Estimar desbloqueos (aproximación basada en sesiones)
                 val totalPickups = topApps.sumOf { it.sessions }
 
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     isLoading = false,
                     hasPermission = true,
                     totalScreenTime = totalPeriodTimeFormatted,
@@ -189,13 +197,15 @@ class AdvancedAnalyticsViewModel @Inject constructor(
                     weeklyData = periodData,
                     insights = insights,
                     categoryBreakdown = categoryBreakdown
-                )
+                ) }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e // Propagar cancelación
             } catch (e: Exception) {
                 e.printStackTrace()
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     isLoading = false,
                     hasPermission = true
-                )
+                ) }
             }
         }
     }

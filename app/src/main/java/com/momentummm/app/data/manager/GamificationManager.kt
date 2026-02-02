@@ -1,7 +1,9 @@
 package com.momentummm.app.data.manager
 
+import android.content.Context
 import com.momentummm.app.data.dao.UserDao
 import com.momentummm.app.data.entity.UserSettings
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,17 +18,33 @@ import javax.inject.Singleton
 /**
  * GamificationManager - Maneja toda la lógica de gamificación para retención.
  * Implementa un sistema de niveles, XP, TimeCoins y rachas.
+ * Integrado con SmartNotificationManager para notificaciones dinámicas.
  */
 @Singleton
 class GamificationManager @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    @ApplicationContext private val context: Context
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        android.util.Log.e("GamificationManager", "Coroutine exception", throwable)
+    }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
+    
+    // Referencia al NotificationManager (lazy para evitar ciclos)
+    private var notificationManager: SmartNotificationManager? = null
+    
+    fun setNotificationManager(manager: SmartNotificationManager) {
+        this.notificationManager = manager
+    }
     
     init {
         // Asegurar que existan UserSettings al iniciar
         scope.launch {
-            ensureUserSettingsExist()
+            try {
+                ensureUserSettingsExist()
+            } catch (e: Exception) {
+                android.util.Log.e("GamificationManager", "Error initializing user settings", e)
+            }
         }
     }
     
@@ -229,6 +247,9 @@ class GamificationManager @Inject constructor(
             userDao.subtractXp(UserSettings.XP_STREAK_BREAK_PENALTY)
             userDao.resetStreak(Date())
             
+            // Enviar notificación de racha rota
+            notificationManager?.showStreakBrokenNotification(previousStreak)
+            
             return GamificationEvent(
                 type = EventType.STREAK_BROKEN,
                 xpGained = -UserSettings.XP_STREAK_BREAK_PENALTY,
@@ -258,6 +279,9 @@ class GamificationManager @Inject constructor(
         userDao.addTimeCoins(coinsBonus)
         userDao.incrementPerfectDays()
         
+        // Enviar notificación de día perfecto
+        notificationManager?.showPerfectDayNotification()
+        
         // Verificar si subió de nivel
         val levelUpEvent = checkAndProcessLevelUp()
         
@@ -285,6 +309,11 @@ class GamificationManager @Inject constructor(
             // Bonus de TimeCoins por subir de nivel
             val levelUpCoins = newLevel * 50
             userDao.addTimeCoins(levelUpCoins)
+            
+            // Obtener título del nivel y enviar notificación
+            val updatedSettings = userDao.getUserSettingsSync()
+            val levelTitle = updatedSettings?.getLevelTitle() ?: "Nivel $newLevel"
+            notificationManager?.showLevelUpNotification(newLevel, levelTitle, levelUpCoins)
             
             return GamificationEvent(
                 type = EventType.LEVEL_UP,

@@ -25,6 +25,7 @@ import com.momentummm.app.MomentumApplication
 import com.momentummm.app.R
 import com.momentummm.app.ui.password.PasswordProtectionViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 // ============================================================================
@@ -269,7 +270,7 @@ fun SettingsScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
     
     // Estado de protección por contraseña
-    val passwordProtection by passwordViewModel.passwordProtection.collectAsState()
+    val passwordProtection by passwordViewModel.passwordProtection.collectAsStateWithLifecycle()
     val isPasswordSet = passwordProtection?.isEnabled == true && !passwordProtection?.passwordHash.isNullOrEmpty()
     val isProtectionActive = passwordProtection?.isEnabled == true
     
@@ -464,6 +465,12 @@ fun SettingsScreen(
                         subtitle = stringResource(R.string.settings_notifications_subtitle),
                         icon = Icons.Default.Notifications,
                         onClick = { onNavigateToScreen("notification_settings") }
+                    )
+                    PreferenceItem(
+                        title = "Mensajes Motivacionales",
+                        subtitle = "Configura mensajes inspiracionales y notificaciones positivas",
+                        icon = Icons.Default.AutoAwesome,
+                        onClick = { onNavigateToScreen("motivational_messages_settings") }
                     )
                     PreferenceItem(
                         title = stringResource(R.string.my_life_in_weeks),

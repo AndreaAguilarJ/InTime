@@ -2,6 +2,7 @@ package com.momentummm.app.ui.screen.settings
 
 import android.content.Intent
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,10 +25,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.momentummm.app.R
 import com.momentummm.app.data.entity.ContextBlockRule
 import com.momentummm.app.data.entity.SmartBlockingConfig
 import com.momentummm.app.service.FloatingTimerService
+import com.momentummm.app.service.NuclearModeService
+import com.momentummm.app.service.ContextBlockingService
 import com.momentummm.app.ui.system.*
 import java.util.*
 
@@ -38,16 +45,29 @@ fun SmartBlockingScreen(
     viewModel: SmartBlockingViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val config by viewModel.config.collectAsState()
-    val contextRules by viewModel.contextRules.collectAsState()
+    val config by viewModel.config.collectAsStateWithLifecycle()
+    val contextRules by viewModel.contextRules.collectAsStateWithLifecycle()
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    
+    // Lifecycle observer para verificar permiso cuando la app vuelve a primer plano
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasOverlayPermission.value = Settings.canDrawOverlays(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
     
     // Dialogs
     var showSleepTimeDialog by remember { mutableStateOf(false) }
     var showFastingDialog by remember { mutableStateOf(false) }
     var showNuclearModeDialog by remember { mutableStateOf(false) }
     var showContextRuleDialog by remember { mutableStateOf(false) }
-    var showGraceDaysDialog by remember { mutableStateOf(false) }
     var showFloatingTimerSettings by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
     
@@ -168,7 +188,16 @@ fun SmartBlockingScreen(
                     title = "⏱️ Timer Flotante",
                     subtitle = "Siempre visible sobre todas las apps",
                     isEnabled = config.floatingTimerEnabled,
-                    onToggle = { viewModel.setFloatingTimerEnabled(it) },
+                    onToggle = { enabled ->
+                        viewModel.setFloatingTimerEnabled(enabled)
+                        if (enabled) {
+                            Toast.makeText(context, "⏱️ Timer flotante activado", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Detener el timer flotante si se deshabilita
+                            FloatingTimerService.stop(context)
+                        }
+                    },
+                    accentColor = Color(0xFF3B82F6),
                     extraContent = if (config.floatingTimerEnabled) {
                         {
                             if (!hasOverlayPermission.value) {
@@ -183,23 +212,68 @@ fun SmartBlockingScreen(
                                     }
                                 )
                             } else {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        "Opacidad: ${(config.floatingTimerOpacity * 100).toInt()}%",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                    TextButton(onClick = { showFloatingTimerSettings = true }) {
-                                        Text("Configurar")
+                                Column {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            "Opacidad: ${(config.floatingTimerOpacity * 100).toInt()}%",
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                        TextButton(onClick = { showFloatingTimerSettings = true }) {
+                                            Text("Configurar")
+                                        }
                                     }
+                                    Slider(
+                                        value = config.floatingTimerOpacity,
+                                        onValueChange = { viewModel.setFloatingTimerOpacity(it) },
+                                        valueRange = 0.3f..1f
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    // Botón de prueba del timer flotante
+                                    OutlinedButton(
+                                        onClick = {
+                                            if (Settings.canDrawOverlays(context)) {
+                                                android.util.Log.d("SmartBlocking", "Starting floating timer test")
+                                                FloatingTimerService.start(
+                                                    context = context,
+                                                    appName = "App de Prueba",
+                                                    packageName = "com.test.app",
+                                                    remainingMinutes = 25,
+                                                    totalMinutes = 30
+                                                )
+                                                Toast.makeText(context, "Timer flotante iniciado - mira en la esquina superior derecha", Toast.LENGTH_LONG).show()
+                                            } else {
+                                                Toast.makeText(context, "Necesitas el permiso de superposición - presiona 'Conceder' primero", Toast.LENGTH_LONG).show()
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Probar Timer Flotante")
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    
+                                    TextButton(
+                                        onClick = { FloatingTimerService.stop(context) },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Detener Timer")
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    Text(
+                                        "ℹ️ El timer aparecerá automáticamente al usar apps con límite",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
-                                Slider(
-                                    value = config.floatingTimerOpacity,
-                                    onValueChange = { viewModel.setFloatingTimerOpacity(it) },
-                                    valueRange = 0.3f..1f
-                                )
                             }
                         }
                     } else null
@@ -213,7 +287,13 @@ fun SmartBlockingScreen(
                     title = "😴 Ventana de Sueño",
                     subtitle = "No contar uso durante horas de sueño",
                     isEnabled = config.sleepModeEnabled,
-                    onToggle = { viewModel.setSleepModeEnabled(it) },
+                    onToggle = { enabled ->
+                        viewModel.setSleepModeEnabled(enabled)
+                        if (enabled) {
+                            Toast.makeText(context, "😴 Modo sueño activado", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    accentColor = Color(0xFF7C3AED),
                     extraContent = if (config.sleepModeEnabled) {
                         {
                             OutlinedCard(
@@ -278,7 +358,13 @@ fun SmartBlockingScreen(
                     title = "🥗 Ayuno Digital",
                     subtitle = "Límites estrictos en horario laboral",
                     isEnabled = config.digitalFastingEnabled,
-                    onToggle = { viewModel.setDigitalFastingEnabled(it) },
+                    onToggle = { enabled ->
+                        viewModel.setDigitalFastingEnabled(enabled)
+                        if (enabled) {
+                            Toast.makeText(context, "🥗 Ayuno digital activado", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    accentColor = Color(0xFF10B981),
                     extraContent = if (config.digitalFastingEnabled) {
                         {
                             OutlinedCard(
@@ -351,9 +437,13 @@ fun SmartBlockingScreen(
                     title = "☢️ Modo Nuclear",
                     subtitle = "Bloqueo extremo de 1-3 meses",
                     isEnabled = config.nuclearModeEnabled && config.isNuclearModeActive(),
-                    onToggle = { 
-                        if (it) showNuclearModeDialog = true 
-                        else viewModel.deactivateNuclearMode()
+                    onToggle = { enabled ->
+                        if (enabled) {
+                            showNuclearModeDialog = true
+                        } else {
+                            viewModel.deactivateNuclearMode()
+                            NuclearModeService.stop(context)
+                        }
                     },
                     accentColor = Color(0xFFEF4444),
                     extraContent = if (config.isNuclearModeActive()) {
@@ -388,7 +478,9 @@ fun SmartBlockingScreen(
                                     Spacer(modifier = Modifier.height(8.dp))
                                     
                                     LinearProgressIndicator(
-                                        progress = 1f - (viewModel.getNuclearModeRemainingDays().toFloat() / config.nuclearModeDurationDays),
+                                        progress = if (config.nuclearModeDurationDays > 0) {
+                                            1f - (viewModel.getNuclearModeRemainingDays().toFloat() / config.nuclearModeDurationDays)
+                                        } else 0f,
                                         modifier = Modifier.fillMaxWidth(),
                                         color = Color(0xFFEF4444)
                                     )
@@ -415,52 +507,91 @@ fun SmartBlockingScreen(
                     title = "🔥 Protección de Rachas",
                     subtitle = "Días de gracia para no perder tu racha",
                     isEnabled = config.streakProtectionEnabled,
-                    onToggle = { viewModel.setStreakProtectionEnabled(it) },
+                    onToggle = { enabled ->
+                        viewModel.setStreakProtectionEnabled(enabled)
+                        if (enabled) {
+                            Toast.makeText(context, "🔥 Protección de rachas activada", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    accentColor = Color(0xFFFF6B35),
                     extraContent = if (config.streakProtectionEnabled) {
                         {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
+                            Column {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            "Días de gracia por semana",
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                        Text(
+                                            "${config.graceDaysUsedThisWeek}/${config.graceDaysPerWeek} usados",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = if (config.graceDaysUsedThisWeek >= config.graceDaysPerWeek) 
+                                                Color(0xFFEF4444) 
+                                            else 
+                                                MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    
+                                    Row {
+                                        (0..3).forEach { days ->
+                                            FilterChip(
+                                                selected = config.graceDaysPerWeek == days,
+                                                onClick = { 
+                                                    viewModel.setGraceDaysPerWeek(days)
+                                                    Toast.makeText(context, "Días de gracia: $days por semana", Toast.LENGTH_SHORT).show()
+                                                },
+                                                label = { Text("$days") },
+                                                modifier = Modifier.padding(horizontal = 2.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(12.dp))
+                                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     Text(
-                                        "Días de gracia por semana",
-                                        style = MaterialTheme.typography.bodyMedium
+                                        "Avisar antes de romper racha",
+                                        style = MaterialTheme.typography.bodySmall
                                     )
-                                    Text(
-                                        "${config.graceDaysUsedThisWeek}/${config.graceDaysPerWeek} usados",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.primary
+                                    Switch(
+                                        checked = config.warningBeforeStreakBreak,
+                                        onCheckedChange = { viewModel.setWarningBeforeStreakBreak(it) }
                                     )
                                 }
                                 
-                                Row {
-                                    (0..3).forEach { days ->
-                                        FilterChip(
-                                            selected = config.graceDaysPerWeek == days,
-                                            onClick = { viewModel.setGraceDaysPerWeek(days) },
-                                            label = { Text("$days") },
-                                            modifier = Modifier.padding(horizontal = 2.dp)
+                                // Slider para minutos de advertencia
+                                AnimatedVisibility(visible = config.warningBeforeStreakBreak) {
+                                    Column(modifier = Modifier.padding(top = 8.dp)) {
+                                        Text(
+                                            "Avisar ${config.warningMinutesBeforeLimit} min antes del límite",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Slider(
+                                            value = config.warningMinutesBeforeLimit.toFloat(),
+                                            onValueChange = { viewModel.setWarningMinutesBeforeLimit(it.toInt()) },
+                                            valueRange = 1f..15f,
+                                            steps = 13
                                         )
                                     }
                                 }
-                            }
-                            
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
                                 Text(
-                                    "Avisar antes de romper racha",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                Switch(
-                                    checked = config.warningBeforeStreakBreak,
-                                    onCheckedChange = { viewModel.setWarningBeforeStreakBreak(it) }
+                                    "ℹ️ Un día de gracia significa que tu racha no se rompe aunque superes el límite ese día",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 )
                             }
                         }
@@ -475,18 +606,30 @@ fun SmartBlockingScreen(
                     title = "📍 Bloqueo por Contexto",
                     subtitle = "Reglas por horario, ubicación o WiFi",
                     isEnabled = config.contextBlockingEnabled,
-                    onToggle = { viewModel.setContextBlockingEnabled(it) },
+                    onToggle = { enabled ->
+                        viewModel.setContextBlockingEnabled(enabled)
+                        if (enabled) {
+                            // Iniciar servicio de bloqueo por contexto
+                            ContextBlockingService.start(context)
+                            Toast.makeText(context, "📍 Servicio de contexto iniciado", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Detener servicio
+                            ContextBlockingService.stop(context)
+                        }
+                    },
                     extraContent = if (config.contextBlockingEnabled) {
                         {
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 contextRules.forEach { rule ->
-                                    ContextRuleCard(
-                                        rule = rule,
-                                        onToggle = { viewModel.toggleContextRule(rule.id, it) },
-                                        onDelete = { viewModel.deleteContextRule(rule.id) }
-                                    )
+                                    key(rule.id) {
+                                        ContextRuleCard(
+                                            rule = rule,
+                                            onToggle = { viewModel.toggleContextRule(rule.id, it) },
+                                            onDelete = { viewModel.deleteContextRule(rule.id) }
+                                        )
+                                    }
                                 }
                                 
                                 OutlinedButton(
@@ -510,7 +653,12 @@ fun SmartBlockingScreen(
                     title = "💬 Modo Solo Comunicación",
                     subtitle = "Permite mensajes, bloquea feeds y reels",
                     isEnabled = config.communicationOnlyModeEnabled,
-                    onToggle = { viewModel.setCommunicationOnlyMode(it) },
+                    onToggle = { enabled ->
+                        viewModel.setCommunicationOnlyMode(enabled)
+                        if (enabled) {
+                            Toast.makeText(context, "💬 Modo comunicación activado", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     extraContent = if (config.communicationOnlyModeEnabled) {
                         {
                             Column {
@@ -521,14 +669,19 @@ fun SmartBlockingScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 
+                                // Lista expandida de apps de redes sociales
                                 val apps = listOf(
-                                    "Instagram" to "com.instagram.android",
-                                    "Facebook" to "com.facebook.katana",
-                                    "Twitter/X" to "com.twitter.android",
-                                    "TikTok" to "com.zhiliaoapp.musically"
+                                    Triple("📸 Instagram", "com.instagram.android", "instagram"),
+                                    Triple("📘 Facebook", "com.facebook.katana", "facebook"),
+                                    Triple("🐦 Twitter/X", "com.twitter.android", "twitter"),
+                                    Triple("🎵 TikTok", "com.zhiliaoapp.musically", "tiktok"),
+                                    Triple("▶️ YouTube", "com.google.android.youtube", "youtube"),
+                                    Triple("👻 Snapchat", "com.snapchat.android", "snapchat"),
+                                    Triple("💬 WhatsApp", "com.whatsapp", "whatsapp"),
+                                    Triple("✈️ Telegram", "org.telegram.messenger", "telegram")
                                 )
                                 
-                                apps.forEach { (name, packageName) ->
+                                apps.forEach { (name, packageName, _) ->
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -552,18 +705,26 @@ fun SmartBlockingScreen(
                                     fontWeight = FontWeight.Medium
                                 )
                                 
-                                SwitchRow("Permitir DMs/Mensajes", config.communicationOnlyAllowDMs) {
+                                SwitchRow("✉️ Permitir DMs/Mensajes", config.communicationOnlyAllowDMs) {
                                     viewModel.setCommunicationOnlyAllowDMs(it)
                                 }
-                                SwitchRow("Bloquear Feed", config.communicationOnlyBlockFeed) {
+                                SwitchRow("📰 Bloquear Feed", config.communicationOnlyBlockFeed) {
                                     viewModel.setCommunicationOnlyBlockFeed(it)
                                 }
-                                SwitchRow("Bloquear Stories", config.communicationOnlyBlockStories) {
+                                SwitchRow("📖 Bloquear Stories", config.communicationOnlyBlockStories) {
                                     viewModel.setCommunicationOnlyBlockStories(it)
                                 }
-                                SwitchRow("Bloquear Reels/Shorts", config.communicationOnlyBlockReels) {
+                                SwitchRow("🎬 Bloquear Reels/Shorts", config.communicationOnlyBlockReels) {
                                     viewModel.setCommunicationOnlyBlockReels(it)
                                 }
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                Text(
+                                    "ℹ️ Las apps de mensajería (WhatsApp, Telegram) ya permiten comunicación por defecto",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
                             }
                         }
                     } else null
@@ -607,6 +768,9 @@ fun SmartBlockingScreen(
             onDismiss = { showNuclearModeDialog = false },
             onConfirm = { days, apps, waitMinutes ->
                 viewModel.activateNuclearMode(days, apps, waitMinutes)
+                // Iniciar el servicio del modo nuclear
+                NuclearModeService.start(context)
+                Toast.makeText(context, "☢️ Modo Nuclear activado por $days días", Toast.LENGTH_LONG).show()
                 showNuclearModeDialog = false
             }
         )
@@ -625,6 +789,19 @@ fun SmartBlockingScreen(
     if (showHelpDialog) {
         HelpDialog(
             onDismiss = { showHelpDialog = false }
+        )
+    }
+    
+    if (showFloatingTimerSettings) {
+        FloatingTimerSettingsDialog(
+            currentPosition = config.floatingTimerPosition,
+            currentSize = config.floatingTimerSize,
+            onDismiss = { showFloatingTimerSettings = false },
+            onConfirm = { position, size ->
+                viewModel.setFloatingTimerPosition(position)
+                viewModel.setFloatingTimerSize(size)
+                showFloatingTimerSettings = false
+            }
         )
     }
 }
@@ -941,9 +1118,15 @@ private fun FastingScheduleDialog(
     var endHour by remember { mutableStateOf(config.fastingEndHour) }
     var endMinute by remember { mutableStateOf(config.fastingEndMinute) }
     var limitMinutes by remember { mutableStateOf(config.fastingDailyLimitMinutes) }
+    var editingStart by remember { mutableStateOf(true) }
     var selectedDays by remember { 
         mutableStateOf(
-            config.fastingDaysOfWeek.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+            config.fastingDaysOfWeek
+                .takeIf { it.isNotBlank() }
+                ?.split(",")
+                ?.mapNotNull { it.trim().toIntOrNull() }
+                ?.toSet()
+                ?: setOf(1, 2, 3, 4, 5) // Días por defecto: Lunes a Viernes
         )
     }
     
@@ -967,9 +1150,9 @@ private fun FastingScheduleDialog(
                         .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    TimePickerButton("Inicio", startHour, startMinute, false) {}
+                    TimePickerButton("Inicio", startHour, startMinute, editingStart) { editingStart = true }
                     Text(" → ", modifier = Modifier.align(Alignment.CenterVertically))
-                    TimePickerButton("Fin", endHour, endMinute, false) {}
+                    TimePickerButton("Fin", endHour, endMinute, !editingStart) { editingStart = false }
                 }
                 
                 // Límite durante ayuno
@@ -1090,13 +1273,94 @@ private fun NuclearModeDialog(
 }
 
 @Composable
+private fun FloatingTimerSettingsDialog(
+    currentPosition: String,
+    currentSize: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String, String) -> Unit
+) {
+    var selectedPosition by remember { mutableStateOf(currentPosition) }
+    var selectedSize by remember { mutableStateOf(currentSize) }
+    
+    val positions = listOf(
+        "TOP_LEFT" to "Arriba Izquierda",
+        "TOP_RIGHT" to "Arriba Derecha",
+        "BOTTOM_LEFT" to "Abajo Izquierda",
+        "BOTTOM_RIGHT" to "Abajo Derecha"
+    )
+    
+    val sizes = listOf(
+        "SMALL" to "Pequeño",
+        "MEDIUM" to "Mediano",
+        "LARGE" to "Grande"
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.Timer, contentDescription = null) },
+        title = { Text("Configurar Timer Flotante") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("Posición en pantalla:", fontWeight = FontWeight.Medium)
+                Column {
+                    positions.forEach { (value, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selectedPosition = value }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedPosition == value,
+                                onClick = { selectedPosition = value }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(label, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+                
+                Divider()
+                
+                Text("Tamaño:", fontWeight = FontWeight.Medium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    sizes.forEach { (value, label) ->
+                        FilterChip(
+                            selected = selectedSize == value,
+                            onClick = { selectedSize = value },
+                            label = { Text(label) }
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(selectedPosition, selectedSize) }) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+        }
+    )
+}
+
+@Composable
 private fun ContextRuleDialog(
     onDismiss: () -> Unit,
     onConfirm: (ContextBlockRule) -> Unit
 ) {
     var ruleName by remember { mutableStateOf("") }
     var startHour by remember { mutableStateOf(9) }
+    var startMinute by remember { mutableStateOf(0) }
     var endHour by remember { mutableStateOf(18) }
+    var endMinute by remember { mutableStateOf(0) }
     var limitMinutes by remember { mutableStateOf(15) }
     var selectedDays by remember { mutableStateOf(setOf(1, 2, 3, 4, 5)) }
     
@@ -1114,7 +1378,7 @@ private fun ContextRuleDialog(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                Text("Horario: $startHour:00 - $endHour:00")
+                Text("Horario: ${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}")
                 RangeSlider(
                     value = startHour.toFloat()..endHour.toFloat(),
                     onValueChange = {
@@ -1160,7 +1424,9 @@ private fun ContextRuleDialog(
                         val rule = ContextBlockRule(
                             ruleName = ruleName,
                             scheduleStartHour = startHour,
+                            scheduleStartMinute = startMinute,
                             scheduleEndHour = endHour,
+                            scheduleEndMinute = endMinute,
                             contextDailyLimitMinutes = limitMinutes,
                             scheduleDaysOfWeek = selectedDays.sorted().joinToString(",")
                         )

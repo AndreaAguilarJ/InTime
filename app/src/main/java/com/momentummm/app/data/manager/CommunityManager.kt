@@ -37,7 +37,10 @@ class CommunityManager @Inject constructor(
     private val userDao: UserDao
 ) {
     private val TAG = "CommunityManager"
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        Log.e(TAG, "Coroutine exception", throwable)
+    }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     
     // Estados observables
     private val _friends = MutableStateFlow<List<Friend>>(emptyList())
@@ -57,10 +60,17 @@ class CommunityManager @Inject constructor(
     
     val settings: Flow<CommunitySettings?> = communitySettingsDao.getSettings()
     
+    // Flow de achievements
+    fun getAllAchievements(): Flow<List<SharedAchievement>> = sharedAchievementDao.getAllAchievements()
+    
     init {
         scope.launch {
-            initializeSettings()
-            loadFriends()
+            try {
+                initializeSettings()
+                loadFriends()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error initializing CommunityManager", e)
+            }
         }
     }
     
@@ -74,15 +84,30 @@ class CommunityManager @Inject constructor(
     
     private fun loadFriends() {
         scope.launch {
-            friendDao.getAcceptedFriends().collect {
-                _friends.value = it
+            try {
+                friendDao.getAcceptedFriends().collect {
+                    _friends.value = it
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading accepted friends", e)
             }
         }
         scope.launch {
-            friendDao.getPendingRequests().collect {
-                _pendingRequests.value = it
+            try {
+                friendDao.getPendingRequests().collect {
+                    _pendingRequests.value = it
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading pending requests", e)
             }
         }
+    }
+    
+    /**
+     * Refresca la lista de amigos
+     */
+    fun refreshFriends() {
+        loadFriends()
     }
     
     // ================== SISTEMA DE AMIGOS ==================
@@ -197,8 +222,12 @@ class CommunityManager @Inject constructor(
     fun loadWeeklyLeaderboard() {
         val weekStart = getCurrentWeekStart()
         scope.launch {
-            leaderboardDao.getWeeklyLeaderboard(weekStart).collect {
-                _weeklyLeaderboard.value = it
+            try {
+                leaderboardDao.getWeeklyLeaderboard(weekStart).collect {
+                    _weeklyLeaderboard.value = it
+                }
+            } catch (e: Exception) {
+                Log.e("CommunityManager", "Error loading weekly leaderboard", e)
             }
         }
     }
@@ -209,8 +238,12 @@ class CommunityManager @Inject constructor(
     fun loadFriendsLeaderboard() {
         val weekStart = getCurrentWeekStart()
         scope.launch {
-            leaderboardDao.getFriendsLeaderboard(weekStart).collect {
-                _friendsLeaderboard.value = it
+            try {
+                leaderboardDao.getFriendsLeaderboard(weekStart).collect {
+                    _friendsLeaderboard.value = it
+                }
+            } catch (e: Exception) {
+                Log.e("CommunityManager", "Error loading friends leaderboard", e)
             }
         }
     }

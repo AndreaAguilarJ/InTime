@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.R
-import kotlinx.coroutines.flow.Flow
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.appwrite.models.AppwriteUserSettings
 import kotlinx.coroutines.launch
@@ -23,6 +22,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 import androidx.glance.appwidget.updateAll
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.widget.LifeWeeksWidget
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,18 +34,19 @@ fun AccountSettingsScreen(
     val application = context.applicationContext as MomentumApplication
     val coroutineScope = rememberCoroutineScope()
 
-    val currentUser by application.appwriteService.currentUser.collectAsState()
+    val currentUser by application.appwriteService.currentUser.collectAsStateWithLifecycle()
 
-    var userSettingsFlow by remember { mutableStateOf<Flow<AppwriteUserSettings?>?>(null) }
+    var userSettings by remember { mutableStateOf<AppwriteUserSettings?>(null) }
     LaunchedEffect(currentUser?.id) {
         val userId = currentUser?.id?.takeIf { it.isNotBlank() }
-        userSettingsFlow = if (userId != null) {
-            application.appwriteUserRepository.getUserSettings(userId)
+        if (userId != null) {
+            application.appwriteUserRepository.getUserSettings(userId).collect { settings ->
+                userSettings = settings
+            }
         } else {
-            null
+            userSettings = null
         }
     }
-    val userSettings = userSettingsFlow?.collectAsState(initial = null)?.value
 
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
@@ -65,72 +66,81 @@ fun AccountSettingsScreen(
     val deleteAccountErrorMsgFormat = stringResource(R.string.account_settings_delete_account_error)
 
     if (showBirthDatePicker) {
-        val datePickerDialog = DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                calendar.set(year, month, dayOfMonth)
+        DisposableEffect(Unit) {
+            val datePickerDialog = DatePickerDialog(
+                context,
+                { _, year, month, dayOfMonth ->
+                    calendar.set(year, month, dayOfMonth)
 
-                // Convert to LocalDate and ISO format
-                val localDate = LocalDate.of(year, month + 1, dayOfMonth)
-                val iso = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                    // Convert to LocalDate and ISO format
+                    val localDate = LocalDate.of(year, month + 1, dayOfMonth)
+                    val iso = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
-                coroutineScope.launch {
-                    try {
-                        isLoading = true
-                        errorMessage = null
+                    coroutineScope.launch {
+                        try {
+                            isLoading = true
+                            errorMessage = null
 
-                        val userId = currentUser?.id
-                        if (userId != null) {
-                            // Update in Appwrite
-                            val existing = userSettings ?: AppwriteUserSettings(
-                                userId = userId,
-                                birthDate = ""
-                            )
-                            val updated = existing.copy(birthDate = iso)
-                            application.appwriteUserRepository.updateUserSettings(userId, updated)
+                            val userId = currentUser?.id
+                            if (userId != null) {
+                                // Update in Appwrite
+                                val existing = userSettings ?: AppwriteUserSettings(
+                                    userId = userId,
+                                    birthDate = ""
+                                )
+                                val updated = existing.copy(birthDate = iso)
+                                application.appwriteUserRepository.updateUserSettings(userId, updated)
 
-                            // Save locally for widget
-                            UserPreferencesRepository.setDobIso(context, iso)
+                                // Save locally for widget
+                                UserPreferencesRepository.setDobIso(context, iso)
 
-                            // Save in local Room database
-                            val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                            val date = dateFormatter.parse(iso)
-                            if (date != null) {
-                                application.userRepository.setBirthDate(date)
+                                // Save in local Room database
+                                val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                val date = dateFormatter.parse(iso)
+                                if (date != null) {
+                                    application.userRepository.setBirthDate(date)
+                                }
+
+                                // Update widget - trigger update
+                                try {
+                                    LifeWeeksWidget().updateAll(context)
+                                } catch (_: Exception) {
+                                    // Widget update failed, but data is saved
+                                }
+
+                                successMessage = birthdateUpdatedMsg
+                            } else {
+                                errorMessage = loginRequiredMsg
                             }
-
-                            // Update widget - trigger update
-                            try {
-                                LifeWeeksWidget().updateAll(context)
-                            } catch (_: Exception) {
-                                // Widget update failed, but data is saved
-                            }
-
-                            successMessage = birthdateUpdatedMsg
-                        } else {
-                            errorMessage = loginRequiredMsg
+                        } catch (e: Exception) {
+                            errorMessage = "$updateErrorMsgFormat ${e.message ?: ""}"
+                        } finally {
+                            isLoading = false
                         }
-                    } catch (e: Exception) {
-                        errorMessage = "$updateErrorMsgFormat ${e.message ?: ""}"
-                    } finally {
-                        isLoading = false
                     }
+
+                    showBirthDatePicker = false
+                },
+                calendar.get(Calendar.YEAR) - 25, // Default to 25 years ago
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).apply {
+                datePicker.maxDate = System.currentTimeMillis() // No future dates
+                setOnDismissListener {
+                    showBirthDatePicker = false
                 }
+                setOnCancelListener {
+                    showBirthDatePicker = false
+                }
+            }
 
-                showBirthDatePicker = false
-            },
-            calendar.get(Calendar.YEAR) - 25, // Default to 25 years ago
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        )
-
-        datePickerDialog.datePicker.maxDate = System.currentTimeMillis() // No future dates
-        datePickerDialog.setOnDismissListener {
-            showBirthDatePicker = false
-        }
-
-        LaunchedEffect(Unit) {
             datePickerDialog.show()
+
+            onDispose {
+                if (datePickerDialog.isShowing) {
+                    datePickerDialog.dismiss()
+                }
+            }
         }
     }
 

@@ -26,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.glance.appwidget.updateAll
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.util.LifeWeeksCalculator
@@ -38,6 +37,25 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
+
+/**
+ * Función helper para parsear colores de forma segura
+ */
+private fun parseColorSafe(colorString: String, default: Color = Color.Gray): Color {
+    return try {
+        Color(android.graphics.Color.parseColor(colorString))
+    } catch (e: Exception) {
+        default
+    }
+}
+
+private fun parseColorSafeInt(colorString: String, default: Int = android.graphics.Color.GRAY): Int {
+    return try {
+        android.graphics.Color.parseColor(colorString)
+    } catch (e: Exception) {
+        default
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,33 +99,43 @@ fun LifeWeeksSettingsScreen(
         }
     }
     
-    // DatePicker Dialog
+    // DatePicker Dialog - usar LaunchedEffect para evitar re-renderizado
     if (showDatePicker) {
-        val calendar = Calendar.getInstance()
-        birthDate?.let { calendar.time = it }
-        
-        DatePickerDialog(
-            context,
-            { _, year, month, day ->
-                calendar.set(year, month, day)
-                birthDate = calendar.time
-                val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-                birthDateText = formatter.format(calendar.time)
-                lifeWeeksData = LifeWeeksCalculator.calculateLifeWeeks(calendar.time, lifeExpectancy)
-                showDatePicker = false
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).apply {
-            datePicker.maxDate = System.currentTimeMillis()
-            datePicker.minDate = Calendar.getInstance().apply { 
-                set(1900, 0, 1) 
-            }.timeInMillis
-            setOnCancelListener { showDatePicker = false }
-            show()
+        // Usar DisposableEffect para manejar el dialog correctamente
+        androidx.compose.runtime.DisposableEffect(Unit) {
+            val calendar = Calendar.getInstance()
+            birthDate?.let { calendar.time = it }
+            
+            val dialog = DatePickerDialog(
+                context,
+                { _, year, month, day ->
+                    calendar.set(year, month, day)
+                    birthDate = calendar.time
+                    val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                    birthDateText = formatter.format(calendar.time)
+                    lifeWeeksData = LifeWeeksCalculator.calculateLifeWeeks(calendar.time, lifeExpectancy)
+                    showDatePicker = false
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).apply {
+                datePicker.maxDate = System.currentTimeMillis()
+                datePicker.minDate = Calendar.getInstance().apply { 
+                    set(1900, 0, 1) 
+                }.timeInMillis
+                setOnCancelListener { showDatePicker = false }
+                setOnDismissListener { showDatePicker = false }
+            }
+            
+            dialog.show()
+            
+            onDispose {
+                if (dialog.isShowing) {
+                    dialog.dismiss()
+                }
+            }
         }
-        showDatePicker = false
     }
     
     Scaffold(
@@ -165,8 +193,8 @@ fun LifeWeeksSettingsScreen(
                                     }
                                     UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
                                     
-                                    // Actualizar widgets
-                                    LifeWeeksWidget().updateAll(context)
+                                    // Actualizar widgets con los nuevos colores
+                                    LifeWeeksWidget.updateAllWidgets(context)
                                     
                                     Toast.makeText(context, "✅ Configuración guardada", Toast.LENGTH_SHORT).show()
                                 } catch (e: Exception) {
@@ -219,6 +247,18 @@ fun LifeWeeksSettingsScreen(
                             
                             Spacer(modifier = Modifier.height(16.dp))
                             
+                            // Protección contra parsing de color inválido - declarar fuera del Row
+                            val parsedLivedColor = try {
+                                Color(android.graphics.Color.parseColor(livedWeeksColor))
+                            } catch (e: Exception) {
+                                Color(0xFF6366F1)
+                            }
+                            val parsedFutureColor = try {
+                                Color(android.graphics.Color.parseColor(futureWeeksColor))
+                            } catch (e: Exception) {
+                                Color(0xFFE5E7EB)
+                            }
+                            
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -226,12 +266,12 @@ fun LifeWeeksSettingsScreen(
                                 StatItem(
                                     value = "${data.weeksLived}",
                                     label = "Semanas Vividas",
-                                    color = Color(android.graphics.Color.parseColor(livedWeeksColor))
+                                    color = parsedLivedColor
                                 )
                                 StatItem(
                                     value = "${data.weeksRemaining}",
                                     label = "Semanas Restantes",
-                                    color = Color(android.graphics.Color.parseColor(futureWeeksColor))
+                                    color = parsedFutureColor
                                 )
                             }
                             
@@ -243,8 +283,8 @@ fun LifeWeeksSettingsScreen(
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp)),
-                                color = Color(android.graphics.Color.parseColor(livedWeeksColor)),
-                                trackColor = Color(android.graphics.Color.parseColor(futureWeeksColor))
+                                color = parsedLivedColor,
+                                trackColor = parsedFutureColor
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
@@ -408,7 +448,7 @@ fun LifeWeeksSettingsScreen(
                             .fillMaxWidth()
                             .aspectRatio(1.5f),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color(android.graphics.Color.parseColor(backgroundColor))
+                            containerColor = parseColorSafe(backgroundColor, Color.DarkGray)
                         )
                     ) {
                         Box(
@@ -417,9 +457,81 @@ fun LifeWeeksSettingsScreen(
                         ) {
                             MiniLifeWeeksPreview(
                                 weeksLived = lifeWeeksData?.weeksLived ?: 1560,
-                                livedColor = Color(android.graphics.Color.parseColor(livedWeeksColor)),
-                                futureColor = Color(android.graphics.Color.parseColor(futureWeeksColor))
+                                livedColor = parseColorSafe(livedWeeksColor, Color(0xFF6366F1)),
+                                futureColor = parseColorSafe(futureWeeksColor, Color(0xFFE5E7EB))
                             )
+                        }
+                    }
+                }
+            }
+            
+            // === WIDGET ===
+            item {
+                SettingSectionCard(
+                    title = "📱 Widget para Pantalla de Inicio",
+                    icon = Icons.Default.Widgets
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = "Añade el widget a tu pantalla de inicio para ver tu vida en semanas con los colores que configuraste.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    try {
+                                        // Primero guardar la configuración actual
+                                        UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
+                                        
+                                        // Intentar añadir widget con el método moderno (Android 8+)
+                                        val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(context)
+                                        val myProvider = android.content.ComponentName(context, com.momentummm.app.widget.LifeWeeksWidgetReceiver::class.java)
+                                        
+                                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                            if (appWidgetManager.isRequestPinAppWidgetSupported) {
+                                                appWidgetManager.requestPinAppWidget(myProvider, null, null)
+                                                Toast.makeText(context, "📌 Arrastra el widget a tu pantalla", Toast.LENGTH_LONG).show()
+                                            } else {
+                                                Toast.makeText(context, "Tu launcher no soporta añadir widgets automáticamente. Mantén presionado en la pantalla de inicio y selecciona 'Widgets'", Toast.LENGTH_LONG).show()
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Mantén presionado en la pantalla de inicio, selecciona 'Widgets' y busca 'Mi Vida en Semanas'", Toast.LENGTH_LONG).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Para añadir el widget: mantén presionado en la pantalla de inicio → Widgets → Mi Vida en Semanas", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(Icons.Default.AddCircle, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Añadir Widget a Pantalla de Inicio")
+                        }
+                        
+                        OutlinedButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    try {
+                                        // Actualizar el widget con la configuración actual
+                                        UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
+                                        LifeWeeksWidget.updateAllWidgets(context)
+                                        Toast.makeText(context, "✅ Widget actualizado", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Error al actualizar: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Actualizar Widgets Existentes")
                         }
                     }
                 }
@@ -586,7 +698,7 @@ private fun ColorPickerItem(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(Color(android.graphics.Color.parseColor(currentColor)))
+                    .background(parseColorSafe(currentColor, Color.Gray))
                     .border(2.dp, MaterialTheme.colorScheme.outline, CircleShape)
             )
         }
@@ -601,7 +713,7 @@ private fun ColorPickerItem(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color(android.graphics.Color.parseColor(color)))
+                        .background(parseColorSafe(color, Color.Gray))
                         .border(
                             width = if (color == currentColor) 3.dp else 1.dp,
                             color = if (color == currentColor) 

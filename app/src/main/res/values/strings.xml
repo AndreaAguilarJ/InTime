@@ -894,4 +894,137 @@
         <item quantity="one">hace %1$d día</item>
         <item quantity="other">hace %1$d días</item>
     </plurals>
+
+    <!-- ============ NOTIFICATION STRINGS ============ -->
+    
+    <!-- Notification Channels -->
+    <string name="notification_channel_limits_name">Límites de Aplicaciones</string>
+    <string name="notification_channel_limits_desc">Alertas cuando te acercas o superas los límites de uso de apps</string>
+    <string name="notification_channel_goals_name">Metas y Logros</string>
+    <string name="notification_channel_goals_desc">Notificaciones sobre metas alcanzadas y logros desbloqueados</string>
+    <string name="notification_channel_motivation_name">Motivación Diaria</string>
+    <string name="notification_channel_motivation_desc">Frases motivacionales para mejorar tu bienestar digital</string>
+    <string name="notification_channel_weekly_name">Resumen Semanal</string>
+    <string name="notification_channel_weekly_desc">Resumen de tu uso de dispositivo durante la semana</string>
+    <string name="notification_channel_reminders_name">Recordatorios Inteligentes</string>
+    <string name="notification_channel_reminders_desc">Recordatorios personalizados sobre tu uso del dispositivo</string>
+    <string name="notification_channel_gamification_name">Gamificación</string>
+    <string name="notification_channel_gamification_desc">Niveles, XP, rachas y logros de gamificación</string>
+    <string name="notification_channel_monitoring_name">Monitoreo de Aplicaciones</string>
+    <string name="notification_channel_monitoring_desc">Monitorea el tiempo de uso de aplicaciones</string>
+    <string name="notification_channel_website_block_name">Bloqueo de Sitios Web</string>
+    <string name="notification_channel_website_block_desc">Alertas cuando intentas acceder a sitios bloqueados</string>
+    <string name="notification_channel_motivational_name">Mensajes Motivacionales</string>
+    <string name="notification_channel_motivational_desc">Mensajes positivos y motivacionales para inspirarte cada día</string>
+    
+    <!-- App Limits Notifications -->
+    <string name="notification_limit_warning_title">⚠️ %1$s - Acercándote al límite</string>
+    <string name="notification_limit_warning_message">Has usado %1$s de %2$s. Te quedan %3$s.</string>
+    <string name="notification_limit_reached_title">🛑 %1$s - Límite alcanzado</string>
+    <string name="notification_limit_reached_message">Alcanzaste tu límite de %1$s. ¡Tiempo de descanso!</string>
+    
+    <!-- Weekly Summary Notifications -->
+    <string name="notification_weekly_summary_total_time">Tiempo total: %1$s</string>
+    <string name="notification_weekly_summary_top_apps">Apps más usadas:</string>
+    <string name="notification_weekly_summary_app_item">%1$d. %2$s: %3$s</string>
+    <string name="notification_weekly_summary_goals">🎯 Metas completadas: %1$d</string>
+    
+    <!-- Daily Motivation Notifications -->
+    <string name="notification_motivation_title">💡 Inspiración del Día</string>
+    <string name="notification_motivation_message">\"%1$s\"</string>
+    
+    <!-- Test Notification -->
+    <string name="notification_test_title_sent">🔔 ¡Notificaciones Activas!</string>
+    <string name="notification_test_message">Las notificaciones de InTime están funcionando correctamente. Recibirás alertas sobre tus metas y límites.</string>
+    
+    <!-- Achievement Notifications -->
+    <string name="notification_goal_achieved_title">🎉 ¡Meta Alcanzada!</string>
+    <string name="notification_goal_achieved_message">Completaste: %1$s</string>
+    <string name="notification_streak_7_title">🔥 ¡7 Días de Racha!</string>
+    <string name="notification_streak_7_message">Una semana en: %1$s</string>
+    <string name="notification_streak_30_title">🏆 ¡30 Días de Racha!</string>
+    <string name="notification_streak_30_message">Un mes en: %1$s</string>
+    <string name="notification_streak_100_title">💎 ¡100 Días de Racha!</string>
+    <string name="notification_streak_100_message">Increíble: %1$s</string>
+    <string name="notification_completion_title">⭐ %1$dx Completado</string>
+    <string name="notification_balanced_day_title">✨ Día Equilibrado</string>
+    <string name="notification_balanced_day_message">Uso saludable hoy: %1$s</string>
+    
+    <!-- Streak Protection Notifications -->
+    <string name="notification_streak_warning_title">⚠️ Racha de %1$d días en riesgo</string>
+    <string name="notification_streak_warning_message">Te quedan %1$d min en %2$s. ¡Protege tu racha!</string>
+    <string name="notification_grace_day_used_title">🛡️ Día de Gracia Usado</string>
+    <string name="notification_grace_day_used_message">Tu racha está protegida. Te quedan %1$d días de gracia.</string>
+    <string name="notification_grace_day_used_last">Tu racha está protegida. ¡Era tu último día de gracia!</string>
+    <string name="notification_grace_day_low_zero_title">🚨 Sin Días de Gracia</string>
+    <string name="notification_grace_day_low_one_title">⚠️ Último Día de Gracia</string>
+    <string name="notification_grace_day_low_zero_message">Sin días de gracia. Si superas límites, perderás tu racha.</string>
+    <string name="notification_grace_day_low_one_message">Te queda 1 día de gracia esta semana.</string>
+    
+    <!-- Screen Time Notifications -->
+    <string name="notification_screen_time_title">⏰ Recordatorio de Bienestar</string>
+    <string name="notification_screen_time_message">Llevas %1$s de pantalla hoy. ¿Un descanso?</string>
+    
+    <!-- Gamification Notifications -->
+    <string name="notification_level_up_title">🎊 ¡Subiste al Nivel %1$d!</string>
+    <string name="notification_level_up_message">%1$s - Has ganado %2$d TimeCoins de bonificación</string>
+    <string name="notification_streak_started_title">🔥 ¡Racha Iniciada!</string>
+    <string name="notification_streak_continued_title">🔥 Racha: %1$d días</string>
+    <string name="notification_streak_broken_title">💔 Racha Perdida</string>
+    <string name="notification_streak_broken_message">Tu racha de %1$d días se ha perdido. ¡Empieza de nuevo!</string>
+    <string name="notification_perfect_day_title">🌟 ¡Día Perfecto!</string>
+    <string name="notification_perfect_day_message">Completaste todas tus metas diarias. +500 XP bonus</string>
+    <string name="notification_xp_gained_title">✨ +%1$d XP</string>
+    <string name="notification_xp_gained_message">%1$s</string>
+    <string name="notification_timecoins_earned_title">🪙 +%1$d TimeCoins</string>
+    <string name="notification_achievement_unlocked_title">🏆 ¡Logro Desbloqueado!</string>
+    <string name="notification_achievement_unlocked_message">%1$s</string>
+    
+    <!-- Website Block Notifications -->
+    <string name="notification_website_blocked_title">🚫 Sitio Web Bloqueado</string>
+    <string name="notification_website_blocked_message">Has intentado acceder a un sitio bloqueado: %1$s</string>
+    <string name="notification_website_blocked_category_title">🚫 Categoría Bloqueada</string>
+    <string name="notification_website_blocked_category_message">Este sitio pertenece a una categoría bloqueada: %1$s</string>
+    
+    <!-- App Block Notifications -->
+    <string name="notification_app_blocked_title">🔒 %1$s Bloqueada</string>
+    <string name="notification_app_blocked_limit_message">Ya alcanzaste tu límite de %1$d minutos hoy</string>
+    <string name="notification_app_blocked_focus_title">🎯 Modo Enfoque Activo</string>
+    <string name="notification_app_blocked_focus_message">%1$s está bloqueada durante tu sesión de enfoque</string>
+    <string name="notification_app_blocked_nuclear_title">☢️ Modo Nuclear</string>
+    <string name="notification_app_blocked_nuclear_message">%1$s bloqueada por %2$d días más</string>
+    <string name="notification_app_blocked_sleep_title">😴 Hora de Descansar</string>
+    <string name="notification_app_blocked_sleep_message">Las apps estarán disponibles mañana. ¡Buenas noches!</string>
+    <string name="notification_app_blocked_communication_title">📱 Modo Solo Comunicación</string>
+    <string name="notification_app_blocked_communication_message">Solo están permitidas apps de comunicación</string>
+    
+    <!-- Monitoring Service -->
+    <string name="notification_monitoring_title">Control de Aplicaciones Activo</string>
+    <string name="notification_monitoring_message">Monitoreando el tiempo de uso de aplicaciones</string>
+    
+    <!-- Life Weeks Notifications -->
+    <string name="notification_birthday_title">🎂 ¡Feliz Cumpleaños!</string>
+    <string name="notification_birthday_message">Hoy es tu cumpleaños. Ya has vivido %1$d semanas. ¡Haz que cada una cuente!</string>
+    <string name="notification_weekly_reflection_title">📅 Nueva Semana</string>
+    <string name="notification_weekly_reflection_message">Semana %1$d de tu vida. ¿Cómo la harás memorable?</string>
+    <string name="notification_life_milestone_title">🌟 Hito de Vida</string>
+    <string name="notification_life_milestone_message">Has alcanzado %1$d semanas de vida. ¡Celebra tu progreso!</string>
+    
+    <!-- Focus Session Notifications -->
+    <string name="notification_focus_started_title">🎯 Sesión de Enfoque Iniciada</string>
+    <string name="notification_focus_started_message">Mantén tu concentración durante %1$d minutos</string>
+    <string name="notification_focus_completed_title">✅ ¡Sesión Completada!</string>
+    <string name="notification_focus_completed_message">Excelente trabajo. +%1$d XP, +%2$d TimeCoins</string>
+    <string name="notification_focus_break_title">☕ Tiempo de Descanso</string>
+    <string name="notification_focus_break_message">Tómate un descanso de %1$d minutos. Lo mereces.</string>
+    
+    <!-- Sync Notifications -->
+    <string name="notification_sync_completed_title">☁️ Sincronización Completa</string>
+    <string name="notification_sync_completed_message">Tus datos están respaldados en la nube</string>
+    <string name="notification_sync_failed_title">⚠️ Error de Sincronización</string>
+    <string name="notification_sync_failed_message">No se pudieron sincronizar tus datos. Reintentando...</string>
+
+    <!-- Motivational Messages Widget -->
+    <string name="motivational_widget_description">Muestra un mensaje motivacional diferente cada día para inspirarte</string>
+    
 </resources>

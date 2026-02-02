@@ -39,6 +39,9 @@ import androidx.lifecycle.*
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.momentummm.app.MainActivity
 import com.momentummm.app.R
 import com.momentummm.app.data.AppDatabase
@@ -60,7 +63,7 @@ import kotlin.math.roundToInt
  * - Muestra countdown en tiempo real
  * - NUNCA desaparece hasta que se cierra la app o se alcanza el límite
  */
-class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner {
+class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner, ViewModelStoreOwner {
 
     companion object {
         private const val TAG = "FloatingTimerService"
@@ -115,7 +118,10 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner 
 
     private var windowManager: WindowManager? = null
     private var floatingView: ComposeView? = null
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+        Log.e(TAG, "Coroutine exception", throwable)
+    }
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main + exceptionHandler)
     
     // Estado del timer
     private var currentAppName = ""
@@ -129,13 +135,16 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     
-    private val store = object : ViewModelStore() {}
+    private val store = ViewModelStore()
 
     override val lifecycle: Lifecycle
         get() = lifecycleRegistry
 
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
+    
+    override val viewModelStore: ViewModelStore
+        get() = store
 
     override fun onCreate() {
         super.onCreate()
@@ -148,6 +157,15 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand called with action: ${intent?.action}")
+        
+        // CRÍTICO: Llamar startForeground inmediatamente para evitar ANR de 5 segundos
+        try {
+            startForeground(NOTIFICATION_ID, buildNotification())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting foreground service immediately", e)
+        }
+        
         when (intent?.action) {
             ACTION_START -> {
                 currentAppName = intent.getStringExtra(EXTRA_APP_NAME) ?: ""
@@ -155,26 +173,57 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner 
                 remainingMinutes = intent.getIntExtra(EXTRA_REMAINING_MINUTES, 0)
                 totalMinutes = intent.getIntExtra(EXTRA_TOTAL_MINUTES, 0)
                 
+                Log.d(TAG, "Starting floating timer for $currentAppName, remaining: $remainingMinutes/$totalMinutes")
+                
                 lifecycleRegistry.currentState = Lifecycle.State.STARTED
-                startForeground(NOTIFICATION_ID, buildNotification())
-                showFloatingTimer()
+                try {
+                    showFloatingTimer()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error showing floating timer", e)
+                }
             }
             ACTION_UPDATE -> {
                 remainingMinutes = intent.getIntExtra(EXTRA_REMAINING_MINUTES, remainingMinutes)
+                Log.d(TAG, "Updating timer: $remainingMinutes min remaining")
                 updateFloatingTimer()
             }
             ACTION_STOP -> {
+                Log.d(TAG, "Stopping floating timer")
                 hideFloatingTimer()
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
+            null -> {
+                // Service restarted by system, just keep running
+                Log.d(TAG, "Service restarted by system")
+            }
+            else -> {
+                Log.w(TAG, "Unknown action: ${intent.action}")
+            }
         }
         return START_STICKY
     }
+    
+    private var isDestroyed = false
 
     override fun onDestroy() {
+        if (isDestroyed) {
+            super.onDestroy()
+            return
+        }
+        isDestroyed = true
+        
         hideFloatingTimer()
-        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        
+        if (lifecycleRegistry.currentState != Lifecycle.State.DESTROYED) {
+            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        }
+        
+        try {
+            store.clear()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing ViewModelStore", e)
+        }
         serviceScope.cancel()
         super.onDestroy()
     }
@@ -210,7 +259,11 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner 
             return
         }
 
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        windowManager = getSystemService(WINDOW_SERVICE) as? WindowManager
+        if (windowManager == null) {
+            Log.e(TAG, "WindowManager not available")
+            return
+        }
         
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -230,7 +283,10 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner 
         }
 
         floatingView = ComposeView(this).apply {
+            // Configurar todos los ViewTree owners necesarios para Compose
             setViewTreeLifecycleOwner(this@FloatingTimerService)
+            setViewTreeViewModelStoreOwner(this@FloatingTimerService)
+            setViewTreeSavedStateRegistryOwner(this@FloatingTimerService)
             
             setContent {
                 MomentumTheme {
@@ -277,6 +333,14 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner 
     private fun hideFloatingTimer() {
         floatingView?.let { view ->
             try {
+                // CRÍTICO: Desasociar ViewTree owners ANTES de remover para evitar memory leak
+                view.setViewTreeLifecycleOwner(null)
+                view.setViewTreeViewModelStoreOwner(null)
+                view.setViewTreeSavedStateRegistryOwner(null)
+                
+                // Dispose la composición para liberar recursos
+                (view as? androidx.compose.ui.platform.ComposeView)?.disposeComposition()
+                
                 windowManager?.removeView(view)
                 Log.d(TAG, "Floating timer hidden")
             } catch (e: Exception) {

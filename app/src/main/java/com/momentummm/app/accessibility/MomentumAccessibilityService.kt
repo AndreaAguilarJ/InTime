@@ -17,8 +17,13 @@ class MomentumAccessibilityService : AccessibilityService() {
     @Inject
     lateinit var inAppBlockRepository: InAppBlockRepository
 
+    // CoroutineExceptionHandler para manejar excepciones sin crashear el servicio
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e(TAG, "Coroutine exception in MomentumAccessibilityService", throwable)
+    }
+    
     // Usar Dispatchers.Default para operaciones de background, no Main
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + exceptionHandler)
     private var lastBlockTime: Long = 0
     private var lastProcessedTime: Long = 0
     // Reducimos el cooldown a 1.5s para ser más agresivos pero permitir salir
@@ -31,16 +36,21 @@ class MomentumAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event == null) return
+        // CRÍTICO: try-catch global para evitar que el servicio de accesibilidad crashee y se deshabilite
+        try {
+            if (event == null) return
 
-        // Procesamos más tipos de eventos para no perder nada
-        when (event.eventType) {
-            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
-            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
-            AccessibilityEvent.TYPE_VIEW_SCROLLED, // Detectar scroll dentro de feeds
-            AccessibilityEvent.TYPE_VIEW_CLICKED -> { // Detectar clicks en tabs
-                processAccessibilityEvent(event)
+            // Procesamos más tipos de eventos para no perder nada
+            when (event.eventType) {
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
+                AccessibilityEvent.TYPE_VIEW_SCROLLED, // Detectar scroll dentro de feeds
+                AccessibilityEvent.TYPE_VIEW_CLICKED -> { // Detectar clicks en tabs
+                    processAccessibilityEvent(event)
+                }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error en onAccessibilityEvent", e)
         }
     }
 
@@ -55,6 +65,12 @@ class MomentumAccessibilityService : AccessibilityService() {
         if (currentTime - lastProcessedTime < PROCESS_THROTTLE) return
         lastProcessedTime = currentTime
 
+        // Verificar si el repositorio está inicializado
+        if (!::inAppBlockRepository.isInitialized) {
+            Log.w(TAG, "inAppBlockRepository not initialized yet, skipping event")
+            return
+        }
+
         serviceScope.launch {
             try {
                 // Timeout de 1 segundo para prevenir ANR
@@ -67,12 +83,28 @@ class MomentumAccessibilityService : AccessibilityService() {
 
                     // Obtenemos el nodo raíz de la ventana activa
                     // Usamos rootInActiveWindow que es más fiable que event.source
-                    val rootNode = rootInActiveWindow ?: event.source ?: return@withTimeoutOrNull
+                    val rootNode = try {
+                        rootInActiveWindow ?: event.source
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Error getting root node", e)
+                        null
+                    } ?: return@withTimeoutOrNull
 
-                    for (rule in rules) {
-                        if (shouldBlockContent(rootNode, rule.ruleId)) {
-                            handleBlock(rule.appName, rule.featureName)
-                            break // Si bloqueamos una, ya no es necesario seguir buscando
+                    try {
+                        for (rule in rules) {
+                            if (shouldBlockContent(rootNode, rule.ruleId)) {
+                                handleBlock(rule.appName, rule.featureName)
+                                break // Si bloqueamos una, ya no es necesario seguir buscando
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Error checking block content", e)
+                    } finally {
+                        // CRÍTICO: Reciclar el nodo para evitar memory leak severo
+                        try {
+                            rootNode.recycle()
+                        } catch (e: Exception) {
+                            // Ignorar errores de reciclaje
                         }
                     }
                 } ?: Log.w(TAG, "processAccessibilityEvent timeout - operación cancelada")
@@ -211,18 +243,19 @@ class MomentumAccessibilityService : AccessibilityService() {
 
     // --- FUNCIONES DE BÚSQUEDA RECURSIVA OPTIMIZADAS ---
 
-    private fun hasText(rootNode: AccessibilityNodeInfo?, text: String): Boolean {
-        if (rootNode == null) return false
+    private fun hasText(rootNode: AccessibilityNodeInfo?, text: String, depth: Int = 0): Boolean {
+        // Límite de profundidad para evitar StackOverflow en árboles muy profundos (TikTok, Instagram)
+        if (rootNode == null || depth > 20) return false
         
         // 1. Chequeo directo
         if (rootNode.text?.contains(text, ignoreCase = true) == true) return true
         
-        // 2. Recursión
+        // 2. Recursión con límite
         val count = rootNode.childCount
         for (i in 0 until count) {
             val child = rootNode.getChild(i)
             if (child != null) {
-                if (hasText(child, text)) {
+                if (hasText(child, text, depth + 1)) {
                     child.recycle() // Importante reciclar nodos
                     return true
                 }
@@ -232,18 +265,19 @@ class MomentumAccessibilityService : AccessibilityService() {
         return false
     }
 
-    private fun hasViewId(rootNode: AccessibilityNodeInfo?, viewIdPart: String): Boolean {
-        if (rootNode == null) return false
+    private fun hasViewId(rootNode: AccessibilityNodeInfo?, viewIdPart: String, depth: Int = 0): Boolean {
+        // Límite de profundidad para evitar StackOverflow
+        if (rootNode == null || depth > 20) return false
 
         // 1. Chequeo directo (contains porque el ID completo incluye el paquete)
         if (rootNode.viewIdResourceName?.contains(viewIdPart, ignoreCase = true) == true) return true
 
-        // 2. Recursión
+        // 2. Recursión con límite
         val count = rootNode.childCount
         for (i in 0 until count) {
             val child = rootNode.getChild(i)
             if (child != null) {
-                if (hasViewId(child, viewIdPart)) {
+                if (hasViewId(child, viewIdPart, depth + 1)) {
                     child.recycle()
                     return true
                 }
@@ -253,18 +287,19 @@ class MomentumAccessibilityService : AccessibilityService() {
         return false
     }
 
-    private fun hasContentDescription(rootNode: AccessibilityNodeInfo?, description: String): Boolean {
-        if (rootNode == null) return false
+    private fun hasContentDescription(rootNode: AccessibilityNodeInfo?, description: String, depth: Int = 0): Boolean {
+        // Límite de profundidad para evitar StackOverflow
+        if (rootNode == null || depth > 20) return false
 
         // 1. Chequeo directo
         if (rootNode.contentDescription?.contains(description, ignoreCase = true) == true) return true
 
-        // 2. Recursión
+        // 2. Recursión con límite
         val count = rootNode.childCount
         for (i in 0 until count) {
             val child = rootNode.getChild(i)
             if (child != null) {
-                if (hasContentDescription(child, description)) {
+                if (hasContentDescription(child, description, depth + 1)) {
                     child.recycle()
                     return true
                 }
@@ -274,8 +309,9 @@ class MomentumAccessibilityService : AccessibilityService() {
         return false
     }
 
-    private fun hasSelectedText(rootNode: AccessibilityNodeInfo?, text: String): Boolean {
-        if (rootNode == null) return false
+    private fun hasSelectedText(rootNode: AccessibilityNodeInfo?, text: String, depth: Int = 0): Boolean {
+        // Límite de profundidad para evitar StackOverflow
+        if (rootNode == null || depth > 20) return false
 
         if (rootNode.text?.contains(text, ignoreCase = true) == true &&
             (rootNode.isSelected || rootNode.isChecked)
@@ -287,7 +323,7 @@ class MomentumAccessibilityService : AccessibilityService() {
         for (i in 0 until count) {
             val child = rootNode.getChild(i)
             if (child != null) {
-                if (hasSelectedText(child, text)) {
+                if (hasSelectedText(child, text, depth + 1)) {
                     child.recycle()
                     return true
                 }
@@ -297,8 +333,9 @@ class MomentumAccessibilityService : AccessibilityService() {
         return false
     }
 
-    private fun hasSelectedContentDescription(rootNode: AccessibilityNodeInfo?, description: String): Boolean {
-        if (rootNode == null) return false
+    private fun hasSelectedContentDescription(rootNode: AccessibilityNodeInfo?, description: String, depth: Int = 0): Boolean {
+        // Límite de profundidad para evitar StackOverflow
+        if (rootNode == null || depth > 20) return false
 
         if (rootNode.contentDescription?.contains(description, ignoreCase = true) == true &&
             (rootNode.isSelected || rootNode.isChecked)
@@ -310,7 +347,7 @@ class MomentumAccessibilityService : AccessibilityService() {
         for (i in 0 until count) {
             val child = rootNode.getChild(i)
             if (child != null) {
-                if (hasSelectedContentDescription(child, description)) {
+                if (hasSelectedContentDescription(child, description, depth + 1)) {
                     child.recycle()
                     return true
                 }
@@ -320,8 +357,9 @@ class MomentumAccessibilityService : AccessibilityService() {
         return false
     }
 
-    private fun hasSelectedViewId(rootNode: AccessibilityNodeInfo?, viewIdPart: String): Boolean {
-        if (rootNode == null) return false
+    private fun hasSelectedViewId(rootNode: AccessibilityNodeInfo?, viewIdPart: String, depth: Int = 0): Boolean {
+        // Límite de profundidad para evitar StackOverflow
+        if (rootNode == null || depth > 20) return false
 
         if (rootNode.viewIdResourceName?.contains(viewIdPart, ignoreCase = true) == true &&
             (rootNode.isSelected || rootNode.isChecked)
@@ -333,7 +371,7 @@ class MomentumAccessibilityService : AccessibilityService() {
         for (i in 0 until count) {
             val child = rootNode.getChild(i)
             if (child != null) {
-                if (hasSelectedViewId(child, viewIdPart)) {
+                if (hasSelectedViewId(child, viewIdPart, depth + 1)) {
                     child.recycle()
                     return true
                 }

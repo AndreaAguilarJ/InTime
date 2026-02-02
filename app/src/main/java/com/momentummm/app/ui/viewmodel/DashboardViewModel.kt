@@ -15,6 +15,8 @@ import com.momentummm.app.util.PermissionUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DashboardUiState(
@@ -50,15 +52,17 @@ class DashboardViewModel(
 
     private fun observeGamificationState() {
         viewModelScope.launch {
-            gamificationManager.getGamificationState().collect { state ->
-                _uiState.value = _uiState.value.copy(gamificationState = state)
-            }
+            gamificationManager.getGamificationState()
+                .catch { e -> e.printStackTrace() }
+                .collect { state ->
+                    _uiState.update { it.copy(gamificationState = state) }
+                }
         }
     }
 
     private fun loadDashboardData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
             
             try {
                 // Check permissions first
@@ -77,21 +81,21 @@ class DashboardViewModel(
                         time to apps
                     }
                     
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.update { it.copy(
                         isLoading = false,
                         totalScreenTime = LifeWeeksCalculator.formatTimeFromMillis(totalScreenTime),
                         quoteOfTheDay = quote,
-                        topApps = topApps as List<com.momentummm.app.data.repository.AppUsageInfo>,
+                        topApps = topApps.filterIsInstance<com.momentummm.app.data.repository.AppUsageInfo>(),
                         hasUsagePermission = true
-                    )
+                    ) }
                 } else {
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.update { it.copy(
                         isLoading = false,
                         quoteOfTheDay = quote,
                         hasUsagePermission = false,
                         totalScreenTime = "0h 0m",
                         topApps = emptyList()
-                    )
+                    ) }
                 }
 
                 // Update daily streak
@@ -104,11 +108,13 @@ class DashboardViewModel(
                         isLevelUp = false
                     )
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e // Propagar cancelación para structured concurrency
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     isLoading = false,
                     hasUsagePermission = false
-                )
+                ) }
             }
         }
     }
@@ -123,19 +129,19 @@ class DashboardViewModel(
         coins: Int = 0,
         isLevelUp: Boolean = false
     ) {
-        _uiState.value = _uiState.value.copy(
+        _uiState.update { it.copy(
             showGamificationEvent = true,
             gamificationEventMessage = message,
             gamificationEventXp = xp,
             gamificationEventCoins = coins,
             isLevelUpEvent = isLevelUp
-        )
+        ) }
     }
 
     fun dismissGamificationEvent() {
-        _uiState.value = _uiState.value.copy(
+        _uiState.update { it.copy(
             showGamificationEvent = false
-        )
+        ) }
     }
 }
 

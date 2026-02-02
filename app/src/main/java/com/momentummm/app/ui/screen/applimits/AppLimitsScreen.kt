@@ -195,7 +195,10 @@ fun AppLimitsScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             contentPadding = PaddingValues(horizontal = 4.dp)
                         ) {
-                            items(uiState.suggestedApps) { app ->
+                            items(
+                                items = uiState.suggestedApps,
+                                key = { it.packageName }
+                            ) { app ->
                                 val hasLimit = uiState.appLimits.any { it.packageName == app.packageName }
                                 SuggestedAppCard(
                                     app = app,
@@ -283,7 +286,10 @@ fun AppLimitsScreen(
             }
 
             if (uiState.appLimits.isNotEmpty()) {
-                items(uiState.appLimits) { appLimit ->
+                items(
+                    items = uiState.appLimits,
+                    key = { it.packageName }
+                ) { appLimit ->
                     AppLimitCard(
                         appLimit = appLimit,
                         remainingTime = uiState.remainingTimes[appLimit.packageName] ?: appLimit.dailyLimitMinutes,

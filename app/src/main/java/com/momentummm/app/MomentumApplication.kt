@@ -34,6 +34,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import dagger.hilt.android.HiltAndroidApp
@@ -77,7 +78,11 @@ class MomentumApplication : Application(), Configuration.Provider {
     val themeManager by lazy { ThemeManager(this) }
     val billingManager by lazy { BillingManager(this) }
     val exportManager by lazy { ExportManager(this) }
-    val gamificationManager by lazy { GamificationManager(database.userDao()) }
+    val gamificationManager by lazy { 
+        GamificationManager(database.userDao(), this).also { manager ->
+            // Se configurará el NotificationManager después de que esté disponible
+        }
+    }
     val backupSyncManager by lazy { 
         BackupSyncManager(
             this, 
@@ -131,8 +136,15 @@ class MomentumApplication : Application(), Configuration.Provider {
         val QUOTES_SEEDED = booleanPreferencesKey("quotes_seeded")
     }
     
+    // Scope con SupervisorJob para evitar que un error cancele todo
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + 
+        kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
+            android.util.Log.e("MomentumApplication", "Error in background coroutine", throwable)
+        }
+    )
+    
     private fun seedDefaultQuotesIfNeeded() {
-        CoroutineScope(Dispatchers.IO).launch {
+        applicationScope.launch(Dispatchers.IO) {
             try {
                 val preferences = dataStore.data.first()
                 val quotesSeeded = preferences[PreferencesKeys.QUOTES_SEEDED] ?: false
@@ -156,15 +168,23 @@ class MomentumApplication : Application(), Configuration.Provider {
         super.onCreate()
         
         // Inicialización en background para no bloquear el hilo principal
-        CoroutineScope(Dispatchers.Default).launch {
-            // Inicializar managers no críticos en background
-            billingManager.startConnection()
-            
-            // Inicializar sistema de notificaciones inteligentes
-            smartNotificationManager
-            
-            // Initialize Appwrite quotes if needed
-            seedDefaultQuotesIfNeeded()
+        // Usa applicationScope con SupervisorJob para manejo de errores robusto
+        applicationScope.launch {
+            try {
+                // Inicializar managers no críticos en background
+                billingManager.startConnection()
+                
+                // Inicializar sistema de notificaciones inteligentes
+                smartNotificationManager
+                
+                // Conectar GamificationManager con SmartNotificationManager
+                gamificationManager.setNotificationManager(smartNotificationManager)
+                
+                // Initialize Appwrite quotes if needed
+                seedDefaultQuotesIfNeeded()
+            } catch (e: Exception) {
+                android.util.Log.e("MomentumApplication", "Error in background init", e)
+            }
         }
         
         // Habilitar StrictMode en modo debug para detectar operaciones lentas en el hilo principal

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,8 +21,8 @@ fun MinimalLauncherSetupScreen(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val isDefaultLauncher by launcherManager.isDefaultLauncher.collectAsState()
-    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsState()
+    val isDefaultLauncher by launcherManager.isDefaultLauncher.collectAsStateWithLifecycle()
+    val isMinimalModeEnabled by minimalPhoneManager.isMinimalModeEnabled.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier

@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
 import com.momentummm.app.ui.viewmodel.OnboardingViewModel
 import com.momentummm.app.ui.viewmodel.OnboardingStep
@@ -24,7 +25,7 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     onCompleted: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(uiState.isCompleted) {
@@ -170,19 +171,38 @@ private fun BirthDateStep(
 ) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+    var showDatePicker by remember { mutableStateOf(false) }
     
     val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     
-    val datePickerDialog = DatePickerDialog(
-        context,
-        { _, year, month, dayOfMonth ->
-            calendar.set(year, month, dayOfMonth)
-            onDateSelected(calendar.time)
-        },
-        calendar.get(Calendar.YEAR) - 25, // Default to 25 years ago
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
-    )
+    // Usar DisposableEffect para manejar el dialog correctamente
+    if (showDatePicker) {
+        DisposableEffect(Unit) {
+            val datePickerDialog = DatePickerDialog(
+                context,
+                { _, year, month, dayOfMonth ->
+                    calendar.set(year, month, dayOfMonth)
+                    onDateSelected(calendar.time)
+                    showDatePicker = false
+                },
+                calendar.get(Calendar.YEAR) - 25, // Default to 25 years ago
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).apply {
+                datePicker.maxDate = System.currentTimeMillis()
+                setOnDismissListener { showDatePicker = false }
+                setOnCancelListener { showDatePicker = false }
+            }
+            
+            datePickerDialog.show()
+            
+            onDispose {
+                if (datePickerDialog.isShowing) {
+                    datePickerDialog.dismiss()
+                }
+            }
+        }
+    }
     
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -219,7 +239,7 @@ private fun BirthDateStep(
         }
         
         Button(
-            onClick = { datePickerDialog.show() },
+            onClick = { showDatePicker = true },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (selectedDate == null) "Seleccionar fecha de nacimiento" else "Cambiar fecha")

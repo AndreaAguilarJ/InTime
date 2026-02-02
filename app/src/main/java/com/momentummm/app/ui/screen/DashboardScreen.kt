@@ -27,6 +27,7 @@ import com.momentummm.app.ui.component.GamificationEventToast
 import com.momentummm.app.ui.component.GamificationHeader
 import com.momentummm.app.ui.viewmodel.DashboardViewModel
 import com.momentummm.app.ui.system.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +36,7 @@ fun DashboardScreen(
     isPremiumUser: Boolean = false,
     onUpgradeClick: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {

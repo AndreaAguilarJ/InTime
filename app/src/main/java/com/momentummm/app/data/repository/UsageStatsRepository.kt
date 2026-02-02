@@ -27,12 +27,15 @@ class UsageStatsRepository @Inject constructor(
         context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
 
     // Cache para evitar consultas repetidas
+    @Volatile
     private var cachedTodayStats: List<AppUsageInfo>? = null
+    @Volatile
     private var lastCacheTime: Long = 0L
     private val CACHE_DURATION_MS = 30_000L // 30 segundos de caché
 
     // Cache del PackageManager para evitar lookups repetidos
-    private val appNameCache = mutableMapOf<String, String>()
+    // Usar ConcurrentHashMap para evitar ConcurrentModificationException
+    private val appNameCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
     fun getTodayUsageStats(): List<AppUsageInfo> {
         val now = System.currentTimeMillis()

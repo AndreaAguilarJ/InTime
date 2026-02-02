@@ -6,13 +6,17 @@ import androidx.lifecycle.viewModelScope
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.manager.BillingManager
 import com.momentummm.app.data.manager.GamificationManager
+import com.momentummm.app.data.manager.SmartBlockingManager
 import com.momentummm.app.data.repository.UserRepository
 import com.momentummm.app.util.SocialShareHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,7 +30,8 @@ class BlockingViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val billingManager: BillingManager,
     private val gamificationManager: GamificationManager,
-    private val socialShareHelper: SocialShareHelper
+    private val socialShareHelper: SocialShareHelper,
+    private val smartBlockingManager: SmartBlockingManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BlockingUiState())
@@ -34,6 +39,9 @@ class BlockingViewModel @Inject constructor(
 
     // Almacén temporal de desbloqueos
     private val temporaryUnlocks = mutableMapOf<String, SocialShareHelper.TemporaryUnlock>()
+    
+    // Job para evitar múltiples shame shares simultáneos
+    private var shameShareJob: Job? = null
 
     init {
         observeBillingState()
@@ -42,41 +50,45 @@ class BlockingViewModel @Inject constructor(
 
     private fun loadUserData() {
         viewModelScope.launch {
-            gamificationManager.getGamificationState().collect { state ->
-                _uiState.value = _uiState.value.copy(
-                    currentStreak = state?.currentStreak ?: 0,
-                    timeCoins = state?.timeCoins ?: 0
-                )
-            }
+            gamificationManager.getGamificationState()
+                .catch { e -> e.printStackTrace() }
+                .collect { state ->
+                    _uiState.update { it.copy(
+                        currentStreak = state?.currentStreak ?: 0,
+                        timeCoins = state?.timeCoins ?: 0
+                    ) }
+                }
         }
     }
 
     private fun observeBillingState() {
         viewModelScope.launch {
-            billingManager.purchaseState.collect { purchaseState ->
-                when (purchaseState) {
-                    BillingManager.PurchaseState.Purchased -> {
-                        _uiState.value = _uiState.value.copy(
-                            unlockState = UnlockState.UNLOCKED_PAYMENT,
-                            isProcessing = false
-                        )
-                    }
-                    BillingManager.PurchaseState.Failed -> {
-                        _uiState.value = _uiState.value.copy(
-                            showError = true,
-                            errorMessage = "Error al procesar el pago",
-                            isProcessing = false
-                        )
-                    }
-                    BillingManager.PurchaseState.Cancelled -> {
-                        _uiState.value = _uiState.value.copy(isProcessing = false)
-                    }
-                    BillingManager.PurchaseState.Purchasing -> {
-                        _uiState.value = _uiState.value.copy(isProcessing = true)
-                    }
-                    else -> {}
+            billingManager.purchaseState
+                .catch { e -> 
+                    _uiState.update { it.copy(
+                        showError = true,
+                        errorMessage = "Error en facturación: ${e.message}",
+                        isProcessing = false
+                    ) }
                 }
-            }
+                .collect { purchaseState ->
+                    _uiState.update { currentState ->
+                        when (purchaseState) {
+                            BillingManager.PurchaseState.Purchased -> currentState.copy(
+                                unlockState = UnlockState.UNLOCKED_PAYMENT,
+                                isProcessing = false
+                            )
+                            BillingManager.PurchaseState.Failed -> currentState.copy(
+                                showError = true,
+                                errorMessage = "Error al procesar el pago",
+                                isProcessing = false
+                            )
+                            BillingManager.PurchaseState.Cancelled -> currentState.copy(isProcessing = false)
+                            BillingManager.PurchaseState.Purchasing -> currentState.copy(isProcessing = true)
+                            else -> currentState
+                        }
+                    }
+                }
         }
     }
 
@@ -84,75 +96,90 @@ class BlockingViewModel @Inject constructor(
      * Inicia el proceso de desbloqueo con pago ($0.99)
      */
     fun initiatePaymentUnlock(blockedPackage: String) {
-        _uiState.value = _uiState.value.copy(
+        _uiState.update { it.copy(
             currentBlockedPackage = blockedPackage,
             selectedUnlockMethod = UnlockMethod.PAYMENT
-        )
+        ) }
     }
 
     /**
      * Inicia el proceso de desbloqueo por vergüenza (compartir)
      */
     fun initiateShameUnlock(blockedPackage: String, blockedAppName: String) {
-        _uiState.value = _uiState.value.copy(
+        _uiState.update { it.copy(
             currentBlockedPackage = blockedPackage,
             currentBlockedAppName = blockedAppName,
             selectedUnlockMethod = UnlockMethod.SHAME_SHARE,
             showShameConfirmation = true
-        )
+        ) }
     }
 
     /**
      * Confirma y ejecuta el shame share
      */
     fun confirmShameShare() {
+        // Evitar múltiples ejecuciones simultáneas
+        if (_uiState.value.isProcessing) return
+        shameShareJob?.cancel()
+        
         val state = _uiState.value
         val appName = state.currentBlockedAppName
         val packageName = state.currentBlockedPackage
         
         if (appName.isEmpty() || packageName.isEmpty()) return
 
-        _uiState.value = _uiState.value.copy(
-            isProcessing = true,
-            showShameCountdown = true,
-            shameCountdown = 3
-        )
+        shameShareJob = viewModelScope.launch {
+            _uiState.update { it.copy(
+                isProcessing = true,
+                showShameCountdown = true,
+                shameCountdown = 3
+            ) }
 
-        viewModelScope.launch {
-            // Countdown de 3 segundos
-            for (i in 3 downTo 1) {
-                _uiState.value = _uiState.value.copy(shameCountdown = i)
-                kotlinx.coroutines.delay(1000)
-            }
+            try {
+                // Countdown de 3 segundos
+                for (i in 3 downTo 1) {
+                    _uiState.update { it.copy(shameCountdown = i) }
+                    kotlinx.coroutines.delay(1000)
+                }
 
-            // Ejecutar el share
-            val shareType = determineShameType(state.currentStreak)
-            val success = socialShareHelper.shareShameImage(
-                context = context,
-                appName = appName,
-                shameType = shareType,
-                streakDays = state.currentStreak
-            )
-
-            if (success) {
-                // Registrar desbloqueo temporal
-                registerTemporaryUnlock(
-                    packageName = packageName,
-                    method = SocialShareHelper.UnlockMethod.SHAME_SHARE
+                // Ejecutar el share
+                val shareType = determineShameType(state.currentStreak)
+                val success = socialShareHelper.shareShameImage(
+                    context = context,
+                    appName = appName,
+                    shameType = shareType,
+                    streakDays = state.currentStreak
                 )
-                
-                _uiState.value = _uiState.value.copy(
-                    unlockState = UnlockState.UNLOCKED_SHAME,
-                    isProcessing = false,
-                    showShameCountdown = false
-                )
-            } else {
-                _uiState.value = _uiState.value.copy(
+
+                if (success) {
+                    // Registrar desbloqueo temporal
+                    registerTemporaryUnlock(
+                        packageName = packageName,
+                        method = SocialShareHelper.UnlockMethod.SHAME_SHARE
+                    )
+                    
+                    _uiState.update { it.copy(
+                        unlockState = UnlockState.UNLOCKED_SHAME,
+                        isProcessing = false,
+                        showShameCountdown = false
+                    ) }
+                } else {
+                    _uiState.update { it.copy(
+                        showError = true,
+                        errorMessage = "No se pudo abrir la app para compartir",
+                        isProcessing = false,
+                        showShameCountdown = false
+                    ) }
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e // Propagar cancelación
+            } catch (e: Exception) {
+                _uiState.update { it.copy(
                     showError = true,
-                    errorMessage = "No se pudo abrir la app para compartir",
+                    errorMessage = e.message ?: "Error desconocido",
                     isProcessing = false,
                     showShameCountdown = false
-                )
+                ) }
             }
         }
     }
@@ -184,6 +211,9 @@ class BlockingViewModel @Inject constructor(
         )
         
         temporaryUnlocks[packageName] = unlock
+        
+        // Desbloquear temporalmente en el SmartBlockingManager
+        smartBlockingManager.temporarilyUnblockApp(packageName)
         
         // Guardar en preferencias para persistencia
         viewModelScope.launch {
@@ -222,22 +252,23 @@ class BlockingViewModel @Inject constructor(
      * Cancela el proceso de desbloqueo
      */
     fun cancelUnlock() {
-        _uiState.value = _uiState.value.copy(
+        shameShareJob?.cancel()
+        _uiState.update { it.copy(
             showShameConfirmation = false,
             showShameCountdown = false,
             selectedUnlockMethod = null,
             isProcessing = false
-        )
+        ) }
     }
 
     /**
      * Limpia el error mostrado
      */
     fun clearError() {
-        _uiState.value = _uiState.value.copy(
+        _uiState.update { it.copy(
             showError = false,
             errorMessage = ""
-        )
+        ) }
     }
 
     /**
@@ -248,17 +279,17 @@ class BlockingViewModel @Inject constructor(
             val packageName = _uiState.value.currentBlockedPackage
             if (packageName.isNotEmpty()) {
                 registerTemporaryUnlock(packageName, SocialShareHelper.UnlockMethod.SHAME_SHARE)
-                _uiState.value = _uiState.value.copy(
+                _uiState.update { it.copy(
                     unlockState = UnlockState.UNLOCKED_SHAME,
                     isProcessing = false
-                )
+                ) }
             }
         } else {
-            _uiState.value = _uiState.value.copy(
+            _uiState.update { it.copy(
                 isProcessing = false,
                 showError = true,
                 errorMessage = "Debes compartir la imagen para desbloquear"
-            )
+            ) }
         }
     }
 }

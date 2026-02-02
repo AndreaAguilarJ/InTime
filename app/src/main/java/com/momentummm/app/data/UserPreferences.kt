@@ -1,21 +1,38 @@
 package com.momentummm.app.data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.io.IOException
 
 private const val PREFERENCES_NAME = "momentum_user_prefs"
+private const val TAG = "UserPreferences"
 
 val Context.userPreferencesDataStore by preferencesDataStore(name = PREFERENCES_NAME)
+
+/**
+ * Safely reads preferences, returning emptyPreferences() if IOException occurs
+ */
+private suspend fun Context.safeReadPreferences(): Preferences {
+    return try {
+        userPreferencesDataStore.data.first()
+    } catch (e: IOException) {
+        Log.e(TAG, "Error reading preferences", e)
+        emptyPreferences()
+    }
+}
 
 object UserPreferencesKeys {
     val DOB_ISO: Preferences.Key<String> = stringPreferencesKey("dob_iso")
@@ -56,7 +73,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getDobIso(context: Context): String? {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.DOB_ISO]
     }
 
@@ -73,7 +90,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun consumeSuppressTutorialOnce(context: Context): Boolean {
-        val current = context.userPreferencesDataStore.data.first()[UserPreferencesKeys.SUPPRESS_TUTORIAL_ONCE] ?: false
+        val current = context.safeReadPreferences()[UserPreferencesKeys.SUPPRESS_TUTORIAL_ONCE] ?: false
         if (current) {
             context.userPreferencesDataStore.edit { prefs ->
                 prefs[UserPreferencesKeys.SUPPRESS_TUTORIAL_ONCE] = false
@@ -90,7 +107,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getWidgetColors(context: Context): Pair<String?, String?> {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.LIVED_COLOR] to prefs[UserPreferencesKeys.FUTURE_COLOR]
     }
 
@@ -138,7 +155,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getNotificationsEnabled(context: Context): Boolean {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.NOTIFICATIONS_ENABLED] ?: true
     }
 
@@ -149,7 +166,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getDailyGoalMinutes(context: Context): Int {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.DAILY_GOAL_MINUTES] ?: 120 // 2 horas por defecto
     }
 
@@ -160,7 +177,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getLastSyncTimestamp(context: Context): Long {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.LAST_SYNC_TIMESTAMP] ?: 0L
     }
 
@@ -171,7 +188,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getAutoSyncEnabled(context: Context): Boolean {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.AUTO_SYNC_ENABLED] ?: true
     }
 
@@ -182,7 +199,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getFocusModeEnabled(context: Context): Boolean {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.FOCUS_MODE_ENABLED] ?: false
     }
 
@@ -193,7 +210,7 @@ object UserPreferencesRepository {
     }
 
     suspend fun getFocusModeBlockedApps(context: Context): List<String> {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.FOCUS_MODE_BLOCKED_APPS]?.toList() ?: emptyList()
     }
 
@@ -224,7 +241,7 @@ object UserPreferencesRepository {
      * Verifica si una app tiene un desbloqueo temporal activo
      */
     suspend fun isAppTemporarilyUnlocked(context: Context, packageName: String): Boolean {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         val unlocks = prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] ?: return false
         val now = System.currentTimeMillis()
         
@@ -240,7 +257,7 @@ object UserPreferencesRepository {
      * Obtiene el tiempo de expiración del desbloqueo temporal
      */
     suspend fun getTemporaryUnlockExpiration(context: Context, packageName: String): Long? {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         val unlocks = prefs[UserPreferencesKeys.TEMPORARY_UNLOCKS] ?: return null
         
         return unlocks.firstNotNullOfOrNull { entry ->
@@ -322,7 +339,7 @@ object UserPreferencesRepository {
     suspend fun isAppInShareWhitelist(context: Context, packageName: String): Boolean {
         if (!SHARE_APPS.contains(packageName)) return false
         
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         val expiration = prefs[UserPreferencesKeys.SHARE_WHITELIST_EXPIRATION] ?: return false
         
         return System.currentTimeMillis() < expiration
@@ -333,7 +350,7 @@ object UserPreferencesRepository {
      * Retorna null si no hay share pendiente o si expiró.
      */
     suspend fun getPendingSharePackage(context: Context): String? {
-        val prefs = context.userPreferencesDataStore.data.first()
+        val prefs = context.safeReadPreferences()
         val expiration = prefs[UserPreferencesKeys.SHARE_WHITELIST_EXPIRATION] ?: return null
         
         if (System.currentTimeMillis() >= expiration) {

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,9 +32,9 @@ fun ThemeSettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
     
-    val themeMode by themeManager.themeMode.collectAsState(initial = ThemeManager.ThemeMode.SYSTEM)
-    val useDynamicColor by themeManager.useDynamicColor.collectAsState(initial = true)
-    val customPrimaryColor by themeManager.customPrimaryColor.collectAsState(initial = null)
+    val themeMode by themeManager.themeMode.collectAsStateWithLifecycle(initialValue = ThemeManager.ThemeMode.SYSTEM)
+    val useDynamicColor by themeManager.useDynamicColor.collectAsStateWithLifecycle(initialValue = true)
+    val customPrimaryColor by themeManager.customPrimaryColor.collectAsStateWithLifecycle(initialValue = null)
     
     Column(
         modifier = Modifier

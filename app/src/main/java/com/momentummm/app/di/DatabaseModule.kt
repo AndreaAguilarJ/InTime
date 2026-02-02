@@ -18,6 +18,9 @@ import com.momentummm.app.data.dao.FriendDao
 import com.momentummm.app.data.dao.LeaderboardDao
 import com.momentummm.app.data.dao.SharedAchievementDao
 import com.momentummm.app.data.dao.CommunitySettingsDao
+import com.momentummm.app.data.dao.MotivationalMessageDao
+import com.momentummm.app.data.dao.MessageReactionDao
+import com.momentummm.app.data.dao.MotivationalPreferencesDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -132,4 +135,20 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideCommunitySettingsDao(db: AppDatabase): CommunitySettingsDao = db.communitySettingsDao()
+
+    // ========================================================================
+    // MOTIVATIONAL MESSAGES DAOs
+    // ========================================================================
+
+    @Provides
+    @Singleton
+    fun provideMotivationalMessageDao(db: AppDatabase): MotivationalMessageDao = db.motivationalMessageDao()
+
+    @Provides
+    @Singleton
+    fun provideMessageReactionDao(db: AppDatabase): MessageReactionDao = db.messageReactionDao()
+
+    @Provides
+    @Singleton
+    fun provideMotivationalPreferencesDao(db: AppDatabase): MotivationalPreferencesDao = db.motivationalPreferencesDao()
 }

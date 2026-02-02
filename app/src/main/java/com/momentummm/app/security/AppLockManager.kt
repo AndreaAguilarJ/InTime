@@ -32,7 +32,12 @@ class AppLockManager @Inject constructor(
     private val passwordProtectionRepository: PasswordProtectionRepository
 ) : DefaultLifecycleObserver {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val supervisorJob = SupervisorJob()
+    private val scope = CoroutineScope(supervisorJob + Dispatchers.Main)
+    
+    // Flag para evitar operaciones después de destrucción
+    @Volatile
+    private var isDestroyed = false
     
     // Estado de bloqueo de la app
     private val _isLocked = MutableStateFlow(false)
@@ -60,71 +65,85 @@ class AppLockManager @Inject constructor(
     private val authValidityPeriodMs: Long = 30 * 60 * 1000L // 30 minutos
 
     init {
-        // Observar el ciclo de vida de la aplicación
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-        isInitialized = true
-        Log.d(TAG, "AppLockManager initialized")
+        // Observar el ciclo de vida de la aplicación de forma segura
+        try {
+            ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+            isInitialized = true
+            Log.d(TAG, "AppLockManager initialized")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing AppLockManager", e)
+        }
     }
 
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
+        if (isDestroyed) return
         Log.d(TAG, "App moved to foreground")
 
         scope.launch {
-            // Verificar si hay protección activa
-            val protection = passwordProtectionRepository.getPasswordProtectionSync()
-            val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
+            try {
+                // Verificar si hay protección activa
+                val protection = passwordProtectionRepository.getPasswordProtectionSync()
+                val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
 
-            if (!isProtectionEnabled) {
-                Log.d(TAG, "Password protection is not enabled, skipping lock")
-                return@launch
-            }
-
-            // Si es el primer inicio, verificar si debe bloquearse inmediatamente
-            if (isFirstLaunch) {
-                isFirstLaunch = false
-                // En el primer inicio, si la protección está activa, bloquear
-                if (isProtectionEnabled && !isAuthenticationStillValid()) {
-                    Log.d(TAG, "First launch with protection enabled, locking app")
-                    lockApp()
+                if (!isProtectionEnabled) {
+                    Log.d(TAG, "Password protection is not enabled, skipping lock")
+                    return@launch
                 }
-                return@launch
-            }
 
-            // Verificar si pasó el grace period
-            val timeInBackground = System.currentTimeMillis() - backgroundTimestamp
-            
-            if (shouldLockOnResume && timeInBackground > gracePeriodMs) {
-                // Verificar que la autenticación no siga siendo válida
-                if (!isAuthenticationStillValid()) {
-                    Log.d(TAG, "Grace period exceeded ($timeInBackground ms), locking app")
-                    lockApp()
+                // Si es el primer inicio, verificar si debe bloquearse inmediatamente
+                if (isFirstLaunch) {
+                    isFirstLaunch = false
+                    // En el primer inicio, si la protección está activa, bloquear
+                    if (isProtectionEnabled && !isAuthenticationStillValid()) {
+                        Log.d(TAG, "First launch with protection enabled, locking app")
+                        lockApp()
+                    }
+                    return@launch
+                }
+
+                // Verificar si pasó el grace period
+                val timeInBackground = System.currentTimeMillis() - backgroundTimestamp
+                
+                if (shouldLockOnResume && timeInBackground > gracePeriodMs) {
+                    // Verificar que la autenticación no siga siendo válida
+                    if (!isAuthenticationStillValid()) {
+                        Log.d(TAG, "Grace period exceeded ($timeInBackground ms), locking app")
+                        lockApp()
+                    } else {
+                        Log.d(TAG, "Authentication still valid, not locking")
+                    }
                 } else {
-                    Log.d(TAG, "Authentication still valid, not locking")
+                    Log.d(TAG, "Within grace period ($timeInBackground ms), not locking")
                 }
-            } else {
-                Log.d(TAG, "Within grace period ($timeInBackground ms), not locking")
+                
+                // Resetear la bandera
+                shouldLockOnResume = false
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in onStart", e)
             }
-            
-            // Resetear la bandera
-            shouldLockOnResume = false
         }
     }
 
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
+        if (isDestroyed) return
         Log.d(TAG, "App moved to background")
 
         scope.launch {
-            // Verificar si hay protección activa
-            val protection = passwordProtectionRepository.getPasswordProtectionSync()
-            val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
+            try {
+                // Verificar si hay protección activa
+                val protection = passwordProtectionRepository.getPasswordProtectionSync()
+                val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
 
-            if (isProtectionEnabled) {
-                // Marcar timestamp y flag para bloquear cuando vuelva
-                backgroundTimestamp = System.currentTimeMillis()
-                shouldLockOnResume = true
-                Log.d(TAG, "Marked app for potential locking on next resume")
+                if (isProtectionEnabled) {
+                    // Marcar timestamp y flag para bloquear cuando vuelva
+                    backgroundTimestamp = System.currentTimeMillis()
+                    shouldLockOnResume = true
+                    Log.d(TAG, "Marked app for potential locking on next resume")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in onStop", e)
             }
         }
     }
@@ -167,12 +186,17 @@ class AppLockManager @Inject constructor(
      * Útil para características que requieren autenticación
      */
     fun forceLock() {
+        if (isDestroyed) return
         scope.launch {
-            val protection = passwordProtectionRepository.getPasswordProtectionSync()
-            val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
-            
-            if (isProtectionEnabled) {
-                lockApp()
+            try {
+                val protection = passwordProtectionRepository.getPasswordProtectionSync()
+                val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
+                
+                if (isProtectionEnabled) {
+                    lockApp()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in forceLock", e)
             }
         }
     }
@@ -205,13 +229,18 @@ class AppLockManager @Inject constructor(
      * Útil para programar bloqueos diferidos
      */
     fun lockAfterDelay(delayMs: Long = gracePeriodMs) {
+        if (isDestroyed) return
         scope.launch {
-            delay(delayMs)
-            val protection = passwordProtectionRepository.getPasswordProtectionSync()
-            val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
-            
-            if (isProtectionEnabled && !isAuthenticationStillValid()) {
-                lockApp()
+            try {
+                delay(delayMs)
+                val protection = passwordProtectionRepository.getPasswordProtectionSync()
+                val isProtectionEnabled = protection?.isEnabled == true && !protection.passwordHash.isNullOrEmpty()
+                
+                if (isProtectionEnabled && !isAuthenticationStillValid()) {
+                    lockApp()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in lockAfterDelay", e)
             }
         }
     }

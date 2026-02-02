@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -30,7 +31,7 @@ fun PasswordVerificationDialog(
     var isLockedOut by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsState()
+    val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.updateRemainingLockoutTime()

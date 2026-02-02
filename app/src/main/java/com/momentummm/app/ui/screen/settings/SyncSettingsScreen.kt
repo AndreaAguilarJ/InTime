@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.momentummm.app.R
 import com.momentummm.app.data.manager.AutoSyncManager
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,8 +22,8 @@ fun SyncSettingsScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    val syncStatus by autoSyncManager.syncStatus.collectAsState()
-    val lastSyncTime by autoSyncManager.lastSyncTime.collectAsState()
+    val syncStatus by autoSyncManager.syncStatus.collectAsStateWithLifecycle()
+    val lastSyncTime by autoSyncManager.lastSyncTime.collectAsStateWithLifecycle()
 
     val isSyncing = syncStatus == AutoSyncManager.SyncStatus.Syncing
 

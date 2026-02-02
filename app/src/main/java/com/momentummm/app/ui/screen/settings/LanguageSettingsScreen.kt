@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,7 +26,7 @@ fun LanguageSettingsScreen(
 ) {
     val context = LocalContext.current
     val languageManager = remember { LanguageManager(context) }
-    val currentLanguage by languageManager.currentLanguage.collectAsState(initial = LanguageManager.LANGUAGE_SYSTEM)
+    val currentLanguage by languageManager.currentLanguage.collectAsStateWithLifecycle(initialValue = LanguageManager.LANGUAGE_SYSTEM)
     var showRestartDialog by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf<String?>(null) }
 

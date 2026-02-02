@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,23 +44,23 @@ fun NotificationSettingsScreen(
     // Estados para cada configuración
     val appLimitsEnabled by context.notificationPrefs.data
         .map { it[NotificationPrefsKeys.APP_LIMITS_ENABLED] ?: true }
-        .collectAsState(initial = true)
+        .collectAsStateWithLifecycle(initialValue = true)
 
     val dailyMotivationEnabled by context.notificationPrefs.data
         .map { it[NotificationPrefsKeys.DAILY_MOTIVATION_ENABLED] ?: true }
-        .collectAsState(initial = true)
+        .collectAsStateWithLifecycle(initialValue = true)
 
     val weeklySummaryEnabled by context.notificationPrefs.data
         .map { it[NotificationPrefsKeys.WEEKLY_SUMMARY_ENABLED] ?: true }
-        .collectAsState(initial = true)
+        .collectAsStateWithLifecycle(initialValue = true)
 
     val achievementsEnabled by context.notificationPrefs.data
         .map { it[NotificationPrefsKeys.ACHIEVEMENTS_ENABLED] ?: true }
-        .collectAsState(initial = true)
+        .collectAsStateWithLifecycle(initialValue = true)
 
     val screenTimeRemindersEnabled by context.notificationPrefs.data
         .map { it[NotificationPrefsKeys.SCREEN_TIME_REMINDERS_ENABLED] ?: true }
-        .collectAsState(initial = true)
+        .collectAsStateWithLifecycle(initialValue = true)
 
     Scaffold(
         topBar = {
