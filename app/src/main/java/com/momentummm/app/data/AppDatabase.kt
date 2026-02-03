@@ -39,20 +39,22 @@ import com.momentummm.app.data.entity.CommunitySettings
 import com.momentummm.app.data.entity.MotivationalMessage
 import com.momentummm.app.data.entity.MessageReaction
 import com.momentummm.app.data.entity.MotivationalPreferences
+import com.momentummm.app.data.entity.AppCategory
 import com.momentummm.app.data.dao.SmartBlockingConfigDao
 import com.momentummm.app.data.dao.ContextBlockRuleDao
 import com.momentummm.app.data.dao.FriendDao
 import com.momentummm.app.data.dao.LeaderboardDao
 import com.momentummm.app.data.dao.SharedAchievementDao
 import com.momentummm.app.data.dao.CommunitySettingsDao
+import com.momentummm.app.data.dao.AppCategoryDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class, SmartBlockingConfig::class, ContextBlockRule::class, Friend::class, LeaderboardEntry::class, SharedAchievement::class, CommunitySettings::class, MotivationalMessage::class, MessageReaction::class, MotivationalPreferences::class],
-    version = 15,
+    entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class, SmartBlockingConfig::class, ContextBlockRule::class, Friend::class, LeaderboardEntry::class, SharedAchievement::class, CommunitySettings::class, MotivationalMessage::class, MessageReaction::class, MotivationalPreferences::class, AppCategory::class],
+    version = 16,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -77,6 +79,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun motivationalMessageDao(): MotivationalMessageDao
     abstract fun messageReactionDao(): MessageReactionDao
     abstract fun motivationalPreferencesDao(): MotivationalPreferencesDao
+    abstract fun appCategoryDao(): AppCategoryDao
 
     private class AppDatabaseCallback(
         private val scope: CoroutineScope
@@ -407,6 +410,54 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // MIGRATION 15 -> 16: Add AppCategory table and new AppLimit fields
+        // Features solicitadas:
+        // - "block apps via category" (bloquear todo "Entretenimiento")
+        // - "block certain apps... at a certain time" (bloqueo por horario)
+        // - Bloquear edición de límites si ya se excedieron
+        private val MIGRATION_15_16 = object : androidx.room.migration.Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Tabla AppCategory para agrupar apps
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `app_categories` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `iconName` TEXT NOT NULL DEFAULT 'Category',
+                        `colorHex` TEXT NOT NULL DEFAULT '#6200EE',
+                        `description` TEXT NOT NULL DEFAULT '',
+                        `isLimitEnabled` INTEGER NOT NULL DEFAULT 0,
+                        `dailyLimitMinutes` INTEGER NOT NULL DEFAULT 60,
+                        `hasScheduleLimit` INTEGER NOT NULL DEFAULT 0,
+                        `scheduleStartHour` INTEGER NOT NULL DEFAULT 9,
+                        `scheduleStartMinute` INTEGER NOT NULL DEFAULT 0,
+                        `scheduleEndHour` INTEGER NOT NULL DEFAULT 17,
+                        `scheduleEndMinute` INTEGER NOT NULL DEFAULT 0,
+                        `scheduleDaysOfWeek` TEXT NOT NULL DEFAULT '1,2,3,4,5',
+                        `packageNames` TEXT NOT NULL DEFAULT '',
+                        `isSystemCategory` INTEGER NOT NULL DEFAULT 0,
+                        `displayOrder` INTEGER NOT NULL DEFAULT 0,
+                        `createdAt` INTEGER NOT NULL DEFAULT 0,
+                        `updatedAt` INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_app_categories_name` ON `app_categories` (`name`)")
+                
+                // Añadir nuevos campos a app_limits para bloqueo por horario
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `hasScheduleLimit` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `scheduleStartHour` INTEGER NOT NULL DEFAULT 9")
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `scheduleStartMinute` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `scheduleEndHour` INTEGER NOT NULL DEFAULT 17")
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `scheduleEndMinute` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `scheduleDaysOfWeek` TEXT NOT NULL DEFAULT '1,2,3,4,5'")
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `categoryId` INTEGER")
+                db.execSQL("ALTER TABLE app_limits ADD COLUMN `lastExceededAt` INTEGER")
+                
+                // Índice para categoryId
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_app_limits_categoryId` ON `app_limits` (`categoryId`)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -414,7 +465,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "momentum_database"
                 ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
-                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
                     .fallbackToDestructiveMigration() // For now, allow destructive migration
                     .build()
                 INSTANCE = instance

@@ -17,6 +17,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import com.momentummm.app.data.repository.AppLimitRepository
 import com.momentummm.app.data.repository.AppWhitelistRepository
+import com.momentummm.app.data.repository.AppCategoryRepository
 import com.momentummm.app.data.repository.GoalsRepository
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.manager.SmartBlockingManager
@@ -31,6 +32,7 @@ class AppMonitoringService : Service() {
 
     @Inject lateinit var appLimitRepository: AppLimitRepository
     @Inject lateinit var appWhitelistRepository: AppWhitelistRepository
+    @Inject lateinit var appCategoryRepository: AppCategoryRepository
     @Inject lateinit var goalsRepository: GoalsRepository
     @Inject lateinit var smartNotificationManager: SmartNotificationManager
     @Inject lateinit var smartBlockingManager: SmartBlockingManager
@@ -62,6 +64,7 @@ class AppMonitoringService : Service() {
     private val areRepositoriesInitialized: Boolean
         get() = ::appLimitRepository.isInitialized && 
                 ::appWhitelistRepository.isInitialized && 
+                ::appCategoryRepository.isInitialized &&
                 ::goalsRepository.isInitialized &&
                 ::smartNotificationManager.isInitialized &&
                 ::smartBlockingManager.isInitialized
@@ -284,6 +287,31 @@ class AppMonitoringService : Service() {
                         appLimitRepository.getLimitByPackage(currentApp)
                     }
 
+                    // VERIFICACIÓN 6: Bloqueo por Horario (Schedule Limit)
+                    // Feature solicitada: "block certain apps... at a certain time"
+                    if (appLimit != null && appLimit.isEnabled && appLimit.isWithinScheduleBlock()) {
+                        Log.d(TAG, "App $currentApp bloqueada por horario: ${appLimit.getScheduleFormatted()}")
+                        blockApp(currentApp, "Bloqueada por horario: ${appLimit.getScheduleFormatted()}")
+                        return@withTimeoutOrNull
+                    }
+                    
+                    // VERIFICACIÓN 7: Bloqueo por Categoría
+                    // Feature solicitada: "block apps via category"
+                    val categoryBlockReason = withContext(Dispatchers.IO) {
+                        appCategoryRepository.getCategoryBlockReason(currentApp)
+                    }
+                    if (categoryBlockReason != null) {
+                        val message = when (categoryBlockReason) {
+                            is com.momentummm.app.data.repository.CategoryBlockReason.LimitExceeded -> 
+                                "Límite de categoría '${categoryBlockReason.categoryName}' excedido (${categoryBlockReason.limitMinutes}m)"
+                            is com.momentummm.app.data.repository.CategoryBlockReason.ScheduleBlock ->
+                                "Categoría '${categoryBlockReason.categoryName}' bloqueada: ${categoryBlockReason.startTime} - ${categoryBlockReason.endTime}"
+                        }
+                        Log.d(TAG, "App $currentApp bloqueada por categoría: $message")
+                        blockApp(currentApp, message)
+                        return@withTimeoutOrNull
+                    }
+
                     // Si la app tiene límite configurado y está habilitada, procesarla
                     if (appLimit != null && appLimit.isEnabled) {
                         Log.d(TAG, "App monitoreada detectada: $currentApp")
@@ -342,6 +370,12 @@ class AppMonitoringService : Service() {
                                     // Marcar la app como bloqueada hoy para que no se pueda volver a abrir
                                     smartBlockingManager.markAppAsBlocked(currentApp)
                                     smartBlockingManager.registerBlockScreenShown(currentApp)
+                                    
+                                    // FEATURE: Marcar límite como excedido para bloquear edición
+                                    // Los usuarios se quejan de poder cambiar límites después de excederlos
+                                    withContext(Dispatchers.IO) {
+                                        appLimitRepository.markAsExceeded(currentApp)
+                                    }
                                     
                                     // Ocultar timer flotante al bloquear
                                     if (floatingTimerActive) {

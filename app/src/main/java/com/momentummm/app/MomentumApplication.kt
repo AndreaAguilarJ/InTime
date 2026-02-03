@@ -8,6 +8,7 @@ import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.repository.UserRepository
 import com.momentummm.app.data.repository.UsageStatsRepository
 import com.momentummm.app.data.repository.QuotesRepository
+import com.momentummm.app.data.repository.MotivationalMessagesRepository
 import com.momentummm.app.data.appwrite.AppwriteService
 import com.momentummm.app.data.appwrite.repository.AppwriteUserRepository
 import com.momentummm.app.data.appwrite.repository.AppwriteQuotesRepository
@@ -20,6 +21,7 @@ import com.momentummm.app.data.manager.ExportManager
 import com.momentummm.app.data.manager.BackupSyncManager
 import com.momentummm.app.data.manager.AutoSyncManager
 import com.momentummm.app.data.manager.GamificationManager
+import com.momentummm.app.data.manager.MotivationalNotificationManager
 import com.momentummm.app.data.repository.GoalsRepository
 import com.momentummm.app.data.repository.AppLimitRepository
 import com.momentummm.app.data.repository.AppWhitelistRepository
@@ -27,6 +29,7 @@ import com.momentummm.app.minimal.MinimalPhoneManager
 import com.momentummm.app.minimal.LauncherManager
 import com.momentummm.app.security.AppLockManager
 import com.momentummm.app.security.BiometricPromptManager
+import com.momentummm.app.worker.MotivationalNotificationWorker
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -132,8 +135,24 @@ class MomentumApplication : Application(), Configuration.Provider {
         )
     }
 
+    // Motivational messages system
+    val motivationalMessagesRepository by lazy {
+        MotivationalMessagesRepository(
+            database.motivationalMessageDao(),
+            database.messageReactionDao(),
+            database.motivationalPreferencesDao(),
+            this
+        )
+    }
+
+    val motivationalNotificationManager by lazy {
+        MotivationalNotificationManager(this, motivationalMessagesRepository)
+    }
+
     private object PreferencesKeys {
         val QUOTES_SEEDED = booleanPreferencesKey("quotes_seeded")
+        val MOTIVATIONAL_MESSAGES_SEEDED = booleanPreferencesKey("motivational_messages_seeded")
+        val MOTIVATIONAL_NOTIFICATIONS_SCHEDULED = booleanPreferencesKey("motivational_notifications_scheduled")
     }
     
     // Scope con SupervisorJob para evitar que un error cancele todo
@@ -164,6 +183,38 @@ class MomentumApplication : Application(), Configuration.Provider {
         }
     }
 
+    /**
+     * Initialize motivational messages seed data and schedule notifications
+     */
+    private fun initializeMotivationalMessagesSystem() {
+        applicationScope.launch(Dispatchers.IO) {
+            try {
+                // Seed motivational messages if needed
+                motivationalMessagesRepository.initializeSeedDataIfNeeded()
+                android.util.Log.d("MomentumApplication", "Motivational messages initialized")
+                
+                // Schedule periodic notifications if not already scheduled
+                val preferences = dataStore.data.first()
+                val notificationsScheduled = preferences[PreferencesKeys.MOTIVATIONAL_NOTIFICATIONS_SCHEDULED] ?: false
+                
+                if (!notificationsScheduled) {
+                    // Schedule periodic motivational notifications
+                    MotivationalNotificationWorker.schedulePeriodicNotifications(this@MomentumApplication)
+                    MotivationalNotificationWorker.scheduleMorningMessage(this@MomentumApplication, 8, 0)
+                    MotivationalNotificationWorker.scheduleEveningMessage(this@MomentumApplication, 21, 0)
+                    
+                    // Mark as scheduled
+                    dataStore.edit { prefs ->
+                        prefs[PreferencesKeys.MOTIVATIONAL_NOTIFICATIONS_SCHEDULED] = true
+                    }
+                    android.util.Log.d("MomentumApplication", "Motivational notifications scheduled")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("MomentumApplication", "Error initializing motivational messages: ${e.message}")
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         
@@ -182,6 +233,9 @@ class MomentumApplication : Application(), Configuration.Provider {
                 
                 // Initialize Appwrite quotes if needed
                 seedDefaultQuotesIfNeeded()
+                
+                // Initialize motivational messages system and schedule notifications
+                initializeMotivationalMessagesSystem()
             } catch (e: Exception) {
                 android.util.Log.e("MomentumApplication", "Error in background init", e)
             }

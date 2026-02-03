@@ -184,6 +184,8 @@ class FocusTimerService : Service() {
                     // Otorgar XP por minuto - usar safe call para evitar crash
                     val event = gamificationManager?.awardFocusMinuteXp(1)
                     
+                    android.util.Log.d("FocusTimerService", "XP otorgado por minuto: xp=${event?.xpGained}, coins=${event?.coinsGained}, minutos=${minutesCompleted}")
+                    
                     _sessionState.value = current.copy(
                         minutesCompleted = minutesCompleted,
                         xpEarned = current.xpEarned + (event?.xpGained ?: 0),
@@ -271,6 +273,9 @@ class FocusTimerService : Service() {
         // Otorgar bonus por completar sesión - usar safe call para evitar crash
         serviceScope.launch {
             val bonusEvent = gamificationManager?.awardSessionCompletionBonus()
+            
+            android.util.Log.d("FocusTimerService", "Sesión completada - Bonus: xp=${bonusEvent?.xpGained}, coins=${bonusEvent?.coinsGained}")
+            android.util.Log.d("FocusTimerService", "XP total acumulado en sesión: ${current.xpEarned + (bonusEvent?.xpGained ?: 0)}")
             
             _sessionState.value = current.copy(
                 remainingSeconds = 0,

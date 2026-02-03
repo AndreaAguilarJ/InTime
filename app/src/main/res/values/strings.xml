@@ -1027,4 +1027,97 @@
     <!-- Motivational Messages Widget -->
     <string name="motivational_widget_description">Muestra un mensaje motivacional diferente cada día para inspirarte</string>
     
+    <!-- Device Admin - Uninstall Prevention -->
+    <string name="device_admin_label">InTime - Protección Anti-Desinstalación</string>
+    <string name="device_admin_description">Activa esta opción para prevenir la desinstalación accidental de InTime mientras tienes bloqueos activos. Puedes desactivarla en cualquier momento desde Ajustes.</string>
+    <string name="device_admin_explanation">InTime necesita permisos de administrador del dispositivo para prevenir su desinstalación mientras tienes bloqueos de apps activos.\n\nEsto es opcional pero recomendado para usuarios que quieren asegurarse de no poder desinstalar la app en momentos de debilidad.\n\nPuedes desactivar esto en cualquier momento desde Ajustes > Seguridad.</string>
+    <string name="device_admin_enabled_toast">✅ Protección anti-desinstalación activada</string>
+    <string name="device_admin_disabled_toast">Protección anti-desinstalación desactivada</string>
+    <string name="device_admin_disable_warning">⚠️ ADVERTENCIA: Si desactivas esto, podrás desinstalar InTime y perder el control sobre tu tiempo de pantalla. ¿Estás seguro?</string>
+    <string name="settings_uninstall_protection_title">Protección Anti-Desinstalación</string>
+    <string name="settings_uninstall_protection_subtitle">Previene desinstalar InTime mientras hay bloqueos activos</string>
+    <string name="settings_uninstall_protection_active">Protección activa</string>
+    <string name="settings_uninstall_protection_inactive">Protección inactiva</string>
+    
+    <!-- Day Start Hour - Custom Day Start -->
+    <string name="settings_day_start_title">Inicio del Día</string>
+    <string name="settings_day_start_subtitle">Configura a qué hora comienza tu día para estadísticas</string>
+    <string name="settings_day_start_current">Actualmente: %1$02d:%2$02d</string>
+    <string name="day_start_dialog_title">Seleccionar Hora de Inicio del Día</string>
+    <string name="day_start_dialog_message">Esta hora se usará como inicio del día para calcular tu tiempo de uso diario. Útil para noctámbulos o personas con horarios no convencionales.</string>
+    
+    <!-- Schedule Limits -->
+    <string name="schedule_limit_title">Bloqueo por Horario</string>
+    <string name="schedule_limit_subtitle">Bloquear apps solo durante ciertos horarios</string>
+    <string name="schedule_start">Hora de inicio</string>
+    <string name="schedule_end">Hora de fin</string>
+    <string name="schedule_days">Días activos</string>
+    <string name="schedule_blocked_message">Esta app está bloqueada de %1$s a %2$s</string>
+    
+    <!-- App Categories -->
+    <string name="category_title">Categorías de Apps</string>
+    <string name="category_subtitle">Agrupa apps y aplica límites por categoría</string>
+    <string name="category_social">Social</string>
+    <string name="category_entertainment">Entretenimiento</string>
+    <string name="category_games">Juegos</string>
+    <string name="category_productivity">Productividad</string>
+    <string name="category_news">Noticias</string>
+    <string name="category_shopping">Compras</string>
+    <string name="category_limit_exceeded">Límite de categoría excedido</string>
+    <string name="category_combined_time">Tiempo combinado de todas las apps en esta categoría</string>
+    
+    <!-- Edit Limit Blocked -->
+    <string name="edit_limit_blocked_title">Edición Bloqueada</string>
+    <string name="edit_limit_blocked_message">No puedes modificar el límite de %1$s porque ya excediste tu límite hoy. Intenta mañana.</string>
+    <string name="edit_limit_blocked_reason">El límite ya fue excedido hoy</string>
+    
+    <!-- Protection Settings Screen -->
+    <string name="settings_protection_title">Protección Avanzada</string>
+    <string name="settings_protection_subtitle">Configura la protección anti-desinstalación y la hora de inicio del día</string>
+    
+    <!-- Day Start Time -->
+    <string name="day_start_hour_title">Hora de Inicio del Día</string>
+    <string name="day_start_hour_subtitle">Define cuándo comienza tu día para el cálculo de estadísticas</string>
+    <string name="day_start_current">Hora actual</string>
+    <string name="day_start_info">Tu día se reinicia a esta hora. Útil si trabajas de noche o tienes horarios no convencionales. El tiempo de uso diario se calculará desde esta hora.</string>
+    <string name="day_start_picker_title">Seleccionar Hora</string>
+    <string name="day_start_picker_description">Elige a qué hora comienza tu día para las estadísticas de uso</string>
+    
+    <!-- Device Admin Settings -->
+    <string name="device_admin_settings_title">Protección Anti-Desinstalación</string>
+    <string name="device_admin_settings_subtitle">Previene que puedas desinstalar InTime en momentos de debilidad</string>
+    <string name="device_admin_info_title">¿Cómo funciona?</string>
+    <string name="device_admin_info_description">Usa permisos de administrador del dispositivo para prevenir la desinstalación de InTime mientras tienes bloqueos activos.</string>
+    <string name="device_admin_benefit_1">Previene desinstalar la app impulsivamente</string>
+    <string name="device_admin_benefit_2">Puedes desactivarlo en cualquier momento</string>
+    <string name="device_admin_benefit_3">No afecta otras funciones del dispositivo</string>
+    <string name="device_admin_status_active">Protección Activa</string>
+    <string name="device_admin_status_active_desc">No podrás desinstalar InTime hasta desactivar la protección</string>
+    <string name="device_admin_status_inactive">Protección Inactiva</string>
+    <string name="device_admin_status_inactive_desc">Puedes desinstalar InTime libremente</string>
+    <string name="device_admin_activate">Activar Protección</string>
+    <string name="device_admin_deactivate">Desactivar Protección</string>
+    <string name="uninstall_protection_toggle">Activar al bloquear apps</string>
+    <string name="uninstall_protection_toggle_desc">Activa automáticamente la protección cuando tengas límites de apps activos</string>
+    
+    <!-- Categories Screen -->
+    <string name="categories_screen_title">Categorías de Apps</string>
+    <string name="categories_info_title">Bloqueo por Categoría</string>
+    <string name="categories_info_description">Agrupa tus apps por categoría y aplica límites a toda la categoría. El tiempo se calcula combinando todas las apps del grupo.</string>
+    <string name="categories_empty_title">Sin Categorías</string>
+    <string name="categories_empty_description">Crea categorías para agrupar apps similares y aplicar límites más fácilmente</string>
+    <string name="categories_auto_detect">Auto-detectar Categorías</string>
+    <string name="category_create_new">Nueva Categoría</string>
+    <string name="category_create_manual">Crear Manualmente</string>
+    <string name="category_create_title">Crear Categoría</string>
+    <string name="category_name_label">Nombre de la categoría</string>
+    <string name="category_description_label">Descripción (opcional)</string>
+    <string name="category_icon_label">Icono</string>
+    <string name="category_color_label">Color</string>
+    
+    <!-- Additional Actions (not duplicating existing) -->
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_create">Crear</string>
+    <string name="action_more_info">Más información</string>
+    
 </resources>

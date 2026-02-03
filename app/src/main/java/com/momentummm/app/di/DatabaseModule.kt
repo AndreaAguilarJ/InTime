@@ -21,6 +21,7 @@ import com.momentummm.app.data.dao.CommunitySettingsDao
 import com.momentummm.app.data.dao.MotivationalMessageDao
 import com.momentummm.app.data.dao.MessageReactionDao
 import com.momentummm.app.data.dao.MotivationalPreferencesDao
+import com.momentummm.app.data.dao.AppCategoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -151,4 +152,13 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideMotivationalPreferencesDao(db: AppDatabase): MotivationalPreferencesDao = db.motivationalPreferencesDao()
+
+    // ========================================================================
+    // APP CATEGORIES DAOs
+    // Feature solicitada: "block apps via category" 
+    // ========================================================================
+
+    @Provides
+    @Singleton
+    fun provideAppCategoryDao(db: AppDatabase): AppCategoryDao = db.appCategoryDao()
 }

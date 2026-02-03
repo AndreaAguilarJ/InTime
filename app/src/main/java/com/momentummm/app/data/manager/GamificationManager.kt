@@ -128,6 +128,8 @@ class GamificationManager @Inject constructor(
         userDao.addTimeCoins(totalCoins)
         userDao.addFocusMinutes(minutes)
         
+        android.util.Log.d("GamificationManager", "Otorgando XP - minutos: $minutes, baseXP: $baseXp, multiplicador: $streakMultiplier, totalXP: $totalXp, totalCoins: $totalCoins")
+        
         // Verificar si subió de nivel
         val levelUpEvent = checkAndProcessLevelUp()
         

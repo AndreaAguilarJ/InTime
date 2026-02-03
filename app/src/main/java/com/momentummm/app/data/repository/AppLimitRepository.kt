@@ -42,8 +42,53 @@ class AppLimitRepository @Inject constructor(
         ensureMonitoringServiceRunning()
     }
 
-    suspend fun updateAppLimit(packageName: String, dailyLimitMinutes: Int) {
+    /**
+     * Actualiza el límite diario de una app.
+     * 
+     * IMPORTANTE: Esta función verifica si el límite ya fue excedido hoy.
+     * Si fue excedido, NO permite la edición (los usuarios se quejan de 
+     * poder cambiar los límites cuando ya se han pasado).
+     * 
+     * @return true si se actualizó exitosamente, false si la edición está bloqueada
+     */
+    suspend fun updateAppLimit(packageName: String, dailyLimitMinutes: Int): Boolean {
+        // Verificar si el límite ya fue excedido hoy
+        val currentLimit = getLimitByPackage(packageName)
+        if (currentLimit?.isEditBlocked() == true) {
+            // El límite ya fue excedido hoy, no permitir edición
+            android.util.Log.w("AppLimitRepository", 
+                "Edición bloqueada para $packageName: límite ya excedido hoy")
+            return false
+        }
+        
         appLimitDao.updateDailyLimit(packageName, dailyLimitMinutes)
+        return true
+    }
+    
+    /**
+     * Actualiza el límite diario de una app, forzando la actualización
+     * incluso si el límite ya fue excedido. Usar con cuidado.
+     */
+    suspend fun forceUpdateAppLimit(packageName: String, dailyLimitMinutes: Int) {
+        appLimitDao.updateDailyLimit(packageName, dailyLimitMinutes)
+    }
+    
+    /**
+     * Verifica si la edición del límite está bloqueada para una app.
+     */
+    suspend fun isEditBlocked(packageName: String): Boolean {
+        val limit = getLimitByPackage(packageName) ?: return false
+        return limit.isEditBlocked()
+    }
+    
+    /**
+     * Marca una app como que ha excedido su límite.
+     * Esto bloquea la edición del límite por el resto del día.
+     */
+    suspend fun markAsExceeded(packageName: String) {
+        val currentLimit = getLimitByPackage(packageName) ?: return
+        val updatedLimit = currentLimit.withExceeded()
+        appLimitDao.insertOrUpdateLimit(updatedLimit)
     }
 
     suspend fun toggleAppLimit(packageName: String, enabled: Boolean) {
@@ -198,6 +243,112 @@ class AppLimitRepository @Inject constructor(
             totalLimitMinutes = totalTimeLimit
         )
     }
+    
+    // ============================================================
+    // BLOQUEO POR HORARIO
+    // ============================================================
+    // Feature solicitada: "block certain apps... at a certain time"
+    
+    /**
+     * Verifica si una app está bloqueada por horario.
+     * Esto es independiente del límite de tiempo diario.
+     */
+    suspend fun isAppBlockedBySchedule(packageName: String): Boolean {
+        val limit = getLimitByPackage(packageName) ?: return false
+        if (!limit.isEnabled) return false
+        return limit.isWithinScheduleBlock()
+    }
+    
+    /**
+     * Obtiene todas las apps actualmente bloqueadas por horario.
+     */
+    suspend fun getAppsBlockedBySchedule(): List<AppLimit> {
+        val enabledLimits = withTimeoutOrNull(5000L) {
+            appLimitDao.getAllEnabledLimits().first()
+        } ?: emptyList()
+        
+        return enabledLimits.filter { it.isWithinScheduleBlock() }
+    }
+    
+    /**
+     * Actualiza el horario de bloqueo de una app.
+     */
+    suspend fun updateScheduleLimit(
+        packageName: String,
+        hasScheduleLimit: Boolean,
+        startHour: Int,
+        startMinute: Int,
+        endHour: Int,
+        endMinute: Int,
+        daysOfWeek: String
+    ) {
+        val currentLimit = getLimitByPackage(packageName) ?: return
+        val updatedLimit = currentLimit.withScheduleLimit(
+            enabled = hasScheduleLimit,
+            startHour = startHour,
+            startMinute = startMinute,
+            endHour = endHour,
+            endMinute = endMinute,
+            daysOfWeek = daysOfWeek
+        )
+        appLimitDao.insertOrUpdateLimit(updatedLimit)
+    }
+    
+    /**
+     * Verifica si una app debería estar bloqueada (por cualquier razón).
+     * Combina verificación de límite diario + bloqueo por horario.
+     */
+    suspend fun shouldAppBeBlocked(packageName: String): Boolean {
+        // Primero verificar whitelist
+        if (appWhitelistRepository.isAppWhitelisted(packageName)) {
+            return false
+        }
+        
+        val limit = getLimitByPackage(packageName) ?: return false
+        if (!limit.isEnabled) return false
+        
+        // Verificar bloqueo por horario
+        if (limit.isWithinScheduleBlock()) {
+            return true
+        }
+        
+        // Verificar límite diario
+        return isAppOverLimit(packageName)
+    }
+    
+    /**
+     * Obtiene el motivo por el cual una app está bloqueada.
+     */
+    suspend fun getBlockReason(packageName: String): BlockReason? {
+        val limit = getLimitByPackage(packageName) ?: return null
+        if (!limit.isEnabled) return null
+        
+        // Verificar bloqueo por horario primero
+        if (limit.isWithinScheduleBlock()) {
+            return BlockReason.SCHEDULE_BLOCK(
+                startTime = limit.getScheduleFormatted().split(" - ").first(),
+                endTime = limit.getScheduleFormatted().split(" - ").last()
+            )
+        }
+        
+        // Verificar límite diario
+        if (isAppOverLimit(packageName)) {
+            return BlockReason.DAILY_LIMIT_EXCEEDED(limit.dailyLimitMinutes)
+        }
+        
+        return null
+    }
+}
+
+/**
+ * Razón por la cual una app está bloqueada.
+ */
+sealed class BlockReason {
+    data class DAILY_LIMIT_EXCEEDED(val limitMinutes: Int) : BlockReason()
+    data class SCHEDULE_BLOCK(val startTime: String, val endTime: String) : BlockReason()
+    data class CATEGORY_LIMIT(val categoryName: String, val limitMinutes: Int) : BlockReason()
+    object FOCUS_MODE : BlockReason()
+    object NUCLEAR_MODE : BlockReason()
 }
 
 data class LimitsSummary(

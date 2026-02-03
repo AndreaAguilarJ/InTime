@@ -755,6 +755,20 @@ private fun MainAppContent(
                     )
                 }
 
+                // Protection Settings (Device Admin + Day Start Hour)
+                composable("protection_settings") {
+                    com.momentummm.app.ui.screen.settings.ProtectionSettingsScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                // App Categories Screen
+                composable("app_categories") {
+                    com.momentummm.app.ui.screen.categories.AppCategoriesScreen(
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
                 // Motivational Messages Settings
                 composable("motivational_messages_settings") {
                     com.momentummm.app.ui.screen.settings.MotivationalMessagesSettingsScreen(

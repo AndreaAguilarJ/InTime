@@ -57,6 +57,15 @@ object UserPreferencesKeys {
     // Whitelist temporal para apps de compartir durante el flujo de shame share
     val SHARE_WHITELIST_EXPIRATION: Preferences.Key<Long> = longPreferencesKey("share_whitelist_expiration")
     val SHARE_PENDING_PACKAGE: Preferences.Key<String> = stringPreferencesKey("share_pending_package")
+    
+    // Day Start Hour - Personalización del inicio del día
+    // Los usuarios piden: "add a feature so that we can start our day as we wish"
+    // Permite configurar a qué hora empieza el "día" para estadísticas (ej: 0 = 12AM, 4 = 4AM)
+    val DAY_START_HOUR: Preferences.Key<Int> = intPreferencesKey("day_start_hour")
+    val DAY_START_MINUTE: Preferences.Key<Int> = intPreferencesKey("day_start_minute")
+    
+    // Uninstall Protection - Protección anti-desinstalación
+    val UNINSTALL_PROTECTION_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("uninstall_protection_enabled")
 }
 
 object UserPreferencesRepository {
@@ -377,5 +386,136 @@ object UserPreferencesRepository {
         addTemporaryUnlock(context, pendingPackage, unlockExpiration)
         
         return true
+    }
+    
+    // ============================================================
+    // DAY START HOUR - Personalización del inicio del día
+    // ============================================================
+    // Feature solicitada: "Someone wants to start their day at 12am or 
+    // someone wants to start their day at 1am... add a feature so that 
+    // we can start our day as we wish"
+    
+    /**
+     * Establece la hora de inicio del día para estadísticas.
+     * Por defecto es 0 (medianoche), pero usuarios nocturnos pueden 
+     * preferir 3:00, 4:00, o cualquier otra hora.
+     */
+    suspend fun setDayStartTime(context: Context, hour: Int, minute: Int = 0) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.DAY_START_HOUR] = hour.coerceIn(0, 23)
+            prefs[UserPreferencesKeys.DAY_START_MINUTE] = minute.coerceIn(0, 59)
+        }
+    }
+    
+    /**
+     * Obtiene la hora de inicio del día (0-23)
+     * Por defecto retorna 0 (medianoche)
+     */
+    suspend fun getDayStartHour(context: Context): Int {
+        val prefs = context.safeReadPreferences()
+        return prefs[UserPreferencesKeys.DAY_START_HOUR] ?: 0
+    }
+    
+    /**
+     * Obtiene el minuto de inicio del día (0-59)
+     * Por defecto retorna 0
+     */
+    suspend fun getDayStartMinute(context: Context): Int {
+        val prefs = context.safeReadPreferences()
+        return prefs[UserPreferencesKeys.DAY_START_MINUTE] ?: 0
+    }
+    
+    /**
+     * Obtiene la hora y minuto de inicio del día como un Pair
+     */
+    suspend fun getDayStartTime(context: Context): Pair<Int, Int> {
+        val prefs = context.safeReadPreferences()
+        val hour = prefs[UserPreferencesKeys.DAY_START_HOUR] ?: 0
+        val minute = prefs[UserPreferencesKeys.DAY_START_MINUTE] ?: 0
+        return hour to minute
+    }
+    
+    /**
+     * Flow para observar cambios en la hora de inicio del día
+     */
+    fun getDayStartTimeFlow(context: Context): Flow<Pair<Int, Int>> {
+        return context.userPreferencesDataStore.data
+            .catch { e ->
+                Log.e(TAG, "Error reading day start time", e)
+                emit(emptyPreferences())
+            }
+            .map { prefs ->
+                val hour = prefs[UserPreferencesKeys.DAY_START_HOUR] ?: 0
+                val minute = prefs[UserPreferencesKeys.DAY_START_MINUTE] ?: 0
+                hour to minute
+            }
+    }
+    
+    /**
+     * Calcula el timestamp de inicio del "día" actual basándose en la preferencia del usuario.
+     * 
+     * Por ejemplo, si dayStartHour = 4:
+     * - A las 3:00 AM, el "día" aún es del día anterior (empezó a las 4:00 AM ayer)
+     * - A las 5:00 AM, el "día" es de hoy (empezó a las 4:00 AM hoy)
+     */
+    suspend fun getDayStartTimestamp(context: Context): Long {
+        val (startHour, startMinute) = getDayStartTime(context)
+        val calendar = java.util.Calendar.getInstance()
+        val currentHour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(java.util.Calendar.MINUTE)
+        
+        // Si la hora actual es antes de la hora de inicio del día,
+        // entonces el "día" empezó ayer a esa hora
+        val currentTimeInMinutes = currentHour * 60 + currentMinute
+        val startTimeInMinutes = startHour * 60 + startMinute
+        
+        if (currentTimeInMinutes < startTimeInMinutes) {
+            // Retroceder un día
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
+        }
+        
+        calendar.set(java.util.Calendar.HOUR_OF_DAY, startHour)
+        calendar.set(java.util.Calendar.MINUTE, startMinute)
+        calendar.set(java.util.Calendar.SECOND, 0)
+        calendar.set(java.util.Calendar.MILLISECOND, 0)
+        
+        return calendar.timeInMillis
+    }
+    
+    // ============================================================
+    // UNINSTALL PROTECTION - Protección anti-desinstalación
+    // ============================================================
+    // Feature solicitada: "I would much rather have it to block myself 
+    // from deleting it"
+    
+    /**
+     * Establece si la protección anti-desinstalación está habilitada
+     */
+    suspend fun setUninstallProtectionEnabled(context: Context, enabled: Boolean) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.UNINSTALL_PROTECTION_ENABLED] = enabled
+        }
+    }
+    
+    /**
+     * Obtiene si la protección anti-desinstalación está habilitada
+     */
+    suspend fun isUninstallProtectionEnabled(context: Context): Boolean {
+        val prefs = context.safeReadPreferences()
+        return prefs[UserPreferencesKeys.UNINSTALL_PROTECTION_ENABLED] ?: false
+    }
+    
+    /**
+     * Flow para observar cambios en la protección anti-desinstalación
+     */
+    fun getUninstallProtectionFlow(context: Context): Flow<Boolean> {
+        return context.userPreferencesDataStore.data
+            .catch { e ->
+                Log.e(TAG, "Error reading uninstall protection", e)
+                emit(emptyPreferences())
+            }
+            .map { prefs ->
+                prefs[UserPreferencesKeys.UNINSTALL_PROTECTION_ENABLED] ?: false
+            }
     }
 }

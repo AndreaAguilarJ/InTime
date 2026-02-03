@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Políticas de Device Admin para InTime
+    
+    Usamos políticas mínimas para prevenir la desinstalación:
+    - No requiere contraseña del dispositivo
+    - No controla el bloqueo del dispositivo
+    - Solo previene la desinstalación de InTime
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <!-- Política mínima requerida para funcionar como Device Admin -->
+        <!-- No necesitamos otras políticas, solo la protección contra desinstalación -->
+    </uses-policies>
+</device-admin>

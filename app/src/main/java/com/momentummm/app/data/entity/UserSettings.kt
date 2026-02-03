@@ -39,18 +39,18 @@ data class UserSettings(
         }
 
         // XP ganado por minuto de foco
-        const val XP_PER_FOCUS_MINUTE = 2
+        const val XP_PER_FOCUS_MINUTE = 5
         
         // TimeCoins por minuto de foco
         const val COINS_PER_FOCUS_MINUTE = 1
         
         // Bonus por completar sesión completa
-        const val XP_SESSION_BONUS = 50
-        const val COINS_SESSION_BONUS = 25
+        const val XP_SESSION_BONUS = 150
+        const val COINS_SESSION_BONUS = 30
         
         // Bonus por día perfecto (sin romper límites)
-        const val XP_PERFECT_DAY_BONUS = 100
-        const val COINS_PERFECT_DAY_BONUS = 50
+        const val XP_PERFECT_DAY_BONUS = 500
+        const val COINS_PERFECT_DAY_BONUS = 100
         
         // Penalización por romper racha (Loss Aversion)
         const val XP_STREAK_BREAK_PENALTY = 75

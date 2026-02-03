@@ -26,4 +26,53 @@ interface AppLimitDao {
 
     @Query("UPDATE app_limits SET dailyLimitMinutes = :limitMinutes WHERE packageName = :packageName")
     suspend fun updateDailyLimit(packageName: String, limitMinutes: Int)
+    
+    // ============================================================
+    // BLOQUEO POR HORARIO - Feature: "block certain apps... at a certain time"
+    // ============================================================
+    
+    @Query("""
+        UPDATE app_limits 
+        SET hasScheduleLimit = :hasSchedule,
+            scheduleStartHour = :startHour,
+            scheduleStartMinute = :startMinute,
+            scheduleEndHour = :endHour,
+            scheduleEndMinute = :endMinute,
+            scheduleDaysOfWeek = :daysOfWeek,
+            updatedAt = :updatedAt
+        WHERE packageName = :packageName
+    """)
+    suspend fun updateScheduleLimit(
+        packageName: String,
+        hasSchedule: Boolean,
+        startHour: Int,
+        startMinute: Int,
+        endHour: Int,
+        endMinute: Int,
+        daysOfWeek: String,
+        updatedAt: Long = System.currentTimeMillis()
+    )
+    
+    @Query("SELECT * FROM app_limits WHERE hasScheduleLimit = 1 AND isEnabled = 1")
+    fun getLimitsWithSchedule(): Flow<List<AppLimit>>
+    
+    // ============================================================
+    // CATEGORÍAS - Feature: "block apps via category"
+    // ============================================================
+    
+    @Query("SELECT * FROM app_limits WHERE categoryId = :categoryId")
+    fun getLimitsByCategory(categoryId: Int): Flow<List<AppLimit>>
+    
+    @Query("UPDATE app_limits SET categoryId = :categoryId WHERE packageName = :packageName")
+    suspend fun updateCategory(packageName: String, categoryId: Int?)
+    
+    // ============================================================
+    // BLOQUEO DE EDICIÓN - Feature: No permitir editar límites excedidos
+    // ============================================================
+    
+    @Query("UPDATE app_limits SET lastExceededAt = :timestamp WHERE packageName = :packageName")
+    suspend fun markAsExceeded(packageName: String, timestamp: Long = System.currentTimeMillis())
+    
+    @Query("SELECT * FROM app_limits WHERE lastExceededAt IS NOT NULL AND lastExceededAt > :todayStart")
+    suspend fun getExceededToday(todayStart: Long): List<AppLimit>
 }

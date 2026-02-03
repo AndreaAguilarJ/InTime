@@ -2,11 +2,14 @@ package com.momentummm.app.ui.screen.applimits
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -292,6 +295,26 @@ private fun AppSelectionItem(
     }
 }
 
+/**
+ * Datos de configuración de horario para bloqueo
+ */
+data class ScheduleLimitConfig(
+    val enabled: Boolean = false,
+    val startHour: Int = 9,
+    val startMinute: Int = 0,
+    val endHour: Int = 17,
+    val endMinute: Int = 0,
+    val daysOfWeek: Set<Int> = setOf(1, 2, 3, 4, 5) // 1=Lun, 7=Dom
+)
+
+/**
+ * Resultado del diálogo de edición con límite y opcionalmente horario
+ */
+data class EditLimitResult(
+    val limitMinutes: Int,
+    val scheduleConfig: ScheduleLimitConfig? = null
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditAppLimitDialog(
@@ -300,7 +323,38 @@ fun EditAppLimitDialog(
     onDismiss: () -> Unit,
     onSave: (Int) -> Unit
 ) {
+    // Wrapper para compatibilidad con código existente
+    EditAppLimitDialogExtended(
+        appName = appName,
+        currentLimit = currentLimit,
+        hasScheduleLimit = false,
+        currentScheduleConfig = null,
+        onDismiss = onDismiss,
+        onSave = { result -> onSave(result.limitMinutes) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditAppLimitDialogExtended(
+    appName: String,
+    currentLimit: Int,
+    hasScheduleLimit: Boolean = false,
+    currentScheduleConfig: ScheduleLimitConfig? = null,
+    onDismiss: () -> Unit,
+    onSave: (EditLimitResult) -> Unit
+) {
     var limitMinutes by remember { mutableStateOf(currentLimit.toString()) }
+    var showScheduleSection by remember { mutableStateOf(hasScheduleLimit) }
+    var scheduleEnabled by remember { mutableStateOf(currentScheduleConfig?.enabled ?: false) }
+    var scheduleStartHour by remember { mutableIntStateOf(currentScheduleConfig?.startHour ?: 9) }
+    var scheduleStartMinute by remember { mutableIntStateOf(currentScheduleConfig?.startMinute ?: 0) }
+    var scheduleEndHour by remember { mutableIntStateOf(currentScheduleConfig?.endHour ?: 17) }
+    var scheduleEndMinute by remember { mutableIntStateOf(currentScheduleConfig?.endMinute ?: 0) }
+    var selectedDays by remember { mutableStateOf(currentScheduleConfig?.daysOfWeek ?: setOf(1, 2, 3, 4, 5)) }
+    
+    var showStartTimePicker by remember { mutableStateOf(false) }
+    var showEndTimePicker by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -311,7 +365,9 @@ fun EditAppLimitDialog(
             color = MaterialTheme.colorScheme.surface
         ) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 // Header
                 Row(
@@ -342,6 +398,17 @@ fun EditAppLimitDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // ================================================================
+                // SECCIÓN: Límite Diario
+                // ================================================================
+                Text(
+                    text = "⏱️ Límite de Tiempo Diario",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+
                 // Limit input
                 OutlinedTextField(
                     value = limitMinutes,
@@ -359,7 +426,7 @@ fun EditAppLimitDialog(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Preset buttons
                 Text(
@@ -385,6 +452,125 @@ fun EditAppLimitDialog(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ================================================================
+                // SECCIÓN: Bloqueo por Horario
+                // ================================================================
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Bloqueo por Horario",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = scheduleEnabled,
+                        onCheckedChange = { 
+                            scheduleEnabled = it
+                            if (it) showScheduleSection = true
+                        }
+                    )
+                }
+                
+                Text(
+                    text = "Bloquear esta app durante horarios específicos, independiente del límite de tiempo",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                // Contenido expandible de horario
+                androidx.compose.animation.AnimatedVisibility(visible = scheduleEnabled) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    ) {
+                        // Selector de horario
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                // Hora de inicio
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Hora de inicio:",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    TextButton(onClick = { showStartTimePicker = true }) {
+                                        Text(
+                                            text = String.format("%02d:%02d", scheduleStartHour, scheduleStartMinute),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                // Hora de fin
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Hora de fin:",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    TextButton(onClick = { showEndTimePicker = true }) {
+                                        Text(
+                                            text = String.format("%02d:%02d", scheduleEndHour, scheduleEndMinute),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Días de la semana
+                        Text(
+                            text = "Días activos:",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        DayOfWeekSelector(
+                            selectedDays = selectedDays,
+                            onDaysChanged = { selectedDays = it }
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Action buttons
@@ -403,7 +589,18 @@ fun EditAppLimitDialog(
                         onClick = {
                             val minutes = limitMinutes.toIntOrNull() ?: currentLimit
                             if (minutes > 0) {
-                                onSave(minutes)
+                                val scheduleConfig = if (scheduleEnabled) {
+                                    ScheduleLimitConfig(
+                                        enabled = true,
+                                        startHour = scheduleStartHour,
+                                        startMinute = scheduleStartMinute,
+                                        endHour = scheduleEndHour,
+                                        endMinute = scheduleEndMinute,
+                                        daysOfWeek = selectedDays
+                                    )
+                                } else null
+                                
+                                onSave(EditLimitResult(minutes, scheduleConfig))
                             }
                         },
                         enabled = limitMinutes.isNotBlank() && (limitMinutes.toIntOrNull() ?: 0) > 0,
@@ -416,4 +613,127 @@ fun EditAppLimitDialog(
             }
         }
     }
+    
+    // Time Pickers
+    if (showStartTimePicker) {
+        ScheduleTimePickerDialog(
+            title = "Hora de Inicio",
+            initialHour = scheduleStartHour,
+            initialMinute = scheduleStartMinute,
+            onConfirm = { hour, minute ->
+                scheduleStartHour = hour
+                scheduleStartMinute = minute
+                showStartTimePicker = false
+            },
+            onDismiss = { showStartTimePicker = false }
+        )
+    }
+    
+    if (showEndTimePicker) {
+        ScheduleTimePickerDialog(
+            title = "Hora de Fin",
+            initialHour = scheduleEndHour,
+            initialMinute = scheduleEndMinute,
+            onConfirm = { hour, minute ->
+                scheduleEndHour = hour
+                scheduleEndMinute = minute
+                showEndTimePicker = false
+            },
+            onDismiss = { showEndTimePicker = false }
+        )
+    }
+}
+
+@Composable
+private fun DayOfWeekSelector(
+    selectedDays: Set<Int>,
+    onDaysChanged: (Set<Int>) -> Unit
+) {
+    val days = listOf(
+        1 to "L",
+        2 to "M", 
+        3 to "X",
+        4 to "J",
+        5 to "V",
+        6 to "S",
+        7 to "D"
+    )
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        days.forEach { (dayNum, dayLabel) ->
+            val isSelected = dayNum in selectedDays
+            
+            Surface(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                        val newDays = if (isSelected) {
+                            selectedDays - dayNum
+                        } else {
+                            selectedDays + dayNum
+                        }
+                        onDaysChanged(newDays)
+                    },
+                color = if (isSelected) MaterialTheme.colorScheme.primary 
+                        else MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = dayLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary 
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ScheduleTimePickerDialog(
+    title: String,
+    initialHour: Int,
+    initialMinute: Int,
+    onConfirm: (hour: Int, minute: Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute,
+        is24Hour = true
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                TimePicker(state = timePickerState)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(timePickerState.hour, timePickerState.minute) }) {
+                Text("Confirmar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

@@ -375,7 +375,6 @@ fun SettingsScreen(
                                 onNavigateToScreen("password_setup")
                             }
                         },
-                        showDivider = false,
                         trailingContent = {
                             if (isPasswordSet) {
                                 Icon(
@@ -386,6 +385,13 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                    )
+                    PreferenceItem(
+                        title = stringResource(R.string.settings_protection_title),
+                        subtitle = stringResource(R.string.settings_protection_subtitle),
+                        icon = Icons.Default.AdminPanelSettings,
+                        onClick = { onNavigateToScreen("protection_settings") },
+                        showDivider = false
                     )
                 }
                 
@@ -425,6 +431,12 @@ fun SettingsScreen(
                         subtitle = stringResource(R.string.settings_app_whitelist_subtitle),
                         icon = Icons.Default.PhoneAndroid,
                         onClick = { onNavigateToScreen("app_whitelist") }
+                    )
+                    PreferenceItem(
+                        title = stringResource(R.string.category_title),
+                        subtitle = stringResource(R.string.category_subtitle),
+                        icon = Icons.Default.Category,
+                        onClick = { onNavigateToScreen("app_categories") }
                     )
                     PreferenceItem(
                         title = "Bloqueo Inteligente",

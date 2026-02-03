@@ -6,10 +6,12 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import com.momentummm.app.data.entity.AppUsage
+import com.momentummm.app.data.UserPreferencesRepository
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.runBlocking
 
 data class AppUsageInfo(
     val packageName: String,
@@ -37,6 +39,52 @@ class UsageStatsRepository @Inject constructor(
     // Usar ConcurrentHashMap para evitar ConcurrentModificationException
     private val appNameCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
+    /**
+     * Obtiene la hora de inicio del día configurada por el usuario.
+     * Feature solicitada: "Someone wants to start their day at 12am or 
+     * someone wants to start their day at 1am..."
+     * 
+     * Por defecto es 0:00 (medianoche), pero usuarios nocturnos pueden
+     * preferir 3:00, 4:00, o cualquier otra hora.
+     */
+    private fun getDayStartTime(): Pair<Int, Int> {
+        return runBlocking {
+            UserPreferencesRepository.getDayStartTime(context)
+        }
+    }
+
+    /**
+     * Calcula el timestamp de inicio del "día" actual basándose en la 
+     * preferencia del usuario para dayStartHour.
+     * 
+     * Por ejemplo, si dayStartHour = 4:
+     * - A las 3:00 AM, el "día" aún es del día anterior (empezó a las 4:00 AM ayer)
+     * - A las 5:00 AM, el "día" es de hoy (empezó a las 4:00 AM hoy)
+     */
+    private fun calculateDayStartTimestamp(): Long {
+        val (startHour, startMinute) = getDayStartTime()
+        val calendar = Calendar.getInstance()
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+        
+        // Si la hora actual es antes de la hora de inicio del día,
+        // entonces el "día" empezó ayer a esa hora
+        val currentTimeInMinutes = currentHour * 60 + currentMinute
+        val startTimeInMinutes = startHour * 60 + startMinute
+        
+        if (currentTimeInMinutes < startTimeInMinutes) {
+            // Retroceder un día
+            calendar.add(Calendar.DAY_OF_YEAR, -1)
+        }
+        
+        calendar.set(Calendar.HOUR_OF_DAY, startHour)
+        calendar.set(Calendar.MINUTE, startMinute)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        
+        return calendar.timeInMillis
+    }
+
     fun getTodayUsageStats(): List<AppUsageInfo> {
         val now = System.currentTimeMillis()
         cachedTodayStats?.let { cached ->
@@ -44,12 +92,9 @@ class UsageStatsRepository @Inject constructor(
                 return cached
             }
         }
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val startTime = calendar.timeInMillis
+        
+        // Usar la hora de inicio del día personalizada en lugar de 00:00
+        val startTime = calculateDayStartTimestamp()
         val endTime = System.currentTimeMillis()
 
         val stats = getUsageStats(startTime, endTime)
@@ -159,12 +204,8 @@ class UsageStatsRepository @Inject constructor(
     }
 
     fun getTotalScreenTime(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val startTime = calendar.timeInMillis
+        // Usar la hora de inicio del día personalizada
+        val startTime = calculateDayStartTimestamp()
         val endTime = System.currentTimeMillis()
 
         return getTotalScreenTime(startTime, endTime)
