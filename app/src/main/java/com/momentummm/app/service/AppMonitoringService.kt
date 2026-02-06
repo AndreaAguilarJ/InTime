@@ -22,11 +22,26 @@ import com.momentummm.app.data.repository.GoalsRepository
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.manager.SmartBlockingManager
 import com.momentummm.app.data.manager.SmartNotificationManager
+import com.momentummm.app.data.engine.AdaptiveBlockingManager
+import com.momentummm.app.data.engine.BlockingEventType
+import com.momentummm.app.data.engine.UsagePatternEngine
 import com.momentummm.app.ui.AppBlockedActivity
 import com.momentummm.app.ui.overlay.AppBlockOverlayService
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * APP MONITORING SERVICE V2 - Servicio de Monitoreo con IA Predictiva
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * Mejoras V2:
+ * - Registro de uso en UsagePatternEngine para ML-like predictions
+ * - Intervenciones inteligentes del AdaptiveBlockingManager
+ * - Tracking de eventos para analytics
+ * - Predicciones proactivas (advertir ANTES de que el usuario exceda)
+ * - Auto-activación de perfiles de enfoque
+ */
 @AndroidEntryPoint
 class AppMonitoringService : Service() {
 
@@ -36,6 +51,8 @@ class AppMonitoringService : Service() {
     @Inject lateinit var goalsRepository: GoalsRepository
     @Inject lateinit var smartNotificationManager: SmartNotificationManager
     @Inject lateinit var smartBlockingManager: SmartBlockingManager
+    @Inject lateinit var patternEngine: UsagePatternEngine
+    @Inject lateinit var adaptiveBlockingManager: AdaptiveBlockingManager
 
     private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
         Log.e(TAG, "Coroutine exception in AppMonitoringService", throwable)
@@ -67,7 +84,15 @@ class AppMonitoringService : Service() {
                 ::appCategoryRepository.isInitialized &&
                 ::goalsRepository.isInitialized &&
                 ::smartNotificationManager.isInitialized &&
-                ::smartBlockingManager.isInitialized
+                ::smartBlockingManager.isInitialized &&
+                ::patternEngine.isInitialized &&
+                ::adaptiveBlockingManager.isInitialized
+    
+    // === NUEVO V2: Tracking de uso por sesión ===
+    private var lastUsageRecordTime = 0L
+    private val USAGE_RECORD_INTERVAL = 60_000L // Registrar cada 60s
+    private var monitoringCycleCount = 0
+    private val PATTERN_ANALYSIS_INTERVAL = 60 // Cada 60 ciclos (~5min) analizar patrones
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -142,6 +167,17 @@ class AppMonitoringService : Service() {
                     
                     // Actualizar estados de bloqueo inteligente
                     smartBlockingManager.refreshModeStates()
+                    
+                    // === NUEVO V2: Análisis periódico de patrones ===
+                    monitoringCycleCount++
+                    if (monitoringCycleCount % PATTERN_ANALYSIS_INTERVAL == 0) {
+                        try {
+                            patternEngine.analyzeAllPatterns()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error en análisis periódico de patrones", e)
+                        }
+                    }
+                    
                     checkCurrentApp()
                 } catch (e: Exception) {
                     Log.e(TAG, "Error en checkCurrentApp", e)
@@ -320,6 +356,19 @@ class AppMonitoringService : Service() {
                         val usageStats = getCurrentAppUsageStats(currentApp)
                         val usageMinutes = (usageStats / 60000).toInt()
                         
+                        // === NUEVO V2: Registrar uso en el motor de patrones ===
+                        val now = System.currentTimeMillis()
+                        if (now - lastUsageRecordTime > USAGE_RECORD_INTERVAL) {
+                            lastUsageRecordTime = now
+                            serviceScope.launch(Dispatchers.IO) {
+                                try {
+                                    patternEngine.recordUsage(currentApp, usageMinutes)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Error registrando uso en PatternEngine", e)
+                                }
+                            }
+                        }
+                        
                         // INTEGRACIÓN BLOQUEO INTELIGENTE: Obtener límite efectivo
                         val originalLimit = appLimit.dailyLimitMinutes
                         val effectiveLimit = smartBlockingManager.getEffectiveDailyLimit(currentApp, originalLimit)
@@ -327,6 +376,36 @@ class AppMonitoringService : Service() {
                         val usagePercent = if (effectiveLimit > 0) (usageMinutes * 100) / effectiveLimit else 0
 
                         Log.d(TAG, "App $currentApp - Uso: ${usageMinutes}m / ${effectiveLimit}m (original: ${originalLimit}m) (${usagePercent}%)")
+
+                        // === NUEVO V2: Predicción proactiva ===
+                        if (usagePercent in 50..70 && smartBlockingManager.willExceedLimit(currentApp, usageMinutes, effectiveLimit)) {
+                            Log.d(TAG, "🔮 Predicción: $currentApp probablemente excederá el límite hoy")
+                            serviceScope.launch(Dispatchers.IO) {
+                                smartBlockingManager.trackBlockingEvent(
+                                    currentApp, BlockingEventType.PREDICTION_GENERATED,
+                                    "Predicted to exceed ${effectiveLimit}m limit"
+                                )
+                            }
+                        }
+                        
+                        // === NUEVO V2: Intervenciones inteligentes ===
+                        if (usagePercent in 60..90) {
+                            serviceScope.launch(Dispatchers.IO) {
+                                try {
+                                    val intervention = smartBlockingManager.getSmartIntervention(currentApp)
+                                    if (intervention != null) {
+                                        Log.d(TAG, "💡 Intervención: ${intervention.type.name} - ${intervention.message}")
+                                        // La intervención se muestra a través de notificaciones
+                                        smartBlockingManager.trackBlockingEvent(
+                                            currentApp, BlockingEventType.INTERVENTION_SHOWN,
+                                            intervention.type.name
+                                        )
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Error obteniendo intervención", e)
+                                }
+                            }
+                        }
 
                         // === INTEGRACIÓN TIMER FLOTANTE ===
                         val floatingTimerEnabled = smartBlockingManager.isFloatingTimerEnabled()
@@ -370,6 +449,14 @@ class AppMonitoringService : Service() {
                                     // Marcar la app como bloqueada hoy para que no se pueda volver a abrir
                                     smartBlockingManager.markAppAsBlocked(currentApp)
                                     smartBlockingManager.registerBlockScreenShown(currentApp)
+                                    
+                                    // === NUEVO V2: Registrar evento de bloqueo ===
+                                    serviceScope.launch(Dispatchers.IO) {
+                                        smartBlockingManager.trackBlockingEvent(
+                                            currentApp, BlockingEventType.APP_BLOCKED,
+                                            "Limit exceeded: ${usageMinutes}m / ${effectiveLimit}m"
+                                        )
+                                    }
                                     
                                     // FEATURE: Marcar límite como excedido para bloquear edición
                                     // Los usuarios se quejan de poder cambiar límites después de excederlos

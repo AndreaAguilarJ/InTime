@@ -5,6 +5,11 @@ import android.util.Log
 import com.momentummm.app.data.dao.ContextBlockRuleDao
 import com.momentummm.app.data.dao.InAppBlockRuleDao
 import com.momentummm.app.data.dao.SmartBlockingConfigDao
+import com.momentummm.app.data.engine.AdaptiveBlockingManager
+import com.momentummm.app.data.engine.BlockingEventType
+import com.momentummm.app.data.engine.UsageAnalyticsEngine
+import com.momentummm.app.data.engine.UsagePatternEngine
+import com.momentummm.app.data.engine.RiskLevel
 import com.momentummm.app.data.entity.BlockType
 import com.momentummm.app.data.entity.ContextBlockRule
 import com.momentummm.app.data.entity.SmartBlockingConfig
@@ -25,6 +30,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * SMART BLOCKING MANAGER V2 - Orquestador Central Mejorado
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
  * Manager central para todas las características de bloqueo inteligente:
  * - Ventana de sueño
  * - Ayuno intermitente digital
@@ -33,13 +42,24 @@ import javax.inject.Singleton
  * - Protección de rachas
  * - Timer flotante
  * - Modo solo comunicación
+ * 
+ * NUEVO V2:
+ * - Integración con UsagePatternEngine (predicciones ML-like)
+ * - Integración con AdaptiveBlockingManager (perfiles de enfoque + bloqueo gradual)
+ * - Integración con UsageAnalyticsEngine (insights y reportes)
+ * - Límites inteligentes basados en patrones de uso
+ * - Auto-activación de perfiles de enfoque
+ * - Análisis periódico de patrones
  */
 @Singleton
 class SmartBlockingManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val configDao: SmartBlockingConfigDao,
     private val contextRuleDao: ContextBlockRuleDao,
-    private val inAppBlockRuleDao: InAppBlockRuleDao
+    private val inAppBlockRuleDao: InAppBlockRuleDao,
+    private val patternEngine: UsagePatternEngine,
+    private val adaptiveBlockingManager: AdaptiveBlockingManager,
+    private val analyticsEngine: UsageAnalyticsEngine
 ) {
     private val TAG = "SmartBlockingManager"
     private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
@@ -122,6 +142,7 @@ class SmartBlockingManager @Inject constructor(
     
     /**
      * Actualiza el estado de los modos (llamar periódicamente)
+     * V2: También ejecuta análisis de patrones y auto-activación de perfiles
      */
     fun refreshModeStates() {
         scope.launch {
@@ -133,6 +154,17 @@ class SmartBlockingManager @Inject constructor(
             if (today != currentBlockDay) {
                 resetBlockedAppsForNewDay()
                 currentBlockDay = today
+                
+                // === NUEVO V2: Análisis diario de patrones ===
+                scope.launch {
+                    try {
+                        patternEngine.analyzeAllPatterns()
+                        analyticsEngine.generateInsights()
+                        Log.d(TAG, "✅ Análisis diario de patrones completado")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error en análisis diario", e)
+                    }
+                }
             }
             
             // Actualizar reglas de contexto activas
@@ -140,14 +172,91 @@ class SmartBlockingManager @Inject constructor(
             _activeContextRules.value = rules.filter { 
                 when (it.contextType) {
                     "SCHEDULE" -> it.isActiveBySchedule()
-                    // Para LOCATION y WIFI, se necesitaría verificar con servicios de ubicación
                     else -> false
                 }
             }
             
             // Resetear días de gracia si es nueva semana
             checkAndResetGraceDays(currentConfig)
+            
+            // === NUEVO V2: Auto-activación de perfiles de enfoque ===
+            try {
+                adaptiveBlockingManager.checkAutoActivation()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error en auto-activación de perfiles", e)
+            }
         }
+    }
+    
+    // ================== NUEVO V2: MÉTODOS DE ENGINES ==================
+    
+    /**
+     * Registra uso de una app (llamar desde AppMonitoringService)
+     */
+    suspend fun recordAppUsage(packageName: String, durationMinutes: Int) {
+        patternEngine.recordUsage(packageName, durationMinutes)
+    }
+    
+    /**
+     * Verifica si la predicción indica que el usuario excederá su límite
+     */
+    suspend fun willExceedLimit(packageName: String, currentUsageMinutes: Int, limitMinutes: Int): Boolean {
+        val (willExceed, _) = patternEngine.predictWillExceedToday(packageName, currentUsageMinutes, limitMinutes)
+        return willExceed
+    }
+    
+    /**
+     * Obtiene las horas de mayor riesgo para una app (hora, score de riesgo)
+     */
+    suspend fun getPeakRiskHours(packageName: String): List<Pair<Int, Float>> {
+        return patternEngine.getPeakRiskHours(packageName)
+    }
+    
+    /**
+     * Obtiene la intervención inteligente actual (si hay alguna)
+     */
+    suspend fun getSmartIntervention(packageName: String): com.momentummm.app.data.engine.SmartIntervention? {
+        val interventions = adaptiveBlockingManager.generateInterventions(packageName, 10)
+        return interventions.maxByOrNull { it.severity }
+    }
+    
+    /**
+     * Obtiene las stats de bloqueo del día
+     */
+    suspend fun getDailyBlockingStats(): com.momentummm.app.data.engine.DailyBlockingStats {
+        return adaptiveBlockingManager.getDailyStats()
+    }
+    
+    /**
+     * Genera el reporte semanal completo
+     */
+    suspend fun generateWeeklyReport(): com.momentummm.app.data.engine.UsageAnalyticsEngine.WeeklyReport {
+        return analyticsEngine.generateWeeklyReport()
+    }
+    
+    /**
+     * Obtiene los insights actuales
+     */
+    suspend fun getInsights(): List<com.momentummm.app.data.engine.UsageAnalyticsEngine.UsageInsight> {
+        return analyticsEngine.generateInsights()
+    }
+    
+    /**
+     * Obtiene el score de bienestar digital
+     */
+    fun getDigitalWellbeingScore(): Float {
+        return analyticsEngine.digitalWellbeingScore.value
+    }
+    
+    /**
+     * Registra un evento de bloqueo para analytics
+     */
+    suspend fun trackBlockingEvent(
+        packageName: String, 
+        eventType: BlockingEventType,
+        details: String = ""
+    ) {
+        adaptiveBlockingManager.recordBlockingEvent(packageName, eventType, reason = details)
     }
     
     // ================== GESTIÓN DE APPS BLOQUEADAS ==================
@@ -268,11 +377,28 @@ class SmartBlockingManager @Inject constructor(
     }
     
     /**
-     * Obtiene el límite efectivo considerando ayuno y reglas de contexto
+     * Obtiene el límite efectivo considerando ayuno, reglas de contexto Y patrones de uso
      */
-    fun getEffectiveDailyLimit(packageName: String, originalLimitMinutes: Int): Int {
+    suspend fun getEffectiveDailyLimit(packageName: String, originalLimitMinutes: Int): Int {
         val currentConfig = _config.value
         var effectiveLimit = originalLimitMinutes
+        
+        // === NUEVO V2: Límite inteligente basado en patrones ===
+        val smartLimit = patternEngine.calculateSmartLimit(packageName, originalLimitMinutes)
+        if (smartLimit < effectiveLimit) {
+            effectiveLimit = smartLimit
+            Log.d(TAG, "⚡ Límite inteligente aplicado para $packageName: $smartLimit (original: $originalLimitMinutes)")
+        }
+        
+        // === NUEVO V2: Límite del perfil de enfoque activo ===
+        val focusProfile = adaptiveBlockingManager.activeFocusProfile.value
+        if (focusProfile != null) {
+            val profileLimit = focusProfile.getTimeLimitForApp(packageName)
+            if (profileLimit != null && profileLimit < effectiveLimit) {
+                effectiveLimit = profileLimit
+                Log.d(TAG, "🎯 Límite de perfil '${focusProfile.name}' para $packageName: $profileLimit")
+            }
+        }
         
         // Aplicar límite de ayuno si está activo
         if (currentConfig.isInFastingHours()) {
