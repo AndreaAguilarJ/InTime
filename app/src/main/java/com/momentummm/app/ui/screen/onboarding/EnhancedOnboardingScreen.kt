@@ -406,11 +406,17 @@ fun EnhancedOnboardingScreen(
 					) {
 						OutlinedButton(
 							onClick = {
-								val intent = Intent(
-									Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-									Uri.parse("package:${context.packageName}")
-								)
-								context.startActivity(intent)
+								try {
+									val intent = Intent(
+										Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+										Uri.parse("package:${context.packageName}")
+									)
+									context.startActivity(intent)
+								} catch (e: Exception) {
+									try {
+										context.startActivity(Intent(Settings.ACTION_SETTINGS))
+									} catch (_: Exception) { }
+								}
 							},
 							modifier = Modifier
 								.weight(1f)

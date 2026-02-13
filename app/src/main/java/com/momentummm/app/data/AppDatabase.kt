@@ -490,6 +490,14 @@ abstract class AppDatabase : RoomDatabase() {
         // ═══════════════════════════════════════════════════════════════════
         private val MIGRATION_16_17 = object : androidx.room.migration.Migration(16, 17) {
             override fun migrate(db: SupportSQLiteDatabase) {
+                // DROP tables first to avoid schema mismatch if they were created
+                // by a previous incomplete migration or different schema version
+                db.execSQL("DROP TABLE IF EXISTS `usage_pattern_records`")
+                db.execSQL("DROP TABLE IF EXISTS `usage_predictions`")
+                db.execSQL("DROP TABLE IF EXISTS `addiction_scores`")
+                db.execSQL("DROP TABLE IF EXISTS `focus_profiles`")
+                db.execSQL("DROP TABLE IF EXISTS `blocking_events`")
+                
                 // ── UsagePatternRecord ──
                 db.execSQL("""
                     CREATE TABLE IF NOT EXISTS `usage_pattern_records` (
@@ -498,19 +506,21 @@ abstract class AppDatabase : RoomDatabase() {
                         `date` INTEGER NOT NULL,
                         `hourOfDay` INTEGER NOT NULL,
                         `dayOfWeek` INTEGER NOT NULL,
-                        `totalMinutes` INTEGER NOT NULL DEFAULT 0,
-                        `sessionCount` INTEGER NOT NULL DEFAULT 0,
-                        `longestSessionMinutes` INTEGER NOT NULL DEFAULT 0,
-                        `averageSessionMinutes` REAL NOT NULL DEFAULT 0.0,
+                        `usageMinutes` INTEGER NOT NULL DEFAULT 0,
                         `openCount` INTEGER NOT NULL DEFAULT 0,
+                        `longestSessionMinutes` INTEGER NOT NULL DEFAULT 0,
                         `wasBlocked` INTEGER NOT NULL DEFAULT 0,
-                        `wasOverridden` INTEGER NOT NULL DEFAULT 0,
+                        `wasUnlockedByShame` INTEGER NOT NULL DEFAULT 0,
+                        `emotionalState` TEXT DEFAULT NULL,
+                        `contextType` TEXT DEFAULT NULL,
+                        `batteryLevel` INTEGER NOT NULL DEFAULT -1,
+                        `isWeekend` INTEGER NOT NULL DEFAULT 0,
                         `createdAt` INTEGER NOT NULL DEFAULT 0
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_pattern_records_packageName` ON `usage_pattern_records` (`packageName`)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_pattern_records_date` ON `usage_pattern_records` (`date`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_pattern_records_packageName_date` ON `usage_pattern_records` (`packageName`, `date`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_pattern_records_date` ON `usage_pattern_records` (`date`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_pattern_records_hourOfDay` ON `usage_pattern_records` (`hourOfDay`)")
                 
                 // ── UsagePrediction ──
                 db.execSQL("""
@@ -519,26 +529,24 @@ abstract class AppDatabase : RoomDatabase() {
                         `packageName` TEXT NOT NULL,
                         `predictionDate` INTEGER NOT NULL,
                         `predictedTotalMinutes` INTEGER NOT NULL DEFAULT 0,
-                        `predictedPeakHour` INTEGER NOT NULL DEFAULT 12,
-                        `predictedSessions` INTEGER NOT NULL DEFAULT 0,
+                        `predictedPeakHour` INTEGER NOT NULL DEFAULT 0,
+                        `predictedPeakMinutes` INTEGER NOT NULL DEFAULT 0,
                         `confidenceScore` REAL NOT NULL DEFAULT 0.0,
                         `riskLevel` TEXT NOT NULL DEFAULT 'LOW',
-                        `suggestedLimit` INTEGER,
-                        `basedOnDays` INTEGER NOT NULL DEFAULT 7,
-                        `actualMinutes` INTEGER,
-                        `predictionAccuracy` REAL,
+                        `suggestedLimit` INTEGER DEFAULT NULL,
+                        `pattern` TEXT NOT NULL DEFAULT '',
+                        `hourlyBreakdown` TEXT NOT NULL DEFAULT '',
                         `createdAt` INTEGER NOT NULL DEFAULT 0
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_predictions_packageName` ON `usage_predictions` (`packageName`)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_predictions_predictionDate` ON `usage_predictions` (`predictionDate`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_usage_predictions_packageName_predictionDate` ON `usage_predictions` (`packageName`, `predictionDate`)")
                 
                 // ── AddictionScore ──
                 db.execSQL("""
                     CREATE TABLE IF NOT EXISTS `addiction_scores` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `packageName` TEXT NOT NULL,
-                        `calculatedAt` INTEGER NOT NULL DEFAULT 0,
+                        `date` INTEGER NOT NULL DEFAULT 0,
                         `overallScore` REAL NOT NULL DEFAULT 0.0,
                         `frequencyScore` REAL NOT NULL DEFAULT 0.0,
                         `durationScore` REAL NOT NULL DEFAULT 0.0,
@@ -547,66 +555,86 @@ abstract class AppDatabase : RoomDatabase() {
                         `timingScore` REAL NOT NULL DEFAULT 0.0,
                         `compulsionScore` REAL NOT NULL DEFAULT 0.0,
                         `weeklyTrend` REAL NOT NULL DEFAULT 0.0,
-                        `riskLevel` TEXT NOT NULL DEFAULT 'LOW',
-                        `suggestedAction` TEXT NOT NULL DEFAULT ''
+                        `monthlyTrend` REAL NOT NULL DEFAULT 0.0,
+                        `suggestedAction` TEXT NOT NULL DEFAULT '',
+                        `createdAt` INTEGER NOT NULL DEFAULT 0
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_addiction_scores_packageName` ON `addiction_scores` (`packageName`)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_addiction_scores_packageName_date` ON `addiction_scores` (`packageName`, `date`)")
                 
                 // ── FocusProfile ──
                 db.execSQL("""
                     CREATE TABLE IF NOT EXISTS `focus_profiles` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        `profileName` TEXT NOT NULL,
-                        `description` TEXT NOT NULL DEFAULT '',
+                        `name` TEXT NOT NULL,
                         `icon` TEXT NOT NULL DEFAULT '🎯',
-                        `colorHex` TEXT NOT NULL DEFAULT '#6200EE',
+                        `color` INTEGER NOT NULL DEFAULT -10354690,
                         `isActive` INTEGER NOT NULL DEFAULT 0,
+                        `isDefault` INTEGER NOT NULL DEFAULT 0,
+                        `blockAllApps` INTEGER NOT NULL DEFAULT 0,
                         `blockedApps` TEXT NOT NULL DEFAULT '',
                         `allowedApps` TEXT NOT NULL DEFAULT '',
-                        `blockedContentTypes` TEXT NOT NULL DEFAULT '',
-                        `appTimeLimits` TEXT NOT NULL DEFAULT '',
-                        `hasSchedule` INTEGER NOT NULL DEFAULT 0,
+                        `blockWebsites` INTEGER NOT NULL DEFAULT 0,
+                        `blockedCategories` TEXT NOT NULL DEFAULT '',
+                        `blockShortVideos` INTEGER NOT NULL DEFAULT 1,
+                        `blockExplore` INTEGER NOT NULL DEFAULT 1,
+                        `blockFeeds` INTEGER NOT NULL DEFAULT 0,
+                        `blockStories` INTEGER NOT NULL DEFAULT 0,
+                        `blockLiveStreams` INTEGER NOT NULL DEFAULT 0,
+                        `blockShopping` INTEGER NOT NULL DEFAULT 0,
+                        `blockGaming` INTEGER NOT NULL DEFAULT 1,
+                        `allowMessaging` INTEGER NOT NULL DEFAULT 1,
+                        `hasTimeLimit` INTEGER NOT NULL DEFAULT 0,
+                        `timeLimitMinutes` INTEGER NOT NULL DEFAULT 60,
+                        `perAppLimitMinutes` INTEGER NOT NULL DEFAULT 15,
+                        `autoActivate` INTEGER NOT NULL DEFAULT 0,
                         `scheduleStartHour` INTEGER NOT NULL DEFAULT 9,
                         `scheduleStartMinute` INTEGER NOT NULL DEFAULT 0,
                         `scheduleEndHour` INTEGER NOT NULL DEFAULT 17,
                         `scheduleEndMinute` INTEGER NOT NULL DEFAULT 0,
                         `scheduleDaysOfWeek` TEXT NOT NULL DEFAULT '1,2,3,4,5',
-                        `autoActivateByWifi` INTEGER NOT NULL DEFAULT 0,
-                        `triggerWifiSsid` TEXT NOT NULL DEFAULT '',
-                        `autoActivateByLocation` INTEGER NOT NULL DEFAULT 0,
-                        `triggerLatitude` REAL NOT NULL DEFAULT 0.0,
-                        `triggerLongitude` REAL NOT NULL DEFAULT 0.0,
-                        `triggerRadiusMeters` INTEGER NOT NULL DEFAULT 200,
-                        `enableGradualBlocking` INTEGER NOT NULL DEFAULT 1,
-                        `gradualBlockingStages` TEXT NOT NULL DEFAULT '',
+                        `activateByWifi` INTEGER NOT NULL DEFAULT 0,
+                        `activationWifiSsid` TEXT NOT NULL DEFAULT '',
+                        `activateByLocation` INTEGER NOT NULL DEFAULT 0,
+                        `activationLatitude` REAL NOT NULL DEFAULT 0.0,
+                        `activationLongitude` REAL NOT NULL DEFAULT 0.0,
+                        `activationRadiusMeters` INTEGER NOT NULL DEFAULT 200,
+                        `useGradualBlocking` INTEGER NOT NULL DEFAULT 1,
+                        `gradualStartPercent` INTEGER NOT NULL DEFAULT 70,
+                        `gradualStages` INTEGER NOT NULL DEFAULT 3,
                         `strictMode` INTEGER NOT NULL DEFAULT 0,
                         `punishmentMultiplier` REAL NOT NULL DEFAULT 1.0,
                         `rewardStreakDays` INTEGER NOT NULL DEFAULT 0,
-                        `totalActivations` INTEGER NOT NULL DEFAULT 0,
-                        `totalMinutesActive` INTEGER NOT NULL DEFAULT 0,
+                        `lastActivatedAt` INTEGER DEFAULT NULL,
+                        `totalTimeActive` INTEGER NOT NULL DEFAULT 0,
+                        `timesActivated` INTEGER NOT NULL DEFAULT 0,
+                        `timesCompleted` INTEGER NOT NULL DEFAULT 0,
                         `createdAt` INTEGER NOT NULL DEFAULT 0,
                         `updatedAt` INTEGER NOT NULL DEFAULT 0
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_focus_profiles_isActive` ON `focus_profiles` (`isActive`)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_focus_profiles_name` ON `focus_profiles` (`name`)")
                 
                 // ── BlockingEvent ──
                 db.execSQL("""
                     CREATE TABLE IF NOT EXISTS `blocking_events` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        `packageName` TEXT NOT NULL DEFAULT '',
-                        `eventType` TEXT NOT NULL,
+                        `packageName` TEXT NOT NULL,
                         `timestamp` INTEGER NOT NULL DEFAULT 0,
-                        `details` TEXT NOT NULL DEFAULT '',
-                        `profileId` INTEGER,
-                        `confidenceScore` REAL NOT NULL DEFAULT 0.0,
+                        `eventType` TEXT NOT NULL,
+                        `reason` TEXT NOT NULL DEFAULT '',
+                        `blockMethod` TEXT NOT NULL DEFAULT '',
+                        `userReaction` TEXT NOT NULL DEFAULT '',
+                        `durationSeconds` INTEGER NOT NULL DEFAULT 0,
+                        `detectionConfidence` REAL NOT NULL DEFAULT 0.0,
+                        `contentType` TEXT NOT NULL DEFAULT '',
+                        `focusProfileId` INTEGER DEFAULT NULL,
+                        `ruleId` TEXT DEFAULT NULL,
                         `wasOverridden` INTEGER NOT NULL DEFAULT 0,
-                        `overrideMethod` TEXT NOT NULL DEFAULT '',
-                        `sessionDurationMinutes` INTEGER NOT NULL DEFAULT 0
+                        `overrideMethod` TEXT DEFAULT NULL
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_blocking_events_packageName` ON `blocking_events` (`packageName`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_blocking_events_packageName_timestamp` ON `blocking_events` (`packageName`, `timestamp`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_blocking_events_eventType` ON `blocking_events` (`eventType`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_blocking_events_timestamp` ON `blocking_events` (`timestamp`)")
             }
@@ -621,6 +649,7 @@ abstract class AppDatabase : RoomDatabase() {
                 ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
                     .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
                     .fallbackToDestructiveMigration() // For now, allow destructive migration
+                    .fallbackToDestructiveMigrationOnDowngrade() // Handle downgrades gracefully
                     .build()
                 INSTANCE = instance
                 instance

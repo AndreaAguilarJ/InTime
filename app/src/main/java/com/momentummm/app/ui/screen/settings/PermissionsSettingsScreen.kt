@@ -359,21 +359,26 @@ fun PermissionCard(
 
 // Funciones auxiliares para verificar permisos
 private fun checkUsageStatsPermission(context: Context): Boolean {
-    val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-    val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        appOps.unsafeCheckOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            android.os.Process.myUid(),
-            context.packageName
-        )
-    } else {
-        appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            android.os.Process.myUid(),
-            context.packageName
-        )
+    return try {
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
+            ?: return false
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        } else {
+            appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        }
+        mode == AppOpsManager.MODE_ALLOWED
+    } catch (e: Exception) {
+        false
     }
-    return mode == AppOpsManager.MODE_ALLOWED
 }
 
 private fun checkOverlayPermission(context: Context): Boolean {
@@ -412,48 +417,90 @@ private fun checkIsDefaultLauncher(context: Context): Boolean {
 
 // Funciones para abrir configuraciones
 private fun openUsageStatsSettings(context: Context) {
-    val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-    context.startActivity(intent)
+    try {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val fallback = Intent(Settings.ACTION_SETTINGS)
+            context.startActivity(fallback)
+        } catch (_: Exception) { }
+    }
 }
 
 private fun openOverlaySettings(context: Context) {
-    val intent = Intent(
-        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-        Uri.parse("package:${context.packageName}")
-    )
-    context.startActivity(intent)
+    try {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${context.packageName}")
+        )
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val fallback = Intent(Settings.ACTION_SETTINGS)
+            context.startActivity(fallback)
+        } catch (_: Exception) { }
+    }
 }
 
 private fun openNotificationSettings(context: Context) {
-    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    try {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            }
+        } else {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:${context.packageName}")
+            }
         }
-    } else {
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.parse("package:${context.packageName}")
-        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val fallback = Intent(Settings.ACTION_SETTINGS)
+            context.startActivity(fallback)
+        } catch (_: Exception) { }
     }
-    context.startActivity(intent)
 }
 
 private fun openDefaultLauncherSettings(context: Context) {
-    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
-    } else {
-        Intent(Settings.ACTION_HOME_SETTINGS)
+    try {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+        } else {
+            Intent(Settings.ACTION_HOME_SETTINGS)
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val fallback = Intent(Settings.ACTION_SETTINGS)
+            context.startActivity(fallback)
+        } catch (_: Exception) { }
     }
-    context.startActivity(intent)
 }
 
 private fun openAppSettings(context: Context) {
-    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-        data = Uri.parse("package:${context.packageName}")
+    try {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:${context.packageName}")
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val fallback = Intent(Settings.ACTION_SETTINGS)
+            context.startActivity(fallback)
+        } catch (_: Exception) { }
     }
-    context.startActivity(intent)
 }
 
 private fun openAccessibilitySettings(context: Context) {
-    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-    context.startActivity(intent)
+    try {
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val fallback = Intent(Settings.ACTION_SETTINGS)
+            context.startActivity(fallback)
+        } catch (_: Exception) { }
+    }
 }
