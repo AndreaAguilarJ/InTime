@@ -14,12 +14,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.momentummm.app.data.entity.MessageCategory
 import com.momentummm.app.data.entity.MessageTone
+import com.momentummm.app.notification.MotivationalAlarmScheduler
 import com.momentummm.app.ui.viewmodel.MotivationalMessagesViewModel
 import kotlinx.coroutines.launch
 
@@ -33,12 +38,34 @@ fun MotivationalMessagesSettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+    val context = LocalContext.current
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(error)
             viewModel.clearError()
         }
+    }
+
+    // El resultado del botón "Probar" viene del envío real, así que el mensaje
+    // que ve el usuario dice lo que ha pasado de verdad.
+    LaunchedEffect(uiState.testNotificationResult) {
+        uiState.testNotificationResult?.let { result ->
+            snackbarHostState.showSnackbar(result)
+            viewModel.clearTestNotificationResult()
+        }
+    }
+
+    // Al volver de los ajustes del sistema, revisar si ya hay alarmas exactas.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshExactAlarmPermission()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     
     Scaffold(
@@ -85,6 +112,89 @@ fun MotivationalMessagesSettingsScreen(
                     )
                 }
                 
+                // Aviso de alarmas aproximadas.
+                // En Android 14+ el permiso de alarmas exactas NO se concede por
+                // defecto, así que los mensajes pueden llegar con retraso. Antes
+                // esto pasaba en silencio.
+                if (!uiState.canScheduleExactAlarms) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Alarm,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Los mensajes pueden llegar tarde",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "Android no permite a Momentum usar alarmas exactas, así que " +
+                                        "un mensaje de las 9:00 puede aparecer más tarde. " +
+                                        "Concede el permiso para que lleguen a su hora.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Button(onClick = {
+                                    MotivationalAlarmScheduler.exactAlarmSettingsIntent(context)
+                                        ?.let { intent ->
+                                            runCatching { context.startActivity(intent) }
+                                        }
+                                }) {
+                                    Text("Permitir alarmas exactas")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Personalización: cómo quiere el usuario que le hablen.
+                item {
+                    AnimatedVisibility(
+                        visible = uiState.preferences.enabled,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Card(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text("Personalización", style = MaterialTheme.typography.titleMedium)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    "Los mensajes te llamarán por tu nombre y usarán tu racha y " +
+                                        "tu tiempo de pantalla de hoy.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                OutlinedTextField(
+                                    value = uiState.displayName,
+                                    onValueChange = { viewModel.setDisplayName(it) },
+                                    label = { Text("¿Cómo te llamamos?") },
+                                    placeholder = { Text("Tu nombre") },
+                                    singleLine = true,
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Person, contentDescription = null)
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+
                 // Main toggle
                 item {
                     Card(modifier = Modifier.fillMaxWidth()) {
@@ -228,10 +338,10 @@ fun MotivationalMessagesSettingsScreen(
                             ) {
                                 OutlinedButton(
                                     onClick = {
-                                        scope.launch {
-                                            viewModel.sendTestNotification()
-                                            snackbarHostState.showSnackbar("Notificación de prueba enviada")
-                                        }
+                                        // El aviso lo emite el LaunchedEffect con
+                                        // el resultado real del envío, no un texto
+                                        // fijo que afirmaba haberlo enviado siempre.
+                                        viewModel.sendTestNotification()
                                     },
                                     modifier = Modifier.weight(1f)
                                 ) {

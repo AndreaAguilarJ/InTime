@@ -92,6 +92,11 @@ class UsageStatsRepository @Inject constructor(
         }
         // Invalidar el cache de stats para que se recalcule con el nuevo horario
         invalidateCache()
+        // DailyUsageCalculator mantiene su propio cache de la hora de inicio de
+        // día (se consulta una o dos veces por segundo desde el monitor). Sin
+        // esto, cambiar el ajuste tardaría hasta un minuto en aplicarse al
+        // cálculo del límite diario.
+        com.momentummm.app.data.usage.DailyUsageCalculator.invalidate()
     }
 
     /**

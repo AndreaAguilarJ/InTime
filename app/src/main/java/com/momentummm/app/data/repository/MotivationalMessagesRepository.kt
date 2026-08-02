@@ -14,6 +14,7 @@ import com.momentummm.app.data.entity.MotivationalMessage
 import com.momentummm.app.data.entity.MotivationalPreferences
 import com.momentummm.app.data.entity.ReactionType
 import com.momentummm.app.notification.MotivationalAlarmScheduler
+import com.momentummm.app.notification.NotificationWindow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -59,6 +60,19 @@ class MotivationalMessagesRepository @Inject constructor(
                     Log.d(TAG, "Inserted ${messages.size} seed messages")
                 } else {
                     Log.d(TAG, "Seed data already exists: $seedCount messages")
+                }
+
+                // Los mensajes personalizados se añaden aparte y sólo si faltan.
+                // La semilla original únicamente se inserta cuando la tabla está
+                // vacía, así que sin esto los usuarios que ya tenían la app
+                // nunca recibirían un mensaje con su nombre. Se comprueba id a
+                // id porque el insert es REPLACE: reinsertar a ciegas borraría
+                // los favoritos y las estadísticas del usuario.
+                val personalized = MotivationalMessagesSeed.getPersonalizedMessages()
+                val missing = personalized.filter { messageDao.getMessageById(it.id) == null }
+                if (missing.isNotEmpty()) {
+                    messageDao.insertMessages(missing)
+                    Log.d(TAG, "Inserted ${missing.size} personalized messages")
                 }
                 
                 // Ensure preferences exist
@@ -683,7 +697,7 @@ class MotivationalMessagesRepository @Inject constructor(
      * Check if it's a good time to send a notification.
      * Considers: quiet hours, focus mode, user activity, weekend settings.
      */
-    suspend fun isGoodTimeForNotification(): Boolean {
+    suspend fun isGoodTimeForNotification(graceMinutes: Int = 0): Boolean {
         return withContext(Dispatchers.IO) {
             val prefs = preferencesDao.getPreferencesSync() ?: return@withContext true
             
@@ -705,15 +719,17 @@ class MotivationalMessagesRepository @Inject constructor(
             val currentTimeMinutes = currentHour * 60 + currentMinute
             val startTimeMinutes = startHour * 60 + prefs.startMinute
             val endTimeMinutes = endHour * 60 + prefs.endMinute
-            
-            val withinTimeRange = if (startTimeMinutes < endTimeMinutes) {
-                currentTimeMinutes in startTimeMinutes..endTimeMinutes
-            } else {
-                // Handles overnight ranges
-                currentTimeMinutes >= startTimeMinutes || currentTimeMinutes <= endTimeMinutes
-            }
-            
-            withinTimeRange
+
+            // El margen amplía el final de la ventana. Sin permiso de alarmas
+            // exactas el sistema puede retrasar una alarma hasta una hora, así
+            // que un mensaje programado a las 21:40 llegaba a las 22:10 y se
+            // descartaba por "fuera de horario". Con margen se entrega.
+            NotificationWindow.isWithin(
+                nowMinutes = currentTimeMinutes,
+                startMinutes = startTimeMinutes,
+                endMinutes = endTimeMinutes,
+                graceMinutes = graceMinutes
+            )
         }
     }
 

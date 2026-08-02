@@ -40,6 +40,13 @@ class MotivationalAlarmReceiver : BroadcastReceiver() {
         const val TYPE_PERIODIC = "periodic"
         const val TYPE_MORNING = "morning"
         const val TYPE_EVENING = "evening"
+
+        /**
+         * Margen que se concede a la ventana horaria del usuario cuando la
+         * alarma llega tarde. `setAndAllowWhileIdle` (sin permiso de alarmas
+         * exactas) puede retrasarse hasta una hora.
+         */
+        private const val DELIVERY_GRACE_MINUTES = 90
     }
 
     @Inject
@@ -104,7 +111,13 @@ class MotivationalAlarmReceiver : BroadcastReceiver() {
         when (type) {
             TYPE_MORNING -> notificationManager.showMorningMessage()
             TYPE_EVENING -> notificationManager.showEveningMessage()
-            else -> notificationManager.showMotivationalNotification()
+            // La alarma se programó dentro de la ventana horaria del usuario,
+            // pero sin permiso de alarmas exactas el sistema puede retrasarla
+            // hasta una hora. Se concede ese margen para no descartar un
+            // mensaje que sí se había programado bien.
+            else -> notificationManager.showMotivationalNotification(
+                windowGraceMinutes = DELIVERY_GRACE_MINUTES
+            )
         }
     }
 }

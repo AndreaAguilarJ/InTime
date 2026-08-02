@@ -805,7 +805,90 @@ object MotivationalMessagesSeed {
     }
     
     private var messageIndex = 0
-    
+
+    /**
+     * Mensajes que usan los marcadores de personalización.
+     *
+     * Se mantienen aparte del resto de la semilla porque se insertan también en
+     * instalaciones que ya tenían la tabla poblada: la semilla original sólo se
+     * inserta cuando la tabla está vacía, así que sin esta lista los usuarios
+     * existentes nunca verían un mensaje personalizado.
+     *
+     * Los marcadores los resuelve
+     * [com.momentummm.app.notification.MessagePersonalizer]. Si el usuario no ha
+     * configurado su nombre, `{nombre}` se elimina y la frase sigue leyéndose
+     * bien; por eso todas están escritas para funcionar con y sin nombre.
+     */
+    fun getPersonalizedMessages(): List<MotivationalMessage> = listOf(
+        personalized(
+            "p_morning_1",
+            "{saludo}, {nombre}. Hoy tus horas son tuyas: elige bien la primera.",
+            MessageCategory.MORNING, MessageTone.FRIENDLY, "🌅"
+        ),
+        personalized(
+            "p_morning_2",
+            "Arriba, {nombre} 🌞 Nivel {nivel} y contando. Que hoy también cuente.",
+            MessageCategory.MORNING, MessageTone.COACH, "🌞"
+        ),
+        personalized(
+            "p_morning_3",
+            "{saludo}. Ayer terminaste el día con {pantalla} de pantalla. Hoy decides tú.",
+            MessageCategory.MORNING, MessageTone.WISE, "🌱"
+        ),
+        personalized(
+            "p_evening_1",
+            "Buenas noches, {nombre}. Hoy has usado el teléfono {pantalla}. Mañana, otra oportunidad.",
+            MessageCategory.EVENING, MessageTone.WISE, "🌙"
+        ),
+        personalized(
+            "p_evening_2",
+            "{nombre}, cierra el día tranquilo: llevas {racha} días cuidando tu tiempo.",
+            MessageCategory.EVENING, MessageTone.FRIENDLY, "✨"
+        ),
+        personalized(
+            "p_streak_1",
+            "{racha} días seguidos, {nombre}. Eso ya no es suerte, es un hábito.",
+            MessageCategory.STREAK, MessageTone.COACH, "🔥"
+        ),
+        personalized(
+            "p_focus_1",
+            "{nombre}, ahora mismo: una sola cosa, sin pantalla. Empieza por ahí.",
+            MessageCategory.FOCUS, MessageTone.PRACTICAL, "🎯"
+        ),
+        personalized(
+            "p_motivation_1",
+            "Vas por el nivel {nivel} y {monedas} monedas de tiempo, {nombre}. Sigue reclamando tus horas.",
+            MessageCategory.MOTIVATION, MessageTone.FRIENDLY, "💪"
+        ),
+        personalized(
+            "p_productivity_1",
+            "{pantalla} de pantalla hoy, {nombre}. ¿Cuánto de eso elegiste tú?",
+            MessageCategory.PRODUCTIVITY, MessageTone.WISE, "📱"
+        ),
+        personalized(
+            "p_mindfulness_1",
+            "{saludo}, {nombre}. Respira. El móvil puede esperar dos minutos.",
+            MessageCategory.MINDFULNESS, MessageTone.WISE, "🧘"
+        )
+    )
+
+    private fun personalized(
+        id: String,
+        content: String,
+        category: MessageCategory,
+        tone: MessageTone,
+        emoji: String
+    ): MotivationalMessage = MotivationalMessage(
+        id = "personalized_$id",
+        content = content,
+        category = category,
+        tone = tone,
+        emoji = emoji,
+        language = "es",
+        createdAt = Date(),
+        updatedAt = Date()
+    )
+
     private fun createMessage(
         content: String,
         category: MessageCategory,

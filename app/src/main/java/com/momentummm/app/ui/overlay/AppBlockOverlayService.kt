@@ -11,7 +11,9 @@ import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -36,9 +38,19 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.momentummm.app.data.usage.ForegroundAppTracker
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.ui.theme.MomentumTheme
+import com.momentummm.app.util.BlockingCapabilities
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
@@ -50,10 +62,25 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
 
         private const val NOTIFICATION_ID = 1003
         private const val CHANNEL_ID = "app_block_overlay_channel"
+
+        /** Cada cuánto se comprueba si la app bloqueada sigue en primer plano. */
+        private const val WATCH_INTERVAL_MS = 700L
+
+        /**
+         * Margen antes de empezar a vigilar. La app en primer plano se deriva
+         * de eventos de UsageStats, que pueden tardar en propagarse; sin este
+         * margen el overlay podría retirarse justo después de aparecer.
+         */
+        private const val GRACE_PERIOD_MS = 1_500L
     }
 
     private var windowManager: WindowManager? = null
     private var overlayView: ComposeView? = null
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** Vigila que la app bloqueada siga en primer plano. */
+    private var watchJob: Job? = null
 
     /** Paquete que el overlay está tapando ahora mismo. */
     private var currentBlockedPackage: String = ""
@@ -175,15 +202,21 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
             WindowManager.LayoutParams.TYPE_PHONE
         }
 
-        // CRITICAL FIX: Usar flags que BLOQUEAN toda interacción con apps debajo
-        // FLAG_NOT_TOUCH_MODAL se ELIMINA para que el overlay capture todos los toques
-        // FLAG_NOT_FOCUSABLE se ELIMINA para que el overlay reciba focus y no deje pasar eventos
+        // Flags que BLOQUEAN toda interacción con la app de debajo:
+        // FLAG_NOT_TOUCH_MODAL se OMITE para que el overlay capture todos los toques.
+        // FLAG_NOT_FOCUSABLE se OMITE para que el overlay reciba el foco.
+        //
+        // BUG CORREGIDO: aquí había además FLAG_KEEP_SCREEN_ON. Como el overlay
+        // sólo desaparecía cuando el usuario pulsaba "Cerrar", ese flag dejaba
+        // la pantalla encendida de forma indefinida —toda la noche si el límite
+        // se alcanzaba con el teléfono en el bolsillo—. El overlay ya no
+        // necesita mantener la pantalla despierta: se retira solo (ver
+        // [startForegroundWatch]).
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -213,6 +246,7 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
         try {
             windowManager?.addView(overlayView, params)
             lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+            startForegroundWatch(blockedAppPackage)
         } catch (e: Exception) {
             e.printStackTrace()
             overlayView = null
@@ -220,10 +254,58 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
         }
     }
 
+    /**
+     * Retira el overlay automáticamente cuando deja de tener sentido.
+     *
+     * ─── EL BUG QUE ESTO ARREGLA ──────────────────────────────────────────
+     * El overlay sólo desaparecía si el usuario pulsaba "Cerrar", y ese botón
+     * se habilita a los 10 segundos. Consecuencia: bastaba pulsar el botón de
+     * inicio para salir de la app bloqueada y **el overlay se quedaba encima
+     * del lanzador**, tapando el teléfono entero hasta que el usuario
+     * encontraba el botón y esperaba la cuenta atrás. Con `FLAG_KEEP_SCREEN_ON`
+     * además impedía que la pantalla se apagara.
+     *
+     * El overlay existe para tapar UNA app concreta. En cuanto esa app deja de
+     * estar en primer plano —o la pantalla se apaga— su trabajo ha terminado.
+     */
+    private fun startForegroundWatch(blockedAppPackage: String) {
+        watchJob?.cancel()
+        if (blockedAppPackage.isEmpty()) return
+
+        watchJob = serviceScope.launch {
+            // Margen inicial: la app en primer plano se resuelve a partir de
+            // eventos del sistema que pueden tardar unos cientos de ms en
+            // aparecer. Sin este margen el overlay podría retirarse solo justo
+            // después de mostrarse.
+            delay(GRACE_PERIOD_MS)
+
+            while (isActive) {
+                val screenUsable = BlockingCapabilities.isScreenUsable(this@AppBlockOverlayService)
+                val foreground = ForegroundAppTracker.current(this@AppBlockOverlayService)
+
+                // La app bloqueada dejó de estar delante (inicio, otra app,
+                // Momentum) o el usuario apagó la pantalla.
+                val stillBlocking = screenUsable && foreground == blockedAppPackage
+                if (!stillBlocking) {
+                    android.util.Log.d(
+                        "AppBlockOverlayService",
+                        "Retirando overlay: pantalla=$screenUsable primerPlano=$foreground"
+                    )
+                    withContext(Dispatchers.Main) { dismissOverlay() }
+                    return@launch
+                }
+
+                delay(WATCH_INTERVAL_MS)
+            }
+        }
+    }
+
     private var isDestroyed = false
 
     /** Quita la vista del WindowManager sin detener el servicio. */
     private fun removeOverlayView() {
+        watchJob?.cancel()
+        watchJob = null
         overlayView?.let { view ->
             try {
                 windowManager?.removeView(view)
@@ -250,29 +332,39 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
         val intent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
-        if (intent != null) {
-            startActivity(intent)
-        } else {
-            // Fallback: navegar al Home screen
-            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val launched = runCatching {
+            if (intent != null) {
+                startActivity(intent)
+            } else {
+                startActivity(homeIntent())
             }
-            startActivity(homeIntent)
+        }.isSuccess
+        if (!launched) {
+            android.util.Log.w("AppBlockOverlayService", "No se pudo abrir Momentum desde el overlay")
         }
         dismissOverlay()
     }
 
+    private fun homeIntent(): Intent = Intent(Intent.ACTION_MAIN).apply {
+        addCategory(Intent.CATEGORY_HOME)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
     /**
-     * CRITICAL FIX: Al cerrar el overlay, navegar al Home screen
-     * para que el usuario NO vuelva a la app bloqueada
+     * "Cerrar e ir al inicio": saca al usuario de la app bloqueada.
+     *
+     * Si el sistema rechaza el lanzamiento (las restricciones de inicio de
+     * actividades en segundo plano varían por versión y fabricante) el overlay
+     * se retira igualmente: el servicio de monitoreo detectará que el usuario
+     * sigue dentro de la app bloqueada y volverá a taparla en un par de
+     * segundos. Antes esto no se comprobaba y el usuario podía quedarse dentro
+     * de la app sin overlay.
      */
     private fun navigateToHomeAndDismiss() {
-        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
-        startActivity(homeIntent)
+        runCatching { startActivity(homeIntent()) }
+            .onFailure {
+                android.util.Log.w("AppBlockOverlayService", "No se pudo ir al inicio", it)
+            }
         dismissOverlay()
     }
 
@@ -284,6 +376,7 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
         isDestroyed = true
 
         removeOverlayView()
+        serviceScope.cancel()
 
         try {
             store.clear()
@@ -324,11 +417,15 @@ private fun AppBlockOverlayContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            // Opaco a propósito. Antes el degradado era translúcido
+            // (alpha 0.9/0.95) y el contenido de la app bloqueada seguía siendo
+            // legible por detrás: se podía leer el feed a través de la pantalla
+            // de bloqueo, que es justo lo que se intenta interrumpir.
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color.Black.copy(alpha = 0.9f),
-                        Color(0xFF1A1A1A).copy(alpha = 0.95f)
+                        Color(0xFF000000),
+                        Color(0xFF141414)
                     )
                 )
             )
@@ -336,6 +433,10 @@ private fun AppBlockOverlayContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                // Scroll para que el botón "Cerrar" y las sugerencias sigan
+                // siendo alcanzables en pantallas pequeñas o con fuente grande:
+                // el contenido fijo se salía por abajo sin posibilidad de verlo.
+                .verticalScroll(rememberScrollState())
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center

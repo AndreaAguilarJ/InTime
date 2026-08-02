@@ -11,6 +11,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
@@ -50,6 +53,47 @@ class ContextBlockingService : Service() {
         private const val LOCATION_UPDATE_INTERVAL = 60000L // 1 minuto
         private const val WIFI_CHECK_INTERVAL = 30000L // 30 segundos
         
+        /**
+         * Arranca el servicio sólo si tiene sentido.
+         *
+         * BUG CORREGIDO: se arrancaba sin comprobar el permiso de ubicación en
+         * tiempo de ejecución. El servicio se declara con
+         * `foregroundServiceType="location"`, y desde Android 14 llamar a
+         * `startForeground()` con ese tipo sin el permiso concedido lanza
+         * SecurityException; el servicio moría al instante y la función de
+         * bloqueo por contexto aparentaba estar activa sin hacer nada.
+         *
+         * @return true si el servicio se arrancó.
+         */
+        fun startIfPossible(context: Context): Boolean {
+            if (!hasLocationPermission(context)) {
+                Log.w(
+                    TAG,
+                    "Sin permiso de ubicación: no se arranca el bloqueo por contexto"
+                )
+                return false
+            }
+            return try {
+                start(context)
+                true
+            } catch (e: Exception) {
+                Log.e(TAG, "No se pudo arrancar el bloqueo por contexto", e)
+                false
+            }
+        }
+
+        fun hasLocationPermission(context: Context): Boolean {
+            val fine = ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            val coarse = ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            return fine || coarse
+        }
+
         fun start(context: Context) {
             val intent = Intent(context, ContextBlockingService::class.java)
             context.startForegroundService(intent)
@@ -88,7 +132,16 @@ class ContextBlockingService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        
+
+        // Sin permiso de ubicación este servicio no puede promoverse a
+        // foreground con tipo "location" en Android 14+ (SecurityException), y
+        // aunque pudiera no tendría datos que leer. Mejor no arrancar.
+        if (!hasLocationPermission()) {
+            Log.w(TAG, "Sin permiso de ubicación: el bloqueo por contexto no puede funcionar")
+            stopSelf()
+            return
+        }
+
         // CRÍTICO: Llamar startForeground inmediatamente en onCreate para Android 12+
         try {
             startForeground(NOTIFICATION_ID, buildNotification())
@@ -191,14 +244,25 @@ class ContextBlockingService : Service() {
         }
     }
     
+    /**
+     * SSID de la red WiFi actual.
+     *
+     * BUG CORREGIDO: se leía con `WifiManager.getConnectionInfo()`, que está
+     * obsoleto desde Android 12 y devuelve `<unknown ssid>` a las apps que no
+     * son la propia app de ajustes. El resultado era que las reglas por WiFi
+     * nunca coincidían: se descartaba el SSID y `_currentWifiSsid` quedaba en
+     * null para siempre.
+     *
+     * La vía válida en API 31+ es leer el [WifiInfo] del `transportInfo` de las
+     * capacidades de la red activa. Requiere permiso de ubicación (ya lo
+     * comprobamos al arrancar); si no, el sistema lo devuelve censurado.
+     */
     @SuppressLint("MissingPermission")
     private fun checkCurrentWifi() {
         try {
-            val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
-            val wifiInfo = wifiManager.connectionInfo
-            val ssid = wifiInfo?.ssid?.removeSurrounding("\"")
-            
-            if (ssid != null && ssid != "<unknown ssid>") {
+            val ssid = currentSsid()
+
+            if (ssid != null) {
                 _currentWifiSsid.value = ssid
                 checkWifiRules(ssid)
             } else {
@@ -208,6 +272,51 @@ class ContextBlockingService : Service() {
         } catch (e: Exception) {
             Log.e(TAG, "Error checking WiFi", e)
         }
+    }
+
+    private fun currentSsid(): String? {
+        val fromCapabilities = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ssidFromCapabilities()
+        } else {
+            null
+        }
+        return fromCapabilities ?: ssidFromWifiManager()
+    }
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.S)
+    private fun ssidFromCapabilities(): String? {
+        return try {
+            val connectivity = getSystemService(ConnectivityManager::class.java) ?: return null
+            val network = connectivity.activeNetwork ?: return null
+            val capabilities = connectivity.getNetworkCapabilities(network) ?: return null
+            if (!capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return null
+            val wifiInfo = capabilities.transportInfo as? WifiInfo ?: return null
+            sanitizeSsid(wifiInfo.ssid)
+        } catch (e: Exception) {
+            Log.w(TAG, "No se pudo leer el SSID desde NetworkCapabilities", e)
+            null
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    @SuppressLint("MissingPermission")
+    private fun ssidFromWifiManager(): String? {
+        return try {
+            val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as? WifiManager
+                ?: return null
+            sanitizeSsid(wifiManager.connectionInfo?.ssid)
+        } catch (e: Exception) {
+            Log.w(TAG, "No se pudo leer el SSID desde WifiManager", e)
+            null
+        }
+    }
+
+    /** Quita las comillas y descarta los valores censurados por el sistema. */
+    private fun sanitizeSsid(raw: String?): String? {
+        val ssid = raw?.removeSurrounding("\"")?.trim()
+        if (ssid.isNullOrEmpty()) return null
+        if (ssid == WifiManager.UNKNOWN_SSID || ssid == "<unknown ssid>" || ssid == "0x") return null
+        return ssid
     }
     
     private fun checkLocationRules(location: Location) {
@@ -275,16 +384,7 @@ class ContextBlockingService : Service() {
         return distance <= radiusMeters
     }
     
-    private fun hasLocationPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED ||
-        ActivityCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun hasLocationPermission(): Boolean = hasLocationPermission(this)
     
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

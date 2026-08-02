@@ -192,21 +192,29 @@ class BillingManager(
         }
     }
     
+    /**
+     * Concede el acceso a las compras confirmadas por Google.
+     *
+     * BUG CORREGIDO: las suscripciones sólo se registraban si
+     * `purchase.isAcknowledged` **ya** era true. Pero el acknowledge es un
+     * paso que hace esta misma app justo después, así que en la compra recién
+     * hecha siempre valía false: el usuario pagaba y no obtenía premium. Sólo
+     * aparecía en un arranque posterior, cuando `queryPurchases` devolvía la
+     * compra ya confirmada. Y si el acknowledge fallaba (sin red, proceso
+     * muerto), Google reembolsaba a los 3 días.
+     *
+     * Lo correcto, y lo que recomienda Google Play Billing, es conceder el
+     * derecho en cuanto el estado es PURCHASED y confirmar después.
+     */
     private fun handlePurchases(purchases: List<Purchase>) {
         for (purchase in purchases) {
             if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
                 when {
                     purchase.products.contains(PREMIUM_MONTHLY_SKU) -> {
-                        // CRITICAL FIX: Solo actualizar estado DESPUÉS de acknowledge exitoso
-                        // Mientras tanto, usar el estado persistido para no dar premium sin confirmar
-                        if (purchase.isAcknowledged) {
-                            persistSubscriptionStatus(SubscriptionStatus.MONTHLY_SUBSCRIBED)
-                        }
+                        persistSubscriptionStatus(SubscriptionStatus.MONTHLY_SUBSCRIBED)
                     }
                     purchase.products.contains(PREMIUM_YEARLY_SKU) -> {
-                        if (purchase.isAcknowledged) {
-                            persistSubscriptionStatus(SubscriptionStatus.YEARLY_SUBSCRIBED)
-                        }
+                        persistSubscriptionStatus(SubscriptionStatus.YEARLY_SUBSCRIBED)
                     }
                     purchase.products.contains(EMERGENCY_UNLOCK_SKU) -> {
                         // CRITICAL FIX: Consumir el emergency unlock para que se pueda comprar de nuevo

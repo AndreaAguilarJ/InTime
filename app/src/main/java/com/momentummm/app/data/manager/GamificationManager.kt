@@ -370,11 +370,31 @@ class GamificationManager @Inject constructor(
     }
     
     /**
-     * Sincroniza los datos de gamificación a la nube
+     * Sincroniza los datos de gamificación a la nube.
+     *
+     * BUG CORREGIDO: el id de usuario estaba fijado a cadena vacía con un
+     * `// TODO`. La llamada se hacía y parecía funcionar, pero escribía contra
+     * un usuario inexistente: el progreso (nivel, XP, racha) nunca llegaba a la
+     * cuenta del usuario, así que "sincronizar" no sincronizaba nada y al
+     * reinstalar se perdía todo.
+     *
+     * @return true si se pudo sincronizar. false si no hay sesión: el
+     *   llamador debe decirle al usuario que inicie sesión en lugar de dar por
+     *   hecho que el guardado tuvo éxito.
      */
-    suspend fun syncToCloud(appwriteUserRepository: com.momentummm.app.data.appwrite.repository.AppwriteUserRepository) {
-        val data = getGamificationDataForSync() ?: return
-        val userId = "" // TODO: Obtener el ID del usuario actual
+    suspend fun syncToCloud(
+        appwriteUserRepository: com.momentummm.app.data.appwrite.repository.AppwriteUserRepository,
+        userId: String?
+    ): Boolean {
+        val data = getGamificationDataForSync() ?: return false
+
+        if (userId.isNullOrBlank()) {
+            android.util.Log.w(
+                "GamificationManager",
+                "Sin sesión de usuario: no se puede sincronizar la gamificación"
+            )
+            return false
+        }
         
         // Llamar al repositorio para sincronizar
         val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.getDefault())
@@ -396,6 +416,7 @@ class GamificationManager @Inject constructor(
             showXpNotifications = data.showXpNotifications,
             showStreakReminders = data.showStreakReminders
         )
+        return true
     }
     
     /**

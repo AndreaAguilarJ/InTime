@@ -31,6 +31,7 @@ import com.momentummm.app.data.usage.DailyUsageCalculator
 import com.momentummm.app.data.usage.ForegroundAppTracker
 import com.momentummm.app.ui.AppBlockedActivity
 import com.momentummm.app.ui.overlay.AppBlockOverlayService
+import com.momentummm.app.util.BlockingCapabilities
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -66,6 +67,19 @@ class AppMonitoringService : Service() {
 
     private val MONITORING_INTERVAL = 2000L // 2 segundos - balance entre detección rápida y batería
     private val MONITORING_INTERVAL_AGGRESSIVE = 1000L // 1 segundo para apps ya bloqueadas
+
+    /** Con la pantalla apagada no hay nada que vigilar: se baja el ritmo. */
+    private val SCREEN_OFF_INTERVAL = 15_000L
+
+    /** Sin permiso de acceso al uso no se puede hacer nada; se reintenta despacio. */
+    private val PERMISSION_RECHECK_INTERVAL = 30_000L
+
+    /** Validez del resultado de la comprobación de AppOps. */
+    private val USAGE_ACCESS_CHECK_TTL = 60_000L
+
+    private var lastUsageAccessCheckAt = 0L
+    private var cachedUsageAccess = false
+
     private var lastCheckedApp: String = ""
     private var lastBlockedTime: Long = 0
     private val BLOCK_COOLDOWN = 2000L // 2 segundos entre bloqueos de la misma app
@@ -178,6 +192,7 @@ class AppMonitoringService : Service() {
         monitoringJob?.cancel()
         monitoringJob = serviceScope.launch {
             while (isActive) {
+                var nextInterval = MONITORING_INTERVAL
                 try {
                     // Verificar que los repositorios estén inicializados antes de proceder
                     if (!areRepositoriesInitialized) {
@@ -185,10 +200,32 @@ class AppMonitoringService : Service() {
                         delay(MONITORING_INTERVAL)
                         continue
                     }
-                    
+
                     // Actualizar estados de bloqueo inteligente
                     smartBlockingManager.refreshModeStates()
-                    
+
+                    // ─── GUARDA 1: permiso de acceso al uso ───────────────
+                    // Sin él `queryEvents` devuelve una lista vacía, el uso
+                    // diario siempre es 0 y NUNCA se bloquea nada. Antes no se
+                    // comprobaba: el fallo era total y completamente silencioso.
+                    if (!hasUsageAccess()) {
+                        Log.w(TAG, "Sin permiso de acceso al uso: el bloqueo no puede funcionar")
+                        BlockEnforcer.notifyBlockingUnavailable(
+                            this@AppMonitoringService,
+                            BlockingCapabilities.MissingRequirement.USAGE_STATS
+                        )
+                        delay(PERMISSION_RECHECK_INTERVAL)
+                        continue
+                    }
+
+                    // ─── GUARDA 2: pantalla apagada o bloqueada ───────────
+                    // No hay ninguna app que tapar, y consultar UsageStats cada
+                    // 2 s con la pantalla apagada sólo gasta batería.
+                    if (!BlockingCapabilities.isScreenUsable(this@AppMonitoringService)) {
+                        delay(SCREEN_OFF_INTERVAL)
+                        continue
+                    }
+
                     // === NUEVO V2: Análisis periódico de patrones ===
                     monitoringCycleCount++
                     if (monitoringCycleCount % PATTERN_ANALYSIS_INTERVAL == 0) {
@@ -198,22 +235,44 @@ class AppMonitoringService : Service() {
                             Log.e(TAG, "Error en análisis periódico de patrones", e)
                         }
                     }
-                    
-                    checkCurrentApp()
+
+                    // Una sola resolución de la app en primer plano por ciclo.
+                    // Antes se llamaba dos veces —una dentro de checkCurrentApp
+                    // y otra para elegir el intervalo—, duplicando una consulta
+                    // IPC que recorre los eventos de uso del sistema.
+                    val currentApp = getCurrentForegroundApp()
+
+                    // Intervalo agresivo mientras el usuario sigue dentro de una
+                    // app ya bloqueada: hay que volver a taparla cuanto antes.
+                    nextInterval = if (
+                        currentApp.isNotEmpty() && smartBlockingManager.isAppBlockedToday(currentApp)
+                    ) {
+                        MONITORING_INTERVAL_AGGRESSIVE
+                    } else {
+                        MONITORING_INTERVAL
+                    }
+
+                    checkCurrentApp(currentApp)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error en checkCurrentApp", e)
-                    e.printStackTrace()
+                    Log.e(TAG, "Error en el ciclo de monitoreo", e)
                 }
-                // Usar intervalo agresivo si hay apps bloqueadas activas
-                val currentApp = getCurrentForegroundApp()
-                val interval = if (currentApp.isNotEmpty() && smartBlockingManager.isAppBlockedToday(currentApp)) {
-                    MONITORING_INTERVAL_AGGRESSIVE // 1 segundo para apps bloqueadas
-                } else {
-                    MONITORING_INTERVAL // 2 segundos normal
-                }
-                delay(interval)
+                delay(nextInterval)
             }
         }
+    }
+
+    /**
+     * Permiso de acceso al uso, con cache: consultar AppOps es una llamada IPC
+     * y este bucle gira cada 1-2 segundos.
+     */
+    private fun hasUsageAccess(): Boolean {
+        val now = System.currentTimeMillis()
+        if (lastUsageAccessCheckAt != 0L && now - lastUsageAccessCheckAt < USAGE_ACCESS_CHECK_TTL) {
+            return cachedUsageAccess
+        }
+        lastUsageAccessCheckAt = now
+        cachedUsageAccess = BlockingCapabilities.hasUsageStatsPermission(this)
+        return cachedUsageAccess
     }
 
     private fun stopMonitoring() {
@@ -222,11 +281,10 @@ class AppMonitoringService : Service() {
         monitoringJob = null
     }
 
-    private suspend fun checkCurrentApp() {
+    private suspend fun checkCurrentApp(currentApp: String) {
         try {
             // Timeout de 3 segundos para esta operación
             withTimeoutOrNull(3000L) {
-                val currentApp = getCurrentForegroundApp()
                 if (currentApp.isEmpty() || currentApp == packageName) {
                     // Si estamos en InTime, ocultar el timer flotante
                     if (floatingTimerActive) {
@@ -312,14 +370,27 @@ class AppMonitoringService : Service() {
                         Log.d(TAG, "App $currentApp tiene desbloqueo temporal activo - permitiendo")
                         return@withTimeoutOrNull
                     }
-                    
+
+                    val activeLimit = withContext(Dispatchers.IO) {
+                        appLimitRepository.getLimitByPackage(currentApp)
+                    }
+
+                    // BUG CORREGIDO: la marca "bloqueada hoy" se respetaba aunque
+                    // el usuario hubiera borrado o desactivado el límite. Como
+                    // esta comprobación va antes de leer el límite, la app
+                    // quedaba bloqueada el resto del día sin ningún límite
+                    // configurado y sin forma de recuperarla salvo esperar al
+                    // día siguiente.
+                    if (activeLimit == null || !activeLimit.isEnabled) {
+                        Log.d(TAG, "App $currentApp ya no tiene límite activo - liberando bloqueo del día")
+                        smartBlockingManager.temporarilyUnblockApp(currentApp)
+                        return@withTimeoutOrNull
+                    }
+
                     // CRITICAL FIX: La app ya alcanzó su límite hoy - bloquear SIEMPRE
                     // Solo respetar el cooldown mínimo para evitar crash por múltiples activities
                     if (smartBlockingManager.canShowBlockScreen(currentApp)) {
-                        val appLimit = withContext(Dispatchers.IO) {
-                            appLimitRepository.getLimitByPackage(currentApp)
-                        }
-                        val dailyLimit = appLimit?.dailyLimitMinutes ?: 0
+                        val dailyLimit = activeLimit.dailyLimitMinutes
                         Log.d(TAG, "App $currentApp está bloqueada hoy - FORZANDO pantalla de bloqueo")
                         smartBlockingManager.registerBlockScreenShown(currentApp)
                         blockApp(currentApp, "Ya alcanzaste tu límite de $dailyLimit minutos hoy")
@@ -387,9 +458,28 @@ class AppMonitoringService : Service() {
                         Log.d(TAG, "App monitoreada detectada: $currentApp")
 
                         // Obtener uso actual de la app
-                        val usageStats = getCurrentAppUsageStats(currentApp)
-                        val usageMinutes = (usageStats / 60000).toInt()
-                        
+                        val cachedUsageMinutes =
+                            (getCurrentAppUsageStats(currentApp) / 60000).toInt()
+
+                        // INTEGRACIÓN BLOQUEO INTELIGENTE: Obtener límite efectivo
+                        val originalLimit = appLimit.dailyLimitMinutes
+                        val effectiveLimit = smartBlockingManager.getEffectiveDailyLimit(currentApp, originalLimit)
+
+                        // A un minuto o menos del límite el valor cacheado ya no
+                        // sirve: se fuerza el recálculo para que el bloqueo caiga
+                        // lo más cerca posible del minuto exacto.
+                        val usageMinutes = if (
+                            effectiveLimit > 0 && cachedUsageMinutes >= effectiveLimit - 1
+                        ) {
+                            DailyUsageCalculator.foregroundMinutesToday(
+                                this@AppMonitoringService,
+                                currentApp,
+                                maxAgeMs = 0L
+                            )
+                        } else {
+                            cachedUsageMinutes
+                        }
+
                         // === NUEVO V2: Registrar uso en el motor de patrones ===
                         val now = System.currentTimeMillis()
                         if (now - lastUsageRecordTime > USAGE_RECORD_INTERVAL) {
@@ -402,11 +492,7 @@ class AppMonitoringService : Service() {
                                 }
                             }
                         }
-                        
-                        // INTEGRACIÓN BLOQUEO INTELIGENTE: Obtener límite efectivo
-                        val originalLimit = appLimit.dailyLimitMinutes
-                        val effectiveLimit = smartBlockingManager.getEffectiveDailyLimit(currentApp, originalLimit)
-                        
+
                         val usagePercent = if (effectiveLimit > 0) (usageMinutes * 100) / effectiveLimit else 0
 
                         Log.d(TAG, "App $currentApp - Uso: ${usageMinutes}m / ${effectiveLimit}m (original: ${originalLimit}m) (${usagePercent}%)")

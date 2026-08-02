@@ -64,12 +64,15 @@ class BootReceiver : BroadcastReceiver() {
                     val contextRuleDao = database.contextBlockRuleDao()
                     val enabledRules = contextRuleDao.getEnabledRulesSync()
                     if (enabledRules.isNotEmpty()) {
-                        try {
-                            val contextIntent = Intent(context, ContextBlockingService::class.java)
-                            context.startForegroundService(contextIntent)
+                        // startIfPossible comprueba el permiso de ubicación: el
+                        // servicio es un foreground service de tipo "location" y
+                        // sin el permiso concedido Android 14+ lo mata al
+                        // arrancar, dejando la función muerta en silencio.
+                        val started = ContextBlockingService.startIfPossible(context)
+                        if (started) {
                             Log.d(TAG, "ContextBlockingService reiniciado - ${enabledRules.size} reglas activas")
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error reiniciando ContextBlockingService", e)
+                        } else {
+                            Log.w(TAG, "Bloqueo por contexto no reiniciado: falta el permiso de ubicación")
                         }
                     }
 

@@ -1,5 +1,6 @@
 package com.momentummm.app.ui.screen.settings
 
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -258,8 +259,25 @@ fun GamificationSettingsScreen(
                         scope.launch {
                             isSyncing = true
                             showSyncDialog = false
-                            gamificationManager.syncToCloud(application.appwriteUserRepository)
+                            // El id de usuario venía fijado a "" dentro de
+                            // syncToCloud, así que la sincronización escribía
+                            // contra un usuario inexistente y el progreso nunca
+                            // llegaba a la nube.
+                            val userId = application.appwriteService.currentUser.value?.id
+                            val synced = gamificationManager.syncToCloud(
+                                application.appwriteUserRepository,
+                                userId
+                            )
                             isSyncing = false
+                            Toast.makeText(
+                                context,
+                                if (synced) {
+                                    "Progreso sincronizado"
+                                } else {
+                                    "Inicia sesión para sincronizar tu progreso"
+                                },
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 ) {

@@ -3,11 +3,14 @@ package com.momentummm.app.ui.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.entity.MessageCategory
 import com.momentummm.app.data.entity.MessageTone
 import com.momentummm.app.data.entity.MotivationalMessage
 import com.momentummm.app.data.entity.MotivationalPreferences
+import com.momentummm.app.data.manager.MotivationalNotificationManager
 import com.momentummm.app.data.repository.MotivationalMessagesRepository
+import com.momentummm.app.notification.MotivationalAlarmScheduler
 import com.momentummm.app.worker.MotivationalNotificationWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,6 +44,13 @@ data class MotivationalMessagesUiState(
     val bestHours: List<Int> = emptyList(),
     val showTestNotification: Boolean = false,
     val showMessagePreview: MotivationalMessage? = null,
+    /** Texto a mostrar tras pulsar "Probar": el resultado real del envío. */
+    val testNotificationResult: String? = null,
+    val testNotificationFailed: Boolean = false,
+    /** Nombre con el que el usuario quiere que le hablen los mensajes. */
+    val displayName: String = "",
+    /** false si el sistema puede retrasar las alarmas de los mensajes. */
+    val canScheduleExactAlarms: Boolean = true,
     val showAddCustomDialog: Boolean = false,
     val customMessageContent: String = "",
     val customMessageEmoji: String = "✨",
@@ -51,6 +61,7 @@ data class MotivationalMessagesUiState(
 @HiltViewModel
 class MotivationalMessagesViewModel @Inject constructor(
     private val repository: MotivationalMessagesRepository,
+    private val notificationManager: MotivationalNotificationManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -59,6 +70,33 @@ class MotivationalMessagesViewModel @Inject constructor(
     
     init {
         loadData()
+        loadPersonalization()
+    }
+
+    /**
+     * Carga el nombre del usuario y si el sistema permite alarmas exactas.
+     *
+     * Lo segundo importa: en Android 14+ el permiso de alarmas exactas NO se
+     * concede por defecto a las apps recién instaladas, así que los mensajes se
+     * programan con alarmas aproximadas y pueden llegar con retraso. Antes esto
+     * ocurría en silencio y el usuario sólo veía que "los mensajes no llegan a
+     * su hora".
+     */
+    private fun loadPersonalization() {
+        viewModelScope.launch {
+            val name = runCatching { UserPreferencesRepository.getDisplayName(context) }
+                .getOrNull()
+                .orEmpty()
+            val exact = MotivationalAlarmScheduler.canScheduleExactAlarms(context)
+            _uiState.update { it.copy(displayName = name, canScheduleExactAlarms = exact) }
+        }
+    }
+
+    /** Vuelve a comprobar el permiso de alarmas exactas (al volver de Ajustes). */
+    fun refreshExactAlarmPermission() {
+        _uiState.update {
+            it.copy(canScheduleExactAlarms = MotivationalAlarmScheduler.canScheduleExactAlarms(context))
+        }
     }
     
     private fun loadData() {
@@ -251,11 +289,45 @@ class MotivationalMessagesViewModel @Inject constructor(
     fun toggleFavoritesOnly() { _uiState.update { it.copy(showFavoritesOnly = !it.showFavoritesOnly) }; loadMessages() }
     fun clearFilters() { _uiState.update { it.copy(selectedCategory = null, selectedTone = null, searchQuery = "", showFavoritesOnly = false) }; loadMessages() }
     
+    /**
+     * Envía de verdad una notificación de prueba.
+     *
+     * BUG CORREGIDO: esta función sólo ponía `showTestNotification = true` para
+     * abrir un diálogo de vista previa dentro de la app, mientras la pantalla
+     * mostraba el mensaje "Notificación de prueba enviada". Nunca se publicaba
+     * ninguna notificación, así que era imposible comprobar si el sistema de
+     * mensajes funcionaba —justo lo que el botón promete—.
+     *
+     * Ahora publica la notificación real y devuelve el resultado para que la
+     * interfaz diga la verdad.
+     */
     fun sendTestNotification() {
-        _uiState.update { it.copy(showTestNotification = true) }
         viewModelScope.launch {
-            val message = repository.getNextMessageToShow()
-            if (message != null) _uiState.update { it.copy(showMessagePreview = message) }
+            val result = notificationManager.showTestMessage()
+            _uiState.update {
+                it.copy(
+                    testNotificationResult = result.error
+                        ?: "Notificación enviada. Míralas en la barra de estado.",
+                    testNotificationFailed = !result.delivered,
+                    showMessagePreview = result.message
+                )
+            }
+        }
+    }
+
+    fun clearTestNotificationResult() {
+        _uiState.update { it.copy(testNotificationResult = null, testNotificationFailed = false) }
+    }
+
+    /** Nombre con el que el usuario quiere que le hablen los mensajes. */
+    fun setDisplayName(name: String) {
+        _uiState.update { it.copy(displayName = name) }
+        viewModelScope.launch {
+            try {
+                UserPreferencesRepository.setDisplayName(context, name)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "No se pudo guardar el nombre: ${e.message}") }
+            }
         }
     }
     

@@ -609,9 +609,17 @@ fun SmartBlockingScreen(
                     onToggle = { enabled ->
                         viewModel.setContextBlockingEnabled(enabled)
                         if (enabled) {
-                            // Iniciar servicio de bloqueo por contexto
-                            ContextBlockingService.start(context)
-                            Toast.makeText(context, "📍 Servicio de contexto iniciado", Toast.LENGTH_SHORT).show()
+                            // startIfPossible comprueba el permiso de ubicación.
+                            // Antes se arrancaba a ciegas y el aviso decía
+                            // "servicio iniciado" incluso cuando Android lo
+                            // mataba de inmediato por falta de permiso.
+                            val started = ContextBlockingService.startIfPossible(context)
+                            val message = if (started) {
+                                "📍 Servicio de contexto iniciado"
+                            } else {
+                                "Concede el permiso de ubicación para usar el bloqueo por contexto"
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                         } else {
                             // Detener servicio
                             ContextBlockingService.stop(context)

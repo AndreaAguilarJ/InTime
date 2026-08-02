@@ -224,6 +224,31 @@ object MotivationalAlarmScheduler {
             true
         }
 
+    /**
+     * true si el sistema nos deja programar alarmas exactas.
+     *
+     * En Android 14+ (API 34) `SCHEDULE_EXACT_ALARM` **no** se concede por
+     * defecto a las apps recién instaladas. Sin él los mensajes se programan
+     * con `setAndAllowWhileIdle`, que el sistema puede retrasar. Conviene
+     * poder decírselo al usuario y ofrecerle activarlo.
+     */
+    fun canScheduleExactAlarms(context: Context): Boolean {
+        val manager = alarmManager(context) ?: return false
+        return canScheduleExact(manager)
+    }
+
+    /**
+     * Intent que abre la pantalla del sistema para conceder alarmas exactas,
+     * o null si la versión de Android no lo necesita.
+     */
+    fun exactAlarmSettingsIntent(context: Context): Intent? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
+        return Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+            data = android.net.Uri.parse("package:${context.packageName}")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+    }
+
     private fun alarmManager(context: Context): AlarmManager? =
         context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 

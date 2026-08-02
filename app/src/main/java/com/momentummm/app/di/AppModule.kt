@@ -152,8 +152,9 @@ object AppModule {
     @Singleton
     fun provideMotivationalNotificationManager(
         @ApplicationContext context: Context,
-        messagesRepository: MotivationalMessagesRepository
+        messagesRepository: MotivationalMessagesRepository,
+        personalizer: com.momentummm.app.notification.MessagePersonalizer
     ): MotivationalNotificationManager {
-        return MotivationalNotificationManager(context, messagesRepository)
+        return MotivationalNotificationManager(context, messagesRepository, personalizer)
     }
 }

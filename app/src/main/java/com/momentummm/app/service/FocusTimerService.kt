@@ -15,6 +15,8 @@ import com.momentummm.app.R
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.manager.GamificationManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,6 +58,21 @@ data class FocusSessionState(
     val coinsEarned: Int = 0
 )
 
+/**
+ * ─── POR QUÉ ESTE SERVICIO USA HILT ──────────────────────────────────────
+ * BUG CORREGIDO: en `onCreate` se construía un GamificationManager propio
+ * (`GamificationManager(database.userDao(), applicationContext)`). Ese objeto
+ * era una instancia distinta de la del resto de la app, y a la de la app se le
+ * conecta el SmartNotificationManager en `MomentumApplication.onCreate`
+ * (`gamificationManager.setNotificationManager(...)`). Resultado: al terminar
+ * una sesión de enfoque se otorgaban XP y monedas, pero las notificaciones de
+ * subida de nivel y de logros nunca salían, porque las emitía un manager sin
+ * notificador conectado.
+ *
+ * Con `@AndroidEntryPoint` + `@Inject` se recibe el singleton de Hilt, que es
+ * el mismo que usa el resto de la aplicación.
+ */
+@AndroidEntryPoint
 class FocusTimerService : Service() {
 
     private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
@@ -73,8 +90,12 @@ class FocusTimerService : Service() {
     private val _sessionState = MutableStateFlow(FocusSessionState())
     val sessionState: StateFlow<FocusSessionState> = _sessionState.asStateFlow()
 
-    // Cambiar a nullable para evitar UninitializedPropertyAccessException
-    private var gamificationManager: GamificationManager? = null
+    // Singleton compartido con el resto de la app (ver comentario de la clase).
+    @Inject
+    lateinit var gamificationManagerInstance: GamificationManager
+
+    private val gamificationManager: GamificationManager?
+        get() = if (::gamificationManagerInstance.isInitialized) gamificationManagerInstance else null
 
     override fun onBind(intent: Intent): IBinder {
         return binder
@@ -83,16 +104,6 @@ class FocusTimerService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        
-        // Initialize GamificationManager de forma segura en background thread
-        serviceScope.launch(Dispatchers.IO) {
-            try {
-                val database = AppDatabase.getDatabase(applicationContext)
-                gamificationManager = GamificationManager(database.userDao(), applicationContext)
-            } catch (e: Exception) {
-                android.util.Log.e("FocusTimerService", "Error initializing GamificationManager", e)
-            }
-        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

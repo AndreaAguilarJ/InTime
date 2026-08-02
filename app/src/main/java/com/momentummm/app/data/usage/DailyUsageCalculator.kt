@@ -35,8 +35,15 @@ object DailyUsageCalculator {
     private const val KEY_DAY_START_HOUR = "day_start_hour"
     private const val KEY_DAY_START_MINUTE = "day_start_minute"
 
-    /** Cache corto para no recorrer los eventos del día en cada tick del monitor. */
-    private const val CACHE_TTL_MS = 5_000L
+    /**
+     * Cache corto para no recorrer los eventos del día en cada tick del monitor.
+     *
+     * Eran 5 segundos. Sumados a un sondeo de 2 s, el usuario podía pasarse
+     * hasta 7 segundos del límite antes de que apareciera el bloqueo. Con 2 s
+     * el desfase máximo baja a unos 4 s, y quien esté a punto de agotar el
+     * límite puede pedir un cálculo fresco con [maxAgeMs] = 0.
+     */
+    private const val CACHE_TTL_MS = 2_000L
 
     private data class CacheEntry(val millis: Long, val computedAt: Long, val dayStart: Long)
 
@@ -66,24 +73,60 @@ object DailyUsageCalculator {
         return calendar.timeInMillis
     }
 
+    /**
+     * Hora de inicio de día, en cache.
+     *
+     * [dayStartMillis] se llama en cada consulta de uso —es decir, una o dos
+     * veces por segundo mientras el monitor está activo— y cada llamada leía
+     * SharedPreferences. StrictMode lo señalaba como lectura de disco en el
+     * hilo principal cuando la llamada venía de la creación del servicio.
+     */
+    @Volatile
+    private var dayStartCache: Pair<Int, Int>? = null
+
+    @Volatile
+    private var dayStartCacheAt = 0L
+
+    private const val DAY_START_CACHE_TTL_MS = 60_000L
+
     private fun readDayStart(context: Context): Pair<Int, Int> {
-        return try {
+        val now = System.currentTimeMillis()
+        dayStartCache?.let { cached ->
+            if (now - dayStartCacheAt < DAY_START_CACHE_TTL_MS) return cached
+        }
+
+        val value = try {
             val prefs = context.getSharedPreferences(DAY_START_PREFS, Context.MODE_PRIVATE)
             prefs.getInt(KEY_DAY_START_HOUR, 0) to prefs.getInt(KEY_DAY_START_MINUTE, 0)
         } catch (e: Exception) {
             Log.w(TAG, "No se pudo leer la hora de inicio de día, usando medianoche", e)
             0 to 0
         }
+
+        dayStartCache = value
+        dayStartCacheAt = now
+        return value
     }
 
     /** Minutos en primer plano hoy. Es el valor que se compara con el límite. */
-    fun foregroundMinutesToday(context: Context, packageName: String): Int =
-        (foregroundMillisToday(context, packageName) / 60_000L).toInt()
+    fun foregroundMinutesToday(
+        context: Context,
+        packageName: String,
+        maxAgeMs: Long = CACHE_TTL_MS
+    ): Int = (foregroundMillisToday(context, packageName, maxAgeMs) / 60_000L).toInt()
 
     /**
-     * Milisegundos en primer plano durante el día actual, con cache de 5 s.
+     * Milisegundos en primer plano durante el día actual.
+     *
+     * @param maxAgeMs antigüedad máxima aceptable del valor cacheado. Con 0 se
+     *   fuerza el recálculo: lo usa el monitor cuando el usuario está a punto
+     *   de agotar el límite y un valor de hace dos segundos ya no sirve.
      */
-    fun foregroundMillisToday(context: Context, packageName: String): Long {
+    fun foregroundMillisToday(
+        context: Context,
+        packageName: String,
+        maxAgeMs: Long = CACHE_TTL_MS
+    ): Long {
         if (packageName.isEmpty()) return 0L
 
         val now = System.currentTimeMillis()
@@ -91,9 +134,11 @@ object DailyUsageCalculator {
 
         // El día forma parte de la clave de validez: al cruzar la hora de
         // inicio del día un valor cacheado pertenece al día anterior.
-        cache[packageName]?.let { entry ->
-            if (entry.dayStart == dayStart && now - entry.computedAt < CACHE_TTL_MS) {
-                return entry.millis
+        if (maxAgeMs > 0) {
+            cache[packageName]?.let { entry ->
+                if (entry.dayStart == dayStart && now - entry.computedAt < maxAgeMs) {
+                    return entry.millis
+                }
             }
         }
 
@@ -104,7 +149,13 @@ object DailyUsageCalculator {
 
     /** Fuerza el recálculo en la siguiente consulta (p. ej. al cambiar de día). */
     fun invalidate(packageName: String? = null) {
-        if (packageName == null) cache.clear() else cache.remove(packageName)
+        if (packageName == null) {
+            cache.clear()
+            // La hora de inicio de día puede haber cambiado en los ajustes.
+            dayStartCacheAt = 0L
+        } else {
+            cache.remove(packageName)
+        }
     }
 
     private fun computeForegroundMillis(

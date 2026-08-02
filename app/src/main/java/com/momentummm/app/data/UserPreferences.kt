@@ -66,6 +66,13 @@ object UserPreferencesKeys {
     
     // Uninstall Protection - Protección anti-desinstalación
     val UNINSTALL_PROTECTION_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("uninstall_protection_enabled")
+
+    /**
+     * Nombre con el que el usuario quiere que se le hable en los mensajes
+     * motivacionales. Se guarda en local (no en Appwrite) para que la
+     * personalización funcione sin conexión y sin cuenta.
+     */
+    val DISPLAY_NAME: Preferences.Key<String> = stringPreferencesKey("display_name")
 }
 
 object UserPreferencesRepository {
@@ -85,6 +92,35 @@ object UserPreferencesRepository {
         val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.DOB_ISO]
     }
+
+    /**
+     * Nombre con el que dirigirse al usuario en los mensajes motivacionales,
+     * o null si no lo ha configurado. Se recorta y se limita en longitud para
+     * que no rompa el título de una notificación.
+     */
+    suspend fun getDisplayName(context: Context): String? {
+        val prefs = context.safeReadPreferences()
+        return prefs[UserPreferencesKeys.DISPLAY_NAME]?.trim()?.takeIf { it.isNotEmpty() }
+    }
+
+    fun getDisplayNameFlow(context: Context): Flow<String> {
+        return context.userPreferencesDataStore.data
+            .catch { emit(emptyPreferences()) }
+            .map { prefs -> prefs[UserPreferencesKeys.DISPLAY_NAME]?.trim().orEmpty() }
+    }
+
+    suspend fun setDisplayName(context: Context, name: String) {
+        val sanitized = name.trim().take(MAX_DISPLAY_NAME_LENGTH)
+        context.userPreferencesDataStore.edit { prefs ->
+            if (sanitized.isEmpty()) {
+                prefs.remove(UserPreferencesKeys.DISPLAY_NAME)
+            } else {
+                prefs[UserPreferencesKeys.DISPLAY_NAME] = sanitized
+            }
+        }
+    }
+
+    private const val MAX_DISPLAY_NAME_LENGTH = 24
 
     suspend fun setDobIso(context: Context, isoDate: String) {
         context.userPreferencesDataStore.edit { prefs ->

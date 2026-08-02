@@ -185,9 +185,24 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         // MIGRATION 11 -> 12: (ya existente, mantener vacío o agregar lógica si es necesario)
+        /**
+         * MIGRATION 11 -> 12: intencionadamente vacía.
+         *
+         * El histórico del proyecto pasa de la versión 11 a la 14 en un único
+         * commit, así que **ninguna versión publicada tuvo el esquema 12 ni el
+         * 13**: nadie puede tener una base de datos en esos estados. Estos dos
+         * pasos existen sólo para que Room pueda encadenar 11 → 12 → 13 → 14, y
+         * todo el DDL real que faltaba desde la 11 está en [MIGRATION_12_13] y
+         * [MIGRATION_13_14].
+         *
+         * Room valida el esquema al final de la cadena, no en cada paso, de modo
+         * que un paso sin sentencias es correcto. NO añadir aquí DDL "por si
+         * acaso": duplicaría objetos ya creados en los pasos siguientes y haría
+         * fallar la migración.
+         */
         private val MIGRATION_11_12 = object : androidx.room.migration.Migration(11, 12) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // Migraciones previas
+                // Sin cambios: ver el comentario de arriba.
             }
         }
 

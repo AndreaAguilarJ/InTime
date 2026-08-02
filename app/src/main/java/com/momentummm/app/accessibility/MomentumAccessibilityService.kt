@@ -277,14 +277,22 @@ class MomentumAccessibilityService : AccessibilityService() {
                     }
 
                     // Caso 1: la app ya agotó su límite hoy.
+                    //
+                    // Se exige que el límite siga existiendo y activo. Antes se
+                    // respetaba la marca "bloqueada hoy" aunque el usuario
+                    // hubiera borrado el límite, así que la app quedaba
+                    // bloqueada el resto del día sin ningún límite configurado.
                     if (smartBlockingManager.isAppBlockedToday(packageName)) {
+                        if (limit == null || !limit.isEnabled) {
+                            Log.d(TAG, "$packageName ya no tiene límite activo - liberando bloqueo del día")
+                            smartBlockingManager.temporarilyUnblockApp(packageName)
+                            return@withTimeoutOrNull
+                        }
                         enforceLimitBlock(
                             packageName = packageName,
-                            appName = limit?.appName ?: getAppNameFromPackage(packageName),
-                            limitMinutes = limit?.dailyLimitMinutes ?: 0,
-                            reason = limit?.dailyLimitMinutes?.let {
-                                "Ya alcanzaste tu límite de $it minutos hoy"
-                            }
+                            appName = limit.appName,
+                            limitMinutes = limit.dailyLimitMinutes,
+                            reason = "Ya alcanzaste tu límite de ${limit.dailyLimitMinutes} minutos hoy"
                         )
                         return@withTimeoutOrNull
                     }

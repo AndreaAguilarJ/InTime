@@ -14,6 +14,7 @@ import com.momentummm.app.data.engine.RiskLevel
 import com.momentummm.app.data.entity.BlockType
 import com.momentummm.app.data.entity.ContextBlockRule
 import com.momentummm.app.data.entity.SmartBlockingConfig
+import com.momentummm.app.data.usage.DailyUsageCalculator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -96,6 +97,14 @@ class SmartBlockingManager @Inject constructor(
     
     private val blockedAppsPrefs: SharedPreferences = 
         context.getSharedPreferences("blocked_apps_today", Context.MODE_PRIVATE)
+
+    /**
+     * Clave nueva: guarda el INSTANTE en que empezó el día vigente en lugar del
+     * antiguo `blocked_day` (día del año). Al cambiar de clave, la primera
+     * ejecución tras actualizar no encuentra valor y limpia el estado, que es
+     * justo lo que interesa.
+     */
+    private val KEY_BLOCKED_DAY_START = "blocked_day_start_millis"
     
     private val _blockedAppsToday = MutableStateFlow<Map<String, Long>>(emptyMap())
     val blockedAppsToday: StateFlow<Map<String, Long>> = _blockedAppsToday.asStateFlow()
@@ -105,9 +114,11 @@ class SmartBlockingManager @Inject constructor(
     private val lastBlockScreenShownTime = java.util.concurrent.ConcurrentHashMap<String, Long>()
     private val BLOCK_SCREEN_COOLDOWN = 2000L // 2 segundos mínimo entre pantallas de bloqueo (reducido de 3s)
     
-    // Fecha del día actual para resetear al cambiar de día
+    // Inicio del "día" vigente, para resetear al cruzar el límite del día.
+    // Se usa la misma referencia que DailyUsageCalculator (hora de inicio de
+    // día configurable), no medianoche.
     @Volatile
-    private var currentBlockDay: Int = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+    private var currentBlockDayStart: Long = 0L
     
     init {
         // CRITICAL FIX: Cargar apps bloqueadas desde storage persistente al iniciar
@@ -129,12 +140,20 @@ class SmartBlockingManager @Inject constructor(
     /**
      * Carga las apps bloqueadas desde SharedPreferences.
      * Esto asegura que si el servicio se reinicia, no pierde el estado de bloqueo.
+     *
+     * BUG CORREGIDO: el "día" se identificaba con `Calendar.DAY_OF_YEAR`, es
+     * decir medianoche, mientras que el uso diario se calcula desde la hora de
+     * inicio de día configurable del usuario ([DailyUsageCalculator]). Con un
+     * inicio de día a las 4:00 las dos fechas discrepaban durante horas: el uso
+     * se reseteaba a las 4:00 pero las apps seguían marcadas como bloqueadas
+     * hasta medianoche, así que el usuario se quedaba sin acceso un día entero
+     * con el contador a cero.
      */
     private fun loadBlockedAppsFromDisk() {
         try {
-            val savedDay = blockedAppsPrefs.getInt("blocked_day", -1)
-            val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-            
+            val savedDay = blockedAppsPrefs.getLong(KEY_BLOCKED_DAY_START, -1L)
+            val today = currentDayStart()
+
             if (savedDay == today) {
                 // Cargar apps bloqueadas del día actual
                 val blockedSet = blockedAppsPrefs.getStringSet("blocked_packages", emptySet()) ?: emptySet()
@@ -160,11 +179,11 @@ class SmartBlockingManager @Inject constructor(
      */
     private fun saveBlockedAppsToDisk() {
         try {
-            val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+            val today = currentDayStart()
             val currentBlocked = _blockedAppsToday.value
             
             blockedAppsPrefs.edit().apply {
-                putInt("blocked_day", today)
+                putLong(KEY_BLOCKED_DAY_START, today)
                 putStringSet("blocked_packages", currentBlocked.keys.toSet())
                 for ((pkg, timestamp) in currentBlocked) {
                     putLong("blocked_time_$pkg", timestamp)
@@ -175,6 +194,23 @@ class SmartBlockingManager @Inject constructor(
             Log.e(TAG, "Error saving blocked apps to disk", e)
         }
     }
+
+    /**
+     * Instante en que empezó el "día" vigente, según la hora de inicio de día
+     * del usuario. Es la MISMA referencia que usa [DailyUsageCalculator] para
+     * sumar el uso, así que el reseteo del bloqueo y el del contador ocurren a
+     * la vez.
+     */
+    private fun currentDayStart(): Long =
+        runCatching { DailyUsageCalculator.dayStartMillis(context) }
+            .getOrElse {
+                Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            }
     
     /**
      * Limpia las apps bloqueadas del disco.
@@ -220,10 +256,15 @@ class SmartBlockingManager @Inject constructor(
             updateModeStates(currentConfig)
             
             // Verificar si cambió el día para resetear apps bloqueadas
-            val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-            if (today != currentBlockDay) {
+            val today = currentDayStart()
+            if (currentBlockDayStart == 0L) {
+                // Primera pasada: sólo se toma la referencia. El estado ya se
+                // cargó (y depuró) desde disco en el init.
+                currentBlockDayStart = today
+            } else if (today != currentBlockDayStart) {
                 resetBlockedAppsForNewDay()
-                currentBlockDay = today
+                currentBlockDayStart = today
+                DailyUsageCalculator.invalidate()
                 
                 // === NUEVO V2: Análisis diario de patrones ===
                 scope.launch {

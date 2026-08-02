@@ -54,6 +54,29 @@ class MomentumApplication : Application(), Configuration.Provider {
     
     @Inject
     lateinit var biometricPromptManager: BiometricPromptManager
+
+    /**
+     * ─── POR QUÉ ESTOS DOS SE INYECTAN ────────────────────────────────────
+     * BUG CORREGIDO: aquí se construían a mano con `by lazy`, mientras Hilt
+     * creaba sus propios singletons de las mismas clases (ambas están
+     * anotadas `@Singleton @Inject constructor`). Existían por tanto DOS
+     * GamificationManager y DOS SmartNotificationManager:
+     *
+     *  - Las pantallas que hacen `applicationContext as MomentumApplication`
+     *    usaban los de aquí.
+     *  - DashboardViewModel, BlockingViewModel y AppMonitoringService usaban
+     *    los de Hilt.
+     *
+     * Y `setNotificationManager(...)` sólo se llamaba sobre el par de aquí, así
+     * que todo el XP otorgado por la vía de Hilt no generaba ninguna
+     * notificación de subida de nivel. Inyectándolos hay una única instancia
+     * compartida y el cableado vale para toda la app.
+     */
+    @Inject
+    lateinit var gamificationManager: GamificationManager
+
+    @Inject
+    lateinit var smartNotificationManager: SmartNotificationManager
     
     // Database instance (keeping for migration)
     val database by lazy { AppDatabase.getDatabase(this) }
@@ -81,11 +104,7 @@ class MomentumApplication : Application(), Configuration.Provider {
     val themeManager by lazy { ThemeManager(this) }
     val billingManager by lazy { BillingManager(this) }
     val exportManager by lazy { ExportManager(this) }
-    val gamificationManager by lazy { 
-        GamificationManager(database.userDao(), this).also { manager ->
-            // Se configurará el NotificationManager después de que esté disponible
-        }
-    }
+    // gamificationManager: ver el campo @Inject de arriba.
     val backupSyncManager by lazy { 
         BackupSyncManager(
             this, 
@@ -110,17 +129,7 @@ class MomentumApplication : Application(), Configuration.Provider {
         )
     }
 
-    // Sistema de notificaciones inteligentes
-    val smartNotificationManager by lazy {
-        SmartNotificationManager(
-            this,
-            usageStatsRepository,
-            goalsRepository,
-            appLimitRepository,
-            quotesRepository,
-            userRepository
-        )
-    }
+    // smartNotificationManager: ver el campo @Inject de arriba.
 
     val autoSyncManager by lazy {
         AutoSyncManager(
@@ -145,9 +154,11 @@ class MomentumApplication : Application(), Configuration.Provider {
         )
     }
 
-    val motivationalNotificationManager by lazy {
-        MotivationalNotificationManager(this, motivationalMessagesRepository)
-    }
+    // NOTA: MotivationalNotificationManager NO se instancia aquí.
+    // Lo provee Hilt como @Singleton (AppModule.provideMotivationalNotificationManager)
+    // y así lo reciben el receptor de alarmas y el worker. La instancia manual
+    // que había aquí no la usaba nadie y duplicaba el canal de notificación y
+    // un CoroutineScope.
 
     private object PreferencesKeys {
         val QUOTES_SEEDED = booleanPreferencesKey("quotes_seeded")
