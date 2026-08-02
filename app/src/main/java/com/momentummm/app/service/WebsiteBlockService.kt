@@ -109,6 +109,10 @@ class WebsiteBlockService : AccessibilityService() {
                 kotlinx.coroutines.withTimeoutOrNull(2000L) {
                     val blockedInfo = websiteBlockRepository.getBlockedUrlInfo(url)
                     if (blockedInfo != null) {
+                        // BUG CORREGIDO: lastBlockedUrl nunca se asignaba, así
+                        // que la pantalla de bloqueo recibía siempre una cadena
+                        // vacía y el usuario no veía qué sitio se había bloqueado.
+                        lastBlockedUrl = url
                         kotlinx.coroutines.withContext(Dispatchers.Main) {
                             blockWebsite()
                         }
@@ -155,10 +159,26 @@ class WebsiteBlockService : AccessibilityService() {
     }
 
     private fun blockWebsite() {
-        // Cerrar la actividad del navegador actual
-        performGlobalAction(GLOBAL_ACTION_BACK)
-        performGlobalAction(GLOBAL_ACTION_HOME)
+        // CRITICAL FIX: Mejorar el mecanismo de bloqueo de websites
+        // Antes solo hacía BACK + HOME que era trivialmente bypaseable
+        
+        // 1. Primero intentar abrir la WebsiteBlockedActivity con explicación
+        try {
+            val intent = android.content.Intent(this, com.momentummm.app.ui.screen.websiteblock.WebsiteBlockedActivity::class.java).apply {
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or 
+                         android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra("blocked_url", lastBlockedUrl ?: "")
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            android.util.Log.e("WebsiteBlockService", "Error showing block activity, falling back to Home", e)
+            // 2. Fallback: Navegar al Home screen
+            performGlobalAction(GLOBAL_ACTION_HOME)
+        }
     }
+    
+    // Track de última URL bloqueada para mostrar en la pantalla
+    private var lastBlockedUrl: String? = null
 
     override fun onInterrupt() {
         // Service interrupted

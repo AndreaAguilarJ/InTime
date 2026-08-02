@@ -4,12 +4,14 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.app.usage.UsageStatsManager
+import android.app.usage.UsageEvents
 import android.content.Context
 import android.content.pm.PackageManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -25,6 +27,8 @@ import com.momentummm.app.data.manager.SmartNotificationManager
 import com.momentummm.app.data.engine.AdaptiveBlockingManager
 import com.momentummm.app.data.engine.BlockingEventType
 import com.momentummm.app.data.engine.UsagePatternEngine
+import com.momentummm.app.data.usage.DailyUsageCalculator
+import com.momentummm.app.data.usage.ForegroundAppTracker
 import com.momentummm.app.ui.AppBlockedActivity
 import com.momentummm.app.ui.overlay.AppBlockOverlayService
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,10 +64,11 @@ class AppMonitoringService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private var monitoringJob: Job? = null
 
-    private val MONITORING_INTERVAL = 5000L // 5 segundos - reducir frecuencia para evitar ANR
+    private val MONITORING_INTERVAL = 2000L // 2 segundos - balance entre detección rápida y batería
+    private val MONITORING_INTERVAL_AGGRESSIVE = 1000L // 1 segundo para apps ya bloqueadas
     private var lastCheckedApp: String = ""
     private var lastBlockedTime: Long = 0
-    private val BLOCK_COOLDOWN = 5000L // 5 segundos entre bloqueos de la misma app
+    private val BLOCK_COOLDOWN = 2000L // 2 segundos entre bloqueos de la misma app
 
     // Para tracking de notificaciones de advertencia
     private val warningNotifiedApps = mutableSetOf<String>()
@@ -111,6 +116,22 @@ class AppMonitoringService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY // Reiniciar si el servicio es terminado
+    }
+
+    /**
+     * Android 14+ (API 34) llama este método cuando un foreground service
+     * excede su tiempo límite. Con specialUse esto no debería pasar,
+     * pero lo manejamos por seguridad para evitar crashes.
+     */
+    override fun onTimeout(startId: Int) {
+        Log.w(TAG, "onTimeout called - service exceeded time limit, restarting...")
+        // Re-crear la notificación para mantener el servicio vivo
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            startForeground(NOTIFICATION_ID, createNotification())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error restarting foreground after timeout", e)
+        }
     }
 
     override fun onDestroy() {
@@ -183,7 +204,14 @@ class AppMonitoringService : Service() {
                     Log.e(TAG, "Error en checkCurrentApp", e)
                     e.printStackTrace()
                 }
-                delay(MONITORING_INTERVAL)
+                // Usar intervalo agresivo si hay apps bloqueadas activas
+                val currentApp = getCurrentForegroundApp()
+                val interval = if (currentApp.isNotEmpty() && smartBlockingManager.isAppBlockedToday(currentApp)) {
+                    MONITORING_INTERVAL_AGGRESSIVE // 1 segundo para apps bloqueadas
+                } else {
+                    MONITORING_INTERVAL // 2 segundos normal
+                }
+                delay(interval)
             }
         }
     }
@@ -285,15 +313,21 @@ class AppMonitoringService : Service() {
                         return@withTimeoutOrNull
                     }
                     
-                    // La app ya alcanzó su límite hoy - bloquear si podemos mostrar pantalla
+                    // CRITICAL FIX: La app ya alcanzó su límite hoy - bloquear SIEMPRE
+                    // Solo respetar el cooldown mínimo para evitar crash por múltiples activities
                     if (smartBlockingManager.canShowBlockScreen(currentApp)) {
                         val appLimit = withContext(Dispatchers.IO) {
                             appLimitRepository.getLimitByPackage(currentApp)
                         }
                         val dailyLimit = appLimit?.dailyLimitMinutes ?: 0
-                        Log.d(TAG, "App $currentApp está bloqueada hoy - mostrando pantalla de bloqueo")
+                        Log.d(TAG, "App $currentApp está bloqueada hoy - FORZANDO pantalla de bloqueo")
                         smartBlockingManager.registerBlockScreenShown(currentApp)
                         blockApp(currentApp, "Ya alcanzaste tu límite de $dailyLimit minutos hoy")
+                    } else {
+                        // Incluso si no podemos mostrar pantalla (cooldown),
+                        // volver a tapar la app para sacar al usuario de ella
+                        Log.d(TAG, "App $currentApp bloqueada - reforzando bloqueo (cooldown activo)")
+                        forceNavigateToHome(currentApp)
                     }
                     return@withTimeoutOrNull
                 }
@@ -392,7 +426,7 @@ class AppMonitoringService : Service() {
                         if (usagePercent in 60..90) {
                             serviceScope.launch(Dispatchers.IO) {
                                 try {
-                                    val intervention = smartBlockingManager.getSmartIntervention(currentApp)
+                                    val intervention = smartBlockingManager.getSmartIntervention(currentApp, usageMinutes)
                                     if (intervention != null) {
                                         Log.d(TAG, "💡 Intervención: ${intervention.type.name} - ${intervention.message}")
                                         // La intervención se muestra a través de notificaciones
@@ -522,52 +556,37 @@ class AppMonitoringService : Service() {
         }
     }
 
-    private fun getCurrentAppUsageStats(packageName: String): Long {
-        return try {
-            val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as? UsageStatsManager
-                ?: return 0L
-            val time = System.currentTimeMillis()
+    /**
+     * Uso en primer plano de la app durante el día actual, en milisegundos.
+     *
+     * BUG CORREGIDO: antes esta función hacía
+     *     queryUsageStats(INTERVAL_DAILY, ...).find { it.packageName == pkg }
+     * y `queryUsageStats` devuelve VARIOS buckets por paquete, así que `find`
+     * se quedaba con el primero y el uso quedaba gravemente subestimado
+     * (a menudo casi cero). Como consecuencia `uso >= límite` casi nunca era
+     * cierto y el bloqueo por límite de tiempo no se disparaba nunca.
+     *
+     * Ahora se delega en [DailyUsageCalculator], que suma los intervalos
+     * reales de primer plano a partir de queryEvents.
+     */
+    private fun getCurrentAppUsageStats(packageName: String): Long =
+        DailyUsageCalculator.foregroundMillisToday(this, packageName)
 
-            // Obtener estadísticas del día actual
-            val calendar = java.util.Calendar.getInstance()
-            calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-            calendar.set(java.util.Calendar.MINUTE, 0)
-            calendar.set(java.util.Calendar.SECOND, 0)
-            val startTime = calendar.timeInMillis
+    private fun getCurrentForegroundApp(): String = ForegroundAppTracker.current(this)
 
-            val usageStatsList = usageStatsManager.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY,
-                startTime,
-                time
-            )
-
-            usageStatsList?.find { it.packageName == packageName }?.totalTimeInForeground ?: 0L
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting usage stats for $packageName", e)
-            0L
-        }
-    }
-
-    private fun getCurrentForegroundApp(): String {
-        return try {
-            val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as? UsageStatsManager
-                ?: return ""
-            val time = System.currentTimeMillis()
-
-            // Obtener estadísticas de los últimos 2 segundos
-            val usageStatsList = usageStatsManager.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY,
-                time - 2000,
-                time
-            )
-
-            usageStatsList?.maxByOrNull { it.lastTimeUsed }?.packageName ?: ""
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting foreground app", e)
-            ""
-        }
-    }
-
+    /**
+     * Aplica el bloqueo de una app.
+     *
+     * BUG CORREGIDO: antes esta función llamaba directamente a
+     * `AppBlockedActivity.start(...)`, es decir `startActivity()` desde un
+     * Service. Desde Android 10 el sistema prohíbe lanzar actividades desde
+     * segundo plano y la llamada **fallaba en silencio**: se superaba el
+     * límite y no ocurría nada. Además `showAppBlockOverlay()` —la vía que sí
+     * funciona— existía en este archivo pero nunca se invocaba.
+     *
+     * Ahora se delega en [BlockEnforcer], que usa el overlay como vía
+     * principal y avisa al usuario si falta el permiso necesario.
+     */
     private suspend fun blockApp(blockedAppPackage: String, customReason: String? = null) {
         try {
             Log.d(TAG, "Bloqueando app: $blockedAppPackage ${customReason?.let { "- $it" } ?: ""}")
@@ -578,79 +597,15 @@ class AppMonitoringService : Service() {
             val appName = appLimit?.appName ?: getAppName(blockedAppPackage)
             val dailyLimit = appLimit?.dailyLimitMinutes ?: 0
 
-            // Abrir la pantalla de bloqueo
-            withContext(Dispatchers.Main) {
-                AppBlockedActivity.start(
-                    this@AppMonitoringService, 
-                    appName, 
-                    dailyLimit, 
-                    customReason,
-                    blockedPackage = blockedAppPackage
-                )
-            }
-
+            BlockEnforcer.enforce(
+                context = this,
+                packageName = blockedAppPackage,
+                appName = appName,
+                dailyLimitMinutes = dailyLimit,
+                reason = customReason
+            )
         } catch (e: Exception) {
             Log.e(TAG, "Error al bloquear app", e)
-            e.printStackTrace()
-        }
-    }
-
-    private fun openMomentumApp() {
-        try {
-            val intent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            }
-            if (intent != null) {
-                Log.d(TAG, "Abriendo Momentum App")
-                startActivity(intent)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error al abrir Momentum App", e)
-            e.printStackTrace()
-        }
-    }
-
-    private suspend fun showAppBlockOverlay(blockedAppPackage: String) {
-        try {
-            // Verificar permiso de overlay antes de intentar iniciar el servicio
-            if (!Settings.canDrawOverlays(this)) {
-                // Mostrar notificación con acción para abrir ajustes de overlay
-                val settingsIntent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-
-                val pending = PendingIntent.getActivity(
-                    this, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-
-                val nm = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
-                    ?: return
-                val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Permiso necesario: Mostrar sobre otras apps")
-                    .setContentText("Permite la superposición para bloquear la app cuando se exceda el límite")
-                    .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                    .setContentIntent(pending)
-                    .setAutoCancel(true)
-                    .build()
-
-                nm.notify(2001, notification)
-                return
-            }
-
-            val appLimit = withContext(Dispatchers.IO) {
-                appLimitRepository.getLimitByPackage(blockedAppPackage)
-            }
-            val appName = appLimit?.appName ?: getAppName(blockedAppPackage)
-
-            val intent = Intent(this, AppBlockOverlayService::class.java).apply {
-                putExtra("blocked_app_package", blockedAppPackage)
-                putExtra("blocked_app_name", appName)
-                putExtra("daily_limit", appLimit?.dailyLimitMinutes ?: 0)
-            }
-            startService(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
@@ -662,6 +617,27 @@ class AppMonitoringService : Service() {
         } catch (_: PackageManager.NameNotFoundException) {
             packageName
         }
+    }
+
+    /**
+     * Vuelve a tapar la app bloqueada cuando el usuario sigue dentro de ella.
+     *
+     * Antes se hacía `startActivity(HOME)` desde el servicio, sujeto a las
+     * mismas restricciones de lanzamiento en segundo plano que impedían el
+     * bloqueo. [BlockEnforcer] usa el overlay, que sí funciona.
+     */
+    private suspend fun forceNavigateToHome(blockedAppPackage: String) {
+        if (blockedAppPackage.isEmpty()) return
+        val appLimit = withContext(Dispatchers.IO) {
+            appLimitRepository.getLimitByPackage(blockedAppPackage)
+        }
+        BlockEnforcer.enforce(
+            context = this,
+            packageName = blockedAppPackage,
+            appName = appLimit?.appName ?: getAppName(blockedAppPackage),
+            dailyLimitMinutes = appLimit?.dailyLimitMinutes ?: 0,
+            reason = null
+        )
     }
 
     companion object {

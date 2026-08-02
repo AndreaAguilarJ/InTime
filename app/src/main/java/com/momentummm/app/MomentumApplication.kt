@@ -152,7 +152,6 @@ class MomentumApplication : Application(), Configuration.Provider {
     private object PreferencesKeys {
         val QUOTES_SEEDED = booleanPreferencesKey("quotes_seeded")
         val MOTIVATIONAL_MESSAGES_SEEDED = booleanPreferencesKey("motivational_messages_seeded")
-        val MOTIVATIONAL_NOTIFICATIONS_SCHEDULED = booleanPreferencesKey("motivational_notifications_scheduled")
     }
     
     // Scope con SupervisorJob para evitar que un error cancele todo
@@ -184,31 +183,35 @@ class MomentumApplication : Application(), Configuration.Provider {
     }
 
     /**
-     * Initialize motivational messages seed data and schedule notifications
+     * Initialize motivational messages seed data and (re)schedule notifications.
+     *
+     * BUG CORREGIDO: antes la programación estaba protegida por el flag
+     * `MOTIVATIONAL_NOTIFICATIONS_SCHEDULED`, que se guardaba tras el primer
+     * arranque. Si el trabajo programado se perdía —cancelado, datos
+     * borrados, cierre forzado en algunos fabricantes— nunca se volvía a
+     * programar y el usuario dejaba de recibir mensajes de forma permanente,
+     * sin manera de recuperarlo salvo reinstalar.
+     *
+     * Ahora se reprograma en **cada** arranque. Las alarmas son idempotentes
+     * (mismo request code, FLAG_UPDATE_CURRENT), así que repetir la llamada no
+     * duplica nada y sí repara cualquier cadena perdida.
      */
     private fun initializeMotivationalMessagesSystem() {
         applicationScope.launch(Dispatchers.IO) {
             try {
-                // Seed motivational messages if needed
+                // Seed motivational messages if needed (también crea la fila
+                // singleton de preferencias).
                 motivationalMessagesRepository.initializeSeedDataIfNeeded()
                 android.util.Log.d("MomentumApplication", "Motivational messages initialized")
-                
-                // Schedule periodic notifications if not already scheduled
-                val preferences = dataStore.data.first()
-                val notificationsScheduled = preferences[PreferencesKeys.MOTIVATIONAL_NOTIFICATIONS_SCHEDULED] ?: false
-                
-                if (!notificationsScheduled) {
-                    // Schedule periodic motivational notifications
-                    MotivationalNotificationWorker.schedulePeriodicNotifications(this@MomentumApplication)
-                    MotivationalNotificationWorker.scheduleMorningMessage(this@MomentumApplication, 8, 0)
-                    MotivationalNotificationWorker.scheduleEveningMessage(this@MomentumApplication, 21, 0)
-                    
-                    // Mark as scheduled
-                    dataStore.edit { prefs ->
-                        prefs[PreferencesKeys.MOTIVATIONAL_NOTIFICATIONS_SCHEDULED] = true
-                    }
-                    android.util.Log.d("MomentumApplication", "Motivational notifications scheduled")
-                }
+
+                // Reprogramar siempre, con las preferencias reales del usuario.
+                motivationalMessagesRepository.applyScheduleChanges()
+
+                // Red de seguridad: un trabajo periódico revisa que las
+                // alarmas sigan en pie aunque el usuario no abra la app.
+                MotivationalNotificationWorker.scheduleWatchdog(this@MomentumApplication)
+
+                android.util.Log.d("MomentumApplication", "Motivational notifications scheduled")
             } catch (e: Exception) {
                 android.util.Log.e("MomentumApplication", "Error initializing motivational messages: ${e.message}")
             }

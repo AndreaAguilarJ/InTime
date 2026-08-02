@@ -67,6 +67,10 @@ class AppBlockedActivity : ComponentActivity() {
         val dailyLimit = intent.getIntExtra(EXTRA_DAILY_LIMIT, 0)
         val currentStreakDays = intent.getIntExtra(EXTRA_STREAK_DAYS, 0)
         blockedPackageName = intent.getStringExtra(EXTRA_BLOCKED_PACKAGE) ?: ""
+        // BUG CORREGIDO: el motivo se enviaba en el intent pero nunca se leía,
+        // así que un bloqueo por modo nuclear, horario o categoría se anunciaba
+        // igual que un límite diario agotado.
+        val customReason = intent.getStringExtra(EXTRA_CUSTOM_REASON)
 
         setContent {
             MomentumTheme {
@@ -109,6 +113,7 @@ class AppBlockedActivity : ComponentActivity() {
                         blockedAppName = blockedAppName,
                         dailyLimit = dailyLimit,
                         currentStreakDays = currentStreakDays,
+                        customReason = customReason,
                         onOpenMomentum = {
                             // Abrir la MainActivity
                             val launchIntent = Intent(this, MainActivity::class.java).apply {
@@ -121,6 +126,13 @@ class AppBlockedActivity : ComponentActivity() {
                             showEmergencyUnlock = true
                         },
                         onDismiss = {
+                            // CRITICAL FIX: Navegar al Home screen en vez de volver a la app bloqueada
+                            // Antes solo llamaba finish() que devolvía al usuario a Instagram/etc.
+                            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                                addCategory(Intent.CATEGORY_HOME)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                            }
+                            startActivity(homeIntent)
                             finish()
                         }
                     )
@@ -155,11 +167,13 @@ class AppBlockedActivity : ComponentActivity() {
     private fun setupBackPressedHandler() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // Prevenir que el usuario vuelva a la app bloqueada
-                val launchIntent = Intent(this@AppBlockedActivity, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                // CRITICAL FIX: Prevenir que el usuario vuelva a la app bloqueada
+                // Navegar al Home screen en vez de a la activity anterior (que es la app bloqueada)
+                val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_HOME)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 }
-                startActivity(launchIntent)
+                startActivity(homeIntent)
                 finish()
             }
         })
@@ -193,6 +207,7 @@ private fun AppBlockedScreen(
     blockedAppName: String,
     dailyLimit: Int,
     currentStreakDays: Int = 0,
+    customReason: String? = null,
     onOpenMomentum: () -> Unit,
     onEmergencyUnlock: () -> Unit,
     onDismiss: () -> Unit
@@ -335,7 +350,8 @@ private fun AppBlockedScreen(
                     )
 
                     Text(
-                        text = stringResource(R.string.app_blocked_daily_limit_subtitle),
+                        text = customReason
+                            ?: stringResource(R.string.app_blocked_daily_limit_subtitle),
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center

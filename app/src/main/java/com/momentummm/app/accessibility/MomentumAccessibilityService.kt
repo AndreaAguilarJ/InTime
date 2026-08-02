@@ -11,7 +11,13 @@ import com.momentummm.app.data.engine.AdvancedDetectionEngine.DetectionResult
 import com.momentummm.app.data.engine.AdaptiveBlockingManager
 import com.momentummm.app.data.engine.BlockingEventType
 import com.momentummm.app.data.engine.GradualAction
+import com.momentummm.app.data.manager.SmartBlockingManager
+import com.momentummm.app.data.repository.AppLimitRepository
+import com.momentummm.app.data.repository.AppWhitelistRepository
 import com.momentummm.app.data.repository.InAppBlockRepository
+import com.momentummm.app.data.usage.DailyUsageCalculator
+import com.momentummm.app.data.usage.ForegroundAppTracker
+import com.momentummm.app.service.BlockEnforcer
 import com.momentummm.app.ui.InAppBlockedActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -48,6 +54,11 @@ class MomentumAccessibilityService : AccessibilityService() {
     @Inject lateinit var detectionEngine: AdvancedDetectionEngine
     @Inject lateinit var adaptiveBlockingManager: AdaptiveBlockingManager
 
+    // Necesarios para el bloqueo por límite de tiempo (ver checkTimeLimitBlock)
+    @Inject lateinit var appLimitRepository: AppLimitRepository
+    @Inject lateinit var appWhitelistRepository: AppWhitelistRepository
+    @Inject lateinit var smartBlockingManager: SmartBlockingManager
+
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.e(TAG, "Coroutine exception in MomentumAccessibilityService", throwable)
     }
@@ -74,6 +85,12 @@ class MomentumAccessibilityService : AccessibilityService() {
     private var lastDetectionPackage = ""
     private var lastDetectionTime = 0L
 
+    // === Throttle de la comprobación de límite de tiempo por paquete ===
+    // Evita consultar Room/UsageStats en cada evento de cambio de ventana,
+    // que llegan en ráfagas al navegar dentro de una app.
+    private val lastLimitCheckTime = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private val LIMIT_CHECK_THROTTLE = 1_000L
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         Log.i(TAG, "🛡️ MomentumAccessibilityService V2 conectado - Motor de detección multi-señal activo")
@@ -85,6 +102,13 @@ class MomentumAccessibilityService : AccessibilityService() {
 
             when (event.eventType) {
                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                    // La app en primer plano cambió: es el momento exacto para
+                    // decidir si hay que bloquearla por límite de tiempo.
+                    val pkg = event.packageName?.toString()
+                    if (!pkg.isNullOrEmpty() && pkg != packageName) {
+                        ForegroundAppTracker.reportFromAccessibility(pkg)
+                        checkTimeLimitBlock(pkg)
+                    }
                     // Cambio de ventana: alta prioridad, siempre procesar
                     processAccessibilityEvent(event, highPriority = true)
                 }
@@ -199,6 +223,139 @@ class MomentumAccessibilityService : AccessibilityService() {
                 Log.e(TAG, "Error procesando evento de accesibilidad", e)
             }
         }
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     * BLOQUEO POR LÍMITE DE TIEMPO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Este servicio sólo hacía bloqueo de *funciones* dentro de apps (reels,
+     * shorts, explore…). El bloqueo por límite de tiempo dependía por completo
+     * de que [com.momentummm.app.service.AppMonitoringService] lanzara una
+     * Activity desde segundo plano, algo que Android prohíbe desde la API 29,
+     * así que en la práctica no se bloqueaba nada.
+     *
+     * Un AccessibilityService está **exento** de esas restricciones y recibe el
+     * cambio de app al instante, así que es el mejor sitio para reaccionar:
+     * en cuanto el usuario abre una app cuyo límite ya se agotó, se tapa.
+     *
+     * El servicio de monitoreo sigue existiendo como red de seguridad
+     * periódica (avisos al 80 %, patrones de uso, modos especiales).
+     */
+    private fun checkTimeLimitBlock(packageName: String) {
+        val now = System.currentTimeMillis()
+        val lastCheck = lastLimitCheckTime[packageName] ?: 0L
+        if (now - lastCheck < LIMIT_CHECK_THROTTLE) return
+        lastLimitCheckTime[packageName] = now
+
+        if (!::appLimitRepository.isInitialized ||
+            !::appWhitelistRepository.isInitialized ||
+            !::smartBlockingManager.isInitialized
+        ) {
+            return
+        }
+
+        serviceScope.launch {
+            try {
+                withTimeoutOrNull(2_000L) {
+                    // Las apps de emergencia nunca se bloquean.
+                    val whitelisted = withContext(Dispatchers.IO) {
+                        appWhitelistRepository.isAppWhitelisted(packageName)
+                    }
+                    if (whitelisted) return@withTimeoutOrNull
+
+                    // Desbloqueo temporal concedido (pago, compartir, día de gracia).
+                    val temporarilyUnlocked = withContext(Dispatchers.IO) {
+                        com.momentummm.app.data.UserPreferencesRepository
+                            .isAppTemporarilyUnlocked(this@MomentumAccessibilityService, packageName)
+                    }
+                    if (temporarilyUnlocked) return@withTimeoutOrNull
+
+                    val limit = withContext(Dispatchers.IO) {
+                        appLimitRepository.getLimitByPackage(packageName)
+                    }
+
+                    // Caso 1: la app ya agotó su límite hoy.
+                    if (smartBlockingManager.isAppBlockedToday(packageName)) {
+                        enforceLimitBlock(
+                            packageName = packageName,
+                            appName = limit?.appName ?: getAppNameFromPackage(packageName),
+                            limitMinutes = limit?.dailyLimitMinutes ?: 0,
+                            reason = limit?.dailyLimitMinutes?.let {
+                                "Ya alcanzaste tu límite de $it minutos hoy"
+                            }
+                        )
+                        return@withTimeoutOrNull
+                    }
+
+                    if (limit == null || !limit.isEnabled) return@withTimeoutOrNull
+
+                    // Caso 2: bloqueo por franja horaria.
+                    if (limit.isWithinScheduleBlock()) {
+                        enforceLimitBlock(
+                            packageName = packageName,
+                            appName = limit.appName,
+                            limitMinutes = limit.dailyLimitMinutes,
+                            reason = "Bloqueada por horario: ${limit.getScheduleFormatted()}"
+                        )
+                        return@withTimeoutOrNull
+                    }
+
+                    // Caso 3: el uso de hoy alcanzó el límite efectivo.
+                    // queryEvents es una llamada IPC bloqueante, así que va en
+                    // Dispatchers.IO: serviceScope usa Dispatchers.Default, un
+                    // pool limitado por número de núcleos que se saturaría con
+                    // varias apps disparando comprobaciones a la vez.
+                    val usedMinutes = withContext(Dispatchers.IO) {
+                        DailyUsageCalculator.foregroundMinutesToday(
+                            this@MomentumAccessibilityService,
+                            packageName
+                        )
+                    }
+                    val effectiveLimit = smartBlockingManager.getEffectiveDailyLimit(
+                        packageName,
+                        limit.dailyLimitMinutes
+                    )
+
+                    if (effectiveLimit > 0 && usedMinutes >= effectiveLimit) {
+                        Log.d(TAG, "⛔ $packageName alcanzó su límite ($usedMinutes/${effectiveLimit}m)")
+                        smartBlockingManager.markAppAsBlocked(packageName)
+                        withContext(Dispatchers.IO) {
+                            appLimitRepository.markAsExceeded(packageName)
+                        }
+                        enforceLimitBlock(
+                            packageName = packageName,
+                            appName = limit.appName,
+                            limitMinutes = effectiveLimit,
+                            reason = "Ya alcanzaste tu límite de $effectiveLimit minutos hoy"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error comprobando límite de tiempo para $packageName", e)
+            }
+        }
+    }
+
+    private fun enforceLimitBlock(
+        packageName: String,
+        appName: String,
+        limitMinutes: Int,
+        reason: String?
+    ) {
+        if (!smartBlockingManager.canShowBlockScreen(packageName)) return
+        smartBlockingManager.registerBlockScreenShown(packageName)
+
+        BlockEnforcer.enforce(
+            context = this,
+            packageName = packageName,
+            appName = appName,
+            dailyLimitMinutes = limitMinutes,
+            reason = reason,
+            accessibility = this,
+            force = true
+        )
     }
 
     /**

@@ -16,6 +16,12 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- ContextBlockingService declara foregroundServiceType="location".
+         Desde Android 14 (API 34) llamar a startForeground() con ese tipo sin
+         este permiso lanza SecurityException y tumba el proceso. BootReceiver
+         arranca ese servicio tras cada reinicio si hay reglas de contexto, así
+         que faltaba un crash al arrancar el teléfono. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Minimal phone functionality permissions -->
@@ -33,6 +39,14 @@
     <!-- Notification permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Alarmas exactas para los mensajes motivacionales.
+         WorkManager es "best effort" y con Doze puede retrasarse horas, por lo
+         que los mensajes programados a una hora concreta usan AlarmManager.
+         SCHEDULE_EXACT_ALARM se concede automáticamente en API 33+ y puede
+         revocarse; el scheduler comprueba canScheduleExactAlarms() y cae a
+         alarmas inexactas si no está disponible. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     
     <!-- Billing permission -->
     <uses-permission android:name="com.android.vending.BILLING" />
@@ -242,28 +256,55 @@
             </intent-filter>
         </receiver>
 
+        <!-- Alarmas exactas de los mensajes motivacionales.
+             Sustituye a los OneTimeWorkRequest que se reprogramaban a sí mismos
+             y cuya cadena se rompía de forma permanente. -->
+        <receiver
+            android:name=".receiver.MotivationalAlarmReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.momentummm.app.action.MOTIVATIONAL_ALARM" />
+            </intent-filter>
+        </receiver>
+
         <!-- WorkManager Worker for periodic updates -->
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="shortService"
+            android:foregroundServiceType="specialUse"
             tools:node="merge" />
 
         <!-- App Monitoring Service for blocking distracting apps -->
         <service
             android:name=".service.AppMonitoringService"
             android:exported="false"
-            android:foregroundServiceType="shortService" />
+            android:foregroundServiceType="specialUse">
+            <property 
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="app_usage_monitoring_and_blocking" />
+        </service>
 
         <!-- Focus Timer Service for Pomodoro sessions -->
         <service
             android:name=".service.FocusTimerService"
             android:exported="false"
-            android:foregroundServiceType="shortService" />
+            android:foregroundServiceType="specialUse">
+            <property 
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="focus_timer_countdown" />
+        </service>
 
         <!-- App Block Overlay Service -->
+        <!-- Es foreground service: se arranca con startForegroundService desde
+             BlockEnforcer y debe sobrevivir mientras la app bloqueada siga abierta. -->
         <service
             android:name=".ui.overlay.AppBlockOverlayService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="app_blocking_overlay" />
+        </service>
 
         <!-- Floating Timer Overlay Service -->
         <service
@@ -279,7 +320,11 @@
         <service
             android:name=".service.NuclearModeService"
             android:exported="false"
-            android:foregroundServiceType="shortService" />
+            android:foregroundServiceType="specialUse">
+            <property 
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="nuclear_mode_app_blocking" />
+        </service>
 
         <!-- Context Blocking Location Service -->
         <service

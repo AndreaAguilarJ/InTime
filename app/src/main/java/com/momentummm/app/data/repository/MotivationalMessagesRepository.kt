@@ -13,6 +13,7 @@ import com.momentummm.app.data.entity.MessageTone
 import com.momentummm.app.data.entity.MotivationalMessage
 import com.momentummm.app.data.entity.MotivationalPreferences
 import com.momentummm.app.data.entity.ReactionType
+import com.momentummm.app.notification.MotivationalAlarmScheduler
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -450,7 +451,8 @@ class MotivationalMessagesRepository @Inject constructor(
      */
     suspend fun setEnabled(enabled: Boolean) {
         withContext(Dispatchers.IO) {
-            preferencesDao.setEnabled(enabled)
+            preferencesDao.setEnabledSafe(enabled)
+            applyScheduleChanges()
         }
     }
 
@@ -460,7 +462,8 @@ class MotivationalMessagesRepository @Inject constructor(
     suspend fun setDailyFrequency(frequency: Int) {
         withContext(Dispatchers.IO) {
             val clampedFrequency = frequency.coerceIn(1, 10)
-            preferencesDao.setDailyFrequency(clampedFrequency)
+            preferencesDao.setDailyFrequencySafe(clampedFrequency)
+            applyScheduleChanges()
         }
     }
 
@@ -469,7 +472,8 @@ class MotivationalMessagesRepository @Inject constructor(
      */
     suspend fun setTimeRange(startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
         withContext(Dispatchers.IO) {
-            preferencesDao.setTimeRange(startHour, startMinute, endHour, endMinute)
+            preferencesDao.setTimeRangeSafe(startHour, startMinute, endHour, endMinute)
+            applyScheduleChanges()
         }
     }
 
@@ -479,7 +483,7 @@ class MotivationalMessagesRepository @Inject constructor(
     suspend fun setEnabledCategories(categories: List<MessageCategory>) {
         withContext(Dispatchers.IO) {
             val categoriesString = categories.joinToString(",") { it.name }
-            preferencesDao.setEnabledCategories(categoriesString)
+            preferencesDao.setEnabledCategoriesSafe(categoriesString)
         }
     }
 
@@ -489,7 +493,7 @@ class MotivationalMessagesRepository @Inject constructor(
     suspend fun setEnabledTones(tones: List<MessageTone>) {
         withContext(Dispatchers.IO) {
             val tonesString = tones.joinToString(",") { it.name }
-            preferencesDao.setEnabledTones(tonesString)
+            preferencesDao.setEnabledTonesSafe(tonesString)
         }
     }
 
@@ -534,7 +538,29 @@ class MotivationalMessagesRepository @Inject constructor(
      */
     suspend fun updatePreferences(preferences: MotivationalPreferences) {
         withContext(Dispatchers.IO) {
-            preferencesDao.updatePreferences(preferences.copy(updatedAt = Date()))
+            // upsert en lugar de UPDATE: funciona aunque la fila no exista aún.
+            preferencesDao.upsertPreferences(preferences.copy(updatedAt = Date()))
+            applyScheduleChanges()
+        }
+    }
+
+    /**
+     * Reprograma las alarmas de mensajes motivacionales con las preferencias
+     * ya guardadas.
+     *
+     * BUG CORREGIDO: antes, cambiar la frecuencia o el rango horario sólo
+     * escribía en la base de datos. La programación seguía usando los valores
+     * antiguos (de hecho, valores fijos en el código), así que los ajustes de
+     * la pantalla de configuración no tenían ningún efecto observable.
+     */
+    suspend fun applyScheduleChanges() {
+        withContext(Dispatchers.IO) {
+            try {
+                val preferences = preferencesDao.getPreferencesSync() ?: MotivationalPreferences()
+                MotivationalAlarmScheduler.scheduleAll(context, preferences)
+            } catch (e: Exception) {
+                Log.e(TAG, "No se pudieron reprogramar las alarmas motivacionales", e)
+            }
         }
     }
 

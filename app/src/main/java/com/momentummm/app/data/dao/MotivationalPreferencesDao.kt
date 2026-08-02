@@ -37,6 +37,55 @@ interface MotivationalPreferencesDao {
     }
 
     // ============== SPECIFIC UPDATE OPERATIONS ==============
+    //
+    // BUG CORREGIDO: todos los setters de abajo son sentencias UPDATE sobre la
+    // fila singleton `id = 1`. Si esa fila no existía todavía —por ejemplo
+    // porque el seed inicial falló— el UPDATE afectaba a 0 filas y el ajuste
+    // del usuario se perdía **en silencio**: cambiaba la frecuencia o el
+    // horario en la interfaz y no ocurría nada.
+    //
+    // Los envoltorios `@Transaction` de esta sección garantizan que la fila
+    // exista antes de escribir. Llama siempre a estas versiones (las usa
+    // MotivationalMessagesRepository) en lugar de a los UPDATE crudos.
+
+    @Transaction
+    suspend fun setEnabledSafe(enabled: Boolean) {
+        ensurePreferencesExist()
+        setEnabled(enabled)
+    }
+
+    @Transaction
+    suspend fun setDailyFrequencySafe(frequency: Int) {
+        ensurePreferencesExist()
+        setDailyFrequency(frequency)
+    }
+
+    @Transaction
+    suspend fun setTimeRangeSafe(startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
+        ensurePreferencesExist()
+        setTimeRange(startHour, startMinute, endHour, endMinute)
+    }
+
+    @Transaction
+    suspend fun setEnabledCategoriesSafe(categories: String) {
+        ensurePreferencesExist()
+        setEnabledCategories(categories)
+    }
+
+    @Transaction
+    suspend fun setEnabledTonesSafe(tones: String) {
+        ensurePreferencesExist()
+        setEnabledTones(tones)
+    }
+
+    /**
+     * Guarda el objeto completo. Usa INSERT-OR-REPLACE en lugar de UPDATE para
+     * que funcione también cuando la fila todavía no existe.
+     */
+    @Transaction
+    suspend fun upsertPreferences(preferences: MotivationalPreferences) {
+        insertPreferences(preferences.copy(id = 1))
+    }
 
     @Query("UPDATE motivational_preferences SET enabled = :enabled, updated_at = :updatedAt WHERE id = 1")
     suspend fun setEnabled(enabled: Boolean, updatedAt: Date = Date())

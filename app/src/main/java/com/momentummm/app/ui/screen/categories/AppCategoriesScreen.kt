@@ -164,50 +164,55 @@ fun AppCategoriesScreen(
         )
     }
 
-    if (showEditCategoryDialog && selectedCategory != null) {
-        EditCategoryDialog(
-            category = selectedCategory!!,
-            onDismiss = { 
-                showEditCategoryDialog = false
-                selectedCategory = null
-            },
-            onSave = { updatedCategory ->
-                viewModel.updateCategory(updatedCategory)
-                showEditCategoryDialog = false
-                selectedCategory = null
-            },
-            onUpdateSchedule = { hasSchedule, startHour, startMinute, endHour, endMinute, days ->
-                viewModel.updateCategorySchedule(
-                    categoryId = selectedCategory!!.id,
-                    hasSchedule = hasSchedule,
-                    startHour = startHour,
-                    startMinute = startMinute,
-                    endHour = endHour,
-                    endMinute = endMinute,
-                    daysOfWeek = days
-                )
-            }
-        )
-    }
-
-    if (showAddAppsDialog && selectedCategory != null) {
-        AddAppsToCategoryDialog(
-            category = selectedCategory!!,
-            availableApps = uiState.availableApps.filter { app ->
-                !selectedCategory!!.containsApp(app.packageName)
-            },
-            onDismiss = { 
-                showAddAppsDialog = false
-                selectedCategory = null
-            },
-            onAddApps = { packageNames ->
-                packageNames.forEach { packageName ->
-                    viewModel.addAppToCategory(selectedCategory!!.id, packageName)
+    // Se captura la categoría en un `val` local en lugar de usar `!!` sobre el
+    // estado: una recomposición que ponga selectedCategory a null entre la
+    // comprobación y el uso provocaría NullPointerException.
+    selectedCategory?.let { category ->
+        if (showEditCategoryDialog) {
+            EditCategoryDialog(
+                category = category,
+                onDismiss = {
+                    showEditCategoryDialog = false
+                    selectedCategory = null
+                },
+                onSave = { updatedCategory ->
+                    viewModel.updateCategory(updatedCategory)
+                    showEditCategoryDialog = false
+                    selectedCategory = null
+                },
+                onUpdateSchedule = { hasSchedule, startHour, startMinute, endHour, endMinute, days ->
+                    viewModel.updateCategorySchedule(
+                        categoryId = category.id,
+                        hasSchedule = hasSchedule,
+                        startHour = startHour,
+                        startMinute = startMinute,
+                        endHour = endHour,
+                        endMinute = endMinute,
+                        daysOfWeek = days
+                    )
                 }
-                showAddAppsDialog = false
-                selectedCategory = null
-            }
-        )
+            )
+        }
+
+        if (showAddAppsDialog) {
+            AddAppsToCategoryDialog(
+                category = category,
+                availableApps = uiState.availableApps.filter { app ->
+                    !category.containsApp(app.packageName)
+                },
+                onDismiss = {
+                    showAddAppsDialog = false
+                    selectedCategory = null
+                },
+                onAddApps = { packageNames ->
+                    packageNames.forEach { packageName ->
+                        viewModel.addAppToCategory(category.id, packageName)
+                    }
+                    showAddAppsDialog = false
+                    selectedCategory = null
+                }
+            )
+        }
     }
 }
 

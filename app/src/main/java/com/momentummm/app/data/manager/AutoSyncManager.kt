@@ -206,10 +206,14 @@ class AutoSyncManager(
 
                 // Primero intentar actualizar documento existente
                 val existingDocs = try {
+                    // CRITICAL FIX: Filtrar por userId para no obtener documentos de OTROS usuarios
+                    // Antes usaba queries = listOf() que traía TODO (vulnerabilidad de seguridad)
                     appwriteService.databases.listDocuments(
                         databaseId = appwriteService.databaseId,
                         collectionId = collectionId,
-                        queries = listOf()
+                        queries = listOf(
+                            io.appwrite.Query.equal("userId", userId)
+                        )
                     )
                 } catch (e: Exception) {
                     println("AutoSyncManager: Error al listar documentos - ${e.message}")
@@ -313,10 +317,16 @@ class AutoSyncManager(
             val userId = appwriteService.currentUser.value?.id ?: return
 
             // Obtener datos del servidor
+            // BUG CORREGIDO: aquí se pasaba la cadena cruda
+            // "equal(\"userId\", \"...\")" en lugar de una consulta del SDK.
+            // Appwrite la rechazaba, así que la sincronización DESDE el servidor
+            // nunca devolvía nada y un usuario que reinstalaba o cambiaba de
+            // móvil no recuperaba sus datos. syncToAppwrite() ya usaba la forma
+            // correcta (Query.equal), de ahí la asimetría.
             val docs = appwriteService.databases.listDocuments(
                 databaseId = appwriteService.databaseId,
                 collectionId = "user_settings",
-                queries = listOf("equal(\"userId\", \"$userId\")")
+                queries = listOf(io.appwrite.Query.equal("userId", userId))
             )
 
             if (docs.documents.isEmpty()) {
@@ -330,9 +340,21 @@ class AutoSyncManager(
             }
 
             // Restaurar configuración del usuario
-            val birthDate = (serverData["birthDate"] as? Number)?.toLong()
-            if (birthDate != null && birthDate > 0) {
-                userRepository.setBirthDate(Date(birthDate))
+            // CRITICAL FIX: Birth date se guarda como String ISO 8601 pero se leía como Long
+            // Ahora soporta ambos formatos para retrocompatibilidad
+            val birthDateRaw = serverData["birthDate"]
+            val birthDate: java.util.Date? = when (birthDateRaw) {
+                is Number -> java.util.Date(birthDateRaw.toLong()) // Formato legacy (timestamp)
+                is String -> try {
+                    // Formato ISO 8601 (el que realmente se guarda)
+                    val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+                    dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                    dateFormat.parse(birthDateRaw)
+                } catch (e: Exception) { null }
+                else -> null
+            }
+            if (birthDate != null) {
+                userRepository.setBirthDate(birthDate)
             }
 
             // Restaurar colores
@@ -362,9 +384,14 @@ class AutoSyncManager(
     }
 
     private fun shouldSyncFromServer(): Boolean {
-        // Sincronizar si han pasado más de 5 minutos
-        // Por ahora siempre retornamos false para evitar sobrescribir datos locales
-        return false
+        // CRITICAL FIX: Habilitado sincronización desde servidor
+        // Antes siempre retornaba false, haciendo que dispositivos nuevos NUNCA
+        // descargaran datos del servidor (feature completamente rota)
+        // Sincronizar si han pasado más de 30 minutos desde la última sync
+        val prefs = context.getSharedPreferences("auto_sync", Context.MODE_PRIVATE)
+        val lastFromServer = prefs.getLong("last_sync_from_server", 0L)
+        val thirtyMinutes = 30 * 60 * 1000L
+        return System.currentTimeMillis() - lastFromServer > thirtyMinutes
     }
 
     private fun loadLastSyncTime() {

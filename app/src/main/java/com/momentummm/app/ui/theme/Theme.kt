@@ -109,7 +109,11 @@ fun MomentumTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
+            // El contexto no siempre es una Activity: este tema también se usa
+            // en overlays dibujados desde un Service (AppBlockOverlayService),
+            // donde el cast directo lanzaba ClassCastException y tumbaba el
+            // proceso justo al mostrar la pantalla de bloqueo.
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
             window.statusBarColor = colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }

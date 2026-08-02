@@ -137,10 +137,14 @@ class MotivationalMessagesViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
+                // setEnabled ya reprograma (o cancela) todas las alarmas.
+                //
+                // BUG CORREGIDO: antes, al reactivar el interruptor sólo se
+                // llamaba a schedulePeriodicNotifications(); los mensajes de
+                // mañana y noche se habían cancelado con el resto y no se
+                // volvían a programar nunca.
                 repository.setEnabled(enabled)
                 _uiState.update { it.copy(isSaving = false, preferences = it.preferences.copy(enabled = enabled)) }
-                if (enabled) MotivationalNotificationWorker.schedulePeriodicNotifications(context)
-                else MotivationalNotificationWorker.cancelAllNotifications(context)
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSaving = false, error = "Error: ${e.message}") }
             }
@@ -150,14 +154,17 @@ class MotivationalMessagesViewModel @Inject constructor(
     fun updateDailyFrequency(frequency: Int) {
         viewModelScope.launch {
             val f = frequency.coerceIn(1, 10)
+            // setDailyFrequency reprograma las franjas con la nueva frecuencia.
             repository.setDailyFrequency(f)
             _uiState.update { it.copy(preferences = it.preferences.copy(dailyFrequency = f)) }
-            if (_uiState.value.preferences.enabled) MotivationalNotificationWorker.schedulePeriodicNotifications(context)
         }
     }
     
     fun updateTimeRange(startHour: Int, endHour: Int) {
         viewModelScope.launch {
+            // BUG CORREGIDO: este cambio se guardaba pero no se reprogramaba
+            // nada, así que el rango horario elegido no tenía ningún efecto.
+            // setTimeRange ahora reprograma las alarmas.
             repository.setTimeRange(startHour, 0, endHour, 0)
             _uiState.update { it.copy(preferences = it.preferences.copy(startHour = startHour, endHour = endHour)) }
         }
