@@ -370,6 +370,75 @@ class GamificationManager @Inject constructor(
     }
     
     /**
+     * Restaura el progreso de gamificación desde la nube.
+     *
+     * BUG CORREGIDO: el botón "Restaurar desde la nube" de los ajustes hacía
+     * exactamente esto:
+     *
+     *     isSyncing = true
+     *     // TODO: Implementar restauración desde Appwrite
+     *     delay(2000)
+     *     isSyncing = false
+     *
+     * Es decir: mostraba un indicador de progreso durante dos segundos y lo
+     * quitaba, imitando una restauración correcta. El usuario veía la animación
+     * de éxito y su progreso seguía exactamente igual. Peor que no hacer nada,
+     * porque parecía haber funcionado.
+     *
+     * @return true si se restauró algo.
+     */
+    suspend fun restoreFromCloud(
+        appwriteUserRepository: com.momentummm.app.data.appwrite.repository.AppwriteUserRepository,
+        userId: String?
+    ): RestoreResult {
+        if (userId.isNullOrBlank()) {
+            return RestoreResult.NotLoggedIn
+        }
+
+        val result = appwriteUserRepository.getGamificationData(userId)
+        val cloud = result.getOrElse {
+            android.util.Log.e("GamificationManager", "Error restaurando gamificación", it)
+            return RestoreResult.Error(it.message)
+        } ?: return RestoreResult.NothingStored
+
+        val current = userDao.getUserSettingsSync()
+            ?: return RestoreResult.Error("No hay ajustes locales que actualizar")
+
+        val lastActive = cloud.lastActiveDate?.let { iso ->
+            runCatching {
+                java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.getDefault())
+                    .parse(iso)
+            }.getOrNull()
+        } ?: current.lastActiveDate
+
+        userDao.updateUserSettings(
+            current.copy(
+                userLevel = cloud.userLevel,
+                currentXp = cloud.currentXp,
+                totalXp = cloud.totalXp,
+                timeCoins = cloud.timeCoins,
+                currentStreak = cloud.currentStreak,
+                longestStreak = cloud.longestStreak,
+                lastActiveDate = lastActive,
+                totalFocusMinutes = cloud.totalFocusMinutes,
+                totalSessionsCompleted = cloud.totalSessionsCompleted,
+                perfectDaysCount = cloud.perfectDaysCount,
+                gamificationEnabled = cloud.gamificationEnabled,
+                showXpNotifications = cloud.showXpNotifications,
+                showStreakReminders = cloud.showStreakReminders
+            )
+        )
+        return RestoreResult.Restored(cloud.userLevel, cloud.totalXp)
+    }
+
+    sealed interface RestoreResult {
+        data class Restored(val level: Int, val totalXp: Int) : RestoreResult
+        data object NothingStored : RestoreResult
+        data object NotLoggedIn : RestoreResult
+        data class Error(val message: String?) : RestoreResult
+    }
+
+    /**
      * Sincroniza los datos de gamificación a la nube.
      *
      * BUG CORREGIDO: el id de usuario estaba fijado a cadena vacía con un

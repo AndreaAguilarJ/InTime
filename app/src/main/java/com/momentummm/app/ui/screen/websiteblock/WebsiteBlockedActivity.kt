@@ -1,7 +1,9 @@
 package com.momentummm.app.ui.screen.websiteblock
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -17,9 +19,27 @@ import androidx.compose.ui.unit.dp
 import com.momentummm.app.R
 import com.momentummm.app.ui.theme.MomentumTheme
 
+/**
+ * Pantalla que se muestra al intentar abrir un sitio bloqueado.
+ *
+ * ─── BUG CORREGIDO ────────────────────────────────────────────────────────
+ * Esta Activity no interceptaba el botón atrás y su único botón hacía
+ * `finish()`. Como se abre encima del navegador, ambas cosas devolvían al
+ * usuario a la misma pestaña con el sitio bloqueado cargado: el bloqueo de
+ * webs se saltaba pulsando atrás una vez. Las otras dos pantallas de bloqueo
+ * del proyecto (AppBlockedActivity e InAppBlockedActivity) sí navegan al
+ * inicio; a esta se le olvidó.
+ */
 class WebsiteBlockedActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Atrás no puede devolver al navegador con el sitio abierto.
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                goHomeAndFinish()
+            }
+        })
 
         val blockedUrl = intent.getStringExtra("blocked_url")
             ?: getString(R.string.website_blocked_unknown_site)
@@ -28,10 +48,25 @@ class WebsiteBlockedActivity : ComponentActivity() {
             MomentumTheme {
                 WebsiteBlockedScreen(
                     blockedUrl = blockedUrl,
-                    onClose = { finish() }
+                    onClose = { goHomeAndFinish() }
                 )
             }
         }
+    }
+
+    /** Sale al inicio en lugar de volver a la pestaña bloqueada. */
+    private fun goHomeAndFinish() {
+        runCatching {
+            startActivity(
+                Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_HOME)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            )
+        }.onFailure {
+            android.util.Log.w("WebsiteBlockedActivity", "No se pudo ir al inicio", it)
+        }
+        finish()
     }
 }
 

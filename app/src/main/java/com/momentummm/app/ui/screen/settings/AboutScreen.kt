@@ -25,6 +25,7 @@ fun AboutScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val linkErrorMessage = stringResource(R.string.about_link_error)
     val packageInfo = try {
         context.packageManager.getPackageInfo(context.packageName, 0)
     } catch (e: Exception) {
@@ -256,7 +257,16 @@ fun AboutScreen(
                         )
                         
                         TextButton(
-                            onClick = { /* TODO: Open privacy policy */ },
+                            onClick = {
+                                // Antes: `{ /* TODO */ }`. El botón se podía
+                                // pulsar y no hacía nada, y Play exige un
+                                // enlace accesible a la política de privacidad.
+                                com.momentummm.app.util.AppLinks.open(
+                                    context,
+                                    com.momentummm.app.util.AppLinks.PRIVACY_POLICY_URL,
+                                    linkErrorMessage
+                                )
+                            },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -274,7 +284,13 @@ fun AboutScreen(
                         }
                         
                         TextButton(
-                            onClick = { /* TODO: Open terms */ },
+                            onClick = {
+                                com.momentummm.app.util.AppLinks.open(
+                                    context,
+                                    com.momentummm.app.util.AppLinks.TERMS_URL,
+                                    linkErrorMessage
+                                )
+                            },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(

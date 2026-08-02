@@ -181,10 +181,18 @@ class AppLockManager @Inject constructor(
     
     /**
      * Marca que una autenticación está en proceso.
-     * Debe llamarse desde LockScreen antes de mostrar el diálogo de PIN/biometría.
+     *
+     * La llama [com.momentummm.app.ui.password.LockScreen] mientras está en
+     * pantalla. Antes NADIE la llamaba, así que [unlockApp] siempre salía por
+     * la guarda y la app quedaba imposible de desbloquear.
      */
     fun beginAuthentication() {
         authenticationInProgress = true
+    }
+
+    /** Cierra la ventana de autenticación al desaparecer la pantalla de bloqueo. */
+    fun endAuthentication() {
+        authenticationInProgress = false
     }
     
     fun unlockApp() {
@@ -279,14 +287,12 @@ class AppLockManager @Inject constructor(
     }
 
     /**
-     * Registra una autenticación exitosa externa (ej: biométrica)
+     * NOTA: aquí había `registerSuccessfulAuthentication()`, que ponía
+     * `_isLocked = false` sin ninguna comprobación. No lo llamaba nadie —el
+     * desbloqueo real pasa por [unlockApp]— y era exactamente el atajo que la
+     * guarda `authenticationInProgress` pretende cerrar, así que se ha
+     * eliminado en lugar de dejar dos puertas con distinto cerrojo.
      */
-    fun registerSuccessfulAuthentication() {
-        lastAuthenticationTime = System.currentTimeMillis()
-        _isLocked.value = false
-        _shouldShowLockScreen.value = false
-        Log.d(TAG, "External authentication registered successfully")
-    }
 
     companion object {
         private const val TAG = "AppLockManager"

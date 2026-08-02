@@ -115,7 +115,7 @@
     <string name="account_settings_logout_title">Cerrar sesión</string>
     <string name="account_settings_logout_message">¿Estás seguro de que quieres cerrar sesión?</string>
     <string name="account_settings_cancel_button">Cancelar</string>
-    <string name="account_settings_delete_account_message">¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos.</string>
+    <string name="account_settings_delete_account_message">¿Seguro que quieres eliminar tu cuenta? Se desactivará de forma permanente y perderás el acceso a tus datos sincronizados. Esta acción no se puede deshacer.</string>
     <string name="account_settings_delete_button">Eliminar</string>
     <string name="account_settings_birthdate_updated">Fecha de nacimiento actualizada correctamente</string>
     <string name="account_settings_login_required_birthdate">Debes iniciar sesión para actualizar tu fecha de nacimiento</string>
@@ -1120,4 +1120,15 @@
     <string name="action_create">Crear</string>
     <string name="action_more_info">Más información</string>
     
+    <string name="account_settings_current_password">Contraseña actual</string>
+    <string name="account_settings_new_password">Contraseña nueva</string>
+    <string name="account_settings_confirm_password">Repite la contraseña nueva</string>
+    <string name="account_settings_password_too_short">Debe tener al menos 8 caracteres</string>
+    <string name="account_settings_passwords_dont_match">Las contraseñas no coinciden</string>
+    <string name="account_settings_save_button">Guardar</string>
+    <string name="account_settings_password_changed">Contraseña actualizada</string>
+    <string name="account_settings_password_change_error">No se pudo cambiar la contraseña</string>
+    <string name="about_link_error">No se pudo abrir el enlace</string>
+    <string name="app_blocked_payment_failed">No se pudo completar el pago</string>
+    <string name="app_blocked_payment_unlocked">Desbloqueada 5 minutos</string>
 </resources>

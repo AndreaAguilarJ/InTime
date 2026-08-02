@@ -178,9 +178,25 @@ fun GamificationSettingsScreen(
                         onClick = {
                             scope.launch {
                                 isSyncing = true
-                                // TODO: Implementar restauración desde Appwrite
-                                kotlinx.coroutines.delay(2000)
+                                // Antes esto era `delay(2000)` con un TODO:
+                                // fingía una restauración con el spinner.
+                                val userId = application.appwriteService.currentUser.value?.id
+                                val result = gamificationManager.restoreFromCloud(
+                                    application.appwriteUserRepository,
+                                    userId
+                                )
                                 isSyncing = false
+                                val text = when (result) {
+                                    is GamificationManager.RestoreResult.Restored ->
+                                        "Progreso restaurado: nivel ${result.level}, ${result.totalXp} XP"
+                                    GamificationManager.RestoreResult.NothingStored ->
+                                        "No hay progreso guardado en la nube todavía"
+                                    GamificationManager.RestoreResult.NotLoggedIn ->
+                                        "Inicia sesión para restaurar tu progreso"
+                                    is GamificationManager.RestoreResult.Error ->
+                                        "No se pudo restaurar: ${result.message ?: "error desconocido"}"
+                                }
+                                Toast.makeText(context, text, Toast.LENGTH_LONG).show()
                             }
                         },
                         showDivider = false

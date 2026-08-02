@@ -3,6 +3,7 @@ package com.momentummm.app.ui.screen.settings
 import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -12,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.R
@@ -50,6 +53,7 @@ fun AccountSettingsScreen(
 
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showBirthDatePicker by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -64,6 +68,8 @@ fun AccountSettingsScreen(
     val updateErrorMsgFormat = stringResource(R.string.account_settings_update_error)
     val logoutErrorMsgFormat = stringResource(R.string.account_settings_logout_error)
     val deleteAccountErrorMsgFormat = stringResource(R.string.account_settings_delete_account_error)
+    val passwordChangedMsg = stringResource(R.string.account_settings_password_changed)
+    val passwordChangeErrorMsg = stringResource(R.string.account_settings_password_change_error)
 
     if (showBirthDatePicker) {
         DisposableEffect(Unit) {
@@ -269,7 +275,9 @@ fun AccountSettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
-                        // TODO: Implementar cambio de contraseña
+                        // Antes esto era un `// TODO` vacío: la tarjeta se podía
+                        // pulsar, mostraba flecha de navegación y no hacía nada.
+                        showChangePasswordDialog = true
                     }
                 ) {
                     ListItem(
@@ -550,10 +558,18 @@ fun AccountSettingsScreen(
                         coroutineScope.launch {
                             isLoading = true
                             try {
-                                // TODO: Implementar eliminación de cuenta
-                                // application.appwriteService.deleteAccount()
-                                showDeleteAccountDialog = false
-                                onBackClick()
+                                // BUG CORREGIDO: aquí el borrado estaba
+                                // comentado y aun así se cerraba el diálogo y se
+                                // volvía atrás, así que el usuario creía que su
+                                // cuenta había desaparecido cuando seguía intacta.
+                                val result = application.appwriteService.deactivateAccount()
+                                if (result.isSuccess) {
+                                    showDeleteAccountDialog = false
+                                    onBackClick()
+                                } else {
+                                    errorMessage = "$deleteAccountErrorMsgFormat " +
+                                        (result.exceptionOrNull()?.message ?: "")
+                                }
                             } catch (e: Exception) {
                                 errorMessage = "$deleteAccountErrorMsgFormat ${e.message ?: ""}"
                             } finally {
@@ -583,10 +599,117 @@ fun AccountSettingsScreen(
         )
     }
 
-    // Mostrar error si existe
-    errorMessage?.let { message ->
-        LaunchedEffect(message) {
-            // TODO: Mostrar snackbar con el error
-        }
+    // Diálogo de cambio de contraseña
+    if (showChangePasswordDialog) {
+        ChangePasswordDialog(
+            isLoading = isLoading,
+            onDismiss = { showChangePasswordDialog = false },
+            onConfirm = { current, new ->
+                coroutineScope.launch {
+                    isLoading = true
+                    val result = application.appwriteService.updatePassword(
+                        newPassword = new,
+                        oldPassword = current
+                    )
+                    isLoading = false
+                    if (result.isSuccess) {
+                        showChangePasswordDialog = false
+                        successMessage = passwordChangedMsg
+                    } else {
+                        errorMessage = result.exceptionOrNull()?.message ?: passwordChangeErrorMsg
+                    }
+                }
+            }
+        )
     }
 }
+
+/**
+ * Diálogo para cambiar la contraseña.
+ *
+ * Valida en el cliente lo mínimo para no gastar una llamada de red: que los
+ * campos no estén vacíos, que la nueva tenga al menos 8 caracteres (el mínimo
+ * de Appwrite) y que la confirmación coincida.
+ */
+@Composable
+private fun ChangePasswordDialog(
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (currentPassword: String, newPassword: String) -> Unit
+) {
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    val tooShort = newPassword.isNotEmpty() && newPassword.length < MIN_PASSWORD_LENGTH
+    val mismatch = confirmPassword.isNotEmpty() && confirmPassword != newPassword
+    val canSubmit = currentPassword.isNotEmpty() &&
+        newPassword.length >= MIN_PASSWORD_LENGTH &&
+        confirmPassword == newPassword &&
+        !isLoading
+
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        icon = { Icon(Icons.Default.Lock, contentDescription = null) },
+        title = { Text(stringResource(R.string.account_settings_change_password_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text(stringResource(R.string.account_settings_current_password)) },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text(stringResource(R.string.account_settings_new_password)) },
+                    singleLine = true,
+                    isError = tooShort,
+                    supportingText = if (tooShort) {
+                        { Text(stringResource(R.string.account_settings_password_too_short)) }
+                    } else null,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text(stringResource(R.string.account_settings_confirm_password)) },
+                    singleLine = true,
+                    isError = mismatch,
+                    supportingText = if (mismatch) {
+                        { Text(stringResource(R.string.account_settings_passwords_dont_match)) }
+                    } else null,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(currentPassword, newPassword) },
+                enabled = canSubmit
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                } else {
+                    Text(stringResource(R.string.account_settings_save_button))
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isLoading) {
+                Text(stringResource(R.string.account_settings_cancel_button))
+            }
+        }
+    )
+}
+
+/** Mínimo que exige Appwrite para una contraseña. */
+private const val MIN_PASSWORD_LENGTH = 8

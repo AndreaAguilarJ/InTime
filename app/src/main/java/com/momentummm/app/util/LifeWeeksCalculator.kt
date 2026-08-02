@@ -24,7 +24,14 @@ object LifeWeeksCalculator {
         val ageInDays = TimeUnit.MILLISECONDS.toDays(ageInMillis)
         val weeksLived = (ageInDays / 7).toInt()
         val weeksRemaining = maxOf(0, totalWeeksInLife - weeksLived)
-        val currentAge = (ageInDays / 365).toInt()
+
+        // BUG CORREGIDO: la edad se calculaba como `ageInDays / 365`, que ignora
+        // los años bisiestos. El error acumulado (un día cada cuatro años) hace
+        // que la división cruce el umbral antes del cumpleaños: alguien a diez
+        // días de cumplir 40 ya aparecía como de 40. El desfase crece con la
+        // edad. Con java.time la cuenta es exacta.
+        val currentAge = calculateAgeInYears(birthDate)
+
         val progressPercentage = (weeksLived.toFloat() / totalWeeksInLife) * 100f
         
         return LifeWeeksData(
@@ -34,6 +41,22 @@ object LifeWeeksCalculator {
             currentAge = currentAge,
             progressPercentage = progressPercentage
         )
+    }
+
+    /** Años completos cumplidos, con años bisiestos correctos. */
+    fun calculateAgeInYears(birthDate: Date): Int {
+        return try {
+            val birth = birthDate.toInstant()
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+            java.time.temporal.ChronoUnit.YEARS.between(birth, java.time.LocalDate.now())
+                .toInt()
+                .coerceAtLeast(0)
+        } catch (e: Exception) {
+            // Respaldo con 365.25 días por año: sigue siendo mejor que 365.
+            val days = TimeUnit.MILLISECONDS.toDays(Date().time - birthDate.time)
+            (days / 365.25).toInt().coerceAtLeast(0)
+        }
     }
     
     fun getWeekPosition(weekIndex: Int): Pair<Int, Int> {

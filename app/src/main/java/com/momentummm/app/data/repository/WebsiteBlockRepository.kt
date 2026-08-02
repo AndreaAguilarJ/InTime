@@ -160,18 +160,29 @@ class WebsiteBlockRepository @Inject constructor(
     }
 
     /**
-     * Verifica si una URL coincide con un patrón de bloqueo
+     * Verifica si una URL coincide con un patrón de bloqueo.
+     *
+     * BUG CORREGIDO: había un tercer criterio, `normalizedUrl.contains(pattern)`,
+     * que bloqueaba dominios sin ninguna relación. Como [normalizeUrl] recorta
+     * el protocolo, el `www.` y la ruta, ambos lados son sólo el host, así que
+     * ese `contains` no cubría ningún caso legítimo y sí causaba falsos
+     * positivos: bloquear `x.com` bloqueaba también `vox.com`, `example.com` o
+     * `fox.com`; bloquear `ad.com` bloqueaba `nomad.com`.
+     *
+     * Los dos criterios que quedan cubren lo que se pretendía: coincidencia
+     * exacta y subdominios (`facebook.com` bloquea `m.facebook.com`).
      */
     private fun urlMatchesBlock(url: String, blockPattern: String): Boolean {
         val normalizedUrl = normalizeUrl(url)
         val normalizedPattern = normalizeUrl(blockPattern)
 
+        if (normalizedPattern.isEmpty()) return false
+
         // Coincidencia exacta
         if (normalizedUrl == normalizedPattern) return true
 
-        // Coincidencia de dominio (ej: facebook.com bloquea www.facebook.com y m.facebook.com)
+        // Subdominios (ej: facebook.com bloquea www.facebook.com y m.facebook.com)
         if (normalizedUrl.endsWith(".$normalizedPattern")) return true
-        if (normalizedUrl.contains(normalizedPattern)) return true
 
         return false
     }

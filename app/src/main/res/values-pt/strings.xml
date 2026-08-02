@@ -273,7 +273,7 @@
     <string name="account_settings_logout_title">Sair</string>
     <string name="account_settings_logout_message">Tem certeza de que deseja sair?</string>
     <string name="account_settings_cancel_button">Cancelar</string>
-    <string name="account_settings_delete_account_message">Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita e você perderá todos os seus dados.</string>
+    <string name="account_settings_delete_account_message">Tem certeza de que deseja excluir sua conta? Ela será desativada permanentemente e você perderá o acesso aos seus dados sincronizados. Esta ação não pode ser desfeita.</string>
     <string name="account_settings_delete_button">Excluir</string>
     <string name="account_settings_birthdate_updated">Data de nascimento atualizada com sucesso</string>
     <string name="account_settings_login_required_birthdate">Você precisa entrar para atualizar sua data de nascimento</string>
@@ -1068,4 +1068,15 @@
     <string name="action_confirm">Confirmar</string>
     <string name="action_create">Criar</string>
     <string name="action_more_info">Mais informações</string>
+    <string name="account_settings_current_password">Senha atual</string>
+    <string name="account_settings_new_password">Nova senha</string>
+    <string name="account_settings_confirm_password">Repita a nova senha</string>
+    <string name="account_settings_password_too_short">Deve ter pelo menos 8 caracteres</string>
+    <string name="account_settings_passwords_dont_match">As senhas não coincidem</string>
+    <string name="account_settings_save_button">Guardar</string>
+    <string name="account_settings_password_changed">Senha atualizada</string>
+    <string name="account_settings_password_change_error">Não foi possível alterar a senha</string>
+    <string name="about_link_error">Não foi possível abrir o link</string>
+    <string name="app_blocked_payment_failed">Não foi possível concluir o pagamento</string>
+    <string name="app_blocked_payment_unlocked">Desbloqueada por 5 minutos</string>
 </resources>

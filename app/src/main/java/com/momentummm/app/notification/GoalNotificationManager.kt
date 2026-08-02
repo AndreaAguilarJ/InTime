@@ -75,6 +75,16 @@ class GoalNotificationManager @Inject constructor(
         }
     }
 
+    /**
+     * Id de notificación estable y único por entidad, acotado para no invadir
+     * los rangos que usan las demás notificaciones de la app.
+     */
+    private fun notificationIdFor(base: Int, entityId: String): Int {
+        val hash = entityId.hashCode()
+        val offset = if (hash == Int.MIN_VALUE) 0 else kotlin.math.abs(hash) % 90
+        return base * 100 + offset
+    }
+
     fun showGoalReminderNotification(goal: Goal) {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -108,7 +118,10 @@ class GoalNotificationManager @Inject constructor(
             .setAutoCancel(true)
             .build()
 
-        notifySafe(NOTIFICATION_ID_GOAL_REMINDER, notification)
+        // BUG CORREGIDO: todos los recordatorios de metas compartían el mismo
+        // id, así que con dos metas activas sólo se veía la última: las demás se
+        // sobrescribían en silencio. Los retos ya usaban un id por entidad.
+        notifySafe(notificationIdFor(NOTIFICATION_ID_GOAL_REMINDER, goal.id.toString()), notification)
     }
 
     fun showChallengeReminderNotification(challenge: Challenge) {
@@ -143,7 +156,12 @@ class GoalNotificationManager @Inject constructor(
             )
             .build()
 
-        notifySafe(NOTIFICATION_ID_CHALLENGE_REMINDER + challenge.id.hashCode(), notification)
+        // `base + hashCode()` podía desbordar y aterrizar en el id de otra
+        // notificación de la app; se acota el desplazamiento.
+        notifySafe(
+            notificationIdFor(NOTIFICATION_ID_CHALLENGE_REMINDER, challenge.id.toString()),
+            notification
+        )
     }
 
     fun showAchievementNotification(achievementTitle: String, achievementDescription: String) {

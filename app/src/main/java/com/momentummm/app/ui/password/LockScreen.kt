@@ -48,6 +48,26 @@ fun LockScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val activity = context as? FragmentActivity
+
+    /**
+     * ─── BUG CRÍTICO CORREGIDO ────────────────────────────────────────────
+     * [AppLockManager.unlockApp] sólo desbloquea si antes se llamó a
+     * `beginAuthentication()`. Ese método existía y estaba documentado como
+     * "debe llamarse desde LockScreen", pero **no se llamaba desde ningún
+     * sitio del proyecto**. Resultado: con la protección por contraseña
+     * activada, meter el PIN correcto o autenticarse con la huella no hacía
+     * nada —`unlockApp()` salía por el `return` de la guarda anti-bypass y
+     * dejaba un aviso en el log— así que el usuario se quedaba encerrado
+     * fuera de su propia app sin ninguna forma de entrar.
+     *
+     * Abrir la ventana de autenticación aquí mantiene el sentido de la guarda:
+     * `unlockApp()` sólo puede tener efecto mientras la pantalla de bloqueo
+     * está realmente en pantalla, no desde cualquier punto del código.
+     */
+    DisposableEffect(Unit) {
+        appLockManager.beginAuthentication()
+        onDispose { appLockManager.endAuthentication() }
+    }
     
     val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsStateWithLifecycle()
     val isBiometricAvailable = viewModel.isBiometricAvailable()

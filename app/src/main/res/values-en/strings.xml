@@ -273,7 +273,7 @@
     <string name="account_settings_logout_title">Sign out</string>
     <string name="account_settings_logout_message">Are you sure you want to sign out?</string>
     <string name="account_settings_cancel_button">Cancel</string>
-    <string name="account_settings_delete_account_message">Are you sure you want to delete your account? This action cannot be undone and you will lose all your data.</string>
+    <string name="account_settings_delete_account_message">Are you sure you want to delete your account? It will be permanently deactivated and you will lose access to your synced data. This cannot be undone.</string>
     <string name="account_settings_delete_button">Delete</string>
     <string name="account_settings_birthdate_updated">Birth date updated successfully</string>
     <string name="account_settings_login_required_birthdate">You must sign in to update your birth date</string>
@@ -1101,4 +1101,15 @@
     <string name="action_create">Create</string>
     <string name="action_more_info">More info</string>
     
+    <string name="account_settings_current_password">Current password</string>
+    <string name="account_settings_new_password">New password</string>
+    <string name="account_settings_confirm_password">Repeat new password</string>
+    <string name="account_settings_password_too_short">Must be at least 8 characters</string>
+    <string name="account_settings_passwords_dont_match">Passwords do not match</string>
+    <string name="account_settings_save_button">Save</string>
+    <string name="account_settings_password_changed">Password updated</string>
+    <string name="account_settings_password_change_error">Could not change the password</string>
+    <string name="about_link_error">Could not open the link</string>
+    <string name="app_blocked_payment_failed">The payment could not be completed</string>
+    <string name="app_blocked_payment_unlocked">Unlocked for 5 minutes</string>
 </resources>

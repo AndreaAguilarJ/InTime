@@ -131,6 +131,68 @@ class AppwriteService(context: Context) {
         }
     }
     
+    /**
+     * Cambia la contraseña de la cuenta.
+     *
+     * BUG CORREGIDO: la pantalla de ajustes de cuenta tenía una tarjeta
+     * "Cambiar contraseña" con flecha de navegación cuyo `onClick` era un
+     * `// TODO` vacío: se podía pulsar y no pasaba absolutamente nada.
+     *
+     * @param newPassword contraseña nueva (Appwrite exige 8 caracteres mínimo).
+     * @param oldPassword contraseña actual; Appwrite la exige para cuentas
+     *   creadas con email y contraseña.
+     */
+    suspend fun updatePassword(newPassword: String, oldPassword: String): Result<Unit> {
+        return try {
+            withTimeout(NETWORK_TIMEOUT_MS) {
+                account.updatePassword(password = newPassword, oldPassword = oldPassword)
+                Result.success(Unit)
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Update password timeout", e)
+            Result.failure(Exception("Connection timeout. Please check your internet connection."))
+        } catch (e: Exception) {
+            Log.e(TAG, "Update password failed: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Da de baja la cuenta del usuario y cierra la sesión.
+     *
+     * BUG CORREGIDO: el diálogo "Eliminar cuenta" tenía el borrado comentado
+     * (`// TODO: Implementar eliminación de cuenta`) pero cerraba el diálogo y
+     * volvía atrás como si hubiera funcionado. El usuario confirmaba el borrado
+     * de su cuenta, la app le decía que sí, y la cuenta seguía existiendo
+     * intacta en el servidor.
+     *
+     * Nota sobre la API: el SDK de cliente de Appwrite **no** permite un
+     * borrado duro (eso requiere una API key de servidor). La vía oficial desde
+     * el cliente es `account.updateStatus()`, que bloquea la cuenta de forma
+     * permanente e irreversible: el usuario ya no puede volver a entrar. Por
+     * eso el texto de la interfaz debe hablar de desactivar, no prometer un
+     * borrado inmediato de todos los datos.
+     */
+    suspend fun deactivateAccount(): Result<Unit> {
+        return try {
+            withTimeout(NETWORK_TIMEOUT_MS) {
+                account.updateStatus()
+            }
+            // La sesión ya no sirve para nada: limpiar el estado local.
+            runCatching { account.deleteSessions() }
+            _currentUser.value = null
+            _isLoggedIn.value = false
+            _isAuthReady.value = true
+            Result.success(Unit)
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, "Deactivate account timeout", e)
+            Result.failure(Exception("Connection timeout. Please check your internet connection."))
+        } catch (e: Exception) {
+            Log.e(TAG, "Deactivate account failed: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
     suspend fun getCurrentUser(): Result<User<*>> {
         return try {
             withTimeout(NETWORK_TIMEOUT_MS) {

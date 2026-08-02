@@ -2,6 +2,7 @@ package com.momentummm.app.ui
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -35,10 +36,12 @@ import androidx.compose.ui.unit.sp
 import com.momentummm.app.R
 import com.momentummm.app.MainActivity
 import com.momentummm.app.data.manager.BillingManager
+import com.momentummm.app.data.manager.SmartBlockingManager
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.ui.component.EmergencyUnlockScreen
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.ui.theme.MomentumTheme
+import com.momentummm.app.util.SocialShareHelper
 import com.momentummm.app.util.SocialShareUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -53,14 +56,21 @@ class AppBlockedActivity : ComponentActivity() {
 
     @Inject
     lateinit var billingManager: BillingManager
-    
+
+    @Inject
+    lateinit var smartBlockingManager: SmartBlockingManager
+
     private var blockedPackageName: String = ""
     private var pendingShareVerification = false
+
+    /** true entre que el usuario pulsa "pagar" y que Google Play responde. */
+    private var awaitingPaymentUnlock = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         setupBackPressedHandler()
+        observePaymentUnlock()
 
         val blockedAppName = intent.getStringExtra(EXTRA_APP_NAME)
             ?: getString(R.string.app_blocked_default_app_name)
@@ -83,9 +93,18 @@ class AppBlockedActivity : ComponentActivity() {
                         currentStreakDays = currentStreakDays,
                         billingManager = billingManager,
                         onUnlockWithPayment = {
-                            // Procesar pago y desbloquear temporalmente
+                            // BUG CORREGIDO: aquí se lanzaba el flujo de compra
+                            // y se llamaba a `finish()` en la línea siguiente.
+                            // Dos problemas:
+                            //  1. `launchEmergencyUnlockPurchase` es asíncrono,
+                            //     así que la pantalla de bloqueo se cerraba
+                            //     antes de que el usuario pagara.
+                            //  2. Nada registraba el desbloqueo temporal al
+                            //     completarse la compra: el usuario pagaba y la
+                            //     app seguía bloqueada. `UNLOCKED_PAYMENT` sólo
+                            //     se usaba como estado de interfaz.
+                            awaitingPaymentUnlock = true
                             billingManager.launchEmergencyUnlockPurchase(this@AppBlockedActivity)
-                            finish()
                         },
                         onStartShare = {
                             // Activar la whitelist temporal para apps de compartir
@@ -164,8 +183,78 @@ class AppBlockedActivity : ComponentActivity() {
         }
     }
 
-    private fun setupBackPressedHandler() {
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+    /**
+     * Concede el desbloqueo temporal cuando Google Play confirma la compra.
+     *
+     * BUG CORREGIDO: nadie escuchaba el resultado de la compra del desbloqueo
+     * de emergencia. `BlockingViewModel` ponía `UnlockState.UNLOCKED_PAYMENT`
+     * al recibir `Purchased`, pero eso es sólo un estado de interfaz y esta
+     * Activity ni siquiera usa ese ViewModel. `registerTemporaryUnlock` sólo se
+     * llamaba en el flujo de compartir. Resultado: el usuario pagaba 0,99 y la
+     * app seguía bloqueada.
+     */
+    private fun observePaymentUnlock() {
+        lifecycleScope.launch {
+            billingManager.purchaseState.collect { state ->
+                if (!awaitingPaymentUnlock) return@collect
+                when (state) {
+                    BillingManager.PurchaseState.Purchased -> {
+                        awaitingPaymentUnlock = false
+                        grantTemporaryUnlock()
+                    }
+                    BillingManager.PurchaseState.Failed -> {
+                        awaitingPaymentUnlock = false
+                        Toast.makeText(
+                            this@AppBlockedActivity,
+                            getString(R.string.app_blocked_payment_failed),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    BillingManager.PurchaseState.Cancelled -> {
+                        // El usuario se echó atrás: la pantalla de bloqueo sigue.
+                        awaitingPaymentUnlock = false
+                    }
+                    else -> Unit
+                }
+            }
+        }
+    }
+
+    /** Registra el desbloqueo temporal y cierra la pantalla de bloqueo. */
+    private fun grantTemporaryUnlock() {
+        val packageName = blockedPackageName
+        if (packageName.isEmpty()) {
+            finish()
+            return
+        }
+
+        val expiration = System.currentTimeMillis() + SocialShareHelper.UNLOCK_DURATION_MS
+
+        // En memoria, para que el monitor deje de bloquear de inmediato.
+        if (::smartBlockingManager.isInitialized) {
+            smartBlockingManager.temporarilyUnblockApp(packageName)
+        }
+
+        lifecycleScope.launch {
+            runCatching {
+                UserPreferencesRepository.addTemporaryUnlock(
+                    context = this@AppBlockedActivity,
+                    packageName = packageName,
+                    expirationTime = expiration
+                )
+            }.onFailure {
+                android.util.Log.e("AppBlockedActivity", "No se pudo persistir el desbloqueo", it)
+            }
+            Toast.makeText(
+                this@AppBlockedActivity,
+                getString(R.string.app_blocked_payment_unlocked),
+                Toast.LENGTH_LONG
+            ).show()
+            finish()
+        }
+    }
+
+    private fun setupBackPressedHandler() {        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // CRITICAL FIX: Prevenir que el usuario vuelva a la app bloqueada
                 // Navegar al Home screen en vez de a la activity anterior (que es la app bloqueada)

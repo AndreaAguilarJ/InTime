@@ -202,7 +202,7 @@
     <string name="account_settings_logout_title">Abmelden</string>
     <string name="account_settings_logout_message">Möchtest du dich wirklich abmelden?</string>
     <string name="account_settings_cancel_button">Abbrechen</string>
-    <string name="account_settings_delete_account_message">Möchtest du dein Konto wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden und du verlierst alle deine Daten.</string>
+    <string name="account_settings_delete_account_message">Möchtest du dein Konto wirklich löschen? Es wird dauerhaft deaktiviert und du verlierst den Zugriff auf deine synchronisierten Daten. Das kann nicht rückgängig gemacht werden.</string>
     <string name="account_settings_delete_button">Löschen</string>
     <string name="account_settings_birthdate_updated">Geburtsdatum erfolgreich aktualisiert</string>
     <string name="account_settings_login_required_birthdate">Du musst dich anmelden, um dein Geburtsdatum zu aktualisieren</string>
@@ -1068,4 +1068,15 @@
     <string name="action_confirm">Bestätigen</string>
     <string name="action_create">Erstellen</string>
     <string name="action_more_info">Mehr Infos</string>
+    <string name="account_settings_current_password">Aktuelles Passwort</string>
+    <string name="account_settings_new_password">Neues Passwort</string>
+    <string name="account_settings_confirm_password">Neues Passwort wiederholen</string>
+    <string name="account_settings_password_too_short">Mindestens 8 Zeichen</string>
+    <string name="account_settings_passwords_dont_match">Passwörter stimmen nicht überein</string>
+    <string name="account_settings_save_button">Speichern</string>
+    <string name="account_settings_password_changed">Passwort aktualisiert</string>
+    <string name="account_settings_password_change_error">Passwort konnte nicht geändert werden</string>
+    <string name="about_link_error">Link konnte nicht geöffnet werden</string>
+    <string name="app_blocked_payment_failed">Zahlung konnte nicht abgeschlossen werden</string>
+    <string name="app_blocked_payment_unlocked">5 Minuten freigeschaltet</string>
 </resources>
