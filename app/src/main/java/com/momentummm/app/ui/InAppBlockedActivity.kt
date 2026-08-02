@@ -53,7 +53,9 @@ class InAppBlockedActivity : ComponentActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                // CRITICAL FIX: Agregar finish() para remover del back stack
                 launchHome()
+                finish()
             }
         })
 

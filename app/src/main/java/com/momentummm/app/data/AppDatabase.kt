@@ -648,7 +648,9 @@ abstract class AppDatabase : RoomDatabase() {
                     "momentum_database"
                 ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
                     .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
-                    .fallbackToDestructiveMigration() // For now, allow destructive migration
+                    // CRITICAL FIX: Removido fallbackToDestructiveMigration() que borraba
+                    // TODOS los datos del usuario silenciosamente si una migración fallaba.
+                    // Solo mantener el downgrade para permitir rollback de versiones.
                     .fallbackToDestructiveMigrationOnDowngrade() // Handle downgrades gracefully
                     .build()
                 INSTANCE = instance

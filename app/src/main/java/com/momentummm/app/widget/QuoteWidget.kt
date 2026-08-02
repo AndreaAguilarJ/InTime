@@ -25,9 +25,17 @@ import kotlinx.coroutines.withContext
 class QuoteWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val quote = withContext(Dispatchers.IO) {
-            AppDatabase.getDatabase(context).quoteDao().getRandomQuote()
-        } ?: defaultQuote()
+        // CRITICAL FIX: Agregar error handling + timeout para evitar crash/ANR del widget
+        val quote = try {
+            kotlinx.coroutines.withTimeoutOrNull(3000L) {
+                withContext(Dispatchers.IO) {
+                    AppDatabase.getDatabase(context).quoteDao().getRandomQuote()
+                }
+            } ?: defaultQuote()
+        } catch (e: Exception) {
+            android.util.Log.e("QuoteWidget", "Error loading quote for widget", e)
+            defaultQuote()
+        }
 
         provideContent {
             QuoteWidgetContent(quote)

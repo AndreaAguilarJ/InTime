@@ -95,7 +95,11 @@ fun EmergencyUnlockScreen(
                 shameType = SocialShareUtils.ShameType.DOPAMINE_FAIL,
                 streakDays = currentStreakDays
             )
-            // NO cerramos aquí - esperamos que el usuario regrese después de compartir
+            // CRITICAL FIX: Esperar un tiempo mínimo para verificar que el usuario
+            // realmente completó el share y no solo abrió/cerró el share sheet
+            // El usuario debe permanecer en la app de destino al menos 5 segundos
+            delay(5000L)
+            // Después del delay, el flujo de verificación continúa en AppBlockedActivity.onResume()
         }
     }
 

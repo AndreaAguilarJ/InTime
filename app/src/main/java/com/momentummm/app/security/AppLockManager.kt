@@ -53,12 +53,17 @@ class AppLockManager @Inject constructor(
     // Grace period en milisegundos (tiempo antes de bloquear)
     private val gracePeriodMs: Long = 5000L // 5 segundos de gracia
     
-    // Flags de control
+    // Flags de control - CRITICAL FIX: Usar @Volatile para visibilidad entre hilos
+    // Antes, onStop y onStart corrían en coroutines diferentes y podían no ver los cambios
+    @Volatile
     private var shouldLockOnResume = false
+    @Volatile
     private var isFirstLaunch = true
+    @Volatile
     private var isInitialized = false
 
     // Tiempo de la última autenticación exitosa
+    @Volatile
     private var lastAuthenticationTime: Long = 0L
     
     // Tiempo durante el cual la autenticación sigue siendo válida
@@ -167,9 +172,28 @@ class AppLockManager @Inject constructor(
     }
 
     /**
-     * Desbloquea la aplicación después de una autenticación exitosa
+     * Desbloquea la aplicación después de una autenticación exitosa.
+     * CRITICAL FIX: Se verifica que realmente hubo una autenticación reciente
+     * para evitar que código arbitrario pueda llamar este método para bypass.
      */
+    @Volatile
+    private var authenticationInProgress = false
+    
+    /**
+     * Marca que una autenticación está en proceso.
+     * Debe llamarse desde LockScreen antes de mostrar el diálogo de PIN/biometría.
+     */
+    fun beginAuthentication() {
+        authenticationInProgress = true
+    }
+    
     fun unlockApp() {
+        // CRITICAL FIX: Solo permitir desbloqueo si una autenticación estaba en proceso
+        if (!authenticationInProgress) {
+            Log.w(TAG, "unlockApp() called without active authentication - potential bypass attempt")
+            return
+        }
+        authenticationInProgress = false
         _isLocked.value = false
         _shouldShowLockScreen.value = false
         lastAuthenticationTime = System.currentTimeMillis()

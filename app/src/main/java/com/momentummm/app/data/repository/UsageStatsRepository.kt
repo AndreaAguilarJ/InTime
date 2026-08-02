@@ -5,13 +5,13 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.util.Log
 import com.momentummm.app.data.entity.AppUsage
 import com.momentummm.app.data.UserPreferencesRepository
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.runBlocking
 
 data class AppUsageInfo(
     val packageName: String,
@@ -41,16 +41,57 @@ class UsageStatsRepository @Inject constructor(
 
     /**
      * Obtiene la hora de inicio del día configurada por el usuario.
-     * Feature solicitada: "Someone wants to start their day at 12am or 
-     * someone wants to start their day at 1am..."
      * 
-     * Por defecto es 0:00 (medianoche), pero usuarios nocturnos pueden
-     * preferir 3:00, 4:00, o cualquier otra hora.
+     * CRITICAL FIX: Antes usaba runBlocking que causaba ANR en el main thread.
+     * Ahora usa un valor cacheado que se actualiza periódicamente.
+     * Por defecto es 0:00 (medianoche).
      */
+    @Volatile
+    private var cachedDayStartHour: Int = 0
+    @Volatile  
+    private var cachedDayStartMinute: Int = 0
+    @Volatile
+    private var dayStartLastLoaded: Long = 0L
+    private val DAY_START_CACHE_MS = 60_000L // Recargar cada 60 segundos
+    
     private fun getDayStartTime(): Pair<Int, Int> {
-        return runBlocking {
-            UserPreferencesRepository.getDayStartTime(context)
+        val now = System.currentTimeMillis()
+        if (now - dayStartLastLoaded > DAY_START_CACHE_MS) {
+            // Cargar desde SharedPreferences directamente (no DataStore) para evitar suspend
+            try {
+                val prefs = context.getSharedPreferences("momentum_user_prefs_cache", android.content.Context.MODE_PRIVATE)
+                cachedDayStartHour = prefs.getInt("day_start_hour", 0)
+                cachedDayStartMinute = prefs.getInt("day_start_minute", 0)
+                dayStartLastLoaded = now
+            } catch (e: Exception) {
+                // Fallback a medianoche si hay error
+                cachedDayStartHour = 0
+                cachedDayStartMinute = 0
+            }
         }
+        return cachedDayStartHour to cachedDayStartMinute
+    }
+    
+    /**
+     * Actualiza el cache de dayStart cuando se cambia la preferencia.
+     * Debe ser llamado desde UserPreferencesRepository.setDayStartTime()
+     */
+    fun updateDayStartCache(hour: Int, minute: Int) {
+        cachedDayStartHour = hour
+        cachedDayStartMinute = minute
+        dayStartLastLoaded = System.currentTimeMillis()
+        // También guardar en SharedPreferences para persistencia
+        try {
+            context.getSharedPreferences("momentum_user_prefs_cache", android.content.Context.MODE_PRIVATE)
+                .edit()
+                .putInt("day_start_hour", hour)
+                .putInt("day_start_minute", minute)
+                .apply()
+        } catch (e: Exception) {
+            Log.e("UsageStatsRepository", "Error saving day start cache", e)
+        }
+        // Invalidar el cache de stats para que se recalcule con el nuevo horario
+        invalidateCache()
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.momentummm.app.data.manager
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import com.momentummm.app.data.dao.ContextBlockRuleDao
 import com.momentummm.app.data.dao.InAppBlockRuleDao
@@ -90,20 +91,28 @@ class SmartBlockingManager @Inject constructor(
     val contextRules: Flow<List<ContextBlockRule>> = contextRuleDao.getAllRules()
     
     // ================== TRACKING DE APPS BLOQUEADAS HOY ==================
-    // Guarda el timestamp del último bloqueo para cada app (solo se muestra pantalla 1 vez por límite)
+    // CRITICAL FIX: Ahora usa SharedPreferences para PERSISTIR el estado
+    // Antes usaba solo MutableStateFlow que se perdía al reiniciar el servicio
+    
+    private val blockedAppsPrefs: SharedPreferences = 
+        context.getSharedPreferences("blocked_apps_today", Context.MODE_PRIVATE)
+    
     private val _blockedAppsToday = MutableStateFlow<Map<String, Long>>(emptyMap())
     val blockedAppsToday: StateFlow<Map<String, Long>> = _blockedAppsToday.asStateFlow()
     
     // Guarda la última vez que se mostró la pantalla de bloqueo para cada app
     // Usar ConcurrentHashMap para evitar ConcurrentModificationException
     private val lastBlockScreenShownTime = java.util.concurrent.ConcurrentHashMap<String, Long>()
-    private val BLOCK_SCREEN_COOLDOWN = 3000L // 3 segundos mínimo entre pantallas de bloqueo
+    private val BLOCK_SCREEN_COOLDOWN = 2000L // 2 segundos mínimo entre pantallas de bloqueo (reducido de 3s)
     
     // Fecha del día actual para resetear al cambiar de día
     @Volatile
     private var currentBlockDay: Int = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
     
     init {
+        // CRITICAL FIX: Cargar apps bloqueadas desde storage persistente al iniciar
+        loadBlockedAppsFromDisk()
+        
         scope.launch {
             // Inicializar configuración
             initializeConfig()
@@ -114,6 +123,67 @@ class SmartBlockingManager @Inject constructor(
                 _config.value = currentConfig
                 updateModeStates(currentConfig)
             }
+        }
+    }
+    
+    /**
+     * Carga las apps bloqueadas desde SharedPreferences.
+     * Esto asegura que si el servicio se reinicia, no pierde el estado de bloqueo.
+     */
+    private fun loadBlockedAppsFromDisk() {
+        try {
+            val savedDay = blockedAppsPrefs.getInt("blocked_day", -1)
+            val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+            
+            if (savedDay == today) {
+                // Cargar apps bloqueadas del día actual
+                val blockedSet = blockedAppsPrefs.getStringSet("blocked_packages", emptySet()) ?: emptySet()
+                val blockedMap = mutableMapOf<String, Long>()
+                for (pkg in blockedSet) {
+                    val timestamp = blockedAppsPrefs.getLong("blocked_time_$pkg", System.currentTimeMillis())
+                    blockedMap[pkg] = timestamp
+                }
+                _blockedAppsToday.value = blockedMap
+                Log.d(TAG, "Loaded ${blockedMap.size} blocked apps from disk for today")
+            } else {
+                // Es un nuevo día, limpiar
+                clearBlockedAppsFromDisk()
+                Log.d(TAG, "New day detected, cleared blocked apps from disk")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading blocked apps from disk", e)
+        }
+    }
+    
+    /**
+     * Guarda las apps bloqueadas en SharedPreferences.
+     */
+    private fun saveBlockedAppsToDisk() {
+        try {
+            val today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+            val currentBlocked = _blockedAppsToday.value
+            
+            blockedAppsPrefs.edit().apply {
+                putInt("blocked_day", today)
+                putStringSet("blocked_packages", currentBlocked.keys.toSet())
+                for ((pkg, timestamp) in currentBlocked) {
+                    putLong("blocked_time_$pkg", timestamp)
+                }
+                apply()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving blocked apps to disk", e)
+        }
+    }
+    
+    /**
+     * Limpia las apps bloqueadas del disco.
+     */
+    private fun clearBlockedAppsFromDisk() {
+        try {
+            blockedAppsPrefs.edit().clear().apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing blocked apps from disk", e)
         }
     }
     
@@ -214,9 +284,11 @@ class SmartBlockingManager @Inject constructor(
     
     /**
      * Obtiene la intervención inteligente actual (si hay alguna)
+     * CRITICAL FIX: Ahora acepta el uso real en vez de hardcodear 10 minutos.
+     * Antes, intervenciones que requerían >10 min nunca se activaban.
      */
-    suspend fun getSmartIntervention(packageName: String): com.momentummm.app.data.engine.SmartIntervention? {
-        val interventions = adaptiveBlockingManager.generateInterventions(packageName, 10)
+    suspend fun getSmartIntervention(packageName: String, currentUsageMinutes: Int = 10): com.momentummm.app.data.engine.SmartIntervention? {
+        val interventions = adaptiveBlockingManager.generateInterventions(packageName, currentUsageMinutes)
         return interventions.maxByOrNull { it.severity }
     }
     
@@ -263,13 +335,14 @@ class SmartBlockingManager @Inject constructor(
     
     /**
      * Marca una app como bloqueada hoy (alcanzó su límite)
-     * Usa update{} para operación atómica
+     * CRITICAL FIX: Ahora persiste en SharedPreferences
      */
     fun markAppAsBlocked(packageName: String) {
         _blockedAppsToday.update { currentMap ->
             currentMap + (packageName to System.currentTimeMillis())
         }
-        Log.d(TAG, "App marcada como bloqueada hoy: $packageName")
+        saveBlockedAppsToDisk() // Persistir inmediatamente
+        Log.d(TAG, "App marcada como bloqueada hoy: $packageName (persistido en disco)")
     }
     
     /**
@@ -298,23 +371,26 @@ class SmartBlockingManager @Inject constructor(
     
     /**
      * Desbloquea una app temporalmente (por pago o shame share)
-     * Usa update{} para operación atómica
+     * CRITICAL FIX: Ahora persiste en SharedPreferences
      */
     fun temporarilyUnblockApp(packageName: String) {
         _blockedAppsToday.update { currentMap ->
             currentMap - packageName
         }
         lastBlockScreenShownTime.remove(packageName)
-        Log.d(TAG, "App desbloqueada temporalmente: $packageName")
+        saveBlockedAppsToDisk() // Persistir el cambio
+        Log.d(TAG, "App desbloqueada temporalmente: $packageName (persistido en disco)")
     }
     
     /**
      * Resetea todas las apps bloqueadas (para nuevo día)
+     * CRITICAL FIX: También limpia el disco
      */
     private fun resetBlockedAppsForNewDay() {
         _blockedAppsToday.value = emptyMap()
         lastBlockScreenShownTime.clear()
-        Log.d(TAG, "Apps bloqueadas reseteadas para nuevo día")
+        clearBlockedAppsFromDisk()
+        Log.d(TAG, "Apps bloqueadas reseteadas para nuevo día (disco limpiado)")
     }
     
     private suspend fun checkAndResetGraceDays(config: SmartBlockingConfig) {

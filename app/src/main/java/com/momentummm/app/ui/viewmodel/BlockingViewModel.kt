@@ -37,8 +37,9 @@ class BlockingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(BlockingUiState())
     val uiState: StateFlow<BlockingUiState> = _uiState.asStateFlow()
 
-    // Almacén temporal de desbloqueos
-    private val temporaryUnlocks = mutableMapOf<String, SocialShareHelper.TemporaryUnlock>()
+    // CRITICAL FIX: Usar ConcurrentHashMap para evitar ConcurrentModificationException
+    // Antes era un HashMap normal accedido desde múltiples hilos (race condition)
+    private val temporaryUnlocks = java.util.concurrent.ConcurrentHashMap<String, SocialShareHelper.TemporaryUnlock>()
     
     // Job para evitar múltiples shame shares simultáneos
     private var shameShareJob: Job? = null

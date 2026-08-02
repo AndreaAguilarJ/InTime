@@ -160,7 +160,9 @@ fun MomentumApp() {
 
             // Verificar si el tutorial debe mostrarse después del onboarding
             val localSettings by application.userRepository.getUserSettings().collectAsStateWithLifecycle(initialValue = null)
-            val hasSeenTutorial = localSettings?.hasSeenTutorial ?: true
+            // CRITICAL FIX: Cambiar default de true a false
+            // Antes, durante la carga (null), asumía tutorial visto = saltaba para nuevos usuarios
+            val hasSeenTutorial = localSettings?.hasSeenTutorial ?: false
             
             val startDestination = when {
                 !onboardingCompleted -> "onboarding"
@@ -789,6 +791,10 @@ private fun MainAppContent(
 
         // Pantalla de bloqueo superpuesta (z-index alto)
         if (shouldShowLockScreen) {
+            // CRITICAL FIX: Interceptar el back gesture/button para que NO pueda bypasear el lock
+            androidx.activity.compose.BackHandler(enabled = true) {
+                // No hacer nada - el usuario DEBE desbloquear, no puede saltar con back
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()

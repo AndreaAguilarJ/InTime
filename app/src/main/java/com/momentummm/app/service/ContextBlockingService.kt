@@ -213,6 +213,12 @@ class ContextBlockingService : Service() {
     private fun checkLocationRules(location: Location) {
         serviceScope.launch {
             try {
+                // CRITICAL FIX: Verificar que el DAO está inicializado antes de usarlo
+                if (!::contextBlockRuleDao.isInitialized) {
+                    Log.w(TAG, "contextBlockRuleDao not yet initialized, skipping location check")
+                    return@launch
+                }
+                
                 val locationRules = contextBlockRuleDao.getActiveLocationRules()
                 val matchingRules = locationRules.filter { rule ->
                     rule.latitude != null && rule.longitude != null &&
@@ -233,6 +239,12 @@ class ContextBlockingService : Service() {
     private fun checkWifiRules(currentSsid: String) {
         serviceScope.launch {
             try {
+                // CRITICAL FIX: Verificar que el DAO está inicializado antes de usarlo
+                if (!::contextBlockRuleDao.isInitialized) {
+                    Log.w(TAG, "contextBlockRuleDao not yet initialized, skipping WiFi check")
+                    return@launch
+                }
+                
                 val wifiRules = contextBlockRuleDao.getActiveWifiRules()
                 val matchingRules = wifiRules.filter { rule ->
                     rule.wifiSsid?.equals(currentSsid, ignoreCase = true) == true

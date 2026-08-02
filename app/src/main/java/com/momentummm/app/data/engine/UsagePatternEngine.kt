@@ -260,6 +260,20 @@ data class DailyTotal(
 // MOTOR DE PATRONES - El cerebro del sistema inteligente
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * CRITICAL FIX: Extensiones seguras para evitar NaN propagation.
+ * `average()` en listas vacías devuelve NaN, que corrompe cálculos y la DB.
+ * Estas funciones retornan un valor por defecto (0) si la lista está vacía.
+ */
+private fun List<Int>.safeAverage(default: Double = 0.0): Double =
+    if (isEmpty()) default else average()
+
+private fun List<Float>.safeAverageFloat(default: Float = 0f): Float =
+    if (isEmpty()) default else average().toFloat()
+
+private fun List<Double>.safeAverageDouble(default: Double = 0.0): Double =
+    if (isEmpty()) default else average()
+
 @Singleton
 class UsagePatternEngine @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -567,15 +581,20 @@ class UsagePatternEngine @Inject constructor(
         val dailyTotals = patternDao.getDailyTotals(packageName, thirtyDaysAgo)
         val hourlyAvgs = patternDao.getHourlyAverages(packageName, thirtyDaysAgo)
         
+        // CRITICAL FIX: Proteger contra NaN cuando las listas están vacías
+        // Antes, listas vacías producían NaN que corrompía la base de datos
+        
         // 1. FREQUENCY SCORE - Qué tan seguido se abre (0-100)
-        val avgDailyOpens = recentRecords.groupBy { it.date }
+        val dailyOpenCounts = recentRecords.groupBy { it.date }
             .values.map { dayRecords -> dayRecords.sumOf { it.openCount } }
-            .average().toFloat()
+        val avgDailyOpens = if (dailyOpenCounts.isEmpty()) 0f 
+            else dailyOpenCounts.average().toFloat()
         val frequencyScore = min(100f, avgDailyOpens * 3f) // 33 aperturas/día = 100
         
         // 2. DURATION SCORE - Qué tanto tiempo total se usa (0-100)
-        val avgDailyMinutes = dailyTotals.takeLast(7)
-            .map { it.totalMinutes }.average().toFloat()
+        val recentDailyMinutes = dailyTotals.takeLast(7).map { it.totalMinutes }
+        val avgDailyMinutes = if (recentDailyMinutes.isEmpty()) 0f
+            else recentDailyMinutes.average().toFloat()
         val durationScore = min(100f, avgDailyMinutes / 2.4f) // 240 min/día = 100
         
         // 3. RESISTANCE SCORE - Dificultad para dejar de usarla (0-100)

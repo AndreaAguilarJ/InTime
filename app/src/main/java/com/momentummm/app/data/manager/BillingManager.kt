@@ -28,6 +28,10 @@ class BillingManager(
     private val _subscriptionStatus = MutableStateFlow<SubscriptionStatus>(SubscriptionStatus.NOT_SUBSCRIBED)
     val subscriptionStatus: StateFlow<SubscriptionStatus> = _subscriptionStatus.asStateFlow()
     
+    // CRITICAL FIX: Persistir estado de suscripción en SharedPreferences
+    // Antes solo estaba en memoria y se perdía si no había internet al abrir
+    private val billingPrefs = context.getSharedPreferences("billing_state", Context.MODE_PRIVATE)
+    
     private val _availableProducts = MutableStateFlow<List<ProductDetails>>(emptyList())
     val availableProducts: StateFlow<List<ProductDetails>> = _availableProducts.asStateFlow()
     
@@ -54,8 +58,34 @@ class BillingManager(
             return
         }
         
+        // CRITICAL FIX: Cargar último estado de suscripción conocido del disco
+        loadPersistedSubscriptionStatus()
+        
         _billingConnectionState.value = BillingConnectionState.CONNECTING
         billingClient.startConnection(this)
+    }
+    
+    /**
+     * CRITICAL FIX: Cargar estado de suscripción desde SharedPreferences.
+     * Esto permite que usuarios premium mantengan acceso incluso sin internet.
+     */
+    private fun loadPersistedSubscriptionStatus() {
+        val savedStatus = billingPrefs.getString("subscription_status", null)
+        if (savedStatus != null) {
+            try {
+                _subscriptionStatus.value = SubscriptionStatus.valueOf(savedStatus)
+            } catch (e: Exception) {
+                // Ignorar valores inválidos
+            }
+        }
+    }
+    
+    /**
+     * CRITICAL FIX: Persistir estado de suscripción al disco.
+     */
+    private fun persistSubscriptionStatus(status: SubscriptionStatus) {
+        _subscriptionStatus.value = status
+        billingPrefs.edit().putString("subscription_status", status.name).apply()
     }
     
     override fun onBillingSetupFinished(billingResult: BillingResult) {
@@ -63,6 +93,8 @@ class BillingManager(
             _billingConnectionState.value = BillingConnectionState.CONNECTED
             queryAvailableProducts()
             queryExistingPurchases()
+            // CRITICAL FIX: Reintentar acknowledgments pendientes al reconectar
+            retryPendingAcknowledgments()
         } else {
             _billingConnectionState.value = BillingConnectionState.FAILED
         }
@@ -70,6 +102,13 @@ class BillingManager(
     
     override fun onBillingServiceDisconnected() {
         _billingConnectionState.value = BillingConnectionState.DISCONNECTED
+        // CRITICAL FIX: Intentar reconexión con delay
+        // Google recomienda exponential backoff para reconexión
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            if (_billingConnectionState.value == BillingConnectionState.DISCONNECTED) {
+                startConnection()
+            }
+        }, 5000L) // Reintentar después de 5 segundos
     }
     
     private fun queryAvailableProducts() {
@@ -156,13 +195,24 @@ class BillingManager(
     private fun handlePurchases(purchases: List<Purchase>) {
         for (purchase in purchases) {
             if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                // Verify the purchase on your server before granting entitlement
                 when {
                     purchase.products.contains(PREMIUM_MONTHLY_SKU) -> {
-                        _subscriptionStatus.value = SubscriptionStatus.MONTHLY_SUBSCRIBED
+                        // CRITICAL FIX: Solo actualizar estado DESPUÉS de acknowledge exitoso
+                        // Mientras tanto, usar el estado persistido para no dar premium sin confirmar
+                        if (purchase.isAcknowledged) {
+                            persistSubscriptionStatus(SubscriptionStatus.MONTHLY_SUBSCRIBED)
+                        }
                     }
                     purchase.products.contains(PREMIUM_YEARLY_SKU) -> {
-                        _subscriptionStatus.value = SubscriptionStatus.YEARLY_SUBSCRIBED
+                        if (purchase.isAcknowledged) {
+                            persistSubscriptionStatus(SubscriptionStatus.YEARLY_SUBSCRIBED)
+                        }
+                    }
+                    purchase.products.contains(EMERGENCY_UNLOCK_SKU) -> {
+                        // CRITICAL FIX: Consumir el emergency unlock para que se pueda comprar de nuevo
+                        // Antes esta función nunca se llamaba - la compra se reembolsaba después de 3 días
+                        consumeEmergencyUnlock(purchase)
+                        _purchaseState.value = PurchaseState.Purchased
                     }
                 }
                 
@@ -173,8 +223,10 @@ class BillingManager(
             }
         }
         
-        if (purchases.isEmpty()) {
-            _subscriptionStatus.value = SubscriptionStatus.NOT_SUBSCRIBED
+        // CRITICAL FIX: Solo marcar como NOT_SUBSCRIBED si realmente verificamos
+        // que no hay suscripciones activas (no cuando la lista está vacía por error de red)
+        if (purchases.isEmpty() && billingClient.isReady) {
+            persistSubscriptionStatus(SubscriptionStatus.NOT_SUBSCRIBED)
         }
     }
     
@@ -185,11 +237,54 @@ class BillingManager(
         
         billingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                android.util.Log.d("BillingManager", "Purchase acknowledged successfully for token: ${purchase.purchaseToken.take(20)}...")
+                android.util.Log.d("BillingManager", "Purchase acknowledged successfully")
+                // CRITICAL FIX: Actualizar estado de suscripción DESPUÉS de acknowledge exitoso
+                when {
+                    purchase.products.contains(PREMIUM_MONTHLY_SKU) -> 
+                        persistSubscriptionStatus(SubscriptionStatus.MONTHLY_SUBSCRIBED)
+                    purchase.products.contains(PREMIUM_YEARLY_SKU) -> 
+                        persistSubscriptionStatus(SubscriptionStatus.YEARLY_SUBSCRIBED)
+                }
             } else {
-                android.util.Log.e("BillingManager", "Failed to acknowledge purchase. Code: ${billingResult.responseCode}, Message: ${billingResult.debugMessage}")
-                // Si falla el acknowledge, guardar para reintentar después
-                // El usuario podría perder la compra si no se acknowledges
+                android.util.Log.e("BillingManager", "Failed to acknowledge. Code: ${billingResult.responseCode}")
+                // CRITICAL FIX: Guardar token para retry posterior
+                savePendingAcknowledgment(purchase.purchaseToken)
+            }
+        }
+    }
+    
+    /**
+     * CRITICAL FIX: Guardar compras pendientes de acknowledge para retry.
+     * Sin esto, las compras se reembolsan después de 3 días.
+     */
+    private fun savePendingAcknowledgment(purchaseToken: String) {
+        val pending = billingPrefs.getStringSet("pending_acks", mutableSetOf()) ?: mutableSetOf()
+        val updated = pending.toMutableSet()
+        updated.add(purchaseToken)
+        billingPrefs.edit().putStringSet("pending_acks", updated).apply()
+    }
+    
+    /**
+     * Reintentar acknowledgments pendientes.
+     * Debe llamarse cada vez que se conecte el billing client.
+     */
+    private fun retryPendingAcknowledgments() {
+        val pending = billingPrefs.getStringSet("pending_acks", emptySet()) ?: return
+        if (pending.isEmpty()) return
+        
+        for (token in pending.toSet()) {
+            val params = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(token)
+                .build()
+            
+            billingClient.acknowledgePurchase(params) { result ->
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                    // Remover del set de pendientes
+                    val current = billingPrefs.getStringSet("pending_acks", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                    current.remove(token)
+                    billingPrefs.edit().putStringSet("pending_acks", current).apply()
+                    android.util.Log.d("BillingManager", "Pending acknowledgment retried successfully")
+                }
             }
         }
     }

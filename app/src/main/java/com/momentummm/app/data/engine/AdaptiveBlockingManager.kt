@@ -117,7 +117,15 @@ data class FocusProfile(
         val startMinutes = scheduleStartHour * 60 + scheduleStartMinute
         val endMinutes = scheduleEndHour * 60 + scheduleEndMinute
         
-        return currentMinutes in startMinutes until endMinutes
+        // CRITICAL FIX: Manejar horarios que cruzan medianoche (ej: 23:00 - 07:00)
+        // Antes, un rango como 1380..420 era un rango vacío y NUNCA se activaba
+        return if (startMinutes <= endMinutes) {
+            // Horario normal (ej: 09:00 - 17:00)
+            currentMinutes in startMinutes until endMinutes
+        } else {
+            // Horario nocturno que cruza medianoche (ej: 23:00 - 07:00)
+            currentMinutes >= startMinutes || currentMinutes < endMinutes
+        }
     }
     
     /**
@@ -371,7 +379,8 @@ class AdaptiveBlockingManager @Inject constructor(
     val dailyStats: StateFlow<DailyBlockingStats> = _dailyStats.asStateFlow()
     
     // Tracking de sesiones activas
-    private val activeSessions = mutableMapOf<String, Long>() // pkg -> startTimestamp
+    // CRITICAL FIX: Usar ConcurrentHashMap para evitar ConcurrentModificationException
+    private val activeSessions = java.util.concurrent.ConcurrentHashMap<String, Long>() // pkg -> startTimestamp
     
     init {
         scope.launch {

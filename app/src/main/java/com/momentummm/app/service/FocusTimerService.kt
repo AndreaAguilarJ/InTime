@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -118,6 +119,19 @@ class FocusTimerService : Service() {
             ACTION_PAUSE -> pauseSession()
             ACTION_RESUME -> resumeSession()
             ACTION_STOP -> stopSession()
+            null -> {
+                // CRITICAL FIX: Service restarted by system with null intent
+                // Si hay una sesión activa (RUNNING o PAUSED), dejar el servicio vivo
+                // pero sin timer activo. El usuario verá la notificación y podrá retomar.
+                val currentStatus = _sessionState.value.status
+                if (currentStatus == FocusTimerStatus.IDLE) {
+                    android.util.Log.d("FocusTimerService", "Restarted with no active session, stopping")
+                    stopForeground(Service.STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                } else {
+                    android.util.Log.d("FocusTimerService", "Restarted with session in $currentStatus state")
+                }
+            }
         }
         return Service.START_STICKY
     }
@@ -226,6 +240,9 @@ class FocusTimerService : Service() {
 
         updateNotification(remainingSeconds, FocusTimerStatus.RUNNING)
         startTicker()
+        // CRITICAL FIX: Reiniciar el XP tracker que fue cancelado en pauseSession()
+        // Antes, después de pause/resume, el usuario no ganaba más XP
+        startXpTracker()
     }
 
     private fun stopSession() {
@@ -253,11 +270,14 @@ class FocusTimerService : Service() {
                     onSessionCompleted()
                     break
                 } else {
-                    val current = _sessionState.value
-                    if (current.status == FocusTimerStatus.RUNNING) {
-                        _sessionState.value = current.copy(remainingSeconds = remainingSeconds)
-                        updateNotification(remainingSeconds, FocusTimerStatus.RUNNING)
+                    // CRITICAL FIX: Usar update{} para operación atómica
+                    // Antes, read-then-write podía ser sobreescrito por xpTrackerJob
+                    _sessionState.update { current ->
+                        if (current.status == FocusTimerStatus.RUNNING) {
+                            current.copy(remainingSeconds = remainingSeconds)
+                        } else current
                     }
+                    updateNotification(remainingSeconds, FocusTimerStatus.RUNNING)
                 }
                 delay(1000)
             }

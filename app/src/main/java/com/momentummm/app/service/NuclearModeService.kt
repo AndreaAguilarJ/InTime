@@ -82,6 +82,7 @@ class NuclearModeService : Service() {
     }
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private var timerJob: Job? = null
+    @Volatile
     private var isAppInForeground = false
     
     private val _currentWaitSeconds = MutableStateFlow(0)
@@ -129,6 +130,19 @@ class NuclearModeService : Service() {
             ACTION_APP_BACKGROUND -> {
                 isAppInForeground = false
                 Log.d(TAG, "App en segundo plano - timer pausado")
+            }
+            null -> {
+                // CRITICAL FIX: Service restarted by system (START_STICKY) with null intent
+                // Verificar si Nuclear Mode está activo y reanudar el timer
+                Log.d(TAG, "Service restarted by system - checking nuclear mode state")
+                if (::smartBlockingManager.isInitialized && 
+                    smartBlockingManager.isNuclearModeActive.value) {
+                    startNuclearTimer()
+                    Log.d(TAG, "Nuclear timer resumed after system restart")
+                } else {
+                    Log.d(TAG, "Nuclear mode not active, stopping service")
+                    stopSelf()
+                }
             }
         }
         return START_STICKY
