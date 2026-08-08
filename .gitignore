@@ -79,3 +79,13 @@ Thumbs.db
 
 # Ignorar archivos de volcado de memoria
 java_pid18504.hprof
+
+# IDE / agent tooling local — NO es código del proyecto y puede contener secretos.
+# .vscode/mcp.json llevaba una API key de Appwrite; nunca debe versionarse.
+.vscode/mcp.json
+.kiro/
+.agents/
+.opencode/
+.zed/
+opencode.json
+skills-lock.json

@@ -31,6 +31,11 @@ import com.momentummm.app.data.repository.ProtectedFeature
 import com.momentummm.app.ui.password.PasswordProtectionViewModel
 import com.momentummm.app.ui.password.PasswordVerificationDialog
 import com.momentummm.app.ui.system.*
+import com.momentummm.app.ui.theme.momentum
+import com.momentummm.app.R
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -512,155 +517,143 @@ private fun AppLimitCard(
     val context = LocalContext.current
     var showEditDialog by remember { mutableStateOf(false) }
 
-    // Obtener el icono de la aplicación
     val appIcon = remember(appLimit.packageName) {
-        try {
-            context.packageManager.getApplicationIcon(appLimit.packageName)
-        } catch (e: Exception) {
-            null
-        }
+        runCatching { context.packageManager.getApplicationIcon(appLimit.packageName) }.getOrNull()
     }
 
     val isOverLimit = remainingTime <= 0
     val progressPercentage = if (appLimit.dailyLimitMinutes > 0) {
-        ((appLimit.dailyLimitMinutes - remainingTime).toFloat() / appLimit.dailyLimitMinutes.toFloat()).coerceIn(0f, 1f)
+        ((appLimit.dailyLimitMinutes - remainingTime).toFloat() / appLimit.dailyLimitMinutes.toFloat())
+            .coerceIn(0f, 1f)
     } else 0f
 
-    MomentumCard(
-        modifier = modifier,
-        containerColor = if (isOverLimit && appLimit.isEnabled) {
-            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-        } else {
-            MaterialTheme.colorScheme.surface
-        }
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+    // Semáforo de consumo: verde hasta el 60%, ámbar al acercarse y rojo al pasarse.
+    // El color lo llevan la barra y la cifra restante, que son lo que se mira primero.
+    val stateColor = when {
+        !appLimit.isEnabled -> MaterialTheme.momentum.textTertiary
+        isOverLimit -> MaterialTheme.momentum.danger
+        progressPercentage > 0.8f -> MaterialTheme.momentum.warning
+        else -> MaterialTheme.momentum.success
+    }
+
+    MomentumCard(modifier = modifier) {
+        Column(modifier = Modifier.padding(MomentumDesign.Spacing.medium)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Icono de la app
                 if (appIcon != null) {
                     Image(
                         painter = BitmapPainter(appIcon.toBitmap().asImageBitmap()),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .size(MomentumDesign.Size.iconTile)
+                            .clip(RoundedCornerShape(MomentumDesign.CornerRadius.medium))
                     )
                 } else {
-                    Surface(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                    ) {
-                        Icon(
-                            Icons.Filled.Apps,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
+                    IconTile(icon = Icons.Filled.Apps)
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(MomentumDesign.Spacing.compact))
 
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = appLimit.appName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.momentum.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
+                    Spacer(modifier = Modifier.height(MomentumDesign.Spacing.hairline))
                     Text(
-                        text = "Límite: ${appLimit.dailyLimitMinutes} min/día",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = stringResource(R.string.app_limits_daily_limit_value, appLimit.dailyLimitMinutes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.momentum.textSecondary
                     )
-                    if (isOverLimit && appLimit.isEnabled) {
-                        Text(
-                            text = "⚠️ Límite excedido",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                            fontWeight = FontWeight.Medium
-                        )
-                    } else {
-                        Text(
-                            text = "Restante: ${remainingTime} min",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (remainingTime < 30) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
                 }
 
-                // Switch para habilitar/deshabilitar
+                Spacer(modifier = Modifier.width(MomentumDesign.Spacing.small))
+
                 Switch(
                     checked = appLimit.isEnabled,
                     onCheckedChange = onToggleEnabled
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.medium))
 
-            // Barra de progreso
-            LinearProgressIndicator(
-                progress = progressPercentage,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                color = when {
-                    isOverLimit -> MaterialTheme.colorScheme.error
-                    progressPercentage > 0.8f -> MaterialTheme.colorScheme.tertiary
-                    progressPercentage > 0.6f -> MaterialTheme.colorScheme.secondary
-                    else -> MaterialTheme.colorScheme.primary
-                },
-                trackColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Botones de acción
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                verticalAlignment = Alignment.Bottom
             ) {
-                TextButton(
-                    onClick = { showEditDialog = true }
+                Text(
+                    text = if (isOverLimit) {
+                        stringResource(R.string.app_limits_exceeded)
+                    } else {
+                        stringResource(R.string.app_limits_remaining_value, remainingTime)
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    color = stateColor,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "${(progressPercentage * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.momentum.textTertiary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.small))
+
+            ProgressBar(
+                progress = progressPercentage,
+                color = stateColor,
+                height = 8.dp,
+            )
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.medium))
+
+            // Acciones como tiles compactos: dos TextButton anchos competían con el
+            // switch por la atención en una tarjeta que ya es densa.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.small)
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Box(
+                    modifier = Modifier
+                        .size(MomentumDesign.Size.iconTileSmall)
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(MaterialTheme.momentum.surfaceSunken)
+                        .clickable { showEditDialog = true },
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Filled.Edit,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        contentDescription = stringResource(R.string.edit),
+                        tint = MaterialTheme.momentum.textSecondary,
+                        modifier = Modifier.size(MomentumDesign.Size.icon)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Editar")
                 }
-
-                TextButton(
-                    onClick = onRemove,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(MomentumDesign.Size.iconTileSmall)
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(MaterialTheme.momentum.danger.copy(alpha = MomentumDesign.Alpha.soft))
+                        .clickable(onClick = onRemove),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Filled.Delete,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        contentDescription = stringResource(R.string.delete),
+                        tint = MaterialTheme.momentum.danger,
+                        modifier = Modifier.size(MomentumDesign.Size.icon)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Eliminar")
                 }
             }
         }
     }
 
-    // Edit Dialog
     if (showEditDialog) {
         EditAppLimitDialog(
             appName = appLimit.appName,

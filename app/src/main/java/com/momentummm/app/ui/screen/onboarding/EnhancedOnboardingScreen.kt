@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,6 +37,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,6 +68,7 @@ import com.momentummm.app.MomentumApplication
 import com.momentummm.app.ui.viewmodel.OnboardingViewModel
 import com.momentummm.app.ui.viewmodel.OnboardingViewModelFactory
 import com.momentummm.app.util.PermissionUtils
+import com.momentummm.app.ui.theme.*
 
 private enum class OnboardingWizardStep {
 	SHOCK_REALITY, // Nueva pantalla de impacto psicológico
@@ -177,16 +181,24 @@ fun EnhancedOnboardingScreen(
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
+			// Sin este inset el contador de pasos se dibuja debajo de la barra de
+			// estado y queda encima del reloj del sistema.
+			.statusBarsPadding()
 			.padding(24.dp),
 		verticalArrangement = Arrangement.spacedBy(20.dp)
 	) {
 		Text(
-			text = "Paso ${currentStep} de ${totalSteps - 1}", // Excluir shock del contador
+			text = stringResource(
+				R.string.onboarding_wizard_step,
+				currentStep,
+				totalSteps - 1 // Excluir shock del contador
+			),
 			style = MaterialTheme.typography.labelLarge,
 			color = MaterialTheme.colorScheme.onSurfaceVariant
 		)
-		LinearProgressIndicator(
-			progress = if (totalSteps > 1) currentStep.toFloat() / (totalSteps - 1).toFloat() else 0f,
+		com.momentummm.app.ui.system.StepProgress(
+			currentStep = currentStep - 1,
+			totalSteps = (totalSteps - 1).coerceAtLeast(1),
 			modifier = Modifier.fillMaxWidth()
 		)
 
@@ -198,8 +210,8 @@ fun EnhancedOnboardingScreen(
 				StepContainerEnhanced(
 					icon = Icons.Default.Rocket,
 					emoji = "🚀",
-					title = "¡Bienvenido a Momentum!",
-					description = "Configura permisos clave para que el bloqueo y el seguimiento funcionen al 100%.",
+					title = stringResource(R.string.onboarding_welcome_title),
+					description = stringResource(R.string.onboarding_welcome_desc),
 					iconColor = MaterialTheme.colorScheme.primary
 				) {
 					Spacer(modifier = Modifier.height(16.dp))
@@ -212,7 +224,7 @@ fun EnhancedOnboardingScreen(
 					) {
 						Icon(Icons.Default.ArrowForward, contentDescription = null)
 						Spacer(modifier = Modifier.size(8.dp))
-						Text("Comenzar configuración", fontWeight = FontWeight.Bold)
+						Text(stringResource(R.string.onboarding_start_setup), fontWeight = FontWeight.Bold)
 					}
 				}
 			}
@@ -220,9 +232,9 @@ fun EnhancedOnboardingScreen(
 				StepContainerEnhanced(
 					icon = Icons.Default.QueryStats,
 					emoji = "📊",
-					title = "Permiso de estadísticas",
-					description = "Necesitamos acceso a estadísticas de uso para medir tiempo y aplicar límites. Es esencial para el funcionamiento de la app.",
-					iconColor = Color(0xFF6366F1),
+					title = stringResource(R.string.onboarding_usage_title),
+					description = stringResource(R.string.onboarding_usage_desc),
+					iconColor = Indigo500,
 					isGranted = hasUsagePermission
 				) {
 					Spacer(modifier = Modifier.height(16.dp))
@@ -244,7 +256,7 @@ fun EnhancedOnboardingScreen(
 						) {
 							Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
 							Spacer(modifier = Modifier.size(4.dp))
-							Text("Abrir ajustes")
+							Text(stringResource(R.string.onboarding_open_settings))
 						}
 						Button(
 							onClick = { currentStep = OnboardingWizardStep.NOTIFICATIONS.ordinal },
@@ -254,7 +266,7 @@ fun EnhancedOnboardingScreen(
 								.height(52.dp),
 							shape = RoundedCornerShape(12.dp)
 						) {
-							Text("Siguiente")
+							Text(stringResource(R.string.onboarding_next))
 							Spacer(modifier = Modifier.size(4.dp))
 							Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
 						}
@@ -265,9 +277,9 @@ fun EnhancedOnboardingScreen(
 				StepContainerEnhanced(
 					icon = Icons.Default.Notifications,
 					emoji = "🔔",
-					title = "Permiso de notificaciones",
-					description = "Usamos notificaciones para recordatorios y alertas de bloqueo. Te avisaremos cuando estés cerca de tu límite.",
-					iconColor = Color(0xFFF59E0B),
+					title = stringResource(R.string.onboarding_notif_title),
+					description = stringResource(R.string.onboarding_notif_desc),
+					iconColor = Amber500,
 					isGranted = hasNotificationPermission
 				) {
 					Spacer(modifier = Modifier.height(16.dp))
@@ -292,7 +304,7 @@ fun EnhancedOnboardingScreen(
 							) {
 								Icon(Icons.Default.NotificationsActive, contentDescription = null, modifier = Modifier.size(18.dp))
 								Spacer(modifier = Modifier.size(4.dp))
-								Text("Permitir")
+								Text(stringResource(R.string.onboarding_allow))
 							}
 							Button(
 								onClick = { currentStep = OnboardingWizardStep.OVERLAY.ordinal },
@@ -302,7 +314,7 @@ fun EnhancedOnboardingScreen(
 									.height(52.dp),
 								shape = RoundedCornerShape(12.dp)
 							) {
-								Text("Siguiente")
+								Text(stringResource(R.string.onboarding_next))
 								Spacer(modifier = Modifier.size(4.dp))
 								Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
 							}
@@ -316,7 +328,7 @@ fun EnhancedOnboardingScreen(
 									.height(48.dp),
 								shape = RoundedCornerShape(12.dp)
 							) {
-								Text("Omitir por ahora")
+								Text(stringResource(R.string.onboarding_skip_for_now))
 							}
 						}
 					} else {
@@ -337,7 +349,7 @@ fun EnhancedOnboardingScreen(
 								)
 								Spacer(modifier = Modifier.size(8.dp))
 								Text(
-									text = "Tu versión de Android no requiere este permiso.",
+									text = stringResource(R.string.onboarding_notif_not_required),
 									style = MaterialTheme.typography.bodyMedium,
 									color = MaterialTheme.colorScheme.onSurfaceVariant
 								)
@@ -351,7 +363,7 @@ fun EnhancedOnboardingScreen(
 								.height(52.dp),
 							shape = RoundedCornerShape(12.dp)
 						) {
-							Text("Siguiente")
+							Text(stringResource(R.string.onboarding_next))
 							Spacer(modifier = Modifier.size(4.dp))
 							Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
 						}
@@ -362,9 +374,9 @@ fun EnhancedOnboardingScreen(
 				StepContainerEnhanced(
 					icon = Icons.Default.Layers,
 					emoji = "📱",
-					title = "Permiso de superposición",
-					description = "Recomendado para mostrar la pantalla de bloqueo sobre otras apps. Esto permite que Momentum te proteja efectivamente.",
-					iconColor = Color(0xFF10B981),
+					title = stringResource(R.string.onboarding_overlay_title),
+					description = stringResource(R.string.onboarding_overlay_desc),
+					iconColor = Mint500,
 					isGranted = hasOverlayPermission
 				) {
 					Spacer(modifier = Modifier.height(16.dp))
@@ -390,7 +402,7 @@ fun EnhancedOnboardingScreen(
 								)
 								Spacer(modifier = Modifier.size(8.dp))
 								Text(
-									text = "Opcional: puedes activarlo más tarde desde Ajustes.",
+									text = stringResource(R.string.onboarding_overlay_optional),
 									style = MaterialTheme.typography.bodySmall,
 									color = MaterialTheme.colorScheme.onSurfaceVariant
 								)
@@ -425,7 +437,7 @@ fun EnhancedOnboardingScreen(
 						) {
 							Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
 							Spacer(modifier = Modifier.size(4.dp))
-							Text("Habilitar")
+							Text(stringResource(R.string.onboarding_enable))
 						}
 						Button(
 							onClick = { currentStep = OnboardingWizardStep.FINISH.ordinal },
@@ -434,7 +446,7 @@ fun EnhancedOnboardingScreen(
 								.height(52.dp),
 							shape = RoundedCornerShape(12.dp)
 						) {
-							Text("Siguiente")
+							Text(stringResource(R.string.onboarding_next))
 							Spacer(modifier = Modifier.size(4.dp))
 							Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
 						}
@@ -445,9 +457,9 @@ fun EnhancedOnboardingScreen(
 				StepContainerEnhanced(
 					icon = Icons.Default.CheckCircle,
 					emoji = "🎉",
-					title = "¡Todo listo!",
-					description = "Momentum está preparado para ayudarte a recuperar el control de tu tiempo. A continuación configuraremos tu perfil.",
-					iconColor = Color(0xFF22C55E)
+					title = stringResource(R.string.onboarding_all_set_title),
+					description = stringResource(R.string.onboarding_all_set_desc),
+					iconColor = Mint500
 				) {
 					Spacer(modifier = Modifier.height(24.dp))
 					
@@ -463,13 +475,13 @@ fun EnhancedOnboardingScreen(
 							verticalArrangement = Arrangement.spacedBy(12.dp)
 						) {
 							Text(
-								"Resumen de configuración:",
+								stringResource(R.string.onboarding_summary_title),
 								style = MaterialTheme.typography.titleSmall,
 								fontWeight = FontWeight.Bold
 							)
-							PermissionSummaryRow("Estadísticas de uso", hasUsagePermission)
-							PermissionSummaryRow("Notificaciones", hasNotificationPermission)
-							PermissionSummaryRow("Superposición", hasOverlayPermission)
+							PermissionSummaryRow(stringResource(R.string.onboarding_summary_usage), hasUsagePermission)
+							PermissionSummaryRow(stringResource(R.string.onboarding_summary_notifications), hasNotificationPermission)
+							PermissionSummaryRow(stringResource(R.string.onboarding_summary_overlay), hasOverlayPermission)
 						}
 					}
 					
@@ -483,7 +495,7 @@ fun EnhancedOnboardingScreen(
 						enabled = !uiState.isLoading,
 						shape = RoundedCornerShape(16.dp),
 						colors = ButtonDefaults.buttonColors(
-							containerColor = Color(0xFF22C55E)
+							containerColor = Mint500
 						)
 					) {
 						if (uiState.isLoading) {
@@ -496,12 +508,12 @@ fun EnhancedOnboardingScreen(
 									modifier = Modifier.size(20.dp),
 									color = Color.White
 								)
-								Text("Guardando...", color = Color.White)
+								Text(stringResource(R.string.onboarding_saving), color = Color.White)
 							}
 						} else {
 							Icon(Icons.Default.PlayArrow, contentDescription = null)
 							Spacer(modifier = Modifier.size(8.dp))
-							Text("Continuar al tutorial", fontWeight = FontWeight.Bold)
+							Text(stringResource(R.string.onboarding_continue_tutorial), fontWeight = FontWeight.Bold)
 						}
 					}
 				}
@@ -521,7 +533,7 @@ private fun PermissionSummaryRow(name: String, isGranted: Boolean) {
 		Icon(
 			imageVector = if (isGranted) Icons.Default.CheckCircle else Icons.Default.Cancel,
 			contentDescription = null,
-			tint = if (isGranted) Color(0xFF22C55E) else MaterialTheme.colorScheme.error,
+			tint = if (isGranted) Mint500 else MaterialTheme.colorScheme.error,
 			modifier = Modifier.size(20.dp)
 		)
 	}
@@ -531,7 +543,7 @@ private fun PermissionSummaryRow(name: String, isGranted: Boolean) {
 private fun PermissionGrantedCard() {
 	Card(
 		colors = CardDefaults.cardColors(
-			containerColor = Color(0xFF22C55E).copy(alpha = 0.1f)
+			containerColor = Mint500.copy(alpha = 0.1f)
 		),
 		shape = RoundedCornerShape(12.dp)
 	) {
@@ -544,15 +556,15 @@ private fun PermissionGrantedCard() {
 			Icon(
 				Icons.Default.CheckCircle,
 				contentDescription = null,
-				tint = Color(0xFF22C55E),
+				tint = Mint500,
 				modifier = Modifier.size(24.dp)
 			)
 			Spacer(modifier = Modifier.size(8.dp))
 			Text(
-				text = "✓ Permiso concedido correctamente",
+				text = stringResource(R.string.onboarding_permission_granted),
 				style = MaterialTheme.typography.bodyMedium,
 				fontWeight = FontWeight.Medium,
-				color = Color(0xFF22C55E)
+				color = Mint500
 			)
 		}
 	}

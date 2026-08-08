@@ -33,6 +33,7 @@ import com.momentummm.app.data.entity.BlockType
 import com.momentummm.app.data.entity.InAppBlockRule
 import com.momentummm.app.util.AccessibilityUtils
 import androidx.core.graphics.drawable.toBitmap
+import com.momentummm.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,7 +144,7 @@ fun InAppBlockScreen(
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 8.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFF3E0)
+                        containerColor = Amber50
                     ),
                     onClick = {
                         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
@@ -158,19 +159,19 @@ fun InAppBlockScreen(
                         Icon(
                             imageVector = Icons.Default.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFE65100)
+                            tint = Coral500
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
                                 text = stringResource(R.string.in_app_block_monitoring_disabled_title),
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFE65100)
+                                color = Coral500
                             )
                             Text(
                                 text = stringResource(R.string.in_app_block_monitoring_disabled_subtitle),
                                 fontSize = 13.sp,
-                                color = Color(0xFFEF6C00)
+                                color = Amber600
                             )
                         }
                     }
@@ -186,13 +187,13 @@ fun InAppBlockScreen(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = Color(0xFF2E7D32)
+                        tint = Mint600
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.in_app_block_monitoring_active),
                         fontSize = 13.sp,
-                        color = Color(0xFF2E7D32)
+                        color = Mint600
                     )
                 }
             }

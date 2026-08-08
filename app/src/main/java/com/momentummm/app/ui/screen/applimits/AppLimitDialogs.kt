@@ -28,6 +28,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.drawable.toBitmap
 import com.momentummm.app.data.repository.AppUsageInfo
 import com.momentummm.app.ui.system.*
+import androidx.compose.material.icons.filled.Timer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -401,11 +402,21 @@ fun EditAppLimitDialogExtended(
                 // ================================================================
                 // SECCIÓN: Límite Diario
                 // ================================================================
-                Text(
-                    text = "⏱️ Límite de Tiempo Diario",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Timer,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Límite de Tiempo Diario",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
                 
                 Spacer(modifier = Modifier.height(8.dp))
 

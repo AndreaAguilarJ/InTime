@@ -1,6 +1,7 @@
 package com.momentummm.app.ui.screen.auth
 
 import android.util.Patterns
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -23,6 +25,15 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.R
+import com.momentummm.app.ui.system.ButtonSize
+import com.momentummm.app.ui.system.ButtonStyle
+import com.momentummm.app.ui.system.MomentumButton
+import com.momentummm.app.ui.system.MomentumDesign
+import com.momentummm.app.ui.theme.momentum
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import com.momentummm.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,79 +42,107 @@ fun WelcomeScreen(
     onSignInClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(MaterialTheme.momentum.canvas)
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
-        
-        // App Icon/Logo
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "Momentum Logo",
-            modifier = Modifier.size(120.dp)
+        // Velo de marca en la parte alta: da presencia a la pantalla de entrada sin
+        // teñir el texto ni comprometer el contraste de los botones.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(420.dp)
+                .background(MaterialTheme.momentum.veil(0.22f))
         )
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        // Welcome Text
-        Text(
-            text = "Bienvenido a Momentum",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Tu vida en semanas",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Text(
-            text = "Visualiza tu tiempo, controla tu bienestar digital y vive cada semana con propósito.",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
-        Spacer(modifier = Modifier.height(48.dp))
-        
-        // Sign Up Button
-        Button(
-            onClick = onSignUpClick,
-            modifier = Modifier.fillMaxWidth()
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(
+                    horizontal = MomentumDesign.Spacing.large,
+                    vertical = MomentumDesign.Spacing.large
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Crear cuenta")
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.extraLarge))
+
+            Box(
+                modifier = Modifier
+                    .size(112.dp)
+                    .clip(RoundedCornerShape(MomentumDesign.CornerRadius.hero))
+                    .background(MaterialTheme.momentum.brandGradient),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "Momentum",
+                    modifier = Modifier.size(96.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.extraLarge))
+
+            Text(
+                text = stringResource(R.string.auth_welcome_title),
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.momentum.textPrimary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.compact))
+
+            Text(
+                text = stringResource(R.string.auth_welcome_subtitle),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.medium))
+
+            Text(
+                text = stringResource(R.string.auth_welcome_desc),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.momentum.textSecondary
+            )
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.huge))
+
+            MomentumButton(
+                onClick = onSignUpClick,
+                style = ButtonStyle.Primary,
+                size = ButtonSize.Large,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.auth_create_account))
+            }
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.compact))
+
+            MomentumButton(
+                onClick = onSignInClick,
+                style = ButtonStyle.Outline,
+                size = ButtonSize.Large,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.auth_sign_in))
+            }
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.large))
+
+            Text(
+                text = stringResource(R.string.auth_terms_continue),
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.momentum.textTertiary
+            )
         }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        // Sign In Button
-        OutlinedButton(
-            onClick = onSignInClick,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Iniciar sesión")
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Text(
-            text = "Al continuar, aceptas nuestros términos de servicio y política de privacidad.",
-            style = MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 
@@ -135,6 +174,7 @@ fun SignUpScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(MaterialTheme.momentum.canvas)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -142,7 +182,7 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(48.dp))
         
         Text(
-            text = "Crear cuenta",
+            text = stringResource(R.string.auth_create_account),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -150,7 +190,7 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Únete a miles de usuarios que han transformado su relación con el tiempo",
+            text = stringResource(R.string.auth_signup_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -162,13 +202,13 @@ fun SignUpScreen(
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Nombre completo") },
+            label = { Text(stringResource(R.string.auth_field_full_name)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             supportingText = {
                 if (name.isNotEmpty() && name.length < 2) {
                     Text(
-                        text = "El nombre debe tener al menos 2 caracteres",
+                        text = stringResource(R.string.auth_error_name_too_short),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -182,13 +222,13 @@ fun SignUpScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Correo electrónico") },
+            label = { Text(stringResource(R.string.auth_field_email)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             supportingText = {
                 if (email.isNotEmpty() && !isValidEmail(email)) {
                     Text(
-                        text = "Ingresa un correo electrónico válido",
+                        text = stringResource(R.string.auth_error_invalid_email),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -202,7 +242,7 @@ fun SignUpScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Contraseña") },
+            label = { Text(stringResource(R.string.auth_field_password)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -211,13 +251,13 @@ fun SignUpScreen(
                     IconButton(onClick = { showPasswordTips = !showPasswordTips }) {
                         Icon(
                             imageVector = Icons.Filled.Info,
-                            contentDescription = "Consejos de contraseña"
+                            contentDescription = stringResource(R.string.auth_a11y_password_tips)
                         )
                     }
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                            contentDescription = stringResource(if (passwordVisible) R.string.auth_a11y_hide_password else R.string.auth_a11y_show_password)
                         )
                     }
                 }
@@ -226,17 +266,17 @@ fun SignUpScreen(
                 if (password.isNotEmpty()) {
                     Column {
                         Text(
-                            text = "Fortaleza: ${passwordStrength.name}",
+                            text = stringResource(R.string.auth_password_strength, stringResource(passwordStrength.labelRes())),
                             color = when (passwordStrength) {
                                 PasswordStrength.WEAK -> MaterialTheme.colorScheme.error
-                                PasswordStrength.MEDIUM -> Color(0xFFFF9500)
-                                PasswordStrength.STRONG -> Color(0xFF4CAF50)
+                                PasswordStrength.MEDIUM -> Amber500
+                                PasswordStrength.STRONG -> Mint500
                             }
                         )
                         if (showPasswordTips && passwordTips.isNotEmpty()) {
                             passwordTips.forEach { tip ->
                                 Text(
-                                    text = "• $tip",
+                                    text = stringResource(R.string.auth_bullet, stringResource(tip)),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -253,7 +293,7 @@ fun SignUpScreen(
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Confirmar contraseña") },
+            label = { Text(stringResource(R.string.auth_field_confirm_password)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -261,7 +301,7 @@ fun SignUpScreen(
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
                         imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                        contentDescription = stringResource(if (confirmPasswordVisible) R.string.auth_a11y_hide_password else R.string.auth_a11y_show_password)
                     )
                 }
             },
@@ -269,7 +309,7 @@ fun SignUpScreen(
             supportingText = {
                 if (confirmPassword.isNotEmpty() && password != confirmPassword) {
                     Text(
-                        text = "Las contraseñas no coinciden",
+                        text = stringResource(R.string.auth_error_passwords_differ),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -298,21 +338,16 @@ fun SignUpScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "¿Por qué crear una cuenta?",
+                        text = stringResource(R.string.auth_why_create_account),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                listOf(
-                    "Sincroniza tus datos entre dispositivos",
-                    "Respalda tu información de manera segura",
-                    "Accede a funciones premium",
-                    "Recibe estadísticas avanzadas"
-                ).forEach { benefit ->
+                stringArrayResource(R.array.auth_signup_benefits).forEach { benefit ->
                     Text(
-                        text = "• $benefit",
+                        text = stringResource(R.string.auth_bullet, benefit),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -333,9 +368,11 @@ fun SignUpScreen(
         }
         
         // Sign Up Button
-        Button(
+        MomentumButton(
             onClick = { onSignUp(name, email, password) },
             enabled = isFormValid && !isLoading,
+            style = ButtonStyle.Primary,
+            size = ButtonSize.Large,
             modifier = Modifier.fillMaxWidth()
         ) {
             if (isLoading) {
@@ -344,7 +381,7 @@ fun SignUpScreen(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Crear cuenta")
+                Text(stringResource(R.string.auth_create_account))
             }
         }
         
@@ -353,13 +390,13 @@ fun SignUpScreen(
         TextButton(
             onClick = onBackToWelcome
         ) {
-            Text("¿Ya tienes cuenta? Inicia sesión")
+            Text(stringResource(R.string.auth_have_account))
         }
         
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Al crear una cuenta, aceptas nuestros términos de servicio y política de privacidad.",
+            text = stringResource(R.string.auth_terms_create),
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -394,14 +431,31 @@ private fun getPasswordStrength(password: String): PasswordStrength {
     }
 }
 
-private fun getPasswordTips(password: String): List<String> {
-    val tips = mutableListOf<String>()
-    if (password.length < 8) tips.add("Usa al menos 8 caracteres")
-    if (password.none { it.isUpperCase() }) tips.add("Incluye al menos una mayúscula")
-    if (password.none { it.isLowerCase() }) tips.add("Incluye al menos una minúscula")
-    if (password.none { it.isDigit() }) tips.add("Incluye al menos un número")
-    if (password.none { !it.isLetterOrDigit() }) tips.add("Incluye al menos un símbolo")
+/**
+ * Consejos de contraseña como ids de recurso, no como texto.
+ *
+ * Esta función no es `@Composable` y no tiene `Context`, así que devolver
+ * cadenas obligaba a escribirlas en español aquí mismo: un usuario con el
+ * teléfono en inglés leía los consejos traducidos a medias. Quien los pinta
+ * resuelve el recurso.
+ */
+@StringRes
+private fun getPasswordTips(password: String): List<Int> {
+    val tips = mutableListOf<Int>()
+    if (password.length < 8) tips.add(R.string.auth_password_tip_length)
+    if (password.none { it.isUpperCase() }) tips.add(R.string.auth_password_tip_upper)
+    if (password.none { it.isLowerCase() }) tips.add(R.string.auth_password_tip_lower)
+    if (password.none { it.isDigit() }) tips.add(R.string.auth_password_tip_digit)
+    if (password.none { !it.isLetterOrDigit() }) tips.add(R.string.auth_password_tip_symbol)
     return tips
+}
+
+/** Etiqueta traducible de la fortaleza; el nombre del enum no se muestra nunca. */
+@StringRes
+private fun PasswordStrength.labelRes(): Int = when (this) {
+    PasswordStrength.WEAK -> R.string.auth_password_weak
+    PasswordStrength.MEDIUM -> R.string.auth_password_medium
+    PasswordStrength.STRONG -> R.string.auth_password_strong
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -422,6 +476,7 @@ fun SignInScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(MaterialTheme.momentum.canvas)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -429,7 +484,7 @@ fun SignInScreen(
         Spacer(modifier = Modifier.height(48.dp))
         
         Text(
-            text = "Iniciar sesión",
+            text = stringResource(R.string.auth_sign_in),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -440,7 +495,7 @@ fun SignInScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Correo electrónico") },
+            label = { Text(stringResource(R.string.auth_field_email)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -451,7 +506,7 @@ fun SignInScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Contraseña") },
+            label = { Text(stringResource(R.string.auth_field_password)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -459,7 +514,7 @@ fun SignInScreen(
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                        contentDescription = stringResource(if (passwordVisible) R.string.auth_a11y_hide_password else R.string.auth_a11y_show_password)
                     )
                 }
             }
@@ -478,10 +533,12 @@ fun SignInScreen(
         }
         
         // Sign In Button
-        Button(
+        MomentumButton(
             onClick = { onSignIn(email, password) },
             enabled = isFormValid && !isLoading,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            style = ButtonStyle.Primary,
+            size = ButtonSize.Large,
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
@@ -489,7 +546,7 @@ fun SignInScreen(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Iniciar sesión")
+                Text(stringResource(R.string.auth_sign_in))
             }
         }
         
@@ -498,7 +555,7 @@ fun SignInScreen(
         TextButton(
             onClick = onBackToWelcome
         ) {
-            Text("¿No tienes cuenta? Crear cuenta")
+            Text(stringResource(R.string.auth_no_account))
         }
     }
 }

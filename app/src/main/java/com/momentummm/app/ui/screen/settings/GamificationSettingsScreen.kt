@@ -31,6 +31,7 @@ import com.momentummm.app.ui.screen.PreferenceCategory
 import com.momentummm.app.ui.screen.PreferenceItem
 import com.momentummm.app.ui.screen.PreferenceSwitchItem
 import kotlinx.coroutines.launch
+import com.momentummm.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -322,9 +323,9 @@ private fun GamificationStatsCard(state: GamificationState?) {
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFF6366F1),
-                            Color(0xFF8B5CF6),
-                            Color(0xFFA855F7)
+                            Indigo500,
+                            Violet500,
+                            Violet400
                         )
                     )
                 )
@@ -396,7 +397,7 @@ private fun GamificationStatsCard(state: GamificationState?) {
                                     text = "${state.timeCoins}",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFFD700)
+                                    color = Amber400
                                 )
                             }
                         }

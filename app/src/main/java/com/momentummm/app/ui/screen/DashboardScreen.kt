@@ -1,33 +1,74 @@
 package com.momentummm.app.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timelapse
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.foundation.Image
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
+import com.momentummm.app.data.repository.AppUsageInfo
 import com.momentummm.app.ui.component.GamificationEventToast
 import com.momentummm.app.ui.component.GamificationHeader
+import com.momentummm.app.ui.system.ButtonSize
+import com.momentummm.app.ui.system.ButtonStyle
+import com.momentummm.app.ui.system.EmptyState
+import com.momentummm.app.ui.system.IconTile
+import com.momentummm.app.ui.system.MomentumButton
+import com.momentummm.app.ui.system.MomentumCard
+import com.momentummm.app.ui.system.MomentumDesign
+import com.momentummm.app.ui.system.ProgressBar
+import com.momentummm.app.ui.system.RingSegment
+import com.momentummm.app.ui.system.SectionHeader
+import com.momentummm.app.ui.system.SegmentedRing
+import com.momentummm.app.ui.system.StatCard
+import com.momentummm.app.ui.theme.MomentumTextStyles
+import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.ui.viewmodel.DashboardViewModel
-import com.momentummm.app.ui.system.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.momentummm.app.util.LifeWeeksCalculator
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,280 +87,123 @@ fun DashboardScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Gamification Header - NUEVO
-            item {
-                GamificationHeader(
-                    gamificationState = uiState.gamificationState,
-                    onCoinsClick = {
-                        // TODO: Abrir tienda de TimeCoins
-                    }
-                )
-            }
+    // El total de cada app se compara contra la más usada, no contra el total del
+    // día: así la barra más larga siempre llena la fila y la comparación entre apps
+    // se lee de un vistazo.
+    val maxAppMillis = remember(uiState.topApps) {
+        uiState.topApps.maxOfOrNull { it.totalTimeInMillis } ?: 0L
+    }
+    val trackedMillis = remember(uiState.topApps) {
+        uiState.topApps.sumOf { it.totalTimeInMillis }
+    }
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.momentum.canvas)
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = MomentumDesign.Spacing.screenHorizontal,
+                end = MomentumDesign.Spacing.screenHorizontal,
+                top = MomentumDesign.Spacing.small,
+                bottom = MomentumDesign.Spacing.large,
+            ),
+            verticalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.medium)
+        ) {
             item {
-                Spacer(modifier = Modifier.height(8.dp))
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "¡Buen día!",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.screen_time_today),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    
-                    // Comentado temporalmente - Promoción Premium
-                    /*
-                    if (!isPremiumUser) {
-                        MomentumButton(
-                            onClick = onUpgradeClick,
-                            style = ButtonStyle.Secondary,
-                            size = ButtonSize.Small,
-                            icon = Icons.Filled.Star
-                        ) {
-                            Text("Premium")
-                        }
-                    }
-                    */
-                }
-            }
-            
-            // Comentado temporalmente - Promoción Premium para usuarios gratuitos
-            /*
-            if (!isPremiumUser) {
-                item {
-                    PremiumPromotionCard(
-                        onUpgradeClick = onUpgradeClick
+                Column(modifier = Modifier.statusBarsPadding()) {
+                    DashboardGreeting()
+                    Spacer(Modifier.height(MomentumDesign.Spacing.medium))
+                    GamificationHeader(
+                        gamificationState = uiState.gamificationState,
+                        onCoinsClick = { }
                     )
                 }
             }
-            */
 
             item {
-                // Screen time card
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator()
-                        } else if (uiState.hasUsagePermission) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    Icons.Filled.PhoneAndroid,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = uiState.totalScreenTime,
-                                        style = MaterialTheme.typography.headlineLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Text(
-                                        text = "Tiempo total de pantalla hoy",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        } else {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    Icons.Filled.Block,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Permiso requerido",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "Para mostrar estadísticas reales",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
+                ScreenTimeHero(
+                    totalScreenTime = uiState.totalScreenTime,
+                    isLoading = uiState.isLoading,
+                    hasPermission = uiState.hasUsagePermission,
+                    topApps = uiState.topApps,
+                    onGrantPermission = {
+                        com.momentummm.app.util.PermissionUtils.openUsageStatsSettings(context)
                     }
-                }
+                )
             }
 
-            item {
-            // Quote of the day
-            uiState.quoteOfTheDay?.let { quote ->
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Filled.FormatQuote,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.quote_of_the_day),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "\"${quote.text}\"",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            if (uiState.hasUsagePermission && uiState.topApps.isNotEmpty()) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)) {
+                        StatCard(
+                            label = stringResource(R.string.dashboard_apps_tracked),
+                            value = uiState.topApps.size.toString(),
+                            icon = Icons.Filled.Apps,
+                            accent = MaterialTheme.momentum.info,
+                            modifier = Modifier.weight(1f)
                         )
-                        quote.author?.let { author ->
-                            Text(
-                                text = "— $author",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 8.dp),
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                        StatCard(
+                            label = stringResource(R.string.dashboard_in_top_apps),
+                            value = LifeWeeksCalculator.formatTimeFromMillis(trackedMillis),
+                            icon = Icons.Filled.Timelapse,
+                            accent = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
             }
-        }
 
-        item {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Filled.Apps,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.most_used_apps),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+            if (!isPremiumUser) {
+                item { PremiumPromotionCard(onUpgradeClick = onUpgradeClick) }
             }
-        }
+
+            uiState.quoteOfTheDay?.let { quote ->
+                item {
+                    QuoteCard(
+                        text = quote.text,
+                        author = quote.author,
+                    )
+                }
+            }
 
             if (uiState.hasUsagePermission) {
+                item {
+                    SectionHeader(
+                        title = stringResource(R.string.most_used_apps),
+                        overline = stringResource(R.string.screen_time_today),
+                        modifier = Modifier.padding(top = MomentumDesign.Spacing.small)
+                    )
+                }
+
                 if (uiState.topApps.isNotEmpty()) {
-                    items(uiState.topApps) { app ->
-                        AppUsageCard(app = app)
+                    itemsIndexed(uiState.topApps) { index, app ->
+                        AppUsageRow(
+                            app = app,
+                            rank = index + 1,
+                            maxMillis = maxAppMillis,
+                            accent = MaterialTheme.momentum.series(index),
+                        )
                     }
                 } else {
                     item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(24.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    Icons.Filled.HourglassEmpty,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "No hay datos de uso disponibles para hoy",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = "Usa algunas aplicaciones y vuelve a revisar",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                Icons.Filled.Security,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(64.dp)
+                        MomentumCard(modifier = Modifier.fillMaxWidth()) {
+                            EmptyState(
+                                icon = Icons.Filled.HourglassEmpty,
+                                title = stringResource(R.string.dashboard_no_usage_data),
+                                message = stringResource(R.string.dashboard_no_usage_data_hint),
+                                accent = MaterialTheme.momentum.textSecondary,
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Se requiere permiso para mostrar estadísticas de uso",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Otorga acceso a las estadísticas de uso para ver tus aplicaciones más utilizadas",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            MomentumButton(
-                                onClick = {
-                                    com.momentummm.app.util.PermissionUtils.openUsageStatsSettings(context)
-                                },
-                                style = ButtonStyle.Primary,
-                                size = ButtonSize.Large
-                            ) {
-                                Text("Otorgar permiso")
-                            }
                         }
                     }
                 }
             }
+
+            item { Spacer(Modifier.height(MomentumDesign.Spacing.small)) }
         }
 
-        // Gamification Event Toast - NUEVO
         GamificationEventToast(
             message = uiState.gamificationEventMessage,
             xpGained = uiState.gamificationEventXp,
@@ -331,145 +215,327 @@ fun DashboardScreen(
     }
 }
 
+/** Saludo según la hora del día. */
 @Composable
-private fun PremiumPromotionCard(
-    onUpgradeClick: () -> Unit
+private fun DashboardGreeting() {
+    val greetingRes = remember {
+        when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+            in 5..11 -> R.string.greeting_morning
+            in 12..19 -> R.string.greeting_afternoon
+            else -> R.string.greeting_evening
+        }
+    }
+
+    Column {
+        Text(
+            text = stringResource(greetingRes),
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.momentum.textPrimary
+        )
+        Spacer(Modifier.height(MomentumDesign.Spacing.hairline))
+        Text(
+            text = stringResource(R.string.screen_time_today),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.momentum.textSecondary
+        )
+    }
+}
+
+/**
+ * Tarjeta protagonista: el tiempo de pantalla del día como cifra grande, rodeada de
+ * un anillo cuyos segmentos son las apps más usadas. El anillo no representa una
+ * meta (la app no la tiene todavía) sino el reparto real del tiempo, así que no
+ * comunica nada falso.
+ */
+@Composable
+private fun ScreenTimeHero(
+    totalScreenTime: String,
+    isLoading: Boolean,
+    hasPermission: Boolean,
+    topApps: List<AppUsageInfo>,
+    onGrantPermission: () -> Unit,
 ) {
-    MomentumGradientCard(
+    val segments = remember(topApps) {
+        topApps.mapIndexed { index, app ->
+            RingSegment(
+                label = app.appName,
+                value = app.totalTimeInMillis.toFloat(),
+                color = com.momentummm.app.ui.theme.DataSeries[index % com.momentummm.app.ui.theme.DataSeries.size],
+            )
+        }
+    }
+
+    MomentumCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MomentumDesign.Shapes.hero,
+        containerColor = MaterialTheme.momentum.surface,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.momentum.veil(0.10f))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = MomentumDesign.Spacing.cozy,
+                        vertical = MomentumDesign.Spacing.large
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                when {
+                    isLoading -> {
+                        Box(
+                            modifier = Modifier.size(MomentumDesign.Size.ring),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 3.dp
+                            )
+                        }
+                    }
+
+                    !hasPermission -> {
+                        EmptyState(
+                            icon = Icons.Filled.LockOpen,
+                            title = stringResource(R.string.dashboard_usage_permission_needed),
+                            message = stringResource(R.string.dashboard_usage_permission_desc),
+                        ) {
+                            MomentumButton(
+                                onClick = onGrantPermission,
+                                style = ButtonStyle.Primary,
+                                size = ButtonSize.Large,
+                            ) {
+                                Text(stringResource(R.string.grant_permission))
+                            }
+                        }
+                    }
+
+                    else -> {
+                        SegmentedRing(
+                            segments = segments,
+                            diameter = MomentumDesign.Size.ring,
+                            strokeWidth = MomentumDesign.Size.ringStroke,
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = totalScreenTime,
+                                    style = MaterialTheme.typography.displaySmall,
+                                    color = MaterialTheme.momentum.textPrimary,
+                                    maxLines = 1,
+                                )
+                                Spacer(Modifier.height(MomentumDesign.Spacing.extraSmall))
+                                Text(
+                                    text = stringResource(R.string.dashboard_screen_time_total_today),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.momentum.textSecondary,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
+
+                        if (segments.isNotEmpty()) {
+                            Spacer(Modifier.height(MomentumDesign.Spacing.cozy))
+                            RingLegend(segments)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Leyenda compacta del anillo: punto de color + nombre de la app. */
+@Composable
+private fun RingLegend(segments: List<RingSegment>) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.small)
+    ) {
+        segments.take(3).chunked(2).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)
+            ) {
+                row.forEach { segment ->
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(RoundedCornerShape(MomentumDesign.CornerRadius.pill))
+                                .background(segment.color)
+                        )
+                        Spacer(Modifier.width(MomentumDesign.Spacing.small))
+                        Text(
+                            text = segment.label,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.momentum.textSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun PremiumPromotionCard(onUpgradeClick: () -> Unit) {
+    com.momentummm.app.ui.system.MomentumGradientCard(
         onClick = onUpgradeClick,
         modifier = Modifier.fillMaxWidth(),
-        gradient = Brush.horizontalGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
-            )
-        )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                Icons.Filled.Star,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(48.dp)
+            IconTile(
+                icon = Icons.Filled.AutoAwesome,
+                tint = androidx.compose.ui.graphics.Color.White,
+                background = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.18f),
             )
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Spacer(Modifier.width(MomentumDesign.Spacing.medium))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Desbloquea Premium",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    text = stringResource(R.string.dashboard_unlock_premium),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = androidx.compose.ui.graphics.Color.White
                 )
+                Spacer(Modifier.height(MomentumDesign.Spacing.hairline))
                 Text(
-                    text = "Análisis avanzados, sesiones de enfoque y mucho más",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = stringResource(R.string.dashboard_unlock_premium_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.82f)
                 )
             }
-            
-            Icon(
-                Icons.Filled.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+            Spacer(Modifier.width(MomentumDesign.Spacing.small))
+            IconTile(
+                icon = Icons.Filled.Star,
+                tint = androidx.compose.ui.graphics.Color.White,
+                background = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.18f),
+                size = MomentumDesign.Size.iconTileSmall,
             )
         }
     }
 }
 
 @Composable
-private fun AppUsageCard(app: com.momentummm.app.data.repository.AppUsageInfo) {
-    val context = LocalContext.current
-    val packageManager = context.packageManager
-
-    // Obtener el icono de la aplicación
-    val appIcon = remember(app.packageName) {
-        try {
-            packageManager.getApplicationIcon(app.packageName)
-        } catch (e: Exception) {
-            null
+private fun QuoteCard(text: String, author: String?) {
+    MomentumCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(MomentumDesign.Spacing.cozy)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconTile(
+                    icon = Icons.Filled.FormatQuote,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    size = MomentumDesign.Size.iconTileSmall,
+                )
+                Spacer(Modifier.width(MomentumDesign.Spacing.compact))
+                Text(
+                    text = stringResource(R.string.quote_of_the_day),
+                    style = MomentumTextStyles.overline,
+                    color = MaterialTheme.momentum.textSecondary
+                )
+            }
+            Spacer(Modifier.height(MomentumDesign.Spacing.compact))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+                fontStyle = FontStyle.Italic,
+                color = MaterialTheme.momentum.textPrimary
+            )
+            if (author != null) {
+                Spacer(Modifier.height(MomentumDesign.Spacing.small))
+                Text(
+                    text = stringResource(R.string.dashboard_quote_author, author),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.momentum.textTertiary
+                )
+            }
         }
     }
+}
 
-    Card(
-        modifier = Modifier.fillMaxWidth()
+/**
+ * Fila de app: posición, icono real, nombre, tiempo y una barra que compara su uso
+ * con el de la app más usada del día.
+ */
+@Composable
+private fun AppUsageRow(
+    app: AppUsageInfo,
+    rank: Int,
+    maxMillis: Long,
+    accent: androidx.compose.ui.graphics.Color,
+) {
+    val context = LocalContext.current
+    val appIcon = remember(app.packageName) {
+        runCatching { context.packageManager.getApplicationIcon(app.packageName) }.getOrNull()
+    }
+    val share = if (maxMillis > 0L) app.totalTimeInMillis.toFloat() / maxMillis.toFloat() else 0f
+
+    MomentumCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MomentumDesign.Shapes.cardCompact,
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MomentumDesign.Spacing.medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
-            ) {
-                // Icono de la aplicación
-                if (appIcon != null) {
-                    Image(
-                        painter = BitmapPainter(appIcon.toBitmap().asImageBitmap()),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
-                } else {
-                    // Icono por defecto si no se puede cargar el icono de la app
-                    Surface(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                    ) {
-                        Icon(
-                            Icons.Filled.Apps,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
-                }
+            Text(
+                text = rank.toString(),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.momentum.textTertiary,
+                modifier = Modifier.width(18.dp)
+            )
 
-                Spacer(modifier = Modifier.width(16.dp))
+            if (appIcon != null) {
+                Image(
+                    painter = BitmapPainter(appIcon.toBitmap().asImageBitmap()),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(MomentumDesign.Size.iconTile)
+                        .clip(RoundedCornerShape(MomentumDesign.CornerRadius.medium))
+                )
+            } else {
+                IconTile(icon = Icons.Filled.Apps, tint = accent)
+            }
 
-                Column {
+            Spacer(Modifier.width(MomentumDesign.Spacing.compact))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = app.appName,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.momentum.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
+                    Spacer(Modifier.width(MomentumDesign.Spacing.small))
                     Text(
-                        text = com.momentummm.app.util.LifeWeeksCalculator.formatTimeFromMillis(app.totalTimeInMillis),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
+                        text = LifeWeeksCalculator.formatTimeFromMillis(app.totalTimeInMillis),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = accent
                     )
                 }
+                Spacer(Modifier.height(MomentumDesign.Spacing.small))
+                ProgressBar(
+                    progress = share,
+                    color = accent,
+                )
             }
-
-            // Indicador visual del tiempo de uso
-            val usagePercentage = remember(app.totalTimeInMillis) {
-                // Esto es una aproximación, idealmente calcularías el porcentaje basado en el total
-                when {
-                    app.totalTimeInMillis > 3600000 -> 1f // Más de 1 hora
-                    app.totalTimeInMillis > 1800000 -> 0.7f // Más de 30 min
-                    app.totalTimeInMillis > 900000 -> 0.5f // Más de 15 min
-                    else -> 0.3f
-                }
-            }
-
-            CircularProgressIndicator(
-                progress = usagePercentage,
-                modifier = Modifier.size(24.dp),
-                strokeWidth = 3.dp,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            )
         }
     }
 }

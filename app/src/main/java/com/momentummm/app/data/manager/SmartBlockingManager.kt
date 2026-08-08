@@ -252,7 +252,12 @@ class SmartBlockingManager @Inject constructor(
      */
     fun refreshModeStates() {
         scope.launch {
-            val currentConfig = configDao.getConfigSync() ?: return@launch
+            // Se usa la config YA cacheada en _config (el colector de init la
+            // mantiene fresca vía configDao.getConfig()) en lugar de volver a leer
+            // de disco en cada tick del monitor. updateModeStates solo recalcula
+            // ventanas de tiempo (sueño/ayuno/nuclear) contra el reloj, así que el
+            // valor cacheado es suficiente y se ahorra una lectura Room por ciclo.
+            val currentConfig = _config.value
             updateModeStates(currentConfig)
             
             // Verificar si cambió el día para resetear apps bloqueadas

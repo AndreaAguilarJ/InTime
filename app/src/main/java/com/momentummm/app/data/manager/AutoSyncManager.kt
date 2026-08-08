@@ -33,6 +33,14 @@ class AutoSyncManager(
     // Flag para verificar si el manager sigue activo
     @Volatile
     private var isActive = true
+
+    // Evita empujar al servidor en CADA backgrounding: si el usuario alterna apps
+    // con frecuencia eran round-trips de red repetidos. Los datos siguen en Room
+    // (fuente de verdad) y se guardan siempre en local; el push a Appwrite se
+    // agrupa con un mínimo de 5 min. forceSyncNow() lo ignora (es explícito).
+    @Volatile
+    private var lastServerPushAt = 0L
+    private val MIN_PUSH_INTERVAL_MS = 5 * 60 * 1000L
     
     private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
@@ -59,7 +67,13 @@ class AutoSyncManager(
         scope.launch {
             try {
                 saveAllDataLocally()
-                syncToAppwrite()
+                // El guardado local ocurre en cada background (barato); el push de
+                // red se agrupa para no repetirse en cada cambio de app.
+                val now = System.currentTimeMillis()
+                if (now - lastServerPushAt >= MIN_PUSH_INTERVAL_MS) {
+                    lastServerPushAt = now
+                    syncToAppwrite()
+                }
             } catch (e: Exception) {
                 android.util.Log.e("AutoSyncManager", "Error en onStop sync", e)
             }
@@ -330,6 +344,9 @@ class AutoSyncManager(
             )
 
             if (docs.documents.isEmpty()) {
+                // Tampoco hay que reintentar cada vez si el servidor no tiene
+                // nada guardado todavía.
+                markSyncedFromServer()
                 _syncStatus.value = SyncStatus.Idle
                 return
             }
@@ -375,11 +392,34 @@ class AutoSyncManager(
             }
 
             _syncStatus.value = SyncStatus.Success
+            markSyncedFromServer()
             println("AutoSyncManager: Datos restaurados desde Appwrite")
 
         } catch (e: Exception) {
             _syncStatus.value = SyncStatus.Failed
             e.printStackTrace()
+        }
+    }
+
+    /**
+     * Guarda cuándo se bajaron datos del servidor por última vez.
+     *
+     * BUG CORREGIDO: [shouldSyncFromServer] leía `last_sync_from_server` pero
+     * **nadie escribía nunca esa clave**. Con el valor por defecto 0 la
+     * condición "han pasado más de 30 minutos" era cierta siempre, así que la
+     * descarga desde el servidor se ejecutaba en cada comprobación y machacaba
+     * los ajustes locales (fecha de nacimiento, colores, colores del widget)
+     * con la copia del servidor. Si el usuario cambiaba un color y volvía a
+     * abrir la app, el cambio se revertía solo.
+     */
+    private fun markSyncedFromServer() {
+        runCatching {
+            context.getSharedPreferences("auto_sync", Context.MODE_PRIVATE)
+                .edit()
+                .putLong("last_sync_from_server", System.currentTimeMillis())
+                .apply()
+        }.onFailure {
+            println("AutoSyncManager: no se pudo guardar la marca de sincronización: ${it.message}")
         }
     }
 
@@ -420,6 +460,8 @@ class AutoSyncManager(
         try {
             saveAllDataLocally()
             syncToAppwrite()
+            // Un sync manual reinicia la ventana del debounce del backgrounding.
+            lastServerPushAt = System.currentTimeMillis()
         } catch (e: Exception) {
             android.util.Log.e("AutoSyncManager", "Error en forceSyncNow", e)
         }

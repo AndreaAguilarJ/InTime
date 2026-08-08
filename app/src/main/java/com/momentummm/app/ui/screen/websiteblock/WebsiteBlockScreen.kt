@@ -20,6 +20,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
 import com.momentummm.app.data.entity.WebsiteBlock
 import com.momentummm.app.data.entity.WebsiteCategory
+import com.momentummm.app.ui.theme.momentum
+import com.momentummm.app.ui.theme.DataSeries
+import com.momentummm.app.ui.system.MomentumDesign
+import com.momentummm.app.ui.system.MomentumCard
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.runtime.remember
+import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -325,44 +336,87 @@ private fun WebsiteBlockItem(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    // No hay favicons disponibles sin red, así que se genera un avatar de letra con
+    // color estable a partir del dominio: da identidad a cada entrada y hace la
+    // lista escaneable sin depender de descargas.
+    val initial = block.displayName.trim().firstOrNull()?.uppercaseChar() ?: '#'
+    val seriesColor = remember(block.url) {
+        DataSeries[(block.url.hashCode().absoluteValue) % DataSeries.size]
+    }
+    val enabled = block.isEnabled
+
+    MomentumCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(MomentumDesign.Spacing.compact),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)
         ) {
+            Box(
+                modifier = Modifier
+                    .size(MomentumDesign.Size.iconTile)
+                    .clip(RoundedCornerShape(MomentumDesign.CornerRadius.small))
+                    .background(
+                        seriesColor.copy(
+                            alpha = if (enabled) {
+                                MomentumDesign.Alpha.soft
+                            } else {
+                                MomentumDesign.Alpha.subtle
+                            }
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = initial.toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (enabled) seriesColor else MaterialTheme.momentum.textTertiary
+                )
+            }
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = block.displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (enabled) {
+                        MaterialTheme.momentum.textPrimary
+                    } else {
+                        MaterialTheme.momentum.textTertiary
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = block.url,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.momentum.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Switch(
+                checked = enabled,
+                onCheckedChange = { onToggle() }
+            )
+
+            // Borrar como tile circular en vez de IconButton suelto: el rojo pleno
+            // competía con el switch por la atención en cada fila.
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.momentum.surfaceSunken)
+                    .clickable(onClick = onDelete),
+                contentAlignment = Alignment.Center
             ) {
-                Switch(
-                    checked = block.isEnabled,
-                    onCheckedChange = { onToggle() }
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = stringResource(R.string.website_block_delete_cd),
+                    tint = MaterialTheme.momentum.textSecondary,
+                    modifier = Modifier.size(18.dp)
                 )
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = stringResource(R.string.website_block_delete_cd),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
             }
         }
     }

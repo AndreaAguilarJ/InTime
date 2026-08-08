@@ -39,6 +39,11 @@ import com.momentummm.app.R
 import com.momentummm.app.data.entity.AppCategory
 import com.momentummm.app.data.repository.AppUsageInfo
 import com.momentummm.app.ui.system.*
+import com.momentummm.app.ui.theme.momentum
+import com.momentummm.app.ui.system.MomentumDesign
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Timer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -338,11 +343,25 @@ private fun CategoryCard(
     val isOverLimit = category.isLimitEnabled && usageMinutes >= category.dailyLimitMinutes
     val apps = category.getPackageNamesList()
 
+    // Semáforo compartido con App Limits: la misma señal debe significar lo mismo
+    // en toda la app, así que verde/ámbar/rojo se calcula igual aquí.
+    val statusColor = when {
+        !category.isLimitEnabled -> categoryColor
+        progress >= 1f -> MaterialTheme.momentum.danger
+        progress >= 0.8f -> MaterialTheme.momentum.warning
+        else -> MaterialTheme.momentum.success
+    }
+
     MomentumCard(
         modifier = modifier.animateContentSize(),
-        containerColor = if (isOverLimit) 
-            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f) 
-        else MaterialTheme.colorScheme.surface
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isOverLimit) 1.5.dp else 1.dp,
+            color = if (isOverLimit) {
+                MaterialTheme.momentum.danger.copy(alpha = MomentumDesign.Alpha.strong)
+            } else {
+                MaterialTheme.momentum.border
+            }
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Header
@@ -437,24 +456,33 @@ private fun CategoryCard(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                LinearProgressIndicator(
+                com.momentummm.app.ui.system.ProgressBar(
                     progress = progress,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = if (isOverLimit) MaterialTheme.colorScheme.error else categoryColor,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    color = statusColor,
+                    height = 8.dp,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 if (isOverLimit) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "⚠️ Límite excedido",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Spacer(modifier = Modifier.height(MomentumDesign.Spacing.extraSmall))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(
+                            MomentumDesign.Spacing.extraSmall
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.momentum.danger,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.app_limits_exceeded),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.momentum.danger
+                        )
+                    }
                 }
             }
             
@@ -950,11 +978,21 @@ private fun EditCategoryDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Límite de tiempo
-                Text(
-                    text = "⏱️ Límite de Tiempo",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Timer,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Límite de Tiempo",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
@@ -1342,56 +1380,84 @@ private fun AppSelectionItem(
             null
         }
     }
-    
-    Surface(
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onToggle),
-        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                else Color.Transparent
+            .clip(MomentumDesign.Shapes.card)
+            .clickable(onClick = onToggle)
+            .padding(MomentumDesign.Spacing.compact),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon
-            if (appIcon != null) {
-                Image(
-                    painter = BitmapPainter(appIcon.toBitmap().asImageBitmap()),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-            } else {
-                Surface(
-                    modifier = Modifier.size(40.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Icon(Icons.Filled.Apps, contentDescription = null, modifier = Modifier.padding(8.dp))
-                }
-            }
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = app.appName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = { onToggle() }
+        if (appIcon != null) {
+            Image(
+                painter = BitmapPainter(appIcon.toBitmap().asImageBitmap()),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(MomentumDesign.CornerRadius.small))
             )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(MomentumDesign.CornerRadius.small))
+                    .background(MaterialTheme.momentum.surfaceSunken),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Filled.Apps,
+                    contentDescription = null,
+                    tint = MaterialTheme.momentum.textSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(MomentumDesign.Spacing.compact))
+
+        Text(
+            text = app.appName,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.momentum.textPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Check circular en vez de casilla cuadrada: el área táctil real es toda la
+        // fila, así que el indicador solo tiene que comunicar estado, y un círculo
+        // relleno lo hace de un vistazo en una lista larga de apps.
+        Box(
+            modifier = Modifier
+                .size(26.dp)
+                .clip(CircleShape)
+                .background(
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.momentum.surfaceSunken
+                    }
+                )
+                .border(
+                    width = 1.dp,
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.momentum.border
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isSelected) {
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }

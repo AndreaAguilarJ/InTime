@@ -1,5 +1,96 @@
 <resources>
     <string name="app_name">Momentum</string>
+
+    <!-- Bienvenida y autenticación -->
+    <string name="auth_a11y_password_tips">Consejos de contraseña</string>
+    <string name="auth_a11y_show_password">Mostrar contraseña</string>
+    <string name="auth_a11y_hide_password">Ocultar contraseña</string>
+    <string name="auth_welcome_title">Bienvenido a Momentum</string>
+    <string name="auth_welcome_subtitle">Tu vida en semanas</string>
+    <string name="auth_welcome_desc">Visualiza tu tiempo, controla tu bienestar digital y vive cada semana con propósito.</string>
+    <string name="auth_create_account">Crear cuenta</string>
+    <string name="auth_sign_in">Iniciar sesión</string>
+    <string name="auth_terms_continue">Al continuar, aceptas nuestros términos de servicio y política de privacidad.</string>
+    <string name="auth_terms_create">Al crear una cuenta, aceptas nuestros términos de servicio y política de privacidad.</string>
+    <string name="auth_signup_subtitle">Únete a miles de usuarios que han transformado su relación con el tiempo</string>
+    <string name="auth_field_full_name">Nombre completo</string>
+    <string name="auth_field_email">Correo electrónico</string>
+    <string name="auth_field_password">Contraseña</string>
+    <string name="auth_field_confirm_password">Confirmar contraseña</string>
+    <string name="auth_error_name_too_short">El nombre debe tener al menos 2 caracteres</string>
+    <string name="auth_error_invalid_email">Ingresa un correo electrónico válido</string>
+    <string name="auth_error_passwords_differ">Las contraseñas no coinciden</string>
+    <string name="auth_password_strength">Fortaleza: %1$s</string>
+    <string name="auth_password_weak">Débil</string>
+    <string name="auth_password_medium">Media</string>
+    <string name="auth_password_strong">Fuerte</string>
+    <string name="auth_password_tip_length">Usa al menos 8 caracteres</string>
+    <string name="auth_password_tip_upper">Incluye al menos una mayúscula</string>
+    <string name="auth_password_tip_lower">Incluye al menos una minúscula</string>
+    <string name="auth_password_tip_digit">Incluye al menos un número</string>
+    <string name="auth_password_tip_symbol">Incluye al menos un símbolo</string>
+    <string name="auth_why_create_account">¿Por qué crear una cuenta?</string>
+    <string name="auth_bullet">• %1$s</string>
+    <string name="auth_have_account">¿Ya tienes cuenta? Inicia sesión</string>
+    <string name="auth_no_account">¿No tienes cuenta? Crear cuenta</string>
+    <string-array name="auth_signup_benefits">
+        <item>Sincroniza tus datos entre dispositivos</item>
+        <item>Respalda tu información de manera segura</item>
+        <item>Accede a funciones premium</item>
+        <item>Recibe estadísticas avanzadas</item>
+    </string-array>
+
+    <!-- Pantalla de impacto inicial -->
+    <string name="shock_analyzing">Analizando tu uso del teléfono…</string>
+    <string name="shock_title">REALIDAD MORTAL</string>
+    <string name="shock_subtitle_real">basada en TU uso real</string>
+    <string name="shock_subtitle_average">basada en promedios</string>
+    <string name="shock_at_current_rate">Al ritmo actual, pasarás</string>
+    <string name="shock_years">AÑOS</string>
+    <string name="shock_of_your_life">de tu vida mirando una pantalla</string>
+    <string name="shock_full_days_nonstop">≈ %1$s días completos (24h) sin parar</string>
+    <string name="shock_projection_title">📊 Tu proyección personal</string>
+    <string name="shock_unit_hours_per_day">horas/día</string>
+    <string name="shock_desc_daily_average">tu uso diario promedio</string>
+    <string name="shock_unit_full_days">días completos</string>
+    <string name="shock_desc_24h_nonstop">24 horas sin parar</string>
+    <string name="shock_unit_books">libros</string>
+    <string name="shock_desc_books">que podrías leer en ese tiempo</string>
+    <string name="shock_unit_trips">viajes</string>
+    <string name="shock_desc_trips">de 2 semanas que podrías hacer</string>
+    <string name="shock_waking_life_percent">%1$s%% de tu vida despierta</string>
+    <string name="shock_waking_life_detail">se va en el teléfono cada día</string>
+    <string name="shock_quote">\"La vida es demasiado corta para pasarla haciendo scroll.\"</string>
+    <string name="shock_cta">Quiero cambiar esto 💪</string>
+    <string name="shock_skip">Prefiero ignorar la realidad…</string>
+
+    <!-- Asistente de configuración inicial -->
+    <string name="onboarding_wizard_step">Paso %1$d de %2$d</string>
+    <string name="onboarding_welcome_title">¡Bienvenido a Momentum!</string>
+    <string name="onboarding_welcome_desc">Configura permisos clave para que el bloqueo y el seguimiento funcionen correctamente.</string>
+    <string name="onboarding_start_setup">Comenzar configuración</string>
+    <string name="onboarding_usage_title">Permiso de estadísticas</string>
+    <string name="onboarding_usage_desc">Necesitamos acceso a estadísticas de uso para medir tiempo y aplicar límites. Es esencial para el funcionamiento de la app.</string>
+    <string name="onboarding_open_settings">Abrir ajustes</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_notif_title">Permiso de notificaciones</string>
+    <string name="onboarding_notif_desc">Usamos notificaciones para recordatorios y alertas de bloqueo. Te avisaremos cuando estés cerca de tu límite.</string>
+    <string name="onboarding_allow">Permitir</string>
+    <string name="onboarding_skip_for_now">Omitir por ahora</string>
+    <string name="onboarding_notif_not_required">Tu versión de Android no requiere este permiso.</string>
+    <string name="onboarding_overlay_title">Permiso de superposición</string>
+    <string name="onboarding_overlay_desc">Recomendado para mostrar la pantalla de bloqueo sobre otras apps. Esto permite que Momentum te proteja efectivamente.</string>
+    <string name="onboarding_overlay_optional">Opcional: puedes activarlo más tarde desde Ajustes.</string>
+    <string name="onboarding_enable">Habilitar</string>
+    <string name="onboarding_all_set_title">¡Todo listo!</string>
+    <string name="onboarding_all_set_desc">Momentum está preparado para ayudarte a recuperar el control de tu tiempo. A continuación configuraremos tu perfil.</string>
+    <string name="onboarding_saving">Guardando…</string>
+    <string name="onboarding_continue_tutorial">Continuar al tutorial</string>
+    <string name="onboarding_permission_granted">✓ Permiso concedido correctamente</string>
+    <string name="onboarding_summary_title">Resumen de configuración:</string>
+    <string name="onboarding_summary_usage">Estadísticas de uso</string>
+    <string name="onboarding_summary_notifications">Notificaciones</string>
+    <string name="onboarding_summary_overlay">Superposición</string>
     
     <!-- Navigation -->
     <string name="nav_today">Hoy</string>
@@ -17,6 +108,17 @@
     <string name="quote_of_the_day">Frase del día</string>
     <string name="hours_short">h</string>
     <string name="minutes_short">m</string>
+    <string name="dashboard_greeting">¡Buen día!</string>
+    <string name="dashboard_screen_time_total_today">Tiempo total de pantalla hoy</string>
+    <string name="dashboard_permission_required">Permiso requerido</string>
+    <string name="dashboard_permission_required_desc">Para mostrar estadísticas reales</string>
+    <string name="dashboard_quote_author">— %1$s</string>
+    <string name="dashboard_no_usage_data">No hay datos de uso disponibles para hoy</string>
+    <string name="dashboard_no_usage_data_hint">Usa algunas aplicaciones y vuelve a revisar</string>
+    <string name="dashboard_usage_permission_needed">Se requiere permiso para mostrar estadísticas de uso</string>
+    <string name="dashboard_usage_permission_desc">Otorga acceso a las estadísticas de uso para ver tus aplicaciones más utilizadas</string>
+    <string name="dashboard_unlock_premium">Desbloquea Premium</string>
+    <string name="dashboard_unlock_premium_desc">Análisis avanzados, sesiones de enfoque y mucho más</string>
     
     <!-- Life in Weeks -->
     <string name="my_life_in_weeks">Mi Vida en Semanas</string>
@@ -511,7 +613,24 @@
     <string name="timecoins_earn_more_subtitle">completando sesiones</string>
 
     <!-- Gamification Header -->
-    <string name="gamification_header_streak_days">%1$d días</string>
+    <plurals name="gamification_header_streak_days">
+        <item quantity="one">%1$d día</item>
+        <item quantity="other">%1$d días</item>
+    </plurals>
+
+    <!-- Títulos de nivel. Vivían como literales en UserSettings, que es una
+         entidad de Room y no tiene Context: por eso salían en español en
+         cualquier idioma. -->
+    <string name="level_title_1">Novato</string>
+    <string name="level_title_2">Aprendiz</string>
+    <string name="level_title_3">Enfocado</string>
+    <string name="level_title_4">Disciplinado</string>
+    <string name="level_title_5">Guerrero del Tiempo</string>
+    <string name="level_title_6">Maestro del Foco</string>
+    <string name="level_title_7">Leyenda Productiva</string>
+    <string name="level_title_8">Titán del Tiempo</string>
+    <string name="level_title_9">Guardián Supremo</string>
+    <string name="level_title_grandmaster">Gran Maestro Lv.%1$d</string>
     <string name="gamification_header_xp_label">XP: %1$s</string>
     <string name="gamification_header_xp_to_next_level">%1$s para Nivel %2$d</string>
     <string name="gamification_header_total_focus">Enfoque total</string>
@@ -1131,4 +1250,35 @@
     <string name="about_link_error">No se pudo abrir el enlace</string>
     <string name="app_blocked_payment_failed">No se pudo completar el pago</string>
     <string name="app_blocked_payment_unlocked">Desbloqueada 5 minutos</string>
+
+    <!-- Rediseno UI: dashboard -->
+    <string name="greeting_morning">Buenos días</string>
+    <string name="greeting_afternoon">Buenas tardes</string>
+    <string name="greeting_evening">Buenas noches</string>
+    <string name="dashboard_apps_tracked">Apps registradas</string>
+    <string name="dashboard_in_top_apps">En tus top apps</string>
+
+    <!-- Rediseno UI: analytics -->
+    <string name="analytics_weekly_chart_title">Tiempo por día</string>
+    <string name="analytics_weekly_peak">Tu pico fue el %1$s, sobre todo en %2$s</string>
+    <string name="analytics_total_label">Total</string>
+    <string name="analytics_pickups_label">Desbloqueos</string>
+    <string name="analytics_daily_average_label">Media diaria</string>
+    <string name="analytics_categories_label">categorías</string>
+    <string name="analytics_category_breakdown_title">Reparto por categoría</string>
+    <string name="analytics_category_breakdown_subtitle">En qué se va tu tiempo de pantalla</string>
+    <string name="analytics_most_used_label">App top</string>
+
+    <!-- Rediseno UI: app limits -->
+    <string name="app_limits_daily_limit_value">Límite: %1$d min/día</string>
+    <string name="app_limits_exceeded">Límite excedido</string>
+    <string name="app_limits_remaining_value">%1$d min restantes</string>
+    <string name="edit">Editar</string>
+    <string name="delete">Eliminar</string>
+
+    <!-- Rediseno UI: paywall -->
+    <string name="subscription_best_value">Mejor valor</string>
+    <string name="subscription_per_year">/año</string>
+    <string name="subscription_per_month">/mes</string>
+    <string name="subscription_more_features">Y %1$d funciones más</string>
 </resources>

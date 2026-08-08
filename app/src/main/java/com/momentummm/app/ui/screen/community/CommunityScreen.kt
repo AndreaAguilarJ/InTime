@@ -31,8 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.momentummm.app.ui.system.MomentumCard
+import com.momentummm.app.ui.system.MomentumDesign
+import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.data.entity.*
 import kotlinx.coroutines.delay
+import com.momentummm.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -524,10 +528,10 @@ private fun EnhancedAvatar(
     size: Int = 48
 ) {
     val levelColor = when {
-        level >= 50 -> Color(0xFFFFD700) // Gold
-        level >= 30 -> Color(0xFF9B59B6) // Purple
-        level >= 20 -> Color(0xFF3498DB) // Blue
-        level >= 10 -> Color(0xFF2ECC71) // Green
+        level >= 50 -> Amber400 // Gold
+        level >= 30 -> Violet500
+        level >= 20 -> Sky500
+        level >= 10 -> Mint500
         else -> MaterialTheme.colorScheme.primary
     }
     
@@ -846,15 +850,15 @@ private fun MyRankCard(myRank: LeaderboardEntry?) {
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = if (change > 0) Color(0xFF10B981).copy(alpha = 0.2f) 
-                                       else Color(0xFFEF4444).copy(alpha = 0.2f)
+                                color = if (change > 0) Mint500.copy(alpha = 0.2f) 
+                                       else Rose500.copy(alpha = 0.2f)
                             ) {
                                 Text(
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                     text = if (change > 0) "⬆️ +$change posiciones" else "⬇️ $change posiciones",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Medium,
-                                    color = if (change > 0) Color(0xFF10B981) else Color(0xFFEF4444)
+                                    color = if (change > 0) Mint500 else Rose500
                                 )
                             }
                         }
@@ -994,9 +998,9 @@ private fun PodiumEntry(
     position: Int
 ) {
     val (emoji, height, color) = when (position) {
-        1 -> Triple("🥇", 100.dp, Color(0xFFFFD700))
-        2 -> Triple("🥈", 80.dp, Color(0xFFC0C0C0))
-        else -> Triple("🥉", 60.dp, Color(0xFFCD7F32))
+        1 -> Triple("🥇", 100.dp, Amber400)
+        2 -> Triple("🥈", 80.dp, Silver)
+        else -> Triple("🥉", 60.dp, Bronze)
     }
     
     Column(
@@ -1053,68 +1057,127 @@ private fun EnhancedLeaderboardEntryCard(
     entry: LeaderboardEntry,
     position: Int
 ) {
-    Card(
+    // El podio se lee por color, no por leer el número: oro/plata/bronce en las tres
+    // primeras posiciones y un número atenuado en el resto.
+    val podiumColor = when (position) {
+        1 -> com.momentummm.app.ui.theme.Amber400
+        2 -> com.momentummm.app.ui.theme.Neutral300
+        3 -> com.momentummm.app.ui.theme.Coral400
+        else -> null
+    }
+    val isPodium = podiumColor != null
+
+    MomentumCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = MomentumDesign.Shapes.cardCompact,
+        containerColor = if (isPodium) {
+            podiumColor!!.copy(alpha = MomentumDesign.Alpha.subtle)
+        } else {
+            MaterialTheme.momentum.surface
+        },
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = if (isPodium) podiumColor!!.copy(alpha = 0.4f) else MaterialTheme.momentum.border
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(MomentumDesign.Spacing.compact),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Posición
             Box(
-                modifier = Modifier.width(40.dp),
+                modifier = Modifier.size(30.dp),
                 contentAlignment = Alignment.Center
             ) {
+                if (isPodium) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(MomentumDesign.Shapes.pill)
+                            .background(podiumColor!!)
+                    )
+                }
                 Text(
-                    "#$position",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = position.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (isPodium) {
+                        com.momentummm.app.ui.theme.Neutral950
+                    } else {
+                        MaterialTheme.momentum.textTertiary
+                    }
                 )
             }
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            // Avatar
+
+            Spacer(modifier = Modifier.width(MomentumDesign.Spacing.compact))
+
             EnhancedAvatar(
                 name = entry.userName,
                 level = entry.userLevel,
                 size = 44
             )
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            // Info
+
+            Spacer(modifier = Modifier.width(MomentumDesign.Spacing.compact))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    entry.userName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    text = entry.userName,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.momentum.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatBadge(emoji = "🔥", value = "${entry.currentStreak}", label = null)
-                    StatBadge(emoji = "⭐", value = "Lv.${entry.userLevel}", label = null)
+                Spacer(modifier = Modifier.height(MomentumDesign.Spacing.extraSmall))
+                Row(horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.small)) {
+                    LeaderboardMeta(
+                        icon = Icons.Filled.LocalFireDepartment,
+                        text = entry.currentStreak.toString(),
+                        tint = com.momentummm.app.ui.theme.Coral400,
+                    )
+                    LeaderboardMeta(
+                        icon = Icons.Filled.Star,
+                        text = "Lv.${entry.userLevel}",
+                        tint = com.momentummm.app.ui.theme.Amber400,
+                    )
                 }
             }
-            
-            // Minutos
+
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    "${entry.weeklyFocusMinutes}",
+                    text = entry.weeklyFocusMinutes.toString(),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    "min",
+                    text = "min",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.momentum.textTertiary
                 )
             }
         }
+    }
+}
+
+/** Metadato compacto de una fila del ranking: icono vectorial + valor. */
+@Composable
+private fun LeaderboardMeta(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    tint: androidx.compose.ui.graphics.Color,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(13.dp)
+        )
+        Spacer(modifier = Modifier.width(3.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.momentum.textSecondary
+        )
     }
 }
 
@@ -1323,13 +1386,13 @@ private fun EnhancedAchievementCard(
     isNew: Boolean
 ) {
     val (emoji, color) = when (achievement.achievementType) {
-        AchievementType.STREAK_MILESTONE -> "🔥" to Color(0xFFFF6B35)
-        AchievementType.LEVEL_UP -> "⬆️" to Color(0xFF4ECDC4)
-        AchievementType.PERFECT_WEEK -> "✨" to Color(0xFFFFD93D)
-        AchievementType.FOCUS_MILESTONE -> "🎯" to Color(0xFF6C5CE7)
-        AchievementType.NUCLEAR_COMPLETED -> "☢️" to Color(0xFFE17055)
-        AchievementType.TOP_LEADERBOARD -> "🏆" to Color(0xFFFFD700)
-        AchievementType.FIRST_WEEK -> "🚀" to Color(0xFF00B894)
+        AchievementType.STREAK_MILESTONE -> "🔥" to Coral500
+        AchievementType.LEVEL_UP -> "⬆️" to Sky400
+        AchievementType.PERFECT_WEEK -> "✨" to Amber300
+        AchievementType.FOCUS_MILESTONE -> "🎯" to Violet500
+        AchievementType.NUCLEAR_COMPLETED -> "☢️" to Coral500
+        AchievementType.TOP_LEADERBOARD -> "🏆" to Amber400
+        AchievementType.FIRST_WEEK -> "🚀" to Mint500
         AchievementType.CUSTOM -> "🎉" to MaterialTheme.colorScheme.primary
     }
     

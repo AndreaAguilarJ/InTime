@@ -104,6 +104,7 @@ class FocusTimerService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        restoreSnapshot()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -189,6 +190,7 @@ class FocusTimerService : Service() {
 
         val notification = buildNotification(totalSeconds, FocusTimerStatus.RUNNING)
         startForeground(NOTIFICATION_ID, notification)
+        saveSnapshot()
         startTicker()
         startXpTracker()
     }
@@ -236,6 +238,7 @@ class FocusTimerService : Service() {
         )
 
         updateNotification(pausedRemainingSeconds, FocusTimerStatus.PAUSED)
+        saveSnapshot()
     }
 
     private fun resumeSession() {
@@ -250,6 +253,7 @@ class FocusTimerService : Service() {
         )
 
         updateNotification(remainingSeconds, FocusTimerStatus.RUNNING)
+        saveSnapshot()
         startTicker()
         // CRITICAL FIX: Reiniciar el XP tracker que fue cancelado en pauseSession()
         // Antes, después de pause/resume, el usuario no ganaba más XP
@@ -262,6 +266,7 @@ class FocusTimerService : Service() {
         endTimeMillis = null
         pausedRemainingSeconds = 0
         _sessionState.value = FocusSessionState()
+        clearSnapshot()
 
         serviceScope.launch {
             UserPreferencesRepository.setFocusModeEnabled(this@FocusTimerService, false)
@@ -314,6 +319,10 @@ class FocusTimerService : Service() {
                 xpEarned = current.xpEarned + (bonusEvent?.xpGained ?: 0),
                 coinsEarned = current.coinsEarned + (bonusEvent?.coinsGained ?: 0)
             )
+
+            // La sesión terminó: el estado guardado ya no vale y no debe
+            // restaurarse en el próximo arranque del servicio.
+            clearSnapshot()
             
             UserPreferencesRepository.setFocusModeEnabled(this@FocusTimerService, false)
             UserPreferencesRepository.setFocusModeBlockedApps(this@FocusTimerService, emptyList())
@@ -402,8 +411,103 @@ class FocusTimerService : Service() {
         notificationManager.createNotificationChannel(channel)
     }
 
+    // ─── Persistencia del estado ──────────────────────────────────────────
+    //
+    // El servicio guardaba el temporizador sólo en memoria, así que cualquier
+    // muerte del proceso (force-stop, presión de memoria, crash) perdía en
+    // silencio una sesión en curso: al volver, la pantalla mostraba de nuevo la
+    // lista como si nunca hubiera empezado. La rama `null` de `onStartCommand`
+    // ya intentaba sobrevivir a un reinicio del sistema, pero no podía
+    // funcionar: sin estado guardado, `status` siempre era IDLE ahí.
+    //
+    // No hace falta escribir en cada tick. `endTimeMillis` es un instante
+    // absoluto y el tiempo restante se deriva de él, así que basta con guardar
+    // en los cambios de estado.
+
+    private val snapshot by lazy {
+        getSharedPreferences("focus_timer_snapshot", Context.MODE_PRIVATE)
+    }
+
+    private fun saveSnapshot() {
+        val state = _sessionState.value
+        if (state.status == FocusTimerStatus.IDLE) {
+            clearSnapshot()
+            return
+        }
+        snapshot.edit()
+            .putString(KEY_SESSION_TYPE, state.sessionType)
+            .putString(KEY_SESSION_NAME, state.sessionName)
+            .putInt(KEY_TOTAL_SECONDS, state.totalSeconds)
+            .putInt(KEY_BREAK_MINUTES, state.breakMinutes)
+            .putString(KEY_START_TIME_ISO, state.startTimeIso)
+            .putStringSet(KEY_BLOCKED_APPS, state.blockedApps.toSet())
+            .putString(KEY_STATUS, state.status.name)
+            .putInt(KEY_MINUTES_COMPLETED, state.minutesCompleted)
+            .putInt(KEY_XP_EARNED, state.xpEarned)
+            .putInt(KEY_COINS_EARNED, state.coinsEarned)
+            .putLong(KEY_END_TIME_MILLIS, endTimeMillis ?: 0L)
+            .putInt(KEY_PAUSED_REMAINING, pausedRemainingSeconds)
+            .putInt(KEY_LAST_MINUTE_AWARDED, lastMinuteAwarded)
+            .apply()
+    }
+
+    private fun clearSnapshot() {
+        snapshot.edit().clear().apply()
+    }
+
+    private fun restoreSnapshot() {
+        val statusName = snapshot.getString(KEY_STATUS, null) ?: return
+        val status = runCatching { FocusTimerStatus.valueOf(statusName) }.getOrNull() ?: return
+        if (status == FocusTimerStatus.IDLE) {
+            clearSnapshot()
+            return
+        }
+
+        val storedEnd = snapshot.getLong(KEY_END_TIME_MILLIS, 0L)
+        val storedPaused = snapshot.getInt(KEY_PAUSED_REMAINING, 0)
+
+        val remainingSeconds = when (status) {
+            FocusTimerStatus.RUNNING -> max(0, ((storedEnd - System.currentTimeMillis()) / 1000).toInt())
+            else -> storedPaused
+        }
+
+        // El plazo venció mientras el proceso estaba muerto. No se restaura ni
+        // se otorgan XP: nadie estuvo vigilando esos minutos, y premiar tiempo
+        // no observado vacía de sentido la gamificación. Se descarta y el
+        // usuario empieza limpio.
+        if (remainingSeconds <= 0) {
+            clearSnapshot()
+            return
+        }
+
+        endTimeMillis = if (status == FocusTimerStatus.RUNNING) storedEnd else null
+        pausedRemainingSeconds = storedPaused
+        lastMinuteAwarded = snapshot.getInt(KEY_LAST_MINUTE_AWARDED, 0)
+
+        _sessionState.value = FocusSessionState(
+            sessionType = snapshot.getString(KEY_SESSION_TYPE, null),
+            sessionName = snapshot.getString(KEY_SESSION_NAME, null),
+            totalSeconds = snapshot.getInt(KEY_TOTAL_SECONDS, 0),
+            remainingSeconds = remainingSeconds,
+            breakMinutes = snapshot.getInt(KEY_BREAK_MINUTES, 0),
+            startTimeIso = snapshot.getString(KEY_START_TIME_ISO, null),
+            blockedApps = snapshot.getStringSet(KEY_BLOCKED_APPS, emptySet())?.toList() ?: emptyList(),
+            status = status,
+            minutesCompleted = snapshot.getInt(KEY_MINUTES_COMPLETED, 0),
+            xpEarned = snapshot.getInt(KEY_XP_EARNED, 0),
+            coinsEarned = snapshot.getInt(KEY_COINS_EARNED, 0)
+        )
+
+        updateNotification(remainingSeconds, status)
+
+        if (status == FocusTimerStatus.RUNNING) {
+            startTicker()
+            startXpTracker()
+        }
+    }
+
     private fun getCurrentTimestamp(): String {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
         dateFormat.timeZone = TimeZone.getTimeZone("UTC")
         return dateFormat.format(Date())
     }
@@ -426,6 +530,21 @@ class FocusTimerService : Service() {
 
         private const val CHANNEL_ID = "focus_timer_channel"
         private const val NOTIFICATION_ID = 9101
+
+        // Claves del estado guardado (ver saveSnapshot/restoreSnapshot).
+        private const val KEY_SESSION_TYPE = "session_type"
+        private const val KEY_SESSION_NAME = "session_name"
+        private const val KEY_TOTAL_SECONDS = "total_seconds"
+        private const val KEY_BREAK_MINUTES = "break_minutes"
+        private const val KEY_START_TIME_ISO = "start_time_iso"
+        private const val KEY_BLOCKED_APPS = "blocked_apps"
+        private const val KEY_STATUS = "status"
+        private const val KEY_MINUTES_COMPLETED = "minutes_completed"
+        private const val KEY_XP_EARNED = "xp_earned"
+        private const val KEY_COINS_EARNED = "coins_earned"
+        private const val KEY_END_TIME_MILLIS = "end_time_millis"
+        private const val KEY_PAUSED_REMAINING = "paused_remaining"
+        private const val KEY_LAST_MINUTE_AWARDED = "last_minute_awarded"
 
         fun startForegroundService(context: Context, intent: Intent) {
             ContextCompat.startForegroundService(context, intent)

@@ -37,6 +37,8 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
+import com.momentummm.app.ui.theme.*
+import androidx.compose.material.icons.filled.InsertChart
 
 /**
  * Función helper para parsear colores de forma segura
@@ -239,11 +241,21 @@ fun LifeWeeksSettingsScreen(
                             modifier = Modifier.padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = "📊 Tu Vida en Números",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.InsertChart,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "Tu Vida en Números",
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
                             
                             Spacer(modifier = Modifier.height(16.dp))
                             
@@ -251,12 +263,12 @@ fun LifeWeeksSettingsScreen(
                             val parsedLivedColor = try {
                                 Color(android.graphics.Color.parseColor(livedWeeksColor))
                             } catch (e: Exception) {
-                                Color(0xFF6366F1)
+                                Indigo500
                             }
                             val parsedFutureColor = try {
                                 Color(android.graphics.Color.parseColor(futureWeeksColor))
                             } catch (e: Exception) {
-                                Color(0xFFE5E7EB)
+                                Neutral200
                             }
                             
                             Row(
@@ -457,8 +469,8 @@ fun LifeWeeksSettingsScreen(
                         ) {
                             MiniLifeWeeksPreview(
                                 weeksLived = lifeWeeksData?.weeksLived ?: 1560,
-                                livedColor = parseColorSafe(livedWeeksColor, Color(0xFF6366F1)),
-                                futureColor = parseColorSafe(futureWeeksColor, Color(0xFFE5E7EB))
+                                livedColor = parseColorSafe(livedWeeksColor, Indigo500),
+                                futureColor = parseColorSafe(futureWeeksColor, Neutral200)
                             )
                         }
                     }
