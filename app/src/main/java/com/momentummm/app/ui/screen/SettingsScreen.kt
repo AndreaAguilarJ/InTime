@@ -27,6 +27,7 @@ import com.momentummm.app.ui.password.PasswordProtectionViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import com.momentummm.app.ui.theme.momentum
 
 // ============================================================================
 // COMPONENTES DE PREFERENCIA REUTILIZABLES
@@ -47,19 +48,28 @@ fun PreferenceCategory(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            text = title.uppercase(),
+            style = com.momentummm.app.ui.theme.MomentumTextStyles.overline,
+            color = MaterialTheme.momentum.textSecondary,
+            modifier = Modifier.padding(
+                horizontal = com.momentummm.app.ui.system.MomentumDesign.Spacing.medium,
+                vertical = com.momentummm.app.ui.system.MomentumDesign.Spacing.small
+            )
         )
+        // Grupo como tarjeta plana con borde: el surfaceVariant translúcido se
+        // confundía con el lienzo en modo claro y no delimitaba la sección.
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .animateContentSize(),
-            shape = RoundedCornerShape(16.dp),
+            shape = com.momentummm.app.ui.system.MomentumDesign.Shapes.card,
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.momentum.surface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                MaterialTheme.momentum.border
             )
         ) {
             Column(
@@ -149,30 +159,43 @@ fun PreferenceItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(enabled = enabled, onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(
+                    horizontal = com.momentummm.app.ui.system.MomentumDesign.Spacing.medium,
+                    vertical = com.momentummm.app.ui.system.MomentumDesign.Spacing.compact
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant 
-                       else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.size(24.dp)
+            // Tile teñido en lugar de icono suelto: da un punto de anclaje visual a
+            // cada fila y hace escaneables listas de ajustes muy largas.
+            com.momentummm.app.ui.system.IconTile(
+                icon = icon,
+                tint = if (enabled) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.momentum.textTertiary
+                },
+                size = com.momentummm.app.ui.system.MomentumDesign.Size.iconTileSmall,
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(com.momentummm.app.ui.system.MomentumDesign.Spacing.compact))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (enabled) MaterialTheme.colorScheme.onSurface 
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (enabled) {
+                        MaterialTheme.momentum.textPrimary
+                    } else {
+                        MaterialTheme.momentum.textTertiary
+                    }
                 )
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant 
-                                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        color = if (enabled) {
+                            MaterialTheme.momentum.textSecondary
+                        } else {
+                            MaterialTheme.momentum.textTertiary
+                        }
                     )
                 }
             }
@@ -182,14 +205,15 @@ fun PreferenceItem(
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    tint = MaterialTheme.momentum.textTertiary,
+                    modifier = Modifier.size(com.momentummm.app.ui.system.MomentumDesign.Size.icon)
                 )
             }
         }
         if (showDivider) {
             Divider(
-                modifier = Modifier.padding(start = 56.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                modifier = Modifier.padding(start = 68.dp),
+                color = MaterialTheme.momentum.border
             )
         }
     }
@@ -217,25 +241,27 @@ fun PreferenceSwitchItem(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (checked) MaterialTheme.colorScheme.primary 
-                       else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(24.dp)
+            com.momentummm.app.ui.system.IconTile(
+                icon = icon,
+                tint = if (checked) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.momentum.textSecondary
+                },
+                size = com.momentummm.app.ui.system.MomentumDesign.Size.iconTileSmall,
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(com.momentummm.app.ui.system.MomentumDesign.Spacing.compact))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.momentum.textPrimary
                 )
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.momentum.textSecondary
                     )
                 }
             }
@@ -277,8 +303,11 @@ fun SettingsScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 32.dp)
+            .background(MaterialTheme.momentum.canvas),
+        contentPadding = PaddingValues(
+            horizontal = com.momentummm.app.ui.system.MomentumDesign.Spacing.small,
+            vertical = com.momentummm.app.ui.system.MomentumDesign.Spacing.small
+        )
     ) {
         // ====================================================================
         // HEADER

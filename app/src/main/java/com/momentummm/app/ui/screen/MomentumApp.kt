@@ -3,6 +3,7 @@ package com.momentummm.app.ui.screen
 import android.app.Activity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -28,6 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.R
+import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.ui.viewmodel.DashboardViewModelFactory
 import com.momentummm.app.ui.viewmodel.LifeWeeksViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -355,7 +358,7 @@ private fun AuthenticationFlow(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun MainAppContent(
     application: MomentumApplication,
@@ -401,34 +404,47 @@ private fun MainAppContent(
             )
 
             Scaffold(
+            containerColor = MaterialTheme.momentum.canvas,
             bottomBar = {
-                NavigationBar {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-
-                    screens.forEach { screen ->
-                        NavigationBarItem(
-                            icon = { Icon(screen.icon, contentDescription = null) },
-                            label = { Text(stringResource(screen.titleRes)) },
-                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        )
-                    }
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                val navItems = screens.map { screen ->
+                    com.momentummm.app.ui.system.MomentumNavItem(
+                        route = screen.route,
+                        icon = screen.icon,
+                        label = stringResource(screen.titleRes),
+                    )
                 }
+                val selectedRoute = screens.firstOrNull { screen ->
+                    currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                }?.route
+
+                com.momentummm.app.ui.system.MomentumNavBar(
+                    items = navItems,
+                    selectedRoute = selectedRoute,
+                    onSelect = { item ->
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
             }
         ) { innerPadding ->
             NavHost(
                 navController = navController,
                 startDestination = Screen.Today.route,
-                modifier = Modifier.padding(innerPadding)
+                // El Scaffold raíz ya aplica innerPadding (status bar arriba, barra de
+                // navegación + bottom bar abajo). consumeWindowInsets marca esos insets
+                // como YA consumidos para que las pantallas hijas —Dashboard/Analytics con
+                // statusBarsPadding, y los settings con su propio Scaffold+TopAppBar— no los
+                // apliquen otra vez y desaparezca el doble hueco sobre el título.
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
             ) {
                 composable(Screen.Today.route) {
                     val viewModel: com.momentummm.app.ui.viewmodel.DashboardViewModel = viewModel(

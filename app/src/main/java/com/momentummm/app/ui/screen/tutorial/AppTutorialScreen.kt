@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.momentummm.app.R
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import com.momentummm.app.ui.theme.*
 
 data class TutorialStep(
     val title: String,
@@ -963,9 +964,11 @@ private fun WidgetStepContent() {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item {
-            Text(
-                text = "📱", 
-                style = MaterialTheme.typography.displayLarge
+            Icon(
+                imageVector = Icons.Filled.PhoneAndroid,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(72.dp)
             )
         }
         
@@ -997,7 +1000,7 @@ private fun WidgetStepContent() {
                     .height(200.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = androidx.compose.ui.graphics.Color(0xFF1A1A2E)
+                    containerColor = Neutral900
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
@@ -1027,9 +1030,9 @@ private fun WidgetStepContent() {
                             ) {
                                 drawCircle(
                                     color = if (i < 6) 
-                                        androidx.compose.ui.graphics.Color(0xFF10B981) 
+                                        Mint500 
                                     else 
-                                        androidx.compose.ui.graphics.Color(0xFFE5E7EB),
+                                        Neutral200,
                                     radius = size.minDimension / 2
                                 )
                             }
@@ -1046,7 +1049,7 @@ private fun WidgetStepContent() {
                                 text = "1234",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = androidx.compose.ui.graphics.Color(0xFF10B981)
+                                color = Mint500
                             )
                             Text(
                                 text = "vividas",
@@ -1059,7 +1062,7 @@ private fun WidgetStepContent() {
                                 text = "2926",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = androidx.compose.ui.graphics.Color(0xFFE5E7EB)
+                                color = Neutral200
                             )
                             Text(
                                 text = "restantes",

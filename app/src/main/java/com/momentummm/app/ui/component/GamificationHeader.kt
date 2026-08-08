@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.momentummm.app.R
 import com.momentummm.app.data.manager.GamificationState
+import com.momentummm.app.ui.theme.*
 
 /**
  * Componente visual de gamificación para el Dashboard.
@@ -72,9 +74,9 @@ fun GamificationHeader(
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFF6366F1),
-                            Color(0xFF8B5CF6),
-                            Color(0xFFA855F7)
+                            Indigo500,
+                            Violet500,
+                            Violet400
                         )
                     )
                 )
@@ -147,7 +149,7 @@ fun GamificationHeader(
                                     text = formatNumber(gamificationState.timeCoins),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFFD700)
+                                    color = Amber400
                                 )
                             }
                         }
@@ -162,8 +164,11 @@ fun GamificationHeader(
                             ) {
                                 Text("🔥", fontSize = 14.sp)
                                 Text(
-                                    text = stringResource(
-                                        R.string.gamification_header_streak_days,
+                                    // Plural, no un %d suelto: con una racha de un
+                                    // día el texto decía "1 days".
+                                    text = pluralStringResource(
+                                        R.plurals.gamification_header_streak_days,
+                                        gamificationState.currentStreak,
                                         gamificationState.currentStreak
                                     ),
                                     style = MaterialTheme.typography.labelMedium,
@@ -171,7 +176,7 @@ fun GamificationHeader(
                                 )
                                 if (gamificationState.streakMultiplier > 1f) {
                                     Surface(
-                                        color = Color(0xFF10B981),
+                                        color = Mint500,
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
                                         Text(
@@ -238,8 +243,8 @@ fun GamificationHeader(
                                 .background(
                                     Brush.horizontalGradient(
                                         colors = listOf(
-                                            Color(0xFF10B981),
-                                            Color(0xFF34D399)
+                                            Mint500,
+                                            Mint400
                                         )
                                     )
                                 )
@@ -355,7 +360,7 @@ fun GamificationEventToast(
                 .fillMaxWidth()
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isLevelUp) Color(0xFF6366F1) else Color(0xFF10B981)
+                containerColor = if (isLevelUp) Indigo500 else Mint500
             ),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -400,7 +405,7 @@ fun GamificationEventToast(
                                     coinsGained
                                 ),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color(0xFFFFD700)
+                                color = Amber400
                             )
                         }
                     }

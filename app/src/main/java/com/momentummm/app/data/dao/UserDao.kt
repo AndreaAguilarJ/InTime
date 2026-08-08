@@ -46,10 +46,21 @@ interface UserDao {
     suspend fun updateLevel(newLevel: Int)
 
     /**
-     * Incrementa la racha actual
+     * Incrementa la racha actual, una sola vez por día.
+     *
+     * El `AND (lastActiveDate IS NULL OR lastActiveDate < :date)` no es
+     * decorativo: `updateDailyStreak()` lee los ajustes y luego escribe, y se
+     * llama desde dos sitios a la vez al abrir la app (GamificationManager y
+     * DashboardViewModel). Sin la guarda, las dos lecturas veían
+     * `lastActiveDate == null` antes de que ninguna escribiera y la racha subía
+     * a 2 en una instalación recién hecha, sin un solo día de uso.
+     *
+     * Al comparar contra la medianoche del día en curso, un segundo intento del
+     * mismo día no afecta a ninguna fila. Devuelve las filas modificadas para
+     * que quien llama sepa si el incremento ocurrió de verdad.
      */
-    @Query("UPDATE user_settings SET currentStreak = currentStreak + 1, longestStreak = CASE WHEN currentStreak + 1 > longestStreak THEN currentStreak + 1 ELSE longestStreak END, lastActiveDate = :date WHERE id = 1")
-    suspend fun incrementStreak(date: Date)
+    @Query("UPDATE user_settings SET currentStreak = currentStreak + 1, longestStreak = CASE WHEN currentStreak + 1 > longestStreak THEN currentStreak + 1 ELSE longestStreak END, lastActiveDate = :date WHERE id = 1 AND (lastActiveDate IS NULL OR lastActiveDate < :date)")
+    suspend fun incrementStreak(date: Date): Int
 
     /**
      * Resetea la racha (cuando se rompe)

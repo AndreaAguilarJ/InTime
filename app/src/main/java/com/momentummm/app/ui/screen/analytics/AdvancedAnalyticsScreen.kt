@@ -29,6 +29,12 @@ import androidx.annotation.StringRes
 import com.momentummm.app.R
 import com.momentummm.app.data.repository.UsageStatsRepository
 import com.momentummm.app.ui.system.*
+import com.momentummm.app.ui.theme.MomentumTextStyles
+import com.momentummm.app.ui.theme.momentum
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import java.util.Locale
 import com.momentummm.app.ui.viewmodel.AdvancedAnalyticsViewModel
 import com.momentummm.app.ui.viewmodel.AdvancedAnalyticsViewModelFactory
 import com.momentummm.app.ui.viewmodel.TimePeriod
@@ -36,14 +42,14 @@ import com.momentummm.app.ui.viewmodel.AppCategory as VMAppCategory
 
 // Mantener enums locales para compatibilidad con UI
 enum class AppCategory(@StringRes val displayNameRes: Int, val color: Color) {
-    Social(R.string.analytics_category_social, Color(0xFF4267B2)),
-    Entertainment(R.string.analytics_category_entertainment, Color(0xFFFF1744)),
-    Productivity(R.string.analytics_category_productivity, Color(0xFF4CAF50)),
-    Games(R.string.analytics_category_games, Color(0xFF9C27B0)),
-    Communication(R.string.analytics_category_communication, Color(0xFF2196F3)),
-    News(R.string.analytics_category_news, Color(0xFFFF9800)),
-    Health(R.string.analytics_category_health, Color(0xFF009688)),
-    Other(R.string.analytics_category_other, Color(0xFF607D8B))
+    Social(R.string.analytics_category_social, com.momentummm.app.ui.theme.Violet500),
+    Entertainment(R.string.analytics_category_entertainment, com.momentummm.app.ui.theme.Rose500),
+    Productivity(R.string.analytics_category_productivity, com.momentummm.app.ui.theme.Mint500),
+    Games(R.string.analytics_category_games, com.momentummm.app.ui.theme.Amber500),
+    Communication(R.string.analytics_category_communication, com.momentummm.app.ui.theme.Sky500),
+    News(R.string.analytics_category_news, com.momentummm.app.ui.theme.Coral500),
+    Health(R.string.analytics_category_health, com.momentummm.app.ui.theme.Indigo400),
+    Other(R.string.analytics_category_other, com.momentummm.app.ui.theme.Neutral400)
 }
 
 // Data classes locales para la UI
@@ -142,103 +148,108 @@ fun AdvancedAnalyticsScreen(
         return
     }
 
-    // Convertir datos del ViewModel a formato UI
-    val usageData = uiState.topApps.map { appData ->
-        UsageData(
-            appName = appData.appName,
-            packageName = appData.packageName,
-            totalTime = appData.totalTime,
-            sessions = appData.sessions,
-            lastUsed = appData.lastUsed,
-            category = appData.category.toUICategory()
-        )
+    // Convertir datos del ViewModel a formato UI. Se memoiza con remember(key)
+    // para no rehacer el .map en cada recomposición (solo cuando cambian los datos).
+    val usageData = remember(uiState.topApps) {
+        uiState.topApps.map { appData ->
+            UsageData(
+                appName = appData.appName,
+                packageName = appData.packageName,
+                totalTime = appData.totalTime,
+                sessions = appData.sessions,
+                lastUsed = appData.lastUsed,
+                category = appData.category.toUICategory()
+            )
+        }
     }
 
-    val weeklyData = uiState.weeklyData.map { weekData ->
-        WeeklyData(
-            day = weekData.day,
-            screenTime = weekData.screenTime,
-            pickups = weekData.pickups,
-            mostUsedApp = weekData.mostUsedApp
-        )
+    val weeklyData = remember(uiState.weeklyData) {
+        uiState.weeklyData.map { weekData ->
+            WeeklyData(
+                day = weekData.day,
+                screenTime = weekData.screenTime,
+                pickups = weekData.pickups,
+                mostUsedApp = weekData.mostUsedApp
+            )
+        }
     }
 
-    val insights = uiState.insights.map { insightData ->
-        InsightData(
-            title = insightData.title,
-            description = insightData.description,
-            value = insightData.value,
-            change = insightData.change,
-            isPositive = insightData.isPositive,
-            icon = getIconFromName(insightData.iconName)
-        )
+    val insights = remember(uiState.insights) {
+        uiState.insights.map { insightData ->
+            InsightData(
+                title = insightData.title,
+                description = insightData.description,
+                value = insightData.value,
+                change = insightData.change,
+                isPositive = insightData.isPositive,
+                icon = getIconFromName(insightData.iconName)
+            )
+        }
     }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.05f),
-                        MaterialTheme.colorScheme.surface
-                    )
-                )
-            ),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(MaterialTheme.momentum.canvas),
+        contentPadding = PaddingValues(
+            start = MomentumDesign.Spacing.screenHorizontal,
+            end = MomentumDesign.Spacing.screenHorizontal,
+            top = MomentumDesign.Spacing.small,
+            bottom = MomentumDesign.Spacing.large,
+        ),
+        verticalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.medium)
     ) {
         item {
-            // Header
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.analytics_title),
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.momentum.textPrimary
                     )
                     Text(
                         text = stringResource(R.string.analytics_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.momentum.textSecondary
                     )
                 }
-                Surface(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape,
-                    modifier = Modifier.size(40.dp)
+                Spacer(modifier = Modifier.width(MomentumDesign.Spacing.compact))
+                // Botón de refresco como tile suave: el círculo relleno de primary
+                // competía visualmente con el título.
+                Box(
+                    modifier = Modifier
+                        .size(MomentumDesign.Size.iconTile)
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = MomentumDesign.Alpha.soft))
+                        .clickable { viewModel.refresh() },
+                    contentAlignment = Alignment.Center
                 ) {
-                    IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(
-                            Icons.Filled.Refresh,
-                            contentDescription = stringResource(R.string.analytics_refresh_cd),
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-                }
-            }
-        }
-        
-        item {
-            // Period selector - AHORA CONECTADO AL VIEWMODEL
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(TimePeriod.values()) { period ->
-                    MomentumChip(
-                        text = stringResource(period.displayNameRes),
-                        isSelected = uiState.selectedPeriod == period,
-                        onClick = { viewModel.selectPeriod(period) }
+                    Icon(
+                        Icons.Filled.Refresh,
+                        contentDescription = stringResource(R.string.analytics_refresh_cd),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(MomentumDesign.Size.iconLarge)
                     )
                 }
             }
         }
-        
+
+        item {
+            val periods = TimePeriod.values()
+            SegmentedTabs(
+                options = periods.map { stringResource(it.displayNameRes) },
+                selectedIndex = periods.indexOf(uiState.selectedPeriod).coerceAtLeast(0),
+                onSelect = { index -> viewModel.selectPeriod(periods[index]) },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         item {
             // Summary Stats Card - USANDO DATOS REALES
             SummaryStatsCard(
@@ -462,71 +473,81 @@ private fun WeeklyUsageChart(
     data: List<WeeklyData>,
     modifier: Modifier = Modifier
 ) {
-    MomentumCard(
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.analytics_weekly_screen_time_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+    val busiest = remember(data) { data.maxByOrNull { it.screenTime } }
+
+    MomentumCard(modifier = modifier) {
+        Column(modifier = Modifier.padding(MomentumDesign.Spacing.cozy)) {
+            SectionHeader(
+                title = stringResource(R.string.analytics_weekly_chart_title),
+                subtitle = busiest?.let {
+                    stringResource(R.string.analytics_weekly_peak, it.day, it.mostUsedApp)
+                },
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            val maxTime = (data.maxOfOrNull { it.screenTime } ?: 1f).coerceAtLeast(1f)
-            
+
+            Spacer(Modifier.height(MomentumDesign.Spacing.cozy))
+
+            BarChart(
+                data = data.map { day ->
+                    BarDatum(label = day.day.take(3), value = day.screenTime)
+                },
+                accent = MaterialTheme.colorScheme.primary,
+                valueFormatter = { hours ->
+                    if (hours <= 0f) "-" else String.format(Locale.US, "%.1f", hours)
+                },
+            )
+
+            Spacer(Modifier.height(MomentumDesign.Spacing.medium))
+            MomentumDivider()
+            Spacer(Modifier.height(MomentumDesign.Spacing.medium))
+
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Bottom
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)
             ) {
-                data.forEach { dayData ->
-                    val barHeight = ((dayData.screenTime / maxTime) * 160).dp
-                    val animatedHeight by animateDpAsState(
-                        targetValue = barHeight,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        ),
-                        label = "bar_height"
-                    )
-                    
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = stringResource(
-                                R.string.analytics_hours_format,
-                                dayData.screenTime
-                            ),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .width(24.dp)
-                                .height(animatedHeight)
-                                .background(
-                                    MaterialTheme.colorScheme.primary,
-                                    RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
-                                )
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = dayData.day,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
+                val totalHours = data.sumOf { it.screenTime.toDouble() }.toFloat()
+                val totalPickups = data.sumOf { it.pickups }
+                InlineMetric(
+                    label = stringResource(R.string.analytics_total_label),
+                    value = String.format(Locale.US, "%.1f h", totalHours),
+                    modifier = Modifier.weight(1f)
+                )
+                InlineMetric(
+                    label = stringResource(R.string.analytics_pickups_label),
+                    value = totalPickups.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+                InlineMetric(
+                    label = stringResource(R.string.analytics_daily_average_label),
+                    value = if (data.isEmpty()) "-" else String.format(
+                        Locale.US, "%.1f h", totalHours / data.size
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
+    }
+}
+
+/** Métrica en línea, sin caja, para pies de tarjeta. */
+@Composable
+private fun InlineMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.momentum.textPrimary,
+            maxLines = 1
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.momentum.textSecondary,
+            maxLines = 1
+        )
     }
 }
 
@@ -535,94 +556,64 @@ private fun InsightCard(
     insight: InsightData,
     modifier: Modifier = Modifier
 ) {
+    // El signo del cambio no basta para elegir el color: en bienestar digital, bajar
+    // el tiempo de pantalla es una buena noticia. `isPositive` ya viene calculado por
+    // el ViewModel con esa semántica, así que manda él.
+    val accent = if (insight.isPositive) {
+        MaterialTheme.momentum.success
+    } else {
+        MaterialTheme.momentum.danger
+    }
+
     MomentumCard(
         modifier = modifier,
-        containerColor = if (insight.isPositive) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        } else {
-            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-        }
+        shape = MomentumDesign.Shapes.cardCompact,
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(MomentumDesign.Spacing.medium)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    insight.icon,
-                    contentDescription = null,
-                    tint = if (insight.isPositive) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    },
-                    modifier = Modifier.size(24.dp)
+                IconTile(
+                    icon = insight.icon,
+                    tint = accent,
+                    size = MomentumDesign.Size.iconTileSmall,
                 )
-                
                 if (insight.change != 0f) {
-                    Surface(
-                        color = if (insight.isPositive) {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        } else {
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
-                        },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                if (insight.change > 0) Icons.Filled.TrendingUp else Icons.Filled.TrendingDown,
-                                contentDescription = null,
-                                tint = if (insight.isPositive) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.error
-                                },
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "${kotlin.math.abs(insight.change)}%",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (insight.isPositive) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.error
-                                },
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                    DeltaBadge(
+                        MetricDelta(
+                            text = String.format(Locale.US, "%.0f%%", kotlin.math.abs(insight.change)),
+                            isUp = insight.change > 0f,
+                            goodWhenDown = insight.isPositive == (insight.change < 0f),
+                        )
+                    )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
+
+            Spacer(Modifier.height(MomentumDesign.Spacing.compact))
+
             Text(
                 text = insight.value,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                style = MomentumTextStyles.metric,
+                color = MaterialTheme.momentum.textPrimary,
+                maxLines = 1
             )
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
+            Spacer(Modifier.height(MomentumDesign.Spacing.hairline))
             Text(
                 text = insight.title,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Medium
+                color = MaterialTheme.momentum.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
+            Spacer(Modifier.height(MomentumDesign.Spacing.extraSmall))
             Text(
                 text = insight.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.momentum.textSecondary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -633,83 +624,66 @@ private fun CategoryBreakdownChart(
     data: List<UsageData>,
     modifier: Modifier = Modifier
 ) {
-    MomentumCard(
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.analytics_usage_by_category_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+    val byCategory = remember(data) {
+        data.groupBy { it.category }
+            .mapValues { entry -> entry.value.sumOf { it.totalTime } }
+            .entries
+            .sortedByDescending { it.value }
+    }
+    val total = remember(byCategory) { byCategory.sumOf { it.value }.coerceAtLeast(1L) }
+
+    val segments = byCategory.map { entry ->
+        RingSegment(
+            label = stringResource(entry.key.displayNameRes),
+            value = entry.value.toFloat(),
+            color = entry.key.color,
+        )
+    }
+
+    MomentumCard(modifier = modifier) {
+        Column(modifier = Modifier.padding(MomentumDesign.Spacing.cozy)) {
+            SectionHeader(
+                title = stringResource(R.string.analytics_category_breakdown_title),
+                subtitle = stringResource(R.string.analytics_category_breakdown_subtitle),
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            val categoryData = data.groupBy { it.category }
-                .mapValues { (_, apps) -> apps.sumOf { it.totalTime } }
-                .toList()
-                .sortedByDescending { it.second }
-            
-            // Protección contra división por cero
-            val totalTime = categoryData.sumOf { it.second }.coerceAtLeast(1L)
-            
-            Row(
+
+            Spacer(Modifier.height(MomentumDesign.Spacing.cozy))
+
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                contentAlignment = Alignment.Center
             ) {
-                // Pie chart
-                Box(
-                    modifier = Modifier.size(120.dp),
-                    contentAlignment = Alignment.Center
+                SegmentedRing(
+                    segments = segments,
+                    diameter = 176.dp,
+                    strokeWidth = 18.dp,
                 ) {
-                    Canvas(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        var startAngle = 0f
-                        categoryData.forEach { (category, time) ->
-                            val sweepAngle = (time.toFloat() / totalTime.toFloat()) * 360f
-                            drawArc(
-                                color = category.color,
-                                startAngle = startAngle,
-                                sweepAngle = sweepAngle,
-                                useCenter = true,
-                                size = Size(size.width * 0.8f, size.height * 0.8f),
-                                topLeft = Offset(size.width * 0.1f, size.height * 0.1f)
-                            )
-                            startAngle += sweepAngle
-                        }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = byCategory.size.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.momentum.textPrimary
+                        )
+                        Text(
+                            text = stringResource(R.string.analytics_categories_label),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.momentum.textSecondary
+                        )
                     }
                 }
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                // Legend
-                Column {
-                    categoryData.take(5).forEach { (category, time) ->
-                        Row(
-                            modifier = Modifier.padding(vertical = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .background(category.color, CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(category.displayNameRes),
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = "${(time.toFloat() / totalTime.toFloat() * 100).toInt()}%",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
+            }
+
+            Spacer(Modifier.height(MomentumDesign.Spacing.cozy))
+
+            Column(verticalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)) {
+                byCategory.forEach { entry ->
+                    val share = entry.value.toFloat() / total.toFloat()
+                    LegendRow(
+                        label = stringResource(entry.key.displayNameRes),
+                        value = String.format(Locale.US, "%d%%", (share * 100).toInt()),
+                        color = entry.key.color,
+                        share = share,
+                    )
                 }
             }
         }
@@ -875,114 +849,44 @@ private fun SummaryStatsCard(
     mostUsedApp: String,
     modifier: Modifier = Modifier
 ) {
-    MomentumCard(
+    // Rejilla 2x2 de tarjetas independientes en lugar de un bloque con cuatro
+    // columnas: en pantallas estrechas las cifras largas ("12h 34m") ya no se
+    // comprimen unas contra otras.
+    Column(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.primaryContainer
+        verticalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.analytics_summary_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+        Row(horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)) {
+            StatCard(
+                label = stringResource(R.string.analytics_total_label),
+                value = totalScreenTime,
+                icon = Icons.Filled.Schedule,
+                accent = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Total Screen Time
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = totalScreenTime,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = stringResource(R.string.analytics_summary_total_screen_time),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                // Average Daily
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = averageDaily,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = stringResource(R.string.analytics_summary_daily_average),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Divider
-            Divider(
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                thickness = 1.dp
+            StatCard(
+                label = stringResource(R.string.analytics_daily_average_label),
+                value = averageDaily,
+                icon = Icons.Filled.TrendingUp,
+                accent = MaterialTheme.momentum.info,
+                modifier = Modifier.weight(1f)
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Total Pickups
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.analytics_summary_total_pickups),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Text(
-                    text = stringResource(
-                        R.string.analytics_summary_pickups_times,
-                        totalPickups
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Most Used App
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.analytics_summary_top_app),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Text(
-                    text = mostUsedApp,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)) {
+            StatCard(
+                label = stringResource(R.string.analytics_pickups_label),
+                value = totalPickups.toString(),
+                icon = Icons.Filled.TouchApp,
+                accent = MaterialTheme.momentum.warning,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                label = stringResource(R.string.analytics_most_used_label),
+                value = mostUsedApp,
+                icon = Icons.Filled.Star,
+                accent = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

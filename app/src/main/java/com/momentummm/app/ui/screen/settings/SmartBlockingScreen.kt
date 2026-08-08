@@ -37,6 +37,14 @@ import com.momentummm.app.service.NuclearModeService
 import com.momentummm.app.service.ContextBlockingService
 import com.momentummm.app.ui.system.*
 import java.util.*
+import com.momentummm.app.ui.theme.*
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import com.momentummm.app.ui.system.MomentumDesign
+import com.momentummm.app.ui.theme.momentum
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,9 +135,11 @@ fun SmartBlockingScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.Top
                             ) {
-                                Text(
-                                    text = "🧠",
-                                    fontSize = 48.sp
+                                Icon(
+                                    imageVector = Icons.Default.Psychology,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(44.dp)
                                 )
                                 IconButton(onClick = { showWelcomeCard = false }) {
                                     Icon(Icons.Default.Close, "Cerrar", modifier = Modifier.size(20.dp))
@@ -156,24 +166,23 @@ fun SmartBlockingScreen(
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
                                 QuickStat(
-                                    value = if (config.floatingTimerEnabled) "✓" else "✗",
                                     label = "Timer",
                                     isActive = config.floatingTimerEnabled
                                 )
                                 QuickStat(
-                                    value = if (config.sleepModeEnabled) "✓" else "✗",
                                     label = "Sueño",
                                     isActive = config.sleepModeEnabled
                                 )
                                 QuickStat(
-                                    value = if (config.digitalFastingEnabled) "✓" else "✗",
                                     label = "Ayuno",
                                     isActive = config.digitalFastingEnabled
                                 )
                                 QuickStat(
-                                    value = if (config.isNuclearModeActive()) "🔴" else "⚫",
                                     label = "Nuclear",
-                                    isActive = config.isNuclearModeActive()
+                                    isActive = config.isNuclearModeActive(),
+                                    // El modo nuclear activo es el único estado que
+                                    // conviene señalar en rojo: es irreversible.
+                                    activeColor = MaterialTheme.momentum.danger
                                 )
                             }
                         }
@@ -185,7 +194,7 @@ fun SmartBlockingScreen(
             item {
                 SmartBlockingSection(
                     icon = Icons.Default.Timer,
-                    title = "⏱️ Timer Flotante",
+                    title = "Timer Flotante",
                     subtitle = "Siempre visible sobre todas las apps",
                     isEnabled = config.floatingTimerEnabled,
                     onToggle = { enabled ->
@@ -197,7 +206,7 @@ fun SmartBlockingScreen(
                             FloatingTimerService.stop(context)
                         }
                     },
-                    accentColor = Color(0xFF3B82F6),
+                    accentColor = Sky500,
                     extraContent = if (config.floatingTimerEnabled) {
                         {
                             if (!hasOverlayPermission.value) {
@@ -284,7 +293,7 @@ fun SmartBlockingScreen(
             item {
                 SmartBlockingSection(
                     icon = Icons.Default.Bedtime,
-                    title = "😴 Ventana de Sueño",
+                    title = "Ventana de Sueño",
                     subtitle = "No contar uso durante horas de sueño",
                     isEnabled = config.sleepModeEnabled,
                     onToggle = { enabled ->
@@ -293,7 +302,7 @@ fun SmartBlockingScreen(
                             Toast.makeText(context, "😴 Modo sueño activado", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    accentColor = Color(0xFF7C3AED),
+                    accentColor = Violet600,
                     extraContent = if (config.sleepModeEnabled) {
                         {
                             OutlinedCard(
@@ -355,7 +364,7 @@ fun SmartBlockingScreen(
             item {
                 SmartBlockingSection(
                     icon = Icons.Default.Restaurant,
-                    title = "🥗 Ayuno Digital",
+                    title = "Ayuno Digital",
                     subtitle = "Límites estrictos en horario laboral",
                     isEnabled = config.digitalFastingEnabled,
                     onToggle = { enabled ->
@@ -364,7 +373,7 @@ fun SmartBlockingScreen(
                             Toast.makeText(context, "🥗 Ayuno digital activado", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    accentColor = Color(0xFF10B981),
+                    accentColor = Mint500,
                     extraContent = if (config.digitalFastingEnabled) {
                         {
                             OutlinedCard(
@@ -434,7 +443,7 @@ fun SmartBlockingScreen(
             item {
                 SmartBlockingSection(
                     icon = Icons.Default.Dangerous,
-                    title = "☢️ Modo Nuclear",
+                    title = "Modo Nuclear",
                     subtitle = "Bloqueo extremo de 1-3 meses",
                     isEnabled = config.nuclearModeEnabled && config.isNuclearModeActive(),
                     onToggle = { enabled ->
@@ -445,13 +454,13 @@ fun SmartBlockingScreen(
                             NuclearModeService.stop(context)
                         }
                     },
-                    accentColor = Color(0xFFEF4444),
+                    accentColor = Rose500,
                     extraContent = if (config.isNuclearModeActive()) {
                         {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFEF4444).copy(alpha = 0.1f)
+                                    containerColor = Rose500.copy(alpha = 0.1f)
                                 )
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
@@ -465,7 +474,7 @@ fun SmartBlockingScreen(
                                                 "MODO NUCLEAR ACTIVO",
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color(0xFFEF4444)
+                                                color = Rose500
                                             )
                                             val remaining = viewModel.getNuclearModeRemainingDays()
                                             Text(
@@ -482,7 +491,7 @@ fun SmartBlockingScreen(
                                             1f - (viewModel.getNuclearModeRemainingDays().toFloat() / config.nuclearModeDurationDays)
                                         } else 0f,
                                         modifier = Modifier.fillMaxWidth(),
-                                        color = Color(0xFFEF4444)
+                                        color = Rose500
                                     )
                                     
                                     if (config.nuclearModeRequiresAppOpen) {
@@ -504,7 +513,7 @@ fun SmartBlockingScreen(
             item {
                 SmartBlockingSection(
                     icon = Icons.Default.LocalFireDepartment,
-                    title = "🔥 Protección de Rachas",
+                    title = "Protección de Rachas",
                     subtitle = "Días de gracia para no perder tu racha",
                     isEnabled = config.streakProtectionEnabled,
                     onToggle = { enabled ->
@@ -513,7 +522,7 @@ fun SmartBlockingScreen(
                             Toast.makeText(context, "🔥 Protección de rachas activada", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    accentColor = Color(0xFFFF6B35),
+                    accentColor = Coral500,
                     extraContent = if (config.streakProtectionEnabled) {
                         {
                             Column {
@@ -531,7 +540,7 @@ fun SmartBlockingScreen(
                                             "${config.graceDaysUsedThisWeek}/${config.graceDaysPerWeek} usados",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = if (config.graceDaysUsedThisWeek >= config.graceDaysPerWeek) 
-                                                Color(0xFFEF4444) 
+                                                Rose500 
                                             else 
                                                 MaterialTheme.colorScheme.primary
                                         )
@@ -603,7 +612,7 @@ fun SmartBlockingScreen(
             item {
                 SmartBlockingSection(
                     icon = Icons.Default.LocationOn,
-                    title = "📍 Bloqueo por Contexto",
+                    title = "Bloqueo por Contexto",
                     subtitle = "Reglas por horario, ubicación o WiFi",
                     isEnabled = config.contextBlockingEnabled,
                     onToggle = { enabled ->
@@ -658,7 +667,7 @@ fun SmartBlockingScreen(
             item {
                 SmartBlockingSection(
                     icon = Icons.Default.Chat,
-                    title = "💬 Modo Solo Comunicación",
+                    title = "Modo Solo Comunicación",
                     subtitle = "Permite mensajes, bloquea feeds y reels",
                     isEnabled = config.communicationOnlyModeEnabled,
                     onToggle = { enabled ->
@@ -826,11 +835,18 @@ private fun SmartBlockingSection(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = MomentumDesign.Shapes.card,
         colors = CardDefaults.cardColors(
-            containerColor = if (isEnabled) 
-                accentColor.copy(alpha = 0.05f) 
-            else 
-                MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.momentum.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isEnabled) 1.5.dp else 1.dp,
+            color = if (isEnabled) {
+                accentColor.copy(alpha = MomentumDesign.Alpha.strong)
+            } else {
+                MaterialTheme.momentum.border
+            }
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -844,9 +860,9 @@ private fun SmartBlockingSection(
                     modifier = Modifier.weight(1f)
                 ) {
                     Surface(
-                        modifier = Modifier.size(40.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        color = accentColor.copy(alpha = 0.1f)
+                        modifier = Modifier.size(MomentumDesign.Size.iconTile),
+                        shape = RoundedCornerShape(MomentumDesign.CornerRadius.small),
+                        color = accentColor.copy(alpha = MomentumDesign.Alpha.soft)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
@@ -1224,7 +1240,7 @@ private fun NuclearModeDialog(
             Text(
                 "Modo Nuclear",
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFEF4444)
+                color = Rose500
             )
         },
         text = {
@@ -1233,7 +1249,7 @@ private fun NuclearModeDialog(
                     "⚠️ ADVERTENCIA: Este modo es EXTREMO",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFEF4444)
+                    color = Rose500
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1268,7 +1284,7 @@ private fun NuclearModeDialog(
             Button(
                 onClick = { onConfirm(durationDays, emptyList(), waitMinutes) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFEF4444)
+                    containerColor = Rose500
                 )
             ) {
                 Text("⚠️ ACTIVAR MODO NUCLEAR")
@@ -1476,22 +1492,38 @@ private fun getDaysText(daysString: String): String {
 
 @Composable
 private fun QuickStat(
-    value: String,
     label: String,
-    isActive: Boolean
+    isActive: Boolean,
+    activeColor: Color = MaterialTheme.colorScheme.primary,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleLarge,
-            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-        )
+    // Un "✓/✗" en texto se lee como dato; un punto relleno se lee como estado.
+    // En una fila de cuatro indicadores, lo segundo se escanea de un vistazo.
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(
+                    if (isActive) {
+                        activeColor.copy(alpha = MomentumDesign.Alpha.soft)
+                    } else {
+                        MaterialTheme.momentum.surfaceSunken
+                    }
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isActive) Icons.Default.Check else Icons.Default.Remove,
+                contentDescription = null,
+                tint = if (isActive) activeColor else MaterialTheme.momentum.textTertiary,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(MomentumDesign.Spacing.extraSmall))
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.momentum.textSecondary
         )
     }
 }

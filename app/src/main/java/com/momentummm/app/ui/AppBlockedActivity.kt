@@ -345,9 +345,9 @@ private fun AppBlockedScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF0A0A0A),
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E)
+                        com.momentummm.app.ui.theme.Neutral950,
+                        com.momentummm.app.ui.theme.Indigo900,
+                        com.momentummm.app.ui.theme.Violet900
                     )
                 )
             )
@@ -387,7 +387,7 @@ private fun AppBlockedScreen(
                             .size(120.dp)
                             .scale(scale)
                             .alpha(alpha * 0.3f),
-                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.3f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                         shape = CircleShape
                     ) {}
 
@@ -396,7 +396,7 @@ private fun AppBlockedScreen(
                         modifier = Modifier
                             .size(100.dp)
                             .scale(scale),
-                        color = MaterialTheme.colorScheme.error,
+                        color = MaterialTheme.colorScheme.primary,
                         shape = CircleShape,
                         shadowElevation = 16.dp
                     ) {
@@ -538,7 +538,7 @@ private fun AppBlockedScreen(
                         icon = Icons.Filled.EmojiEvents,
                         value = stringResource(R.string.app_blocked_stat_achievement_value),
                         label = stringResource(R.string.app_blocked_stat_achievement_label),
-                        color = Color(0xFFFFD700),
+                        color = com.momentummm.app.ui.theme.Amber400,
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
@@ -571,7 +571,7 @@ private fun AppBlockedScreen(
                         Icon(
                             Icons.Filled.Celebration,
                             contentDescription = null,
-                            tint = Color(0xFFFFD700),
+                            tint = com.momentummm.app.ui.theme.Amber400,
                             modifier = Modifier.size(48.dp)
                         )
                         Text(
@@ -711,7 +711,7 @@ private fun AppBlockedScreen(
                         onClick = onEmergencyUnlock,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.textButtonColors(
-                            contentColor = Color(0xFFFF6666)
+                            contentColor = com.momentummm.app.ui.theme.Rose400
                         )
                     ) {
                         Row(

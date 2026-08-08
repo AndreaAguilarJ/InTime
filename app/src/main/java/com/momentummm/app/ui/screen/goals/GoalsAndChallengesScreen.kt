@@ -27,11 +27,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.annotation.StringRes
 import com.momentummm.app.R
+import com.momentummm.app.ui.theme.momentum
+import com.momentummm.app.ui.theme.MomentumTextStyles
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material.icons.filled.Flag
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.data.entity.Goal as DbGoal
 import com.momentummm.app.data.entity.Challenge as DbChallenge
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import com.momentummm.app.ui.theme.*
 
 // UI Data classes for presentation
 data class Goal(
@@ -71,11 +76,11 @@ enum class GoalPeriod(@StringRes val displayNameRes: Int) {
 }
 
 enum class GoalCategory(@StringRes val displayNameRes: Int, val color: Color) {
-    SCREEN_TIME(R.string.goal_category_screen_time, Color(0xFF2196F3)),
-    SOCIAL_MEDIA(R.string.goal_category_social_media, Color(0xFF9C27B0)),
-    PRODUCTIVITY(R.string.goal_category_productivity, Color(0xFF4CAF50)),
-    FOCUS(R.string.goal_category_focus, Color(0xFFFF5722)),
-    DIGITAL_DETOX(R.string.goal_category_digital_detox, Color(0xFF607D8B))
+    SCREEN_TIME(R.string.goal_category_screen_time, Sky500),
+    SOCIAL_MEDIA(R.string.goal_category_social_media, Violet600),
+    PRODUCTIVITY(R.string.goal_category_productivity, Mint500),
+    FOCUS(R.string.goal_category_focus, Coral500),
+    DIGITAL_DETOX(R.string.goal_category_digital_detox, Neutral500)
 }
 
 enum class ChallengeIcon {
@@ -83,9 +88,9 @@ enum class ChallengeIcon {
 }
 
 enum class ChallengeDifficulty(@StringRes val displayNameRes: Int, val color: Color) {
-    EASY(R.string.challenge_difficulty_easy, Color(0xFF4CAF50)),
-    MEDIUM(R.string.challenge_difficulty_medium, Color(0xFFFF9800)),
-    HARD(R.string.challenge_difficulty_hard, Color(0xFFF44336))
+    EASY(R.string.challenge_difficulty_easy, Mint500),
+    MEDIUM(R.string.challenge_difficulty_medium, Amber500),
+    HARD(R.string.challenge_difficulty_hard, Rose500)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -553,7 +558,7 @@ private fun QuickStatsCard(
                     value = streakDays.toString(),
                     label = stringResource(R.string.goals_summary_streak_days),
                     icon = Icons.Filled.Whatshot,
-                    color = Color(0xFFFF5722)
+                    color = Coral500
                 )
             }
         }
@@ -603,140 +608,130 @@ private fun GoalCard(
     val progress = if (goal.targetValue > 0) {
         goal.currentValue.toFloat() / goal.targetValue.toFloat()
     } else 0f
-    
-    val progressColor = when {
-        progress >= 1.0f -> MaterialTheme.colorScheme.primary
-        progress >= 0.8f -> Color(0xFF4CAF50)
-        progress >= 0.5f -> Color(0xFFFF9800)
-        else -> Color(0xFFF44336)
-    }
-    
-    // Vibrar cuando se completa una meta
-    LaunchedEffect(progress) {
-        if (progress >= 1.0f) {
+    val isComplete = progress >= 1f
+
+    // Una meta al 20% el lunes no es un fracaso: pintarla de rojo castiga al
+    // usuario por el simple paso del tiempo. Se reserva el verde para el logro y
+    // se usa el color de la categoría mientras la meta está en curso.
+    val accent = if (isComplete) MaterialTheme.momentum.success else goal.category.color
+
+    LaunchedEffect(isComplete) {
+        if (isComplete) {
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
-    
-    MomentumCard(
-        modifier = modifier
-    ) {
+
+    MomentumCard(modifier = modifier) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(MomentumDesign.Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.small)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                IconTile(
+                    icon = if (isComplete) Icons.Filled.Check else Icons.Filled.Flag,
+                    tint = accent,
+                )
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = goal.title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.momentum.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = goal.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.momentum.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-                
-                Surface(
-                    color = goal.category.color.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(8.dp)
+                Box(
+                    modifier = Modifier
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(goal.category.color.copy(alpha = MomentumDesign.Alpha.soft))
+                        .padding(
+                            horizontal = MomentumDesign.Spacing.small,
+                            vertical = MomentumDesign.Spacing.extraSmall
+                        )
                 ) {
                     Text(
                         text = stringResource(goal.period.displayNameRes),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = goal.category.color,
-                        fontWeight = FontWeight.Medium
+                        style = MomentumTextStyles.overline,
+                        color = goal.category.color
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Progress bar
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(
-                            R.string.goals_progress_current,
-                            goal.currentValue / 60,
-                            goal.currentValue % 60
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = progressColor,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.goals_progress_target,
-                            goal.targetValue / 60,
-                            goal.targetValue % 60
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                MomentumProgressIndicator(
-                    progress = progress.coerceAtMost(1.0f),
-                    showPercentage = false,
-                    color = progressColor,
-                    modifier = Modifier.height(60.dp)
+
+            // La cifra alcanzada es la protagonista; el objetivo queda como
+            // referencia secundaria en la misma línea de base.
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = stringResource(
+                        R.string.goals_progress_current,
+                        goal.currentValue / 60,
+                        goal.currentValue % 60
+                    ),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = accent
                 )
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                Spacer(modifier = Modifier.width(MomentumDesign.Spacing.extraSmall))
+                Text(
+                    text = stringResource(
+                        R.string.goals_progress_target,
+                        goal.targetValue / 60,
+                        goal.targetValue % 60
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.momentum.textTertiary,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = stringResource(
                         R.string.goals_progress_completed,
                         (progress * 100).toInt()
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.momentum.textSecondary
                 )
-                
-                if (progress >= 1.0f) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Filled.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(R.string.goals_completed_badge),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+            }
+
+            ProgressBar(
+                progress = progress.coerceIn(0f, 1f),
+                color = accent,
+                height = 10.dp,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (isComplete) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.extraSmall),
+                    modifier = Modifier
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(MaterialTheme.momentum.success.copy(alpha = MomentumDesign.Alpha.soft))
+                        .padding(
+                            horizontal = MomentumDesign.Spacing.small,
+                            vertical = MomentumDesign.Spacing.extraSmall
+                        )
+                ) {
+                    Icon(
+                        Icons.Filled.EmojiEvents,
+                        contentDescription = null,
+                        tint = MaterialTheme.momentum.success,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.goals_completed_badge),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.momentum.success
+                    )
                 }
             }
         }
@@ -751,155 +746,188 @@ private fun ChallengeCard(
     onUpdateProgress: (Int) -> Unit,
     onAbandon: () -> Unit
 ) {
+    val icon = when (challenge.iconType) {
+        ChallengeIcon.PHONE_OFF -> Icons.Filled.PhoneAndroid
+        ChallengeIcon.TIMER -> Icons.Filled.Timer
+        ChallengeIcon.NATURE -> Icons.Filled.Nature
+        ChallengeIcon.BOOK -> Icons.Filled.Book
+        ChallengeIcon.MEDITATION -> Icons.Filled.SelfImprovement
+        ChallengeIcon.EXERCISE -> Icons.Filled.FitnessCenter
+    }
+
     MomentumCard(
         modifier = modifier,
-        containerColor = if (challenge.isActive) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        } else {
-            MaterialTheme.colorScheme.surface
-        }
+        // Un reto en curso se distingue por el borde de acento, no por un fondo
+        // teñido: así el texto conserva el mismo contraste en ambos estados.
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (challenge.isActive) 1.5.dp else 1.dp,
+            color = if (challenge.isActive) {
+                MaterialTheme.colorScheme.primary.copy(alpha = MomentumDesign.Alpha.strong)
+            } else {
+                MaterialTheme.momentum.border
+            }
+        )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(MomentumDesign.Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.small)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                IconTile(
+                    icon = icon,
+                    tint = challenge.difficulty.color,
+                )
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = challenge.title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.momentum.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = challenge.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.momentum.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-                
-                Surface(
-                    color = challenge.difficulty.color.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(8.dp)
+                Box(
+                    modifier = Modifier
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(challenge.difficulty.color.copy(alpha = MomentumDesign.Alpha.soft))
+                        .padding(
+                            horizontal = MomentumDesign.Spacing.small,
+                            vertical = MomentumDesign.Spacing.extraSmall
+                        )
                 ) {
                     Text(
                         text = stringResource(challenge.difficulty.displayNameRes),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = challenge.difficulty.color,
-                        fontWeight = FontWeight.Medium
+                        style = MomentumTextStyles.overline,
+                        color = challenge.difficulty.color
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.medium)
             ) {
-                Icon(
-                    when (challenge.iconType) {
-                        ChallengeIcon.PHONE_OFF -> Icons.Filled.PhoneAndroid
-                        ChallengeIcon.TIMER -> Icons.Filled.Timer
-                        ChallengeIcon.NATURE -> Icons.Filled.Nature
-                        ChallengeIcon.BOOK -> Icons.Filled.Book
-                        ChallengeIcon.MEDITATION -> Icons.Filled.SelfImprovement
-                        ChallengeIcon.EXERCISE -> Icons.Filled.FitnessCenter
-                    },
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Text(
+                ChallengeMeta(
+                    icon = Icons.Filled.CalendarToday,
                     text = stringResource(
                         R.string.goals_challenge_duration_days,
                         challenge.durationDays
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                Text(
-                    text = stringResource(
-                        R.string.goals_challenge_reward,
-                        challenge.reward
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+                ChallengeMeta(
+                    icon = Icons.Filled.WorkspacePremium,
+                    text = stringResource(R.string.goals_challenge_reward, challenge.reward),
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
-            
-            if (challenge.isActive) {
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                MomentumProgressIndicator(
-                    progress = challenge.progress,
-                    showPercentage = true,
-                    modifier = Modifier.height(60.dp)
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = stringResource(
-                        R.string.goals_challenge_day_progress,
-                        (challenge.progress * challenge.durationDays).toInt() + 1,
-                        challenge.durationDays
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else if (!challenge.isCompleted) {
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                MomentumButton(
-                    onClick = onJoinChallenge,
-                    style = ButtonStyle.Primary,
-                    size = ButtonSize.Small,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.goals_challenge_join_button))
-                }
-            } else {
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+
+            when {
+                challenge.isActive -> {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.goals_challenge_day_progress,
+                                (challenge.progress * challenge.durationDays).toInt() + 1,
+                                challenge.durationDays
+                            ),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.momentum.textPrimary
+                        )
+                        Text(
+                            text = "${(challenge.progress * 100).toInt()}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    ProgressBar(
+                        progress = challenge.progress.coerceIn(0f, 1f),
+                        color = MaterialTheme.colorScheme.primary,
+                        height = 10.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                challenge.isCompleted -> {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MomentumDesign.Shapes.card)
+                            .background(
+                                MaterialTheme.momentum.success.copy(
+                                    alpha = MomentumDesign.Alpha.soft
+                                )
+                            )
+                            .padding(MomentumDesign.Spacing.compact),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             Icons.Filled.EmojiEvents,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            tint = MaterialTheme.momentum.success,
                             modifier = Modifier.size(20.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(MomentumDesign.Spacing.small))
                         Text(
                             text = stringResource(R.string.goals_challenge_completed_badge),
                             style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold
+                            color = MaterialTheme.momentum.success
                         )
+                    }
+                }
+
+                else -> {
+                    MomentumButton(
+                        onClick = onJoinChallenge,
+                        style = ButtonStyle.Primary,
+                        size = ButtonSize.Medium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.goals_challenge_join_button))
                     }
                 }
             }
         }
+    }
+}
+
+/** Metadato de un reto: icono pequeño + texto. */
+@Composable
+private fun ChallengeMeta(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    tint: Color = MaterialTheme.momentum.textSecondary,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.extraSmall)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = tint
+        )
     }
 }

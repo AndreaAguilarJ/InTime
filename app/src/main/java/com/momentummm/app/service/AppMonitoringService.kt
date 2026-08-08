@@ -65,7 +65,12 @@ class AppMonitoringService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + exceptionHandler)
     private var monitoringJob: Job? = null
 
-    private val MONITORING_INTERVAL = 2000L // 2 segundos - balance entre detección rápida y batería
+    // El bloqueo INSTANTÁNEO al abrir una app ya lo hace MomentumAccessibilityService
+    // (reacciona al cambio de ventana). Este poll solo cubre el cruce de límite
+    // mientras la app sigue abierta y los modos/timers, así que su ritmo base se
+    // relajó de 2s a 5s (menos wakeups/CPU con la pantalla encendida). El ritmo
+    // agresivo se mantiene a 1s para volver a tapar al instante una app ya bloqueada.
+    private val MONITORING_INTERVAL = 5000L // 5 segundos - detección rápida la cubre el a11y service
     private val MONITORING_INTERVAL_AGGRESSIVE = 1000L // 1 segundo para apps ya bloqueadas
 
     /** Con la pantalla apagada no hay nada que vigilar: se baja el ritmo. */
@@ -110,8 +115,8 @@ class AppMonitoringService : Service() {
     // === NUEVO V2: Tracking de uso por sesión ===
     private var lastUsageRecordTime = 0L
     private val USAGE_RECORD_INTERVAL = 60_000L // Registrar cada 60s
-    private var monitoringCycleCount = 0
-    private val PATTERN_ANALYSIS_INTERVAL = 60 // Cada 60 ciclos (~5min) analizar patrones
+    private var lastPatternAnalysisAt = 0L
+    private val PATTERN_ANALYSIS_INTERVAL_MS = 3_600_000L // Máx. 1 análisis de patrones por hora (antes ~cada 2 min)
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -227,8 +232,13 @@ class AppMonitoringService : Service() {
                     }
 
                     // === NUEVO V2: Análisis periódico de patrones ===
-                    monitoringCycleCount++
-                    if (monitoringCycleCount % PATTERN_ANALYSIS_INTERVAL == 0) {
+                    // Antes corría cada ~60 ciclos (~2 min): un análisis histórico
+                    // completo (30-90 días, varias queries agregadas por app) cada
+                    // par de minutos con la pantalla encendida. Los patrones no
+                    // cambian tan rápido, así que ahora se limita a 1 vez por hora.
+                    val nowForPatterns = System.currentTimeMillis()
+                    if (nowForPatterns - lastPatternAnalysisAt > PATTERN_ANALYSIS_INTERVAL_MS) {
+                        lastPatternAnalysisAt = nowForPatterns
                         try {
                             patternEngine.analyzeAllPatterns()
                         } catch (e: Exception) {
@@ -292,6 +302,14 @@ class AppMonitoringService : Service() {
                         floatingTimerActive = false
                         currentFloatingApp = ""
                     }
+                    return@withTimeoutOrNull
+                }
+
+                // Nada de infraestructura del sistema ni vías de emergencia.
+                // Ver isUserBlockableApp: sin esta guarda, la Ventana de Sueño
+                // llegaba a lanzar la pantalla de bloqueo sobre el diálogo de
+                // permisos de Android.
+                if (!isUserBlockableApp(currentApp)) {
                     return@withTimeoutOrNull
                 }
 
@@ -724,6 +742,73 @@ class AppMonitoringService : Service() {
             dailyLimitMinutes = appLimit?.dailyLimitMinutes ?: 0,
             reason = null
         )
+    }
+
+    // ─── Qué se puede bloquear ────────────────────────────────────────────
+    //
+    // El monitor trataba cualquier paquete en primer plano como una app del
+    // usuario. Con la Ventana de Sueño activa eso lanzaba la pantalla de
+    // bloqueo sobre `com.google.android.permissioncontroller`, el diálogo de
+    // permisos de Android — comprobado en logcat, una vez cada dos segundos.
+    // El mismo camino alcanzaba al lanzador, a SystemUI y al teléfono: durante
+    // la franja de sueño el usuario podía quedarse sin poder marcar una
+    // llamada.
+    //
+    // Regla: sólo se bloquea lo que el usuario puede abrir por sí mismo (tiene
+    // actividad de lanzador) y no es infraestructura ni una vía de emergencia.
+    // El resultado se memoriza porque esta comprobación corre cada dos
+    // segundos.
+
+    private val blockabilityCache = mutableMapOf<String, Boolean>()
+
+    /** Paquetes que actúan como pantalla de inicio. */
+    private val launcherPackages: Set<String> by lazy {
+        val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        runCatching {
+            packageManager.queryIntentActivities(home, 0)
+                .mapNotNull { it.activityInfo?.packageName }
+                .toSet()
+        }.getOrDefault(emptySet())
+    }
+
+    /**
+     * Infraestructura y vías de emergencia.
+     *
+     * Los marcadores de teléfono se resuelven en el dispositivo en vez de
+     * escribirse a mano, porque el paquete cambia entre fabricantes y una lista
+     * fija dejaría a algunos usuarios sin poder llamar.
+     */
+    private val criticalPackages: Set<String> by lazy {
+        val dialers = runCatching {
+            packageManager
+                .queryIntentActivities(Intent(Intent.ACTION_DIAL), 0)
+                .mapNotNull { it.activityInfo?.packageName }
+        }.getOrDefault(emptyList())
+
+        dialers.toSet() + setOf(
+            "com.android.systemui",
+            "com.google.android.permissioncontroller",
+            "com.android.permissioncontroller",
+            // Ajustes queda fuera a propósito: es donde se conceden los
+            // permisos que necesita esta app y donde se desactivan los
+            // bloqueos. Bloquearlo dejaría al usuario sin salida.
+            "com.android.settings",
+            "com.android.emergency",
+            "com.android.dialer",
+            "com.google.android.dialer"
+        )
+    }
+
+    private fun isUserBlockableApp(pkg: String): Boolean = blockabilityCache.getOrPut(pkg) {
+        when {
+            pkg == packageName -> false
+            pkg in criticalPackages -> false
+            pkg in launcherPackages -> false
+            // Sin actividad de lanzador el usuario no ha abierto esto: es un
+            // diálogo del sistema, un teclado o un proveedor en segundo plano.
+            runCatching { packageManager.getLaunchIntentForPackage(pkg) }.getOrNull() == null -> false
+            else -> true
+        }
     }
 
     companion object {

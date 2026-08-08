@@ -19,6 +19,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
+import com.momentummm.app.ui.system.MomentumCard
+import com.momentummm.app.ui.system.MomentumDesign
+import com.momentummm.app.ui.system.MomentumDivider
+import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.data.manager.BillingManager
 import com.momentummm.app.data.model.SubscriptionPlan
 import com.momentummm.app.data.model.SubscriptionPlans
@@ -310,117 +318,137 @@ private fun PlanCard(
     isYearly: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .then(
-                if (plan.isPopular) {
-                    Modifier.border(
-                        2.dp,
-                        MaterialTheme.colorScheme.primary,
-                        RoundedCornerShape(16.dp)
-                    )
-                } else Modifier
-            ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 2.dp
+    val accent = MaterialTheme.colorScheme.primary
+
+    MomentumCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        containerColor = if (isSelected) {
+            accent.copy(alpha = MomentumDesign.Alpha.subtle)
+        } else {
+            MaterialTheme.momentum.surface
+        },
+        // El plan seleccionado se marca con borde de acento en vez de con sombra:
+        // en modo oscuro la elevación no se percibe y la selección quedaba ambigua.
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = if (isSelected) accent else MaterialTheme.momentum.border
         )
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
+        Column(modifier = Modifier.padding(MomentumDesign.Spacing.cozy)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = plan.name,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                if (plan.isPopular) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(
-                            text = "Popular",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.Bold
+                // Radio dibujado a mano para que el anillo use el acento del tema
+                // y crezca con el estado seleccionado.
+                Box(
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(
+                            if (isSelected) accent else MaterialTheme.momentum.surfaceSunken
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isSelected) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.width(MomentumDesign.Spacing.compact))
+
+                Text(
+                    text = plan.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.momentum.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (plan.isPopular) {
+                    Text(
+                        text = stringResource(R.string.subscription_best_value),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .clip(MomentumDesign.Shapes.pill)
+                            .background(accent)
+                            .padding(
+                                horizontal = MomentumDesign.Spacing.small,
+                                vertical = 4.dp
+                            )
+                    )
+                }
             }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                // Baseline no es un Alignment.Vertical válido; usar alignByBaseline() en los hijos
-                // verticalAlignment = Alignment.Baseline
-            ) {
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.medium))
+
+            Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     modifier = Modifier.alignByBaseline(),
                     text = if (isYearly) plan.priceYearly else plan.priceMonthly,
                     style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.momentum.textPrimary
                 )
+                Spacer(modifier = Modifier.width(MomentumDesign.Spacing.extraSmall))
                 Text(
                     modifier = Modifier.alignByBaseline(),
-                    text = if (isYearly) "/año" else "/mes",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            if (isYearly && plan.id != "free") {
-                Text(
-                    text = "Solo 3.33€/mes",
+                    text = if (isYearly) {
+                        stringResource(R.string.subscription_per_year)
+                    } else {
+                        stringResource(R.string.subscription_per_month)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+                    color = MaterialTheme.momentum.textSecondary
                 )
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.medium))
+            MomentumDivider()
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.medium))
+
             plan.features.take(5).forEach { feature ->
                 Row(
-                    modifier = Modifier.padding(vertical = 4.dp),
+                    modifier = Modifier.padding(vertical = 5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Filled.Check,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(MomentumDesign.Shapes.pill)
+                            .background(accent.copy(alpha = MomentumDesign.Alpha.soft)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            tint = accent,
+                            modifier = Modifier.size(13.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(MomentumDesign.Spacing.compact))
                     Text(
                         text = feature,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.momentum.textPrimary
                     )
                 }
             }
-            
+
             if (plan.features.size > 5) {
+                Spacer(modifier = Modifier.height(MomentumDesign.Spacing.small))
                 Text(
-                    text = "Y ${plan.features.size - 5} funciones más...",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(top = 8.dp)
+                    text = stringResource(
+                        R.string.subscription_more_features,
+                        plan.features.size - 5
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = accent
                 )
             }
         }

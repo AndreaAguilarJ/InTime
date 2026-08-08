@@ -33,7 +33,9 @@ class ThemeManager(private val context: Context) {
     }
     
     val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.USE_DYNAMIC_COLOR] ?: true
+        // Off por defecto: la paleta de marca de Momentum define la identidad visual.
+        // El usuario puede activar Material You desde Ajustes > Tema si lo prefiere.
+        preferences[PreferencesKeys.USE_DYNAMIC_COLOR] ?: false
     }
     
     val customPrimaryColor: Flow<String?> = context.dataStore.data.map { preferences ->

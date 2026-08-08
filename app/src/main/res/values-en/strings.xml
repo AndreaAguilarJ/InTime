@@ -1,6 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Momentum</string>
+
+    <!-- Welcome and authentication -->
+    <string name="auth_a11y_password_tips">Password tips</string>
+    <string name="auth_a11y_show_password">Show password</string>
+    <string name="auth_a11y_hide_password">Hide password</string>
+    <string name="auth_welcome_title">Welcome to Momentum</string>
+    <string name="auth_welcome_subtitle">Your life in weeks</string>
+    <string name="auth_welcome_desc">See your time, take charge of your digital wellbeing and live every week with purpose.</string>
+    <string name="auth_create_account">Create account</string>
+    <string name="auth_sign_in">Sign in</string>
+    <string name="auth_terms_continue">By continuing, you accept our terms of service and privacy policy.</string>
+    <string name="auth_terms_create">By creating an account, you accept our terms of service and privacy policy.</string>
+    <string name="auth_signup_subtitle">Join thousands of people who have changed their relationship with time</string>
+    <string name="auth_field_full_name">Full name</string>
+    <string name="auth_field_email">Email address</string>
+    <string name="auth_field_password">Password</string>
+    <string name="auth_field_confirm_password">Confirm password</string>
+    <string name="auth_error_name_too_short">Your name must be at least 2 characters</string>
+    <string name="auth_error_invalid_email">Enter a valid email address</string>
+    <string name="auth_error_passwords_differ">Passwords do not match</string>
+    <string name="auth_password_strength">Strength: %1$s</string>
+    <string name="auth_password_weak">Weak</string>
+    <string name="auth_password_medium">Medium</string>
+    <string name="auth_password_strong">Strong</string>
+    <string name="auth_password_tip_length">Use at least 8 characters</string>
+    <string name="auth_password_tip_upper">Include at least one uppercase letter</string>
+    <string name="auth_password_tip_lower">Include at least one lowercase letter</string>
+    <string name="auth_password_tip_digit">Include at least one number</string>
+    <string name="auth_password_tip_symbol">Include at least one symbol</string>
+    <string name="auth_why_create_account">Why create an account?</string>
+    <string name="auth_bullet">• %1$s</string>
+    <string name="auth_have_account">Already have an account? Sign in</string>
+    <string name="auth_no_account">No account yet? Create one</string>
+    <string-array name="auth_signup_benefits">
+        <item>Sync your data across devices</item>
+        <item>Back up your information securely</item>
+        <item>Get access to premium features</item>
+        <item>Receive advanced statistics</item>
+    </string-array>
+
+    <!-- Opening impact screen -->
+    <string name="shock_analyzing">Analysing your phone use…</string>
+    <string name="shock_title">MORTAL REALITY</string>
+    <string name="shock_subtitle_real">based on YOUR real usage</string>
+    <string name="shock_subtitle_average">based on averages</string>
+    <string name="shock_at_current_rate">At this rate, you will spend</string>
+    <string name="shock_years">YEARS</string>
+    <string name="shock_of_your_life">of your life staring at a screen</string>
+    <string name="shock_full_days_nonstop">≈ %1$s full days (24h) non-stop</string>
+    <string name="shock_projection_title">📊 Your personal projection</string>
+    <string name="shock_unit_hours_per_day">hours/day</string>
+    <string name="shock_desc_daily_average">your daily average</string>
+    <string name="shock_unit_full_days">full days</string>
+    <string name="shock_desc_24h_nonstop">24 hours non-stop</string>
+    <string name="shock_unit_books">books</string>
+    <string name="shock_desc_books">you could read in that time</string>
+    <string name="shock_unit_trips">trips</string>
+    <string name="shock_desc_trips">of two weeks you could take</string>
+    <string name="shock_waking_life_percent">%1$s%% of your waking life</string>
+    <string name="shock_waking_life_detail">goes into your phone every day</string>
+    <string name="shock_quote">\"Life is too short to spend it scrolling.\"</string>
+    <string name="shock_cta">I want to change this 💪</string>
+    <string name="shock_skip">I would rather ignore reality…</string>
+
+    <!-- Initial setup wizard -->
+    <string name="onboarding_wizard_step">Step %1$d of %2$d</string>
+    <string name="onboarding_welcome_title">Welcome to Momentum!</string>
+    <string name="onboarding_welcome_desc">Set up the key permissions so blocking and tracking work properly.</string>
+    <string name="onboarding_start_setup">Start setup</string>
+    <string name="onboarding_usage_title">Usage access permission</string>
+    <string name="onboarding_usage_desc">We need usage access to measure screen time and enforce limits. It is essential for the app to work.</string>
+    <string name="onboarding_open_settings">Open settings</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_notif_title">Notification permission</string>
+    <string name="onboarding_notif_desc">We use notifications for reminders and blocking alerts. We will let you know when you are close to your limit.</string>
+    <string name="onboarding_allow">Allow</string>
+    <string name="onboarding_skip_for_now">Skip for now</string>
+    <string name="onboarding_notif_not_required">Your Android version does not require this permission.</string>
+    <string name="onboarding_overlay_title">Display over other apps</string>
+    <string name="onboarding_overlay_desc">Recommended so the blocking screen can appear over other apps. This is what lets Momentum protect you effectively.</string>
+    <string name="onboarding_overlay_optional">Optional: you can turn it on later from Settings.</string>
+    <string name="onboarding_enable">Enable</string>
+    <string name="onboarding_all_set_title">All set!</string>
+    <string name="onboarding_all_set_desc">Momentum is ready to help you take back control of your time. Next we will set up your profile.</string>
+    <string name="onboarding_saving">Saving…</string>
+    <string name="onboarding_continue_tutorial">Continue to tutorial</string>
+    <string name="onboarding_permission_granted">✓ Permission granted successfully</string>
+    <string name="onboarding_summary_title">Setup summary:</string>
+    <string name="onboarding_summary_usage">Usage access</string>
+    <string name="onboarding_summary_notifications">Notifications</string>
+    <string name="onboarding_summary_overlay">Display over apps</string>
     
     <!-- Navigation -->
     <string name="nav_today">Today</string>
@@ -18,6 +109,17 @@
     <string name="quote_of_the_day">Quote of the day</string>
     <string name="hours_short">h</string>
     <string name="minutes_short">m</string>
+    <string name="dashboard_greeting">Good day!</string>
+    <string name="dashboard_screen_time_total_today">Total screen time today</string>
+    <string name="dashboard_permission_required">Permission required</string>
+    <string name="dashboard_permission_required_desc">To show real statistics</string>
+    <string name="dashboard_quote_author">— %1$s</string>
+    <string name="dashboard_no_usage_data">No usage data available for today</string>
+    <string name="dashboard_no_usage_data_hint">Use some apps and check back</string>
+    <string name="dashboard_usage_permission_needed">Usage access permission is required to show statistics</string>
+    <string name="dashboard_usage_permission_desc">Grant usage access to see your most used apps</string>
+    <string name="dashboard_unlock_premium">Unlock Premium</string>
+    <string name="dashboard_unlock_premium_desc">Advanced analytics, focus sessions and much more</string>
     
     <!-- Life in Weeks -->
     <string name="my_life_in_weeks">My Life in Weeks</string>
@@ -512,7 +614,22 @@
     <string name="timecoins_earn_more_subtitle">by completing sessions</string>
 
     <!-- Gamification Header -->
-    <string name="gamification_header_streak_days">%1$d days</string>
+    <plurals name="gamification_header_streak_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+
+    <!-- Level titles -->
+    <string name="level_title_1">Novice</string>
+    <string name="level_title_2">Apprentice</string>
+    <string name="level_title_3">Focused</string>
+    <string name="level_title_4">Disciplined</string>
+    <string name="level_title_5">Time Warrior</string>
+    <string name="level_title_6">Focus Master</string>
+    <string name="level_title_7">Productive Legend</string>
+    <string name="level_title_8">Time Titan</string>
+    <string name="level_title_9">Supreme Guardian</string>
+    <string name="level_title_grandmaster">Grandmaster Lv.%1$d</string>
     <string name="gamification_header_xp_label">XP: %1$s</string>
     <string name="gamification_header_xp_to_next_level">%1$s to Level %2$d</string>
     <string name="gamification_header_total_focus">Total focus</string>
@@ -1112,4 +1229,35 @@
     <string name="about_link_error">Could not open the link</string>
     <string name="app_blocked_payment_failed">The payment could not be completed</string>
     <string name="app_blocked_payment_unlocked">Unlocked for 5 minutes</string>
+
+    <!-- Rediseno UI: dashboard -->
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="dashboard_apps_tracked">Apps tracked</string>
+    <string name="dashboard_in_top_apps">In your top apps</string>
+
+    <!-- Rediseno UI: analytics -->
+    <string name="analytics_weekly_chart_title">Time per day</string>
+    <string name="analytics_weekly_peak">Your peak was %1$s, mostly on %2$s</string>
+    <string name="analytics_total_label">Total</string>
+    <string name="analytics_pickups_label">Pickups</string>
+    <string name="analytics_daily_average_label">Daily average</string>
+    <string name="analytics_categories_label">categories</string>
+    <string name="analytics_category_breakdown_title">Category breakdown</string>
+    <string name="analytics_category_breakdown_subtitle">Where your screen time goes</string>
+    <string name="analytics_most_used_label">Top app</string>
+
+    <!-- Rediseno UI: app limits -->
+    <string name="app_limits_daily_limit_value">Limit: %1$d min/day</string>
+    <string name="app_limits_exceeded">Limit exceeded</string>
+    <string name="app_limits_remaining_value">%1$d min left</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+
+    <!-- Rediseno UI: paywall -->
+    <string name="subscription_best_value">Best value</string>
+    <string name="subscription_per_year">/year</string>
+    <string name="subscription_per_month">/month</string>
+    <string name="subscription_more_features">And %1$d more features</string>
 </resources>

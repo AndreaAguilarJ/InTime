@@ -277,7 +277,12 @@ private fun MinimalLauncherContent(
                             LaunchedEffect(Unit) {
                                 while (true) {
                                     currentTime = getCurrentTime()
-                                    kotlinx.coroutines.delay(1000)
+                                    // El reloj muestra HH:mm, así que basta refrescar
+                                    // una vez por minuto en vez de cada segundo. Se
+                                    // alinea al cambio de minuto para que el salto sea
+                                    // puntual y se evita 1 recomposición/segundo.
+                                    val msIntoMinute = System.currentTimeMillis() % 60_000L
+                                    kotlinx.coroutines.delay(60_000L - msIntoMinute)
                                 }
                             }
 

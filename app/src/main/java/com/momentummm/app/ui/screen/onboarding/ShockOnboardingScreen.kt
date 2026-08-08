@@ -17,14 +17,17 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.R
 import com.momentummm.app.data.repository.UsageStatsRepository
 import com.momentummm.app.util.PermissionUtils
 import kotlinx.coroutines.delay
 import java.util.Calendar
+import com.momentummm.app.ui.theme.*
 
 /**
  * Pantalla de "Shock" Onboarding - "REALIDAD MORTAL"
@@ -80,10 +83,10 @@ fun ShockOnboardingScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF7F1D1D), // Rojo oscuro
-                        Color(0xFF991B1B),
-                        Color(0xFFB91C1C),
-                        Color(0xFF450A0A)
+                        Rose900,
+                        Rose800,
+                        Rose600,
+                        DangerVeilDeep
                     )
                 )
             )
@@ -125,7 +128,7 @@ private fun LoadingState() {
             modifier = Modifier.size(48.dp)
         )
         Text(
-            text = "Analizando tu uso del teléfono...",
+            text = stringResource(R.string.shock_analyzing),
             style = MaterialTheme.typography.titleMedium,
             color = Color.White.copy(alpha = 0.9f)
         )
@@ -203,7 +206,7 @@ private fun ShockContent(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "REALIDAD MORTAL",
+                    text = stringResource(R.string.shock_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
@@ -211,7 +214,7 @@ private fun ShockContent(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (hasRealData) "basada en TU uso real" else "basada en promedios",
+                    text = stringResource(if (hasRealData) R.string.shock_subtitle_real else R.string.shock_subtitle_average),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.7f)
                 )
@@ -231,7 +234,7 @@ private fun ShockContent(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 // Texto introductorio
                 Text(
-                    text = "Al ritmo actual, pasarás",
+                    text = stringResource(R.string.shock_at_current_rate),
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center
@@ -266,10 +269,10 @@ private fun ShockContent(
                 
                 // "AÑOS" en dorado
                 Text(
-                    text = "AÑOS",
+                    text = stringResource(R.string.shock_years),
                     fontSize = 44.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFD700),
+                    color = Amber400,
                     letterSpacing = 10.sp
                 )
                 
@@ -279,7 +282,7 @@ private fun ShockContent(
                 // TEXTO PRINCIPAL DE IMPACTO
                 // ========================================
                 Text(
-                    text = "de tu vida mirando una pantalla",
+                    text = stringResource(R.string.shock_of_your_life),
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White.copy(alpha = 0.95f),
                     textAlign = TextAlign.Center,
@@ -293,7 +296,7 @@ private fun ShockContent(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "≈ ${String.format("%.0f", data.daysOnPhone)} días completos (24h) sin parar",
+                        text = stringResource(R.string.shock_full_days_nonstop, String.format("%.0f", data.daysOnPhone)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.8f),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -322,7 +325,7 @@ private fun ShockContent(
                 ) {
                     // Información del cálculo
                     Text(
-                        text = "📊 Tu proyección personal",
+                        text = stringResource(R.string.shock_projection_title),
                         style = MaterialTheme.typography.titleSmall,
                         color = Color.White.copy(alpha = 0.9f),
                         fontWeight = FontWeight.Bold
@@ -331,8 +334,8 @@ private fun ShockContent(
                     ShockStatRow(
                         emoji = "⏰",
                         value = String.format("%.1f", data.dailyHours),
-                        unit = "horas/día",
-                        description = "tu uso diario promedio"
+                        unit = stringResource(R.string.shock_unit_hours_per_day),
+                        description = stringResource(R.string.shock_desc_daily_average)
                     )
                     
                     Divider(color = Color.White.copy(alpha = 0.15f))
@@ -340,8 +343,8 @@ private fun ShockContent(
                     ShockStatRow(
                         emoji = "📅",
                         value = "${data.daysOnPhone.toInt()}",
-                        unit = "días completos",
-                        description = "24 horas sin parar"
+                        unit = stringResource(R.string.shock_unit_full_days),
+                        description = stringResource(R.string.shock_desc_24h_nonstop)
                     )
                     
                     Divider(color = Color.White.copy(alpha = 0.15f))
@@ -349,8 +352,8 @@ private fun ShockContent(
                     ShockStatRow(
                         emoji = "📚",
                         value = "${data.booksEquivalent.toInt()}",
-                        unit = "libros",
-                        description = "que podrías leer en ese tiempo"
+                        unit = stringResource(R.string.shock_unit_books),
+                        description = stringResource(R.string.shock_desc_books)
                     )
                     
                     Divider(color = Color.White.copy(alpha = 0.15f))
@@ -358,8 +361,8 @@ private fun ShockContent(
                     ShockStatRow(
                         emoji = "🌍",
                         value = "${data.travelDaysEquivalent.toInt()}",
-                        unit = "viajes",
-                        description = "de 2 semanas que podrías hacer"
+                        unit = stringResource(R.string.shock_unit_trips),
+                        description = stringResource(R.string.shock_desc_trips)
                     )
                     
                     Divider(color = Color.White.copy(alpha = 0.15f))
@@ -373,13 +376,13 @@ private fun ShockContent(
                         Text("⚡", fontSize = 28.sp)
                         Column {
                             Text(
-                                text = "${String.format("%.0f", data.percentageOfWakingLife)}% de tu vida despierta",
+                                text = stringResource(R.string.shock_waking_life_percent, String.format("%.0f", data.percentageOfWakingLife)),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.error
                             )
                             Text(
-                                text = "se va en el teléfono cada día",
+                                text = stringResource(R.string.shock_waking_life_detail),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.White.copy(alpha = 0.7f)
                             )
@@ -397,7 +400,7 @@ private fun ShockContent(
             enter = fadeIn(animationSpec = tween(500, delayMillis = 1500))
         ) {
             Text(
-                text = "\"La vida es demasiado corta para pasarla haciendo scroll.\"",
+                text = stringResource(R.string.shock_quote),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center,
@@ -434,13 +437,13 @@ private fun ShockContent(
                         Icon(
                             Icons.Filled.TrendingUp,
                             contentDescription = null,
-                            tint = Color(0xFFB91C1C)
+                            tint = Rose600
                         )
                         Text(
-                            text = "Quiero cambiar esto 💪",
+                            text = stringResource(R.string.shock_cta),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB91C1C)
+                            color = Rose600
                         )
                     }
                 }
@@ -450,7 +453,7 @@ private fun ShockContent(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Prefiero ignorar la realidad...",
+                        text = stringResource(R.string.shock_skip),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.5f)
                     )
@@ -483,7 +486,7 @@ private fun ShockStatRow(
                     text = value,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFD700)
+                    color = Amber400
                 )
                 Text(
                     text = unit,

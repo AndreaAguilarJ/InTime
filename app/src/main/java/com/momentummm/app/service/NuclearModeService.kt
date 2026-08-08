@@ -171,7 +171,11 @@ class NuclearModeService : Service() {
                 _requiredWaitSeconds.value = config.nuclearModeUnlockWaitMinutes * 60
                 
                 while (isActive) {
-                    delay(1000) // Cada segundo
+                    // El timer de desbloqueo SOLO avanza con la app en primer plano.
+                    // En segundo plano no hay nada que contar, así que no hace falta
+                    // despertar cada segundo durante los días que dura el modo nuclear:
+                    // se espera 5s y se ahorra batería. En primer plano sigue a 1s.
+                    delay(if (isAppInForeground) 1000L else 5000L)
                     
                     if (isAppInForeground) {
                         // Solo incrementar el timer si la app está en primer plano

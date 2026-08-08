@@ -31,6 +31,7 @@ import com.momentummm.app.R
 import com.momentummm.app.data.manager.BillingManager
 import com.momentummm.app.util.SocialShareUtils
 import kotlinx.coroutines.delay
+import com.momentummm.app.ui.theme.*
 
 /**
  * Pantalla de desbloqueo de emergencia con opciones virales.
@@ -109,9 +110,9 @@ fun EmergencyUnlockScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF1A0505),
-                        Color(0xFF2D0A0A),
-                        Color(0xFF1A0505)
+                        DangerVeilDeep,
+                        DangerVeilMid,
+                        DangerVeilDeep
                     )
                 )
             )
@@ -133,14 +134,14 @@ fun EmergencyUnlockScreen(
             ) {
                 Surface(
                     modifier = Modifier.size(100.dp),
-                    color = Color(0xFFFF4444).copy(alpha = 0.2f),
+                    color = Rose500.copy(alpha = 0.2f),
                     shape = CircleShape
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             Icons.Filled.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFFF6666),
+                            tint = Rose400,
                             modifier = Modifier.size(56.dp)
                         )
                     }
@@ -172,7 +173,7 @@ fun EmergencyUnlockScreen(
                         text = blockedAppName,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFF6666),
+                        color = Rose400,
                         textAlign = TextAlign.Center
                     )
                     Text(
@@ -194,9 +195,9 @@ fun EmergencyUnlockScreen(
                 ) {
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFFF4444).copy(alpha = 0.15f)
+                            containerColor = Rose500.copy(alpha = 0.15f)
                         ),
-                        border = BorderStroke(1.dp, Color(0xFFFF4444).copy(alpha = 0.3f)),
+                        border = BorderStroke(1.dp, Rose500.copy(alpha = 0.3f)),
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Row(
@@ -213,7 +214,7 @@ fun EmergencyUnlockScreen(
                                     ),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFF6666)
+                                    color = Rose400
                                 )
                                 Text(
                                     text = stringResource(R.string.emergency_unlock_streak_warning),
@@ -236,12 +237,12 @@ fun EmergencyUnlockScreen(
             ) {
                 UnlockOptionCard(
                     icon = Icons.Filled.CreditCard,
-                    iconTint = Color(0xFF6366F1),
+                    iconTint = Indigo500,
                     title = stringResource(R.string.emergency_unlock_premium_title),
                     subtitle = stringResource(R.string.emergency_unlock_premium_subtitle),
                     price = premiumPrice,
-                    backgroundColor = Color(0xFF6366F1).copy(alpha = 0.1f),
-                    borderColor = Color(0xFF6366F1).copy(alpha = 0.3f),
+                    backgroundColor = Indigo500.copy(alpha = 0.1f),
+                    borderColor = Indigo500.copy(alpha = 0.3f),
                     onClick = {
                         selectedOption = UnlockOption.PAYMENT
                         showConfirmDialog = true
@@ -257,13 +258,13 @@ fun EmergencyUnlockScreen(
             ) {
                 UnlockOptionCard(
                     icon = Icons.Filled.Share,
-                    iconTint = Color(0xFFFF6666),
+                    iconTint = Rose400,
                     title = stringResource(R.string.emergency_unlock_shame_title),
                     subtitle = stringResource(R.string.emergency_unlock_shame_subtitle),
                     price = shamePrice,
-                    priceColor = Color(0xFF10B981),
-                    backgroundColor = Color(0xFFFF4444).copy(alpha = 0.1f),
-                    borderColor = Color(0xFFFF4444).copy(alpha = 0.3f),
+                    priceColor = Mint500,
+                    backgroundColor = Rose500.copy(alpha = 0.1f),
+                    borderColor = Rose500.copy(alpha = 0.3f),
                     badge = stringResource(R.string.emergency_unlock_shame_badge),
                     onClick = {
                         selectedOption = UnlockOption.SHAME_SHARE
@@ -295,7 +296,7 @@ fun EmergencyUnlockScreen(
                         text = "$shameCountdown",
                         style = MaterialTheme.typography.displayLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFF4444)
+                        color = Rose500
                     )
                     Text(
                         text = stringResource(R.string.emergency_unlock_shame_share_ready),
@@ -348,7 +349,7 @@ fun EmergencyUnlockScreen(
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            containerColor = Color(0xFF1F1F1F),
+            containerColor = Neutral850,
             titleContentColor = Color.White,
             textContentColor = Color.White.copy(alpha = 0.8f),
             title = {
@@ -385,9 +386,9 @@ fun EmergencyUnlockScreen(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = when (selectedOption) {
-                            UnlockOption.PAYMENT -> Color(0xFF6366F1)
-                            UnlockOption.SHAME_SHARE -> Color(0xFFFF4444)
-                            null -> Color(0xFF6366F1)
+                            UnlockOption.PAYMENT -> Indigo500
+                            UnlockOption.SHAME_SHARE -> Rose500
+                            null -> Indigo500
                         }
                     )
                 ) {
@@ -467,7 +468,7 @@ private fun UnlockOptionCard(
                     )
                     badge?.let {
                         Surface(
-                            color = Color(0xFFFF4444),
+                            color = Rose500,
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(

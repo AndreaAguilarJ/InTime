@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
 import com.momentummm.app.ui.viewmodel.LifeWeeksViewModel
 import com.momentummm.app.util.LifeWeeksCalculator
+import com.momentummm.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,10 +203,10 @@ fun LifeWeeksScreen(
                             // Protección contra parsing de color inválido
                             val livedColorParsed = try {
                                 Color(android.graphics.Color.parseColor(uiState.userSettings?.livedWeeksColor ?: "#6366F1"))
-                            } catch (e: Exception) { Color(0xFF6366F1) }
+                            } catch (e: Exception) { Indigo500 }
                             val futureColorParsed = try {
                                 Color(android.graphics.Color.parseColor(uiState.userSettings?.futureWeeksColor ?: "#E5E7EB"))
-                            } catch (e: Exception) { Color(0xFFE5E7EB) }
+                            } catch (e: Exception) { Neutral200 }
 
                             LifeWeeksGrid(
                                 weeksLived = data.weeksLived,

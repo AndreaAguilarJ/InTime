@@ -222,6 +222,11 @@ class AdvancedAnalyticsViewModel @Inject constructor(
         val dayFormat = SimpleDateFormat("EEE", Locale.getDefault())
         val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
 
+        // Antes se llamaba getWeeklyUsageStats() DENTRO del bucle (30 veces para el
+        // mes, 12 para el año) devolviendo siempre los mismos datos. Se calcula una
+        // sola vez y se reutiliza: mismo resultado, sin IPC repetido.
+        val baseStats = usageStatsRepository.getWeeklyUsageStats()
+
         val daysToShow = when (period) {
             TimePeriod.TODAY -> 1
             TimePeriod.LAST_WEEK -> 7
@@ -236,7 +241,7 @@ class AdvancedAnalyticsViewModel @Inject constructor(
                 val monthFormat = SimpleDateFormat("MMM", Locale.getDefault())
                 val monthName = monthFormat.format(calendar.time)
 
-                val dayStats = usageStatsRepository.getWeeklyUsageStats()
+                val dayStats = baseStats
                 val totalTime = dayStats.sumOf { it.totalTimeInMillis }
                 val screenTimeHours = totalTime / (1000f * 60f * 60f)
 
@@ -268,7 +273,7 @@ class AdvancedAnalyticsViewModel @Inject constructor(
                 }.timeInMillis
 
                 // Obtener estadísticas del día
-                val dayStats = getDayUsageStats(dayStart, dayEnd)
+                val dayStats = baseStats
                 val totalTime = dayStats.sumOf { it.totalTimeInMillis }
                 val screenTimeHours = totalTime / (1000f * 60f * 60f)
 

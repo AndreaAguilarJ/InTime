@@ -1,7 +1,9 @@
 package com.momentummm.app.data.entity
 
+import androidx.annotation.StringRes
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.momentummm.app.R
 import java.util.Date
 
 @Entity(tableName = "user_settings")
@@ -86,20 +88,26 @@ data class UserSettings(
     }
 
     /**
-     * Título del nivel actual
+     * Recurso con el título del nivel actual.
+     *
+     * Devuelve el id y no el texto porque esta entidad de Room no tiene
+     * `Context`: cuando los títulos eran literales aquí, un usuario con el
+     * teléfono en inglés leía "Level 1" y debajo "Novato". Quien llama resuelve
+     * el recurso pasando también [userLevel], que sólo usa el último título.
      */
-    fun getLevelTitle(): String {
+    @StringRes
+    fun getLevelTitleRes(): Int {
         return when (userLevel) {
-            1 -> "Novato"
-            2 -> "Aprendiz"
-            3 -> "Enfocado"
-            4 -> "Disciplinado"
-            5 -> "Guerrero del Tiempo"
-            6 -> "Maestro del Foco"
-            7 -> "Leyenda Productiva"
-            8 -> "Titán del Tiempo"
-            9 -> "Guardián Supremo"
-            else -> "Gran Maestro Lv.$userLevel"
+            1 -> R.string.level_title_1
+            2 -> R.string.level_title_2
+            3 -> R.string.level_title_3
+            4 -> R.string.level_title_4
+            5 -> R.string.level_title_5
+            6 -> R.string.level_title_6
+            7 -> R.string.level_title_7
+            8 -> R.string.level_title_8
+            9 -> R.string.level_title_9
+            else -> R.string.level_title_grandmaster
         }
     }
 

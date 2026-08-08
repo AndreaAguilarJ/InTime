@@ -1,6 +1,7 @@
 package com.momentummm.app.data.manager
 
 import android.content.Context
+import com.momentummm.app.R
 import com.momentummm.app.data.dao.UserDao
 import com.momentummm.app.data.entity.UserSettings
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -97,7 +98,7 @@ class GamificationManager @Inject constructor(
                     totalXp = it.totalXp,
                     xpForNextLevel = UserSettings.getXpForLevel(it.userLevel),
                     xpProgress = it.getLevelProgress(),
-                    levelTitle = it.getLevelTitle(),
+                    levelTitle = context.getString(it.getLevelTitleRes(), it.userLevel),
                     levelEmoji = it.getLevelEmoji(),
                     timeCoins = it.timeCoins,
                     currentStreak = it.currentStreak,
@@ -259,7 +260,14 @@ class GamificationManager @Inject constructor(
                 message = "💔 Racha de $previousStreak días perdida. -${UserSettings.XP_STREAK_BREAK_PENALTY} XP"
             )
         }
-        
+
+        // Sin racha que romper no hay penalización ni aviso, pero la fecha SÍ se
+        // actualiza. Antes no se tocaba, y eso dejaba a `lastActiveDate` clavada
+        // en el pasado: `updateDailyStreak()` volvía a calcular una diferencia
+        // mayor que un día, entraba otra vez por aquí y no cambiaba nada. Quien
+        // rompía su racha y tardaba en volver no podía empezar una nueva nunca.
+        userDao.resetStreak(Date())
+
         return GamificationEvent(
             type = EventType.STREAK_BROKEN,
             streakDays = 0,
@@ -314,7 +322,9 @@ class GamificationManager @Inject constructor(
             
             // Obtener título del nivel y enviar notificación
             val updatedSettings = userDao.getUserSettingsSync()
-            val levelTitle = updatedSettings?.getLevelTitle() ?: "Nivel $newLevel"
+            val levelTitle = updatedSettings
+                ?.let { context.getString(it.getLevelTitleRes(), it.userLevel) }
+                ?: context.getString(R.string.level_title_grandmaster, newLevel)
             notificationManager?.showLevelUpNotification(newLevel, levelTitle, levelUpCoins)
             
             return GamificationEvent(

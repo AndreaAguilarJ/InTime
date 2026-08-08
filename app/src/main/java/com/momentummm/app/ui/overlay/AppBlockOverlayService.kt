@@ -51,6 +51,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.momentummm.app.ui.theme.*
 
 class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
@@ -424,8 +425,8 @@ private fun AppBlockOverlayContent(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF000000),
-                        Color(0xFF141414)
+                        Neutral950,
+                        Neutral900
                     )
                 )
             )

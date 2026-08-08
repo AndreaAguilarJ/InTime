@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.ui.system.*
+import com.momentummm.app.ui.theme.MomentumTextStyles
+import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.appwrite.models.AppwriteFocusSession
 import com.momentummm.app.data.appwrite.models.FocusSessionStats
@@ -47,6 +49,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
+import com.momentummm.app.ui.theme.*
 
 data class FocusSession(
     val id: String,
@@ -661,243 +664,255 @@ private fun ActiveSessionCard(
     onResume: () -> Unit,
     onStop: () -> Unit
 ) {
-    val pulseAnimation = rememberInfiniteTransition(label = "pulse")
-    val scale by pulseAnimation.animateFloat(
+    // El anillo respira sólo mientras corre el temporizador: en pausa o completado
+    // el movimiento distraería en vez de informar.
+    val breathing = rememberInfiniteTransition(label = "breathing")
+    val breathScale by breathing.animateFloat(
         initialValue = 1f,
-        targetValue = 1.05f,
+        targetValue = 1.018f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
+            animation = tween(2600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "scale"
+        label = "breath_scale"
     )
 
     val progress = if (totalTime > 0) {
         (totalTime - timeRemaining).toFloat() / totalTime.toFloat()
     } else 0f
 
-    MomentumGradientCard(
+    val stateColor = when (sessionState) {
+        FocusTimerStatus.RUNNING -> MaterialTheme.momentum.success
+        FocusTimerStatus.BREAK -> MaterialTheme.momentum.info
+        FocusTimerStatus.PAUSED -> MaterialTheme.momentum.warning
+        FocusTimerStatus.COMPLETED -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.momentum.textTertiary
+    }
+
+    val stateLabel = when (sessionState) {
+        FocusTimerStatus.RUNNING -> "En progreso"
+        FocusTimerStatus.BREAK -> "Descanso"
+        FocusTimerStatus.PAUSED -> "En pausa"
+        FocusTimerStatus.COMPLETED -> "Completada"
+        else -> ""
+    }
+
+    val stateIcon = when (sessionState) {
+        FocusTimerStatus.RUNNING -> Icons.Filled.Bolt
+        FocusTimerStatus.BREAK -> Icons.Filled.Coffee
+        FocusTimerStatus.PAUSED -> Icons.Filled.Pause
+        FocusTimerStatus.COMPLETED -> Icons.Filled.Check
+        else -> Icons.Filled.Timer
+    }
+
+    MomentumCard(
         modifier = Modifier.fillMaxWidth(),
-        gradient = Brush.verticalGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.05f),
-                MaterialTheme.colorScheme.surface
-            )
-        )
+        shape = MomentumDesign.Shapes.hero,
+        containerColor = MaterialTheme.momentum.surfaceElevated,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(vertical = 8.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            stateColor.copy(alpha = 0.16f),
+                            stateColor.copy(alpha = 0.04f),
+                            Color.Transparent,
+                        )
+                    )
+                )
         ) {
-            Text(
-                text = session.name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Surface(
-                color = when (sessionState) {
-                    FocusTimerStatus.RUNNING -> MaterialTheme.colorScheme.primaryContainer
-                    FocusTimerStatus.PAUSED -> MaterialTheme.colorScheme.tertiaryContainer
-                    FocusTimerStatus.COMPLETED -> MaterialTheme.colorScheme.secondaryContainer
-                    else -> MaterialTheme.colorScheme.surfaceVariant
-                },
-                shape = RoundedCornerShape(20.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = MomentumDesign.Spacing.cozy,
+                        vertical = MomentumDesign.Spacing.large
+                    )
             ) {
                 Text(
-                    text = when (sessionState) {
-                        FocusTimerStatus.RUNNING -> "🔥 En progreso"
-                        FocusTimerStatus.BREAK -> "☕ Descanso"
-                        FocusTimerStatus.PAUSED -> "⏸️ Pausado"
-                        FocusTimerStatus.COMPLETED -> "✅ ¡Completado!"
-                        else -> ""
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(220.dp)
-                        .scale(if (sessionState == FocusTimerStatus.RUNNING) scale else 1f)
-            ) {
-                val animatedProgress by animateFloatAsState(
-                    targetValue = progress,
-                    animationSpec = tween(300),
-                    label = "timer_progress"
+                    text = session.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.momentum.textPrimary,
+                    textAlign = TextAlign.Center
                 )
 
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 16.dp.toPx()
-                    val radius = (size.minDimension - strokeWidth) / 2
-                    val center = Offset(size.width / 2, size.height / 2)
+                Spacer(modifier = Modifier.height(MomentumDesign.Spacing.compact))
 
-                    // Fondo del círculo
-                    drawCircle(
-                        color = Color.Gray.copy(alpha = 0.15f),
-                        radius = radius,
-                        center = center,
-                        style = Stroke(strokeWidth)
+                // Pastilla de estado: icono vectorial en lugar de emoji, para que
+                // herede el color del estado y escale con la densidad.
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(MomentumDesign.Shapes.pill)
+                        .background(stateColor.copy(alpha = MomentumDesign.Alpha.soft))
+                        .padding(
+                            horizontal = MomentumDesign.Spacing.compact,
+                            vertical = MomentumDesign.Spacing.small
+                        )
+                ) {
+                    Icon(
+                        imageVector = stateIcon,
+                        contentDescription = null,
+                        tint = stateColor,
+                        modifier = Modifier.size(MomentumDesign.Size.iconSmall)
                     )
-
-                    // Progreso con gradiente
-                    val progressColor = when (sessionState) {
-                        FocusTimerStatus.RUNNING -> Color(0xFF4CAF50)
-                        FocusTimerStatus.PAUSED -> Color(0xFFFF9800)
-                        FocusTimerStatus.COMPLETED -> Color(0xFF2196F3)
-                        else -> Color.Gray
-                    }
-
-                    drawArc(
-                        brush = Brush.sweepGradient(
-                            colors = listOf(
-                                progressColor.copy(alpha = 0.7f),
-                                progressColor,
-                                progressColor.copy(alpha = 0.9f)
-                            ),
-                            center = center
-                        ),
-                        startAngle = -90f,
-                        sweepAngle = 360f * animatedProgress,
-                        useCenter = false,
-                        style = Stroke(strokeWidth, cap = StrokeCap.Round),
-                        size = Size(radius * 2, radius * 2),
-                        topLeft = Offset(center.x - radius, center.y - radius)
+                    Spacer(modifier = Modifier.width(MomentumDesign.Spacing.small))
+                    Text(
+                        text = stateLabel,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = stateColor
                     )
                 }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Spacer(modifier = Modifier.height(MomentumDesign.Spacing.extraLarge))
+
+                ProgressRing(
+                    progress = progress,
+                    modifier = Modifier.scale(
+                        if (sessionState == FocusTimerStatus.RUNNING) breathScale else 1f
+                    ),
+                    diameter = MomentumDesign.Size.ringHero,
+                    strokeWidth = 16.dp,
+                    trackColor = MaterialTheme.momentum.surfaceSunken,
+                    brush = Brush.sweepGradient(
+                        listOf(
+                            stateColor.copy(alpha = 0.35f),
+                            stateColor,
+                            stateColor.copy(alpha = 0.35f),
+                        )
+                    ),
+                    animate = false,
                 ) {
-                    val minutes = timeRemaining / 60
-                    val seconds = timeRemaining % 60
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val minutes = timeRemaining / 60
+                        val seconds = timeRemaining % 60
 
-                    Text(
-                        text = String.format("%02d:%02d", minutes, seconds),
-                        style = MaterialTheme.typography.displayLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    if (sessionState == FocusTimerStatus.RUNNING) {
                         Text(
-                            text = "restantes",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = String.format(Locale.US, "%02d:%02d", minutes, seconds),
+                            style = MomentumTextStyles.timer,
+                            color = MaterialTheme.momentum.textPrimary
+                        )
+                        Text(
+                            text = when (sessionState) {
+                                FocusTimerStatus.COMPLETED -> "sesión terminada"
+                                FocusTimerStatus.PAUSED -> "en pausa"
+                                else -> "restantes"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.momentum.textSecondary
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Barra de progreso adicional
-                    LinearProgressIndicator(
-                        progress = animatedProgress,
-                        modifier = Modifier
-                            .width(120.dp)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
-                        color = when (sessionState) {
-                            FocusTimerStatus.RUNNING -> Color(0xFF4CAF50)
-                            FocusTimerStatus.PAUSED -> Color(0xFFFF9800)
-                            FocusTimerStatus.COMPLETED -> Color(0xFF2196F3)
-                            else -> Color.Gray
-                        },
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Información adicional
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "${session.duration}min",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Duración total",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "${(progress * 100).toInt()}%",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "Completado",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                when (sessionState) {
-                    FocusTimerStatus.RUNNING -> {
-                        MomentumButton(
-                            onClick = onPause,
-                            style = ButtonStyle.Secondary,
-                            icon = Icons.Filled.Pause,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Pausar")
-                        }
-                    }
-                    FocusTimerStatus.PAUSED -> {
-                        MomentumButton(
-                            onClick = onResume,
-                            style = ButtonStyle.Primary,
-                            icon = Icons.Filled.PlayArrow,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Continuar")
-                        }
-                    }
-                    FocusTimerStatus.COMPLETED -> {
-                        MomentumButton(
-                            onClick = onStop,
-                            style = ButtonStyle.Primary,
-                            icon = Icons.Filled.Check,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Finalizar Sesión")
-                        }
-                    }
-                    else -> {}
                 }
 
-                if (sessionState != FocusTimerStatus.COMPLETED) {
-                    LongPressStopButton(
-                        onStop = onStop,
+                Spacer(modifier = Modifier.height(MomentumDesign.Spacing.extraLarge))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact)
+                ) {
+                    TimerMetric(
+                        value = "${session.duration} min",
+                        label = "Duración",
+                        modifier = Modifier.weight(1f)
+                    )
+                    TimerMetric(
+                        value = "${(progress * 100).toInt()}%",
+                        label = "Completado",
+                        accent = stateColor,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TimerMetric(
+                        value = "${session.breakDuration} min",
+                        label = "Descanso",
                         modifier = Modifier.weight(1f)
                     )
                 }
+
+                Spacer(modifier = Modifier.height(MomentumDesign.Spacing.large))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(MomentumDesign.Spacing.compact),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    when (sessionState) {
+                        FocusTimerStatus.RUNNING, FocusTimerStatus.BREAK -> {
+                            MomentumButton(
+                                onClick = onPause,
+                                style = ButtonStyle.Secondary,
+                                size = ButtonSize.Large,
+                                icon = Icons.Filled.Pause,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Pausar")
+                            }
+                        }
+                        FocusTimerStatus.PAUSED -> {
+                            MomentumButton(
+                                onClick = onResume,
+                                style = ButtonStyle.Primary,
+                                size = ButtonSize.Large,
+                                icon = Icons.Filled.PlayArrow,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Continuar")
+                            }
+                        }
+                        FocusTimerStatus.COMPLETED -> {
+                            MomentumButton(
+                                onClick = onStop,
+                                style = ButtonStyle.Primary,
+                                size = ButtonSize.Large,
+                                icon = Icons.Filled.Check,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Finalizar sesión")
+                            }
+                        }
+                        else -> {}
+                    }
+
+                    if (sessionState != FocusTimerStatus.COMPLETED) {
+                        LongPressStopButton(
+                            onStop = onStop,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+/** Métrica compacta bajo el anillo del temporizador. */
+@Composable
+private fun TimerMetric(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+    accent: Color = MaterialTheme.momentum.textPrimary,
+) {
+    Column(
+        modifier = modifier
+            .clip(MomentumDesign.Shapes.cardCompact)
+            .background(MaterialTheme.momentum.surfaceSunken)
+            .padding(vertical = MomentumDesign.Spacing.compact),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            color = accent,
+            maxLines = 1
+        )
+        Spacer(modifier = Modifier.height(MomentumDesign.Spacing.hairline))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.momentum.textSecondary
+        )
     }
 }
 
@@ -968,8 +983,8 @@ private fun LongPressStopButton(
                 drawRect(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFFEF5350),
-                            Color(0xFFD32F2F)
+                            Rose400,
+                            Rose600
                         )
                     ),
                     size = Size(size.width * progress, size.height)
@@ -1054,12 +1069,21 @@ private fun SessionCard(
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(
-                            text = "⏱️ ${session.duration}min",
+                        Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium
-                        )
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Timer,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "${session.duration}min",
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
                     }
                     Surface(
                         color = MaterialTheme.colorScheme.tertiaryContainer,
@@ -1169,7 +1193,7 @@ private fun SessionStatsCard(
                     value = streakDays.toString(),
                     label = "Días\nconsecutivos",
                     icon = Icons.Filled.Whatshot,
-                    color = Color(0xFFFF6F00)
+                    color = Coral500
                 )
             }
         }
@@ -1298,11 +1322,22 @@ private fun AppwriteSessionHistoryCard(
                     )
                 }
                 if (history.distractions > 0) {
-                    Text(
-                        text = "⚠️ ${history.distractions} distracciones",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.momentum.danger,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "${history.distractions} distracciones",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.momentum.danger
+                        )
+                    }
                 }
             }
 

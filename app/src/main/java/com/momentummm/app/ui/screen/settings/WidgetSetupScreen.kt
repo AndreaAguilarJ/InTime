@@ -32,6 +32,7 @@ import com.momentummm.app.widget.LifeWeeksWidget
 import com.momentummm.app.widget.QuoteWidget
 import com.momentummm.app.widget.YearProgressWidget
 import kotlinx.coroutines.launch
+import com.momentummm.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,18 +51,18 @@ fun WidgetSetupScreen(
     // Lista de colores disponibles
     val availableColors = remember {
         listOf(
-            ColorOption("#4CAF50", R.string.widget_color_green, Color(0xFF4CAF50)),
-            ColorOption("#2196F3", R.string.widget_color_blue, Color(0xFF2196F3)),
-            ColorOption("#9C27B0", R.string.widget_color_purple, Color(0xFF9C27B0)),
-            ColorOption("#FF5722", R.string.widget_color_orange, Color(0xFFFF5722)),
+            ColorOption("#4CAF50", R.string.widget_color_green, Mint500),
+            ColorOption("#2196F3", R.string.widget_color_blue, Sky500),
+            ColorOption("#9C27B0", R.string.widget_color_purple, Violet600),
+            ColorOption("#FF5722", R.string.widget_color_orange, Coral500),
             ColorOption("#E91E63", R.string.widget_color_pink, Color(0xFFE91E63)),
             ColorOption("#00BCD4", R.string.widget_color_cyan, Color(0xFF00BCD4)),
-            ColorOption("#FFC107", R.string.widget_color_amber, Color(0xFFFFC107)),
+            ColorOption("#FFC107", R.string.widget_color_amber, Amber400),
             ColorOption("#795548", R.string.widget_color_brown, Color(0xFF795548)),
-            ColorOption("#607D8B", R.string.widget_color_blue_gray, Color(0xFF607D8B)),
-            ColorOption("#3F51B5", R.string.widget_color_indigo, Color(0xFF3F51B5)),
+            ColorOption("#607D8B", R.string.widget_color_blue_gray, Neutral500),
+            ColorOption("#3F51B5", R.string.widget_color_indigo, Indigo600),
             ColorOption("#009688", R.string.widget_color_teal, Color(0xFF009688)),
-            ColorOption("#F44336", R.string.widget_color_red, Color(0xFFF44336))
+            ColorOption("#F44336", R.string.widget_color_red, Rose500)
         )
     }
     

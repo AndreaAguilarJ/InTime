@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Toll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.momentummm.app.R
+import com.momentummm.app.ui.theme.*
 
 /**
  * Contador de TimeCoins animado para el TopBar.
@@ -85,7 +87,7 @@ fun AnimatedTimeCoinCounter(
     Surface(
         onClick = onClick,
         modifier = modifier.scale(scale),
-        color = Color(0xFF2D2D2D),
+        color = Neutral800,
         shape = RoundedCornerShape(24.dp),
         tonalElevation = 4.dp
     ) {
@@ -98,9 +100,11 @@ fun AnimatedTimeCoinCounter(
             Box(
                 modifier = Modifier.rotate(if (isAnimating && coinDelta > 0) coinRotation else 0f)
             ) {
-                Text(
-                    text = "🪙",
-                    fontSize = 18.sp
+                Icon(
+                    imageVector = Icons.Filled.Toll,
+                    contentDescription = null,
+                    tint = Amber400,
+                    modifier = Modifier.size(18.dp)
                 )
             }
             
@@ -109,7 +113,7 @@ fun AnimatedTimeCoinCounter(
                 text = formatCoins(animatedCoins),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFD700)
+                color = Amber400
             )
 
             // Indicador de delta
@@ -122,7 +126,7 @@ fun AnimatedTimeCoinCounter(
                     text = if (coinDelta > 0) "+$coinDelta" else "$coinDelta",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = if (coinDelta > 0) Color(0xFF10B981) else Color(0xFFEF4444)
+                    color = if (coinDelta > 0) Mint500 else Rose500
                 )
             }
 
@@ -130,7 +134,7 @@ fun AnimatedTimeCoinCounter(
             if (showPlusButton) {
                 Surface(
                     onClick = onPlusClick,
-                    color = Color(0xFF10B981),
+                    color = Mint500,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
@@ -196,8 +200,8 @@ fun CoinEarnedToast(
                     .background(
                         Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFF10B981).copy(alpha = 0.9f),
-                                Color(0xFF059669).copy(alpha = 0.9f)
+                                Mint500.copy(alpha = 0.9f),
+                                Mint600.copy(alpha = 0.9f)
                             )
                         )
                     )
@@ -219,10 +223,13 @@ fun CoinEarnedToast(
                         label = "toastRotation"
                     )
                     
-                    Text(
-                        text = "🪙",
-                        fontSize = 28.sp,
-                        modifier = Modifier.rotate(rotation)
+                    Icon(
+                        imageVector = Icons.Filled.Toll,
+                        contentDescription = null,
+                        tint = Amber400,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .rotate(rotation)
                     )
                     
                     Column(modifier = Modifier.weight(1f)) {
@@ -265,8 +272,8 @@ fun TimeCoinBalance(
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFFFFD700).copy(alpha = 0.15f),
-                            Color(0xFFFFA500).copy(alpha = 0.15f)
+                            Amber400.copy(alpha = 0.15f),
+                            Amber500.copy(alpha = 0.15f)
                         )
                     )
                 )
@@ -292,7 +299,7 @@ fun TimeCoinBalance(
                             text = formatCoins(coins),
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFFD700)
+                            color = Amber400
                         )
                     }
                 }

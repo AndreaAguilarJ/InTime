@@ -111,7 +111,9 @@ class MomentumApplication : Application(), Configuration.Provider {
             appwriteService, 
             usageStatsRepository, 
             userRepository, 
-            quotesRepository
+            quotesRepository,
+            // Las copias no incluían las metas porque nadie se las pasaba.
+            goalsRepository
         ) 
     }
 

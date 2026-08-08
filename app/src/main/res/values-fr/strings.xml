@@ -512,7 +512,10 @@
     <string name="timecoins_earn_more_subtitle">en terminant des sessions</string>
 
     <!-- Gamification Header -->
-    <string name="gamification_header_streak_days">%1$d jours</string>
+    <plurals name="gamification_header_streak_days">
+        <item quantity="one">%1$d jour</item>
+        <item quantity="other">%1$d jours</item>
+    </plurals>
     <string name="gamification_header_xp_label">XP : %1$s</string>
     <string name="gamification_header_xp_to_next_level">%1$s pour le niveau %2$d</string>
     <string name="gamification_header_total_focus">Concentration totale</string>

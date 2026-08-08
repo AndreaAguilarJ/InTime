@@ -34,6 +34,7 @@ import com.momentummm.app.data.manager.GamificationState
 import com.momentummm.app.data.manager.ThemeManager
 import com.momentummm.app.ui.component.TimeCoinBalance
 import kotlinx.coroutines.launch
+import com.momentummm.app.ui.theme.*
 
 /**
  * Tema premium que se puede comprar con TimeCoins
@@ -347,7 +348,19 @@ fun PremiumThemesShopScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(theme.emoji, fontSize = 28.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(
+                                            Color(android.graphics.Color.parseColor(theme.primaryColor)),
+                                            Color(android.graphics.Color.parseColor(theme.secondaryColor))
+                                        )
+                                    )
+                                )
+                        )
                         Text(
                             text = stringResource(
                                 R.string.premium_themes_unlock_title,
@@ -378,7 +391,7 @@ fun PremiumThemesShopScreen(
                                 Text(
                                     text = "$currentCoins",
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFFD700)
+                                    color = Amber400
                                 )
                             }
                         }
@@ -396,7 +409,7 @@ fun PremiumThemesShopScreen(
                                 Text(
                                     text = "${currentCoins - theme.price}",
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF10B981)
+                                    color = Mint500
                                 )
                             }
                     }
@@ -416,7 +429,7 @@ fun PremiumThemesShopScreen(
                         showPurchaseDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF10B981)
+                        containerColor = Mint500
                     )
                 ) {
                     Text(
@@ -538,7 +551,7 @@ fun PremiumThemesShopScreen(
         ) {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF10B981)
+                    containerColor = Mint500
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -571,6 +584,8 @@ private fun ThemeCard(
 ) {
     val primaryColor = Color(android.graphics.Color.parseColor(theme.primaryColor))
     val secondaryColor = Color(android.graphics.Color.parseColor(theme.secondaryColor))
+    val accentColor = Color(android.graphics.Color.parseColor(theme.accentColor))
+
     
     Card(
         modifier = modifier
@@ -591,7 +606,9 @@ private fun ThemeCard(
                     .padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Preview de colores
+                // Preview de colores: el emoji tapaba justo lo que el usuario
+                // necesita ver para decidir. Se muestran los tres colores del tema
+                // (primario y secundario en el degradado, acento como pastilla).
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -602,11 +619,14 @@ private fun ThemeCard(
                                 colors = listOf(primaryColor, secondaryColor)
                             )
                         ),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.BottomEnd
                 ) {
-                    Text(
-                        text = theme.emoji,
-                        fontSize = 28.sp
+                    Box(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(width = 28.dp, height = 10.dp)
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(accentColor)
                     )
                 }
 
@@ -628,7 +648,7 @@ private fun ThemeCard(
                 // Precio o estado
                 if (isUnlocked) {
                     Surface(
-                        color = Color(0xFF10B981).copy(alpha = 0.2f),
+                        color = Mint500.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Row(
@@ -639,13 +659,13 @@ private fun ThemeCard(
                             Icon(
                                 Icons.Default.Check,
                                 contentDescription = null,
-                                tint = Color(0xFF10B981),
+                                tint = Mint500,
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
                                 text = stringResource(R.string.premium_themes_unlocked_label),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF10B981)
+                                color = Mint500
                             )
                         }
                     }
@@ -665,7 +685,7 @@ private fun ThemeCard(
                                 text = "${theme.price}",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = if (canAfford) Color(0xFFFFD700) else Color(0xFFEF4444)
+                                color = if (canAfford) Amber400 else Rose500
                             )
                         }
                         
@@ -788,7 +808,7 @@ private fun EarnMethodRow(emoji: String, description: String, reward: String) {
             text = reward,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFFFFD700)
+            color = Amber400
         )
     }
 }

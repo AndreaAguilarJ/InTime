@@ -4,8 +4,6 @@ import android.content.Context
 import com.momentummm.app.data.appwrite.AppwriteService
 import com.momentummm.app.data.entity.*
 import com.momentummm.app.data.repository.*
-import com.momentummm.app.ui.screen.focus.FocusSession
-import com.momentummm.app.ui.screen.goals.Goal
 import io.appwrite.models.Document
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +19,8 @@ class BackupSyncManager(
     private val appwriteService: AppwriteService,
     private val usageStatsRepository: UsageStatsRepository,
     private val userRepository: UserRepository,
-    private val quotesRepository: QuotesRepository
+    private val quotesRepository: QuotesRepository,
+    private val goalsRepository: GoalsRepository
 ) {
     
     private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
@@ -37,14 +36,9 @@ class BackupSyncManager(
         Idle, Syncing, Success, Failed, NoConnection
     }
     
-    data class BackupData(
-        val usageStats: List<AppUsageInfo>,
-        val userSettings: UserSettings?,
-        val quotes: List<Quote>,
-        val focusSessions: List<FocusSession>,
-        val goals: List<Goal>,
-        val timestamp: String = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-    )
+    // El formato de las copias vive en BackupPayload.kt: es @Serializable, usa
+    // tipos primitivos y está desacoplado de Room, así que una copia hecha hoy
+    // se sigue leyendo si mañana cambia el esquema de la base de datos.
     
     suspend fun performFullBackup(userId: String): Result<String> {
         return try {
@@ -65,19 +59,28 @@ class BackupSyncManager(
             } ?: emptyList()
             _backupProgress.value = 0.6f
             
+            // BUG CORREGIDO: `goals` iba a `emptyList()` a fuego, así que las
+            // copias de seguridad NUNCA incluían las metas del usuario. Se
+            // creaba la copia, se restauraba y las metas habían desaparecido.
+            val goals = kotlinx.coroutines.withTimeoutOrNull(5000L) {
+                goalsRepository.getAllGoals().first()
+            } ?: emptyList()
+
             // Create backup data structure
-            val backupData = BackupData(
-                usageStats = usageStats,
-                userSettings = userSettings,
-                quotes = quotes,
-                focusSessions = emptyList(), // Would get from focus repository
-                goals = emptyList() // Would get from goals repository
+            // Las sesiones de enfoque son plantillas definidas en el código, no
+            // datos del usuario, así que el formato de copia no las incluye.
+            val payload = BackupPayload(
+                userSettings = userSettings?.toBackup(),
+                quotes = quotes.map { it.toBackup() },
+                goals = goals.map { it.toBackup() },
+                usageStats = usageStats.map { it.toBackup() }
             )
             
             _backupProgress.value = 0.8f
             
             // Upload to Appwrite
-            val backupJson = Json.encodeToString(backupData)
+            val backupJson = Json.encodeToString(payload)
+            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             val document = appwriteService.databases.createDocument(
                 databaseId = appwriteService.databaseId,
                 collectionId = "backups",
@@ -85,8 +88,8 @@ class BackupSyncManager(
                 data = mapOf(
                     "userId" to userId,
                     "backupData" to backupJson,
-                    "timestamp" to backupData.timestamp,
-                    "version" to "1.0"
+                    "timestamp" to timestamp,
+                    "version" to BackupPayload.CURRENT_VERSION.toString()
                 )
             )
             
@@ -142,7 +145,7 @@ class BackupSyncManager(
             
             // Parse JSON con manejo de errores robusto
             val backupData = try {
-                Json { ignoreUnknownKeys = true }.decodeFromString<BackupData>(backupJson)
+                Json { ignoreUnknownKeys = true }.decodeFromString<BackupPayload>(backupJson)
             } catch (e: kotlinx.serialization.SerializationException) {
                 _syncStatus.value = SyncStatus.Failed
                 return Result.failure(Exception("Corrupted backup data: ${e.message}"))
@@ -154,26 +157,45 @@ class BackupSyncManager(
             _backupProgress.value = 0.4f
             
             // Restore user settings
-            backupData.userSettings?.let { settings ->
-                userRepository.updateUserSettings(settings)
+            backupData.userSettings?.let { settingsBackup ->
+                // Se parte de los ajustes actuales: si una copia antigua no trae
+                // un campo, se conserva el valor local en vez de machacarlo con
+                // el valor por defecto.
+                val current = userRepository.getUserSettingsSync()
+                if (current != null) {
+                    userRepository.updateUserSettings(settingsBackup.toEntity(current))
+                }
             }
             
             _backupProgress.value = 0.6f
-            
-            // Restore usage stats
-            backupData.usageStats.forEach { stats ->
-                // Note: insertUsageStats method needs to be implemented in UsageStatsRepository
-                // usageStatsRepository.insertUsageStats(stats)
+
+            // BUG CORREGIDO: aquí había dos bucles con la inserción comentada
+            // (`// quotesRepository.insertQuote(quote)`), y a continuación la
+            // barra saltaba al 100 % y se marcaba `SyncStatus.Success`. El
+            // usuario veía una restauración perfecta y sus frases y metas
+            // seguían sin aparecer.
+            //
+            // Nota sobre las estadísticas de uso: NO se restauran porque no son
+            // nuestras. `getTodayUsageStats()` las lee de UsageStatsManager, que
+            // es propiedad de Android; se guardan en la copia como registro
+            // histórico, pero escribirlas de vuelta es imposible.
+
+            if (backupData.quotes.isNotEmpty()) {
+                quotesRepository.insertQuotes(backupData.quotes.map { it.toEntity() })
             }
-            
+
             _backupProgress.value = 0.8f
-            
-            // Restore quotes
-            backupData.quotes.forEach { quote ->
-                // Note: insertQuote method needs to be implemented in QuotesRepository
-                // quotesRepository.insertQuote(quote)
+
+            // Restaurar metas. El modelo de la copia es el de la interfaz, así
+            // que hay que convertirlo al de la base de datos.
+            var restoredGoals = 0
+            backupData.goals.forEach { goalBackup ->
+                runCatching { goalsRepository.createGoal(goalBackup.toEntity()) }
+                    .onSuccess { restoredGoals++ }
+                    .onFailure { println("BackupSyncManager: meta no restaurada: ${it.message}") }
             }
-            
+            println("BackupSyncManager: ${backupData.quotes.size} frases y $restoredGoals metas restauradas")
+
             _backupProgress.value = 1f
             _syncStatus.value = SyncStatus.Success
             _lastSyncTime.value = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
@@ -339,20 +361,11 @@ class BackupSyncManager(
         val size: Int
     )
     
-    // Dummy data classes for compilation (these would be defined elsewhere)
-    data class FocusSession(
-        val id: Long = 0,
-        val sessionType: String,
-        val duration: Int,
-        val completed: Boolean,
-        val date: String
-    )
-    
-    data class Goal(
-        val id: Long = 0,
-        val goalType: String,
-        val target: Int,
-        val achieved: Int,
-        val date: String
-    )
+    // Las clases de relleno que había aquí (FocusSession y Goal, con un
+    // comentario que admitía ser "dummy data classes for compilation") ya no
+    // existen: el formato de copia real está en BackupPayload.kt.
 }
+
+
+// La conversión copia → entidad vive en BackupPayload.kt (GoalBackup.toEntity),
+// que trabaja con milisegundos y no necesita parsear fechas de texto.
