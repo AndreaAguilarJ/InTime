@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="block_close">Fechar</string>
+    <string name="block_time_up">Tempo esgotado!</string>
+    <string name="block_daily_limit_reason">Atingiu o seu limite diário de %1$d minutos para</string>
+    <string name="block_suggestions_header">💡 Sugestões para si:</string>
+    <string name="block_sugg_read">📚 Lê um livro ou um artigo interessante</string>
+    <string name="block_sugg_walk">🚶 Vai dar um passeio ao ar livre</string>
+    <string name="block_sugg_meditate">🧘 Medita durante 5 minutos</string>
+    <string name="block_sugg_stretch">💪 Faz alguns alongamentos</string>
+    <string name="block_sugg_water">☕ Faz uma pausa e bebe água</string>
+
+    <string name="inappblock_title">Função bloqueada</string>
+    <string name="inappblock_trying">Estás a tentar ver</string>
+    <string name="inappblock_desc">Esta função está bloqueada para te ajudar a manter o foco e reduzir as distrações.</string>
+    <string name="inappblock_disable_hint">💡 Podes desativar este bloqueio nas definições do Momentum</string>
+
+    <string name="share_thanks">Obrigado por partilhar! Tens %1$d minutos extra 🎉</string>
+</resources>

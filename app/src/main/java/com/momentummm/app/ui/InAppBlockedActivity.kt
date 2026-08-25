@@ -127,7 +127,7 @@ fun InAppBlockedScreen(
 
                 // Título
                 Text(
-                    text = "Función bloqueada",
+                    text = stringResource(R.string.inappblock_title),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onError,
@@ -138,7 +138,7 @@ fun InAppBlockedScreen(
 
                 // Mensaje
                 Text(
-                    text = "Estás intentando ver",
+                    text = stringResource(R.string.inappblock_trying),
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onError.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center
@@ -177,7 +177,7 @@ fun InAppBlockedScreen(
 
                 // Mensaje motivacional
                 Text(
-                    text = "Esta función está bloqueada para ayudarte a mantener el enfoque y reducir el tiempo de distracción.",
+                    text = stringResource(R.string.inappblock_desc),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onError.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center,
@@ -218,7 +218,7 @@ fun InAppBlockedScreen(
 
                 // Texto informativo
                 Text(
-                    text = "💡 Puedes desactivar este bloqueo desde la configuración de Momentum",
+                    text = stringResource(R.string.inappblock_disable_hint),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onError.copy(alpha = 0.75f),
                     textAlign = TextAlign.Center,

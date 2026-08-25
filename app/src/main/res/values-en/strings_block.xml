@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="block_close">Close</string>
+    <string name="block_time_up">Time is up!</string>
+    <string name="block_daily_limit_reason">You have reached your daily limit of %1$d minutes for</string>
+    <string name="block_suggestions_header">💡 Suggestions for you:</string>
+    <string name="block_sugg_read">📚 Read a book or an interesting article</string>
+    <string name="block_sugg_walk">🚶 Go for a walk outside</string>
+    <string name="block_sugg_meditate">🧘 Meditate for 5 minutes</string>
+    <string name="block_sugg_stretch">💪 Do some stretching</string>
+    <string name="block_sugg_water">☕ Take a break and drink some water</string>
+
+    <string name="inappblock_title">Feature blocked</string>
+    <string name="inappblock_trying">You are trying to view</string>
+    <string name="inappblock_desc">This feature is blocked to help you stay focused and cut down on distractions.</string>
+    <string name="inappblock_disable_hint">💡 You can turn off this block in Momentum settings</string>
+
+    <string name="share_thanks">Thanks for sharing! You have %1$d extra minutes 🎉</string>
+</resources>

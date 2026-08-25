@@ -173,7 +173,10 @@ class AppBlockedActivity : AppCompatActivity() {
                     runOnUiThread {
                         android.widget.Toast.makeText(
                             this@AppBlockedActivity,
-                            "¡Gracias por compartir! Tienes 5 minutos extra 🎉",
+                            getString(
+                                R.string.share_thanks,
+                                (com.momentummm.app.util.SocialShareHelper.UNLOCK_DURATION_MS / 60000L).toInt()
+                            ),
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                         finish()
