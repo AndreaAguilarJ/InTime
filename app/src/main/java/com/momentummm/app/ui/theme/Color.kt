@@ -35,19 +35,27 @@ val Mint300 = Color(0xFF6EE7B7)
 val Mint400 = Color(0xFF34D399)
 val Mint500 = Color(0xFF10B981)
 val Mint600 = Color(0xFF059669)
+/** Verde semántico para texto y controles sobre superficies claras (5.48:1 sobre blanco). */
+val Mint700 = Color(0xFF047857)
 
 val Amber300 = Color(0xFFFCD34D)
 val Amber400 = Color(0xFFFBBF24)
 val Amber500 = Color(0xFFF59E0B)
+/** Ámbar semántico oscuro: conserva el matiz y alcanza 4.74:1 sobre SurfaceSunkenLight. */
+val Amber700 = Color(0xFFAD5108)
 
 val Rose300 = Color(0xFFFDA4AF)
 val Rose400 = Color(0xFFFB7185)
 val Rose500 = Color(0xFFF43F5E)
 val Rose600 = Color(0xFFE11D48)
+/** Rojo de estado claro: 4.59:1 sobre SurfaceSunkenLight. */
+val Rose700 = Color(0xFFD61A43)
 
 val Sky300 = Color(0xFF7DD3FC)
 val Sky400 = Color(0xFF38BDF8)
 val Sky500 = Color(0xFF0EA5E9)
+/** Azul informativo para texto sobre superficies claras (5.93:1 sobre blanco). */
+val Sky700 = Color(0xFF0369A1)
 
 val Coral400 = Color(0xFFFB923C)
 val Coral500 = Color(0xFFF97316)
@@ -59,7 +67,13 @@ val Neutral100 = Color(0xFFF0F2F8)
 val Neutral200 = Color(0xFFE4E7F0)
 val Neutral300 = Color(0xFFCDD2E0)
 val Neutral400 = Color(0xFF9AA1B5)
+/** Terciario oscuro: 4.59:1 sobre SurfaceDark. */
+val Neutral475 = Color(0xFF768095)
 val Neutral500 = Color(0xFF6C7489)
+/** Terciario claro: 4.55:1 incluso sobre SurfaceSunkenLight. */
+val Neutral525 = Color(0xFF666E83)
+/** Secundario claro: 4.97:1 sobre SurfaceSunkenLight. */
+val Neutral550 = Color(0xFF60687D)
 val Neutral600 = Color(0xFF4B5266)
 val Neutral700 = Color(0xFF343A4B)
 val Neutral800 = Color(0xFF232936)
@@ -70,11 +84,11 @@ val Neutral950 = Color(0xFF0B0D14)
 // ------------------------------------------------------- Roles: tema claro
 val Primary = Indigo600
 val PrimaryVariant = Indigo700
-val Secondary = Mint500
-val SecondaryVariant = Mint600
-val Success = Mint500
-val Warning = Amber500
-val Error = Rose500
+val Secondary = Mint700
+val SecondaryVariant = Mint700
+val Success = Mint700
+val Warning = Amber700
+val Error = Rose700
 
 val BackgroundWhite = Neutral50
 val BackgroundGray = Neutral100
@@ -84,8 +98,8 @@ val SurfaceSunkenLight = Neutral100
 val OutlineLight = Neutral200
 
 val TextPrimary = Neutral900
-val TextSecondary = Neutral500
-val TextTertiary = Neutral400
+val TextSecondary = Neutral550
+val TextTertiary = Neutral525
 
 val WeeksLived = Indigo500
 val WeeksFuture = Neutral200
@@ -108,7 +122,7 @@ val OutlineDark = Neutral800
 
 val TextPrimaryDark = Color(0xFFF6F7FB)
 val TextSecondaryDark = Neutral400
-val TextTertiaryDark = Neutral500
+val TextTertiaryDark = Neutral475
 
 val WeeksLivedDark = Indigo400
 val WeeksFutureDark = Neutral800

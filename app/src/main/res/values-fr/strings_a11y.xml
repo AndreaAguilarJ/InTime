@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_app_logo">Logo Momentum</string>
+    <string name="a11y_state_expanded">Développé</string>
+    <string name="a11y_state_collapsed">Réduit</string>
+    <string name="a11y_state_enabled">Activé</string>
+    <string name="a11y_state_disabled">Désactivé</string>
+    <string name="a11y_reject_friend_request">Refuser la demande de contact</string>
+    <string name="a11y_accept_friend_request">Accepter la demande de contact</string>
+    <string name="a11y_more_options_for_friend">Plus d’options pour %1$s</string>
+    <string name="a11y_share_achievement">Partager le succès</string>
+    <string name="a11y_stop_focus_session">Arrêter la session de concentration</string>
+    <string name="a11y_edit_app_limit">Modifier la limite de l’application</string>
+    <string name="a11y_delete_app_limit">Supprimer la limite de l’application</string>
+    <string name="a11y_remove_app">Retirer l’application</string>
+    <string name="a11y_day_option">Jour %1$s</string>
+    <string name="a11y_color_option">Couleur %1$s</string>
+    <string name="a11y_emoji_option">Emoji %1$s</string>
+    <string name="a11y_analytics_empty_title">Aucune donnée d’utilisation</string>
+    <string name="a11y_analytics_empty_message">Utilisez quelques applications, puis actualisez pour afficher vos statistiques.</string>
+    <string name="a11y_back">Retour</string>
+    <string name="a11y_close">Fermer</string>
+    <string name="a11y_delete">Supprimer</string>
+    <string name="a11y_add_message">Ajouter un message</string>
+    <string name="a11y_clear">Effacer</string>
+    <string name="a11y_favorite">Favori</string>
+    <string name="a11y_share">Partager</string>
+    <string name="a11y_message_library">Bibliothèque de messages</string>
+    <string name="a11y_create_custom_session">Créer une séance personnalisée</string>
+    <string name="a11y_emergency_apps">Applications d\'urgence</string>
+    <string name="a11y_add_app">Ajouter une application</string>
+    <string name="a11y_remove_from_whitelist">Retirer de la liste autorisée</string>
+    <string name="a11y_auto_detect_categories">Détecter les catégories automatiquement</string>
+    <string name="a11y_blocked">Bloqué</string>
+    <string name="a11y_delete_digit">Supprimer un chiffre</string>
+    <string name="a11y_call">Appeler</string>
+    <string name="a11y_exit_minimal_mode">Quitter le mode minimal</string>
+    <string name="a11y_default">Par défaut</string>
+</resources>

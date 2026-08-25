@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="community_title">Comunidade</string>
+    <string name="community_pending_requests">Pedidos pendentes</string>
+    <string name="community_my_friends">Os meus amigos</string>
+    <string name="community_no_friends">Ainda sem amigos</string>
+    <string name="community_no_friends_desc">Adicione amigos para competir e motivarem-se mutuamente</string>
+    <string name="community_how_to_add">Como adicionar amigos?</string>
+    <string name="community_wants_to_be_friend">Quer ser seu amigo</string>
+    <string name="community_leaderboard_empty">Classificação vazia</string>
+    <string name="community_leaderboard_empty_desc">Seja o primeiro a aparecer</string>
+    <string name="community_add_friends">Adicionar amigos</string>
+    <string name="community_your_position">A sua posição</string>
+    <string name="community_complete_sessions">Complete sessões para aparecer</string>
+    <string name="community_tab_friends">Amigos</string>
+    <string name="community_tab_global">Global</string>
+
+    <string name="community_no_achievements">Ainda sem conquistas</string>
+    <string name="community_no_achievements_desc">Complete objetivos para desbloquear conquistas partilháveis. Cada uma conta!</string>
+    <string name="community_how_to_earn">Ver como ganhar conquistas</string>
+    <string name="community_new_achievements">Novas conquistas</string>
+    <string name="community_shared_achievements">Conquistas partilhadas</string>
+    <string name="community_your_achievements">As suas conquistas</string>
+    <string name="community_badge_new">NOVO</string>
+
+    <string name="community_hint_streak_week">Mantenha a sua sequência uma semana inteira</string>
+    <string name="community_hint_no_limits">Não exceda nenhum limite durante 7 dias</string>
+    <string name="community_hint_podium">Alcance o pódio da classificação</string>
+    <string name="community_hint_nuclear">Complete um período nuclear</string>
+
+    <string name="community_ach_streak">Sequência de %1$s dias!</string>
+    <string name="community_ach_level">Alcançou o nível %1$s!</string>
+    <string name="community_ach_perfect_week">Semana perfeita concluída!</string>
+    <string name="community_ach_focus_hours">%1$s horas de foco!</string>
+    <string name="community_ach_nuclear">Modo nuclear superado!</string>
+    <string name="community_ach_top_rank">Top %1$s do ranking!</string>
+    <string name="community_ach_first_week">Primeira semana concluída!</string>
+    <string name="community_ach_special">Conquista especial!</string>
+
+    <string name="community_invalid_email">Email inválido</string>
+    <string name="community_add_friend_title">Adicionar amigo</string>
+    <string name="community_add_friend_desc">Envie um pedido de amizade a outro utilizador do Momentum</string>
+
+    <string name="community_settings_title">Configuração da comunidade</string>
+    <string name="community_setting_global_rank">Aparecer no ranking global</string>
+    <string name="community_setting_global_rank_desc">Outros utilizadores podem vê-lo na classificação</string>
+    <string name="community_setting_show_streak">Mostrar sequência aos amigos</string>
+    <string name="community_setting_show_streak_desc">Os seus amigos veem a sua sequência atual</string>
+    <string name="community_setting_show_focus">Mostrar tempo de foco</string>
+    <string name="community_setting_show_focus_desc">Os seus amigos veem os seus minutos semanais</string>
+    <string name="community_setting_requests">Pedidos de amizade</string>
+    <string name="community_setting_requests_desc">Receber notificação quando alguém o adicionar</string>
+    <string name="community_setting_friend_ach">Conquistas dos amigos</string>
+    <string name="community_setting_friend_ach_desc">Ver quando os amigos desbloqueiam conquistas</string>
+    <string name="community_setting_rank_changes">Mudanças no ranking</string>
+    <string name="community_setting_rank_changes_desc">Notificar quando a minha posição mudar</string>
+    <plurals name="community_shared_times">
+        <item quantity="one">Partilhado %1$d vez</item>
+        <item quantity="other">Partilhado %1$d vezes</item>
+    </plurals>
+</resources>

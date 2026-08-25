@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="limits_screen_title">App limits</string>
+    <string name="limits_screen_subtitle">Control the time you spend on distracting apps</string>
+    <string name="limits_common_apps">Common apps to block</string>
+    <string name="limits_common_apps_desc">The most addictive ones detected on your device</string>
+    <string name="limits_emergency_apps">Emergency apps</string>
+    <string name="limits_emergency_apps_desc">Apps that are never blocked</string>
+    <string name="limits_apps_with_limits">Apps with limits</string>
+    <string name="limits_add_app">Add app</string>
+    <string name="limits_added">Limit added</string>
+    <string name="limits_permission_needed">Permission needed</string>
+    <string name="limits_permission_message">To block apps when they exceed the limit, you must allow “Display over other apps”.</string>
+    <string name="limits_open_settings">Open settings</string>
+    <string name="limits_already_enabled">I already enabled it</string>
+    <string name="limits_verification_required">Verification required</string>
+    <string name="limits_verification_message">Enter your password to change app limits</string>
+    <string name="limits_summary_title">Limits summary</string>
+    <string name="limits_summary_limited_apps">Limited\napps</string>
+    <string name="limits_summary_active">Active\nlimits</string>
+    <string name="limits_summary_average">Average\nlimit</string>
+    <string name="limits_empty_title">No limits set</string>
+    <string name="limits_empty_message">Add distracting apps to control the time you spend on them</string>
+    <string name="limits_empty_action">Add first app</string>
+    <string name="limits_monitoring_inactive">Monitoring inactive</string>
+    <string name="limits_monitoring_active_desc">Apps will be blocked automatically when they exceed their limits</string>
+    <string name="limits_monitoring_inactive_desc">Turn on monitoring to block apps automatically</string>
+    <string name="limits_badge_limited">Limited</string>
+    <string name="limits_action_limit">Limit</string>
+    <string name="limits_set_limit">Set limit</string>
+    <string name="limits_set_limit_question">How long do you want to use %1$s each day?</string>
+</resources>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="community_title">Community</string>
+    <string name="community_pending_requests">Pending requests</string>
+    <string name="community_my_friends">My friends</string>
+    <string name="community_no_friends">No friends yet</string>
+    <string name="community_no_friends_desc">Add friends to compete and motivate each other</string>
+    <string name="community_how_to_add">How do I add friends?</string>
+    <string name="community_wants_to_be_friend">Wants to be your friend</string>
+    <string name="community_leaderboard_empty">Leaderboard empty</string>
+    <string name="community_leaderboard_empty_desc">Be the first to show up</string>
+    <string name="community_add_friends">Add friends</string>
+    <string name="community_your_position">Your position</string>
+    <string name="community_complete_sessions">Complete sessions to show up</string>
+    <string name="community_tab_friends">Friends</string>
+    <string name="community_tab_global">Global</string>
+
+    <string name="community_no_achievements">No achievements yet</string>
+    <string name="community_no_achievements_desc">Complete goals to unlock shareable achievements. Every one counts!</string>
+    <string name="community_how_to_earn">See how to earn achievements</string>
+    <string name="community_new_achievements">New achievements</string>
+    <string name="community_shared_achievements">Shared achievements</string>
+    <string name="community_your_achievements">Your achievements</string>
+    <string name="community_badge_new">NEW</string>
+
+    <string name="community_hint_streak_week">Keep your streak for a full week</string>
+    <string name="community_hint_no_limits">Don\'t exceed any limit for 7 days</string>
+    <string name="community_hint_podium">Reach the leaderboard podium</string>
+    <string name="community_hint_nuclear">Complete a nuclear period</string>
+
+    <string name="community_ach_streak">%1$s-day streak!</string>
+    <string name="community_ach_level">You reached level %1$s!</string>
+    <string name="community_ach_perfect_week">Perfect week completed!</string>
+    <string name="community_ach_focus_hours">%1$s hours of focus!</string>
+    <string name="community_ach_nuclear">Nuclear mode beaten!</string>
+    <string name="community_ach_top_rank">Top %1$s in the ranking!</string>
+    <string name="community_ach_first_week">First week completed!</string>
+    <string name="community_ach_special">Special achievement!</string>
+
+    <string name="community_invalid_email">Invalid email</string>
+    <string name="community_add_friend_title">Add friend</string>
+    <string name="community_add_friend_desc">Send a friend request to another Momentum user</string>
+
+    <string name="community_settings_title">Community settings</string>
+    <string name="community_setting_global_rank">Appear in the global ranking</string>
+    <string name="community_setting_global_rank_desc">Other users can see you on the leaderboard</string>
+    <string name="community_setting_show_streak">Show streak to friends</string>
+    <string name="community_setting_show_streak_desc">Your friends can see your current streak</string>
+    <string name="community_setting_show_focus">Show focus time</string>
+    <string name="community_setting_show_focus_desc">Your friends can see your weekly minutes</string>
+    <string name="community_setting_requests">Friend requests</string>
+    <string name="community_setting_requests_desc">Get a notification when someone adds you</string>
+    <string name="community_setting_friend_ach">Friends\' achievements</string>
+    <string name="community_setting_friend_ach_desc">See when your friends unlock achievements</string>
+    <string name="community_setting_rank_changes">Ranking changes</string>
+    <string name="community_setting_rank_changes_desc">Notify me when my position changes</string>
+    <plurals name="community_shared_times">
+        <item quantity="one">Shared %1$d time</item>
+        <item quantity="other">Shared %1$d times</item>
+    </plurals>
+</resources>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subscription_trial_offer_title">%1$d-day free trial</string>
+    <string name="subscription_trial_offer_subtitle">All Premium features</string>
+    <string name="subscription_trial_active_title">Free trial active</string>
+    <string name="subscription_trial_active_subtitle">%1$d days left</string>
+    <string name="subscription_trial_start_button">Start</string>
+    <string name="sub_unlock_title">Unlock your full potential</string>
+    <string name="sub_unlock_desc">Get advanced analytics, focus sessions and full customisation</string>
+    <string name="sub_start_now">Start now</string>
+    <string name="sub_guarantees">• Cancel any time
+• Automatic cloud backup
+• Priority support</string>
+    <string name="sub_monthly">Monthly</string>
+    <string name="sub_yearly">Yearly</string>
+    <string name="sub_save_percent">Save %1$d %%</string>
+    <string name="sub_why_premium">Why choose Premium?</string>
+    <string name="sub_feature">Feature</string>
+    <string name="sub_free">Free</string>
+    <string name="sub_premium">Premium</string>
+    <string name="sub_f_basic_analytics">Basic analytics</string>
+    <string name="sub_f_basic_widget">Basic widget</string>
+    <string name="sub_f_adv_analytics">Advanced analytics</string>
+    <string name="sub_f_focus">Focus sessions</string>
+    <string name="sub_f_themes">Custom themes</string>
+    <string name="sub_f_export">Data export</string>
+    <string name="sub_f_profiles">Multiple profiles</string>
+    <string name="sub_f_support">Priority support</string>
+</resources>

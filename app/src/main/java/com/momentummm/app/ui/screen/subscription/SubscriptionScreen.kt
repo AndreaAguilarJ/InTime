@@ -22,7 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.R
+import com.momentummm.app.data.repository.SubscriptionRepository
 import com.momentummm.app.ui.system.MomentumCard
 import com.momentummm.app.ui.system.MomentumDesign
 import com.momentummm.app.ui.system.MomentumDivider
@@ -52,6 +54,19 @@ fun SubscriptionScreen(
     LaunchedEffect(Unit) {
         billing.startConnection()
     }
+
+    // Precios reales de Google Play, en la moneda del país del usuario.
+    // Se recalculan cuando Play responde; hasta entonces el mapa está vacío y las
+    // tarjetas muestran el precio del plan como respaldo.
+    val availableProducts by billing.availableProducts.collectAsStateWithLifecycle()
+    val playPrices = remember(availableProducts) {
+        mapOf(
+            BillingManager.PREMIUM_MONTHLY_SKU to
+                billing.formattedPriceFor(BillingManager.PREMIUM_MONTHLY_SKU),
+            BillingManager.PREMIUM_YEARLY_SKU to
+                billing.formattedPriceFor(BillingManager.PREMIUM_YEARLY_SKU)
+        )
+    }
     
     Column(
         modifier = Modifier
@@ -70,7 +85,7 @@ fun SubscriptionScreen(
             title = { Text("Momentum Premium") },
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.a11y_back))
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -97,14 +112,14 @@ fun SubscriptionScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Desbloquea tu potencial completo",
+                        text = stringResource(R.string.sub_unlock_title),
                         style = MaterialTheme.typography.headlineMedium,
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Accede a análisis avanzados, sesiones de enfoque y personalización completa",
+                        text = stringResource(R.string.sub_unlock_desc),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -113,7 +128,12 @@ fun SubscriptionScreen(
             }
             
             // Trial Banner
-            if (isTrialAvailable) {
+            // La segunda condición no es redundante: startFreeTrial marca isTrialUsed, así
+            // que isTrialAvailable pasa a false EN CUANTO empieza la prueba. Con solo la
+            // primera condición el banner desaparecía justo al activarla y el usuario no
+            // volvía a ver nunca cuántos días le quedaban: la rama "días restantes" de
+            // TrialBanner era código inalcanzable.
+            if (isTrialAvailable || remainingTrialDays > 0) {
                 item {
                     TrialBanner(
                         onStartTrial = onStartTrial,
@@ -137,6 +157,14 @@ fun SubscriptionScreen(
                         plan = plan,
                         isSelected = selectedPlan == plan.id,
                         isYearly = isYearly,
+                        // El precio del plan solo se usa si Play todavía no ha
+                        // respondido: el importe real depende del país.
+                        playStorePrice = if (plan.id == "free") null else {
+                            playPrices[
+                                if (isYearly) BillingManager.PREMIUM_YEARLY_SKU
+                                else BillingManager.PREMIUM_MONTHLY_SKU
+                            ]
+                        },
                         onClick = { selectedPlan = plan.id }
                     )
                 }
@@ -159,7 +187,7 @@ fun SubscriptionScreen(
                     )
                 ) {
                     Text(
-                        text = "Comenzar ahora",
+                        text = stringResource(R.string.sub_start_now),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -168,7 +196,7 @@ fun SubscriptionScreen(
             
             item {
                 Text(
-                    text = "• Cancela en cualquier momento\n• Respaldo automático en la nube\n• Soporte prioritario 24/7",
+                    text = stringResource(R.string.sub_guarantees),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -202,13 +230,27 @@ private fun TrialBanner(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (remainingDays > 0) "Prueba gratuita activa" else "Prueba gratuita de 7 días",
+                    text = if (remainingDays > 0) {
+                        stringResource(R.string.subscription_trial_active_title)
+                    } else {
+                        stringResource(
+                            R.string.subscription_trial_offer_title,
+                            SubscriptionRepository.TRIAL_DAYS
+                        )
+                    },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = if (remainingDays > 0) "$remainingDays días restantes" else "Todas las funciones Premium",
+                    text = if (remainingDays > 0) {
+                        stringResource(
+                            R.string.subscription_trial_active_subtitle,
+                            remainingDays
+                        )
+                    } else {
+                        stringResource(R.string.subscription_trial_offer_subtitle)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
@@ -220,7 +262,7 @@ private fun TrialBanner(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Empezar")
+                    Text(stringResource(R.string.subscription_trial_start_button))
                 }
             }
         }
@@ -243,14 +285,14 @@ private fun BillingToggle(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             BillingOption(
-                text = "Mensual",
+                text = stringResource(R.string.sub_monthly),
                 isSelected = !isYearly,
                 onClick = { onToggle(false) },
                 modifier = Modifier.weight(1f)
             )
             BillingOption(
-                text = "Anual",
-                subtitle = "Ahorra 33%",
+                text = stringResource(R.string.sub_yearly),
+                subtitle = stringResource(R.string.sub_save_percent, 33),
                 isSelected = isYearly,
                 onClick = { onToggle(true) },
                 modifier = Modifier.weight(1f)
@@ -316,6 +358,12 @@ private fun PlanCard(
     plan: SubscriptionPlan,
     isSelected: Boolean,
     isYearly: Boolean,
+    /**
+     * Precio tal y como lo devuelve Google Play, ya formateado en la moneda del país
+     * del usuario. Null mientras la conexión con Play no esté lista o si el producto
+     * no está publicado; en ese caso se usa el precio del plan como respaldo.
+     */
+    playStorePrice: String? = null,
     onClick: () -> Unit
 ) {
     val accent = MaterialTheme.colorScheme.primary
@@ -391,7 +439,8 @@ private fun PlanCard(
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     modifier = Modifier.alignByBaseline(),
-                    text = if (isYearly) plan.priceYearly else plan.priceMonthly,
+                    text = playStorePrice
+                        ?: if (isYearly) plan.priceYearly else plan.priceMonthly,
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.momentum.textPrimary
                 )
@@ -459,21 +508,21 @@ private fun PlanCard(
 private fun FeaturesComparison() {
     Column {
         Text(
-            text = "¿Por qué elegir Premium?",
+            text = stringResource(R.string.sub_why_premium),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
         val features = listOf(
-            Triple("Análisis básico", true, true),
-            Triple("Widget básico", true, true),
-            Triple("Análisis avanzado", false, true),
-            Triple("Sesiones de enfoque", false, true),
-            Triple("Temas personalizados", false, true),
-            Triple("Exportar datos", false, true),
-            Triple("Múltiples perfiles", false, true),
-            Triple("Soporte prioritario", false, true)
+            Triple(stringResource(R.string.sub_f_basic_analytics), true, true),
+            Triple(stringResource(R.string.sub_f_basic_widget), true, true),
+            Triple(stringResource(R.string.sub_f_adv_analytics), false, true),
+            Triple(stringResource(R.string.sub_f_focus), false, true),
+            Triple(stringResource(R.string.sub_f_themes), false, true),
+            Triple(stringResource(R.string.sub_f_export), false, true),
+            Triple(stringResource(R.string.sub_f_profiles), false, true),
+            Triple(stringResource(R.string.sub_f_support), false, true)
         )
         
         Card {
@@ -482,20 +531,20 @@ private fun FeaturesComparison() {
             ) {
                 Row {
                     Text(
-                        text = "Función",
+                        text = stringResource(R.string.sub_feature),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(2f)
                     )
                     Text(
-                        text = "Gratis",
+                        text = stringResource(R.string.sub_free),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "Premium",
+                        text = stringResource(R.string.sub_premium),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,

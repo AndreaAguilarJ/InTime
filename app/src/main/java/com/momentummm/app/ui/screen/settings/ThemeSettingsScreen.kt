@@ -20,6 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import com.momentummm.app.R
 import com.momentummm.app.data.manager.ThemeManager
 import kotlinx.coroutines.launch
@@ -312,21 +315,34 @@ fun ThemeSettingsScreen(
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
+                        // Muestras visuales del tema, no botones reales: existen para
+                        // enseñar los colores primario y secundario. Se les quita el rol
+                        // de botón para que TalkBack no ofrezca dos acciones inertes.
+                        val previewPrimary = stringResource(R.string.theme_preview_primary)
+                        val previewSecondary = stringResource(R.string.theme_preview_secondary)
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Button(
                                 onClick = { },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clearAndSetSemantics {
+                                        text = AnnotatedString(previewPrimary)
+                                    }
                             ) {
-                                Text(stringResource(R.string.theme_preview_primary))
+                                Text(previewPrimary)
                             }
                             
                             OutlinedButton(
                                 onClick = { },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clearAndSetSemantics {
+                                        text = AnnotatedString(previewSecondary)
+                                    }
                             ) {
-                                Text(stringResource(R.string.theme_preview_secondary))
+                                Text(previewSecondary)
                             }
                         }
                         

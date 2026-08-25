@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="web_dialog_add_title">Website hinzufügen</string>
+    <string name="web_dialog_url_label">URL oder Domain</string>
+    <string name="web_dialog_name_label">Anzeigename</string>
+    <string name="web_dialog_category_label">Kategorie</string>
+    <string name="web_dialog_examples">Beispiele: facebook.com, youtube.com, reddit.com</string>
+    <string name="web_dialog_add">Hinzufügen</string>
+    <string name="web_dialog_cancel">Abbrechen</string>
+
+    <string name="web_dialog_preset_title">Vorgegebene Kategorie hinzufügen</string>
+    <string name="web_dialog_preset_desc">Wähle eine Kategorie, um mehrere gängige Seiten auf einmal zu sperren:</string>
+    <string name="web_dialog_preset_adult">Inhalte für Erwachsene</string>
+    <string name="web_dialog_preset_adult_desc">Sperrt die bekanntesten Seiten mit Erwachseneninhalten</string>
+    <string name="web_dialog_preset_social">Soziale Netzwerke</string>
+    <string name="web_dialog_preset_social_desc">Facebook, Instagram, X, TikTok und ähnliche</string>
+    <string name="web_dialog_preset_entertainment">Unterhaltung</string>
+    <string name="web_dialog_preset_entertainment_desc">YouTube, Netflix, Streaming-Plattformen</string>
+    <string name="web_dialog_preset_gaming">Spiele</string>
+    <string name="web_dialog_preset_gaming_desc">Online-Spieleseiten und -Plattformen</string>
+</resources>

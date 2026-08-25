@@ -2,6 +2,7 @@ package com.momentummm.app.ui.screen.websiteblock
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -403,20 +404,39 @@ private fun WebsiteBlockItem(
 
             // Borrar como tile circular en vez de IconButton suelto: el rojo pleno
             // competía con el switch por la atención en cada fila.
+            //
+            // El círculo visible mide 36dp, por debajo del mínimo táctil de 48dp. Al ser
+            // una acción destructiva y tener el switch al lado, un toque desviado podía
+            // activar el interruptor en su lugar. El área táctil se amplía a 48dp con
+            // requiredSize, que ignora las restricciones del padre y desborda el hueco:
+            // así el diseño no se mueve ni un píxel y el objetivo cumple el mínimo.
+            // (Material3 1.2 trae minimumInteractiveComponentSize para esto; aquí hay 1.1.2.)
             Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.momentum.surfaceSunken)
-                    .clickable(onClick = onDelete),
+                modifier = Modifier.size(36.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = stringResource(R.string.website_block_delete_cd),
-                    tint = MaterialTheme.momentum.textSecondary,
-                    modifier = Modifier.size(18.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .requiredSize(48.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onDelete),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.momentum.surfaceSunken),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = stringResource(R.string.website_block_delete_cd),
+                            tint = MaterialTheme.momentum.textSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
         }
     }

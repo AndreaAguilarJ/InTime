@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos del banner de prueba gratuita. Estaban escritos en español directamente en
+  SubscriptionScreen.kt, así que los usuarios de los otros cuatro idiomas veían español
+  en la pantalla de pago.
+
+  El número de días llega como argumento desde SubscriptionRepository.TRIAL_DAYS: si la
+  duración cambia, estos textos cambian con ella.
+-->
+<resources>
+    <string name="subscription_trial_offer_title">Prueba gratuita de %1$d días</string>
+    <string name="subscription_trial_offer_subtitle">Todas las funciones Premium</string>
+    <string name="subscription_trial_active_title">Prueba gratuita activa</string>
+    <string name="subscription_trial_active_subtitle">%1$d días restantes</string>
+    <string name="subscription_trial_start_button">Empezar</string>
+    <string name="sub_unlock_title">Desbloquea todo tu potencial</string>
+    <string name="sub_unlock_desc">Accede a análisis avanzados, sesiones de enfoque y personalización completa</string>
+    <string name="sub_start_now">Comenzar ahora</string>
+    <string name="sub_guarantees">• Cancela cuando quieras
+• Copia de seguridad automática en la nube
+• Soporte prioritario</string>
+    <string name="sub_monthly">Mensual</string>
+    <string name="sub_yearly">Anual</string>
+    <string name="sub_save_percent">Ahorra %1$d %%</string>
+    <string name="sub_why_premium">¿Por qué elegir Premium?</string>
+    <string name="sub_feature">Función</string>
+    <string name="sub_free">Gratis</string>
+    <string name="sub_premium">Premium</string>
+    <string name="sub_f_basic_analytics">Análisis básico</string>
+    <string name="sub_f_basic_widget">Widget básico</string>
+    <string name="sub_f_adv_analytics">Análisis avanzado</string>
+    <string name="sub_f_focus">Sesiones de enfoque</string>
+    <string name="sub_f_themes">Temas personalizados</string>
+    <string name="sub_f_export">Exportar datos</string>
+    <string name="sub_f_profiles">Varios perfiles</string>
+    <string name="sub_f_support">Soporte prioritario</string>
+</resources>

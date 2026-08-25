@@ -20,6 +20,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+// Necesarios para leer los textos desde recursos en vez de tenerlos escritos a mano.
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import com.momentummm.app.ui.accessibility.rememberSystemAnimationsEnabled
+import com.momentummm.app.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,19 +90,19 @@ fun FocusSessionScreen(
     var isLoadingStats by remember { mutableStateOf(true) }
 
     val predefinedSessions = listOf(
-        FocusSession("pomodoro", "🍅 Pomodoro Clásico", 25, 5, emptyList()),
-        FocusSession("deep_work", "🎯 Trabajo Profundo", 90, 15, emptyList()),
-        FocusSession("study", "📚 Sesión de Estudio", 45, 10, emptyList()),
-        FocusSession("creative", "🎨 Trabajo Creativo", 60, 10, emptyList()),
-        FocusSession("meeting", "💼 Preparación de Reunión", 30, 5, emptyList()),
-        FocusSession("quick", "⚡ Enfoque Rápido", 15, 3, emptyList())
+        FocusSession("pomodoro", stringResource(R.string.focus_preset_pomodoro), 25, 5, emptyList()),
+        FocusSession("deep_work", stringResource(R.string.focus_preset_deep_work), 90, 15, emptyList()),
+        FocusSession("study", stringResource(R.string.focus_preset_study), 45, 10, emptyList()),
+        FocusSession("creative", stringResource(R.string.focus_preset_creative), 60, 10, emptyList()),
+        FocusSession("meeting", stringResource(R.string.focus_preset_meeting), 30, 5, emptyList()),
+        FocusSession("quick", stringResource(R.string.focus_preset_quick), 15, 3, emptyList())
     )
 
     val activeSession = if (focusState.status != FocusTimerStatus.IDLE) {
         focusState.sessionType?.let { sessionType ->
             FocusSession(
                 id = sessionType,
-                name = focusState.sessionName ?: "Sesión de Enfoque",
+                name = focusState.sessionName ?: stringResource(R.string.focus_screen_title),
                 duration = (focusState.totalSeconds / 60).coerceAtLeast(1),
                 breakDuration = focusState.breakMinutes,
                 blockedApps = focusState.blockedApps
@@ -257,12 +262,12 @@ fun FocusSessionScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "Sesiones de Enfoque",
+                                        text = stringResource(R.string.focus_title),
                                         style = MaterialTheme.typography.headlineSmall,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "Maximiza tu productividad",
+                                        text = stringResource(R.string.focus_subtitle),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -352,7 +357,7 @@ fun FocusSessionScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Sesiones Predefinidas",
+                            text = stringResource(R.string.focus_presets),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(vertical = 8.dp)
@@ -380,7 +385,7 @@ fun FocusSessionScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Mis Sesiones",
+                                text = stringResource(R.string.focus_my_sessions),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(vertical = 8.dp)
@@ -402,7 +407,7 @@ fun FocusSessionScreen(
 
                 item {
                     Text(
-                        text = "Historial Reciente",
+                        text = stringResource(R.string.focus_recent_history),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(vertical = 8.dp)
@@ -435,13 +440,13 @@ fun FocusSessionScreen(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "Sin historial de sesiones",
+                                    text = stringResource(R.string.focus_history_empty_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Completa tu primera sesión para ver las estadísticas",
+                                    text = stringResource(R.string.focus_history_empty_message),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
@@ -463,7 +468,7 @@ fun FocusSessionScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Crear sesión personalizada")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.a11y_create_custom_session))
             }
         }
     }
@@ -483,8 +488,8 @@ fun FocusSessionScreen(
     showDeleteConfirmation?.let { sessionToDelete ->
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = null },
-            title = { Text("Eliminar sesión") },
-            text = { Text("¿Estás seguro de que deseas eliminar '${sessionToDelete.name}'?") },
+            title = { Text(stringResource(R.string.focus_delete_title)) },
+            text = { Text(stringResource(R.string.focus_delete_message, sessionToDelete.name)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -492,12 +497,12 @@ fun FocusSessionScreen(
                         showDeleteConfirmation = null
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.focus_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = null }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.focus_cancel))
                 }
             }
         )
@@ -521,7 +526,7 @@ private fun CreateSessionDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                "Crear Sesión Personalizada",
+                stringResource(R.string.focus_create_custom),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -535,7 +540,7 @@ private fun CreateSessionDialog(
             ) {
                 // Selector de emoji
                 Text(
-                    "Ícono",
+                    stringResource(R.string.focus_icon),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium
                 )
@@ -566,8 +571,8 @@ private fun CreateSessionDialog(
                 OutlinedTextField(
                     value = sessionName,
                     onValueChange = { sessionName = it },
-                    label = { Text("Nombre de la sesión") },
-                    placeholder = { Text("Ej: Escritura creativa") },
+                    label = { Text(stringResource(R.string.focus_session_name_label)) },
+                    placeholder = { Text(stringResource(R.string.focus_session_name_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -579,7 +584,7 @@ private fun CreateSessionDialog(
                     OutlinedTextField(
                         value = duration,
                         onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 3) duration = it },
-                        label = { Text("Duración") },
+                        label = { Text(stringResource(R.string.focus_duration)) },
                         suffix = { Text("min") },
                         modifier = Modifier.weight(1f),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -589,7 +594,7 @@ private fun CreateSessionDialog(
                     OutlinedTextField(
                         value = breakDuration,
                         onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) breakDuration = it },
-                        label = { Text("Descanso") },
+                        label = { Text(stringResource(R.string.focus_break)) },
                         suffix = { Text("min") },
                         modifier = Modifier.weight(1f),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -614,7 +619,7 @@ private fun CreateSessionDialog(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Crea sesiones adaptadas a tu estilo de trabajo",
+                            stringResource(R.string.focus_custom_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
@@ -640,7 +645,7 @@ private fun CreateSessionDialog(
                 style = ButtonStyle.Primary,
                 enabled = sessionName.isNotBlank() && duration.isNotBlank() && breakDuration.isNotBlank()
             ) {
-                Text("Crear")
+                Text(stringResource(R.string.focus_create))
             }
         },
         dismissButton = {
@@ -648,7 +653,7 @@ private fun CreateSessionDialog(
                 onClick = onDismiss,
                 style = ButtonStyle.Outline
             ) {
-                Text("Cancelar")
+                Text(stringResource(R.string.focus_cancel))
             }
         }
     )
@@ -669,7 +674,7 @@ private fun ActiveSessionCard(
     val breathing = rememberInfiniteTransition(label = "breathing")
     val breathScale by breathing.animateFloat(
         initialValue = 1f,
-        targetValue = 1.018f,
+        targetValue = if (rememberSystemAnimationsEnabled()) 1.018f else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(2600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -690,10 +695,10 @@ private fun ActiveSessionCard(
     }
 
     val stateLabel = when (sessionState) {
-        FocusTimerStatus.RUNNING -> "En progreso"
-        FocusTimerStatus.BREAK -> "Descanso"
-        FocusTimerStatus.PAUSED -> "En pausa"
-        FocusTimerStatus.COMPLETED -> "Completada"
+        FocusTimerStatus.RUNNING -> stringResource(R.string.focus_status_running)
+        FocusTimerStatus.BREAK -> stringResource(R.string.focus_status_break)
+        FocusTimerStatus.PAUSED -> stringResource(R.string.focus_status_paused)
+        FocusTimerStatus.COMPLETED -> stringResource(R.string.focus_status_done)
         else -> ""
     }
 
@@ -797,9 +802,9 @@ private fun ActiveSessionCard(
                         )
                         Text(
                             text = when (sessionState) {
-                                FocusTimerStatus.COMPLETED -> "sesión terminada"
-                                FocusTimerStatus.PAUSED -> "en pausa"
-                                else -> "restantes"
+                                FocusTimerStatus.COMPLETED -> stringResource(R.string.focus_session_over)
+                                FocusTimerStatus.PAUSED -> stringResource(R.string.focus_paused_lower)
+                                else -> stringResource(R.string.focus_remaining)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.momentum.textSecondary
@@ -815,18 +820,18 @@ private fun ActiveSessionCard(
                 ) {
                     TimerMetric(
                         value = "${session.duration} min",
-                        label = "Duración",
+                        label = stringResource(R.string.focus_duration_label),
                         modifier = Modifier.weight(1f)
                     )
                     TimerMetric(
                         value = "${(progress * 100).toInt()}%",
-                        label = "Completado",
+                        label = stringResource(R.string.focus_completed_label),
                         accent = stateColor,
                         modifier = Modifier.weight(1f)
                     )
                     TimerMetric(
                         value = "${session.breakDuration} min",
-                        label = "Descanso",
+                        label = stringResource(R.string.focus_status_break),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -846,7 +851,7 @@ private fun ActiveSessionCard(
                                 icon = Icons.Filled.Pause,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Pausar")
+                                Text(stringResource(R.string.focus_pause))
                             }
                         }
                         FocusTimerStatus.PAUSED -> {
@@ -857,7 +862,7 @@ private fun ActiveSessionCard(
                                 icon = Icons.Filled.PlayArrow,
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Continuar")
+                                Text(stringResource(R.string.focus_resume))
                             }
                         }
                         FocusTimerStatus.COMPLETED -> {
@@ -868,7 +873,7 @@ private fun ActiveSessionCard(
                                 icon = Icons.Filled.Check,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Finalizar sesión")
+                                Text(stringResource(R.string.focus_finish))
                             }
                         }
                         else -> {}
@@ -1002,7 +1007,7 @@ private fun LongPressStopButton(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isPressed) "Manteniendo..." else "Mantener para detener",
+                    text = if (isPressed) "Manteniendo..." else stringResource(R.string.focus_hold_to_stop),
                     color = if (progress > 0.5f) Color.White else MaterialTheme.colorScheme.onErrorContainer,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium
@@ -1103,7 +1108,7 @@ private fun SessionCard(
                 IconButton(onClick = onDelete) {
                     Icon(
                         Icons.Filled.Delete,
-                        contentDescription = "Eliminar",
+                        contentDescription = stringResource(R.string.a11y_delete),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }
@@ -1149,7 +1154,7 @@ private fun SessionStatsCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Tu Progreso de Hoy",
+                    text = stringResource(R.string.focus_today_progress),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -1163,7 +1168,7 @@ private fun SessionStatsCard(
             ) {
                 StatItem(
                     value = completedToday.toString(),
-                    label = "Sesiones\ncompletadas",
+                    label = stringResource(R.string.focus_sessions_done),
                     icon = Icons.Filled.CheckCircle,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -1177,7 +1182,7 @@ private fun SessionStatsCard(
 
                 StatItem(
                     value = if (totalFocusTime >= 60) "${totalFocusTime / 60}h ${totalFocusTime % 60}m" else "${totalFocusTime}m",
-                    label = "Tiempo\ntotal",
+                    label = stringResource(R.string.focus_total_time),
                     icon = Icons.Filled.Schedule,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -1191,7 +1196,7 @@ private fun SessionStatsCard(
 
                 StatItem(
                     value = streakDays.toString(),
-                    label = "Días\nconsecutivos",
+                    label = stringResource(R.string.focus_streak_days),
                     icon = Icons.Filled.Whatshot,
                     color = Coral500
                 )
@@ -1249,12 +1254,12 @@ private fun AppwriteSessionHistoryCard(
     modifier: Modifier = Modifier
 ) {
     val sessionName = when (history.sessionType) {
-        "pomodoro" -> "🍅 Pomodoro Clásico"
-        "deep_work" -> "🎯 Trabajo Profundo"
-        "study" -> "📚 Sesión de Estudio"
-        "creative" -> "🎨 Trabajo Creativo"
-        "meeting" -> "💼 Preparación de Reunión"
-        "quick" -> "⚡ Enfoque Rápido"
+        "pomodoro" -> stringResource(R.string.focus_preset_pomodoro)
+        "deep_work" -> stringResource(R.string.focus_preset_deep_work)
+        "study" -> stringResource(R.string.focus_preset_study)
+        "creative" -> stringResource(R.string.focus_preset_creative)
+        "meeting" -> stringResource(R.string.focus_preset_meeting)
+        "quick" -> stringResource(R.string.focus_preset_quick)
         else -> history.sessionType
     }
 
@@ -1333,7 +1338,7 @@ private fun AppwriteSessionHistoryCard(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "${history.distractions} distracciones",
+                            text = pluralStringResource(R.plurals.focus_distractions, history.distractions, history.distractions),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.momentum.danger
                         )
@@ -1350,7 +1355,7 @@ private fun AppwriteSessionHistoryCard(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = if (history.wasCompleted) "Completado" else "Interrumpido",
+                    text = if (history.wasCompleted) stringResource(R.string.focus_completed_label) else stringResource(R.string.focus_interrupted),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.labelMedium,
                     color = if (history.wasCompleted) {

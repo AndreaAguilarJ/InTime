@@ -1,5 +1,6 @@
 package com.momentummm.app.data.manager
 
+import com.momentummm.app.R
 import android.content.Context
 import android.util.Log
 import com.momentummm.app.data.dao.*
@@ -263,7 +264,10 @@ class CommunityManager @Inject constructor(
             val entry = LeaderboardEntry(
                 odId = "local_${user.id}",
                 userId = user.id.toString(),
-                userName = "Yo", // Se actualizará con el nombre real de Appwrite
+                // Antes era el literal "Yo": en la clasificación, un usuario alemán o
+                // francés veía esa palabra en español. Se sustituye por el nombre real
+                // de Appwrite en cuanto hay sincronización.
+                userName = context.getString(R.string.community_leaderboard_self_label),
                 weeklyFocusMinutes = user.totalFocusMinutes,
                 weeklyPerfectDays = 0, // TODO: calcular
                 currentStreak = user.currentStreak,
@@ -320,21 +324,21 @@ class CommunityManager @Inject constructor(
     fun generateShareText(achievement: SharedAchievement): String {
         return when (achievement.achievementType) {
             AchievementType.STREAK_MILESTONE -> 
-                "🔥 ¡Llevo ${achievement.achievementValue} días de racha en InTime! #DopaMineDiet"
+                "🔥 ¡Llevo ${achievement.achievementValue} días de racha en Momentum! #DopaMineDiet"
             AchievementType.LEVEL_UP ->
-                "⬆️ ¡Subí al nivel ${achievement.achievementValue} en InTime! #ProductividadDigital"
+                "⬆️ ¡Subí al nivel ${achievement.achievementValue} en Momentum! #ProductividadDigital"
             AchievementType.PERFECT_WEEK ->
-                "✨ ¡Semana perfecta completada! No excedí ningún límite de apps #InTime"
+                "✨ ¡Semana perfecta completada! No excedí ningún límite de apps #Momentum"
             AchievementType.FOCUS_MILESTONE ->
-                "🎯 ¡${achievement.achievementValue} horas de foco acumuladas en InTime! #TiempoConsciente"
+                "🎯 ¡${achievement.achievementValue} horas de foco acumuladas en Momentum! #TiempoConsciente"
             AchievementType.NUCLEAR_COMPLETED ->
                 "☢️ ¡Completé ${achievement.achievementValue} días en Modo Nuclear! #DetoxDigital"
             AchievementType.TOP_LEADERBOARD ->
-                "🏆 ¡Top ${achievement.achievementValue} en el leaderboard semanal de InTime!"
+                "🏆 ¡Top ${achievement.achievementValue} en el leaderboard semanal de Momentum!"
             AchievementType.FIRST_WEEK ->
-                "🚀 ¡Primera semana usando InTime para controlar mi tiempo de pantalla!"
+                "🚀 ¡Primera semana usando Momentum para controlar mi tiempo de pantalla!"
             AchievementType.CUSTOM ->
-                achievement.message.ifEmpty { "🎉 ¡Nuevo logro en InTime!" }
+                achievement.message.ifEmpty { "🎉 ¡Nuevo logro en Momentum!" }
         }
     }
     

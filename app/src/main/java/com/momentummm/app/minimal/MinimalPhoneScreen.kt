@@ -23,6 +23,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+// Necesarios para leer los textos desde recursos en vez de tenerlos escritos a mano.
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -233,7 +236,7 @@ private fun MinimalLauncherContent(
                     ) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Salir del modo mínimo",
+                            contentDescription = stringResource(R.string.a11y_exit_minimal_mode),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -397,7 +400,7 @@ private fun MinimalLauncherContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Todas las apps",
+                            stringResource(R.string.minimal_all_apps),
                             style = MaterialTheme.typography.labelLarge
                         )
                     }
@@ -434,13 +437,13 @@ private fun MinimalLauncherContent(
             },
             title = { 
                 Text(
-                    "¿Salir del modo mínimo?",
+                    stringResource(R.string.minimal_exit_title),
                     textAlign = TextAlign.Center
                 ) 
             },
             text = { 
                 Text(
-                    "Se restaurará la experiencia completa de Momentum con todas las funciones.",
+                    stringResource(R.string.minimal_exit_message),
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 ) 
@@ -453,12 +456,12 @@ private fun MinimalLauncherContent(
                         onExitMinimalMode()
                     }
                 ) {
-                    Text("Sí, salir")
+                    Text(stringResource(R.string.minimal_exit_confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showExitConfirm = false }) {
-                    Text("Continuar aquí")
+                    Text(stringResource(R.string.minimal_exit_cancel))
                 }
             }
         )
@@ -557,7 +560,7 @@ private fun MinimalModeToggleScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         Text(
-            text = "Modo Teléfono Mínimo",
+            text = stringResource(R.string.minimal_setup_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -565,7 +568,7 @@ private fun MinimalModeToggleScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Limita tu teléfono a las funciones esenciales: llamadas, mensajes y contactos.",
+            text = stringResource(R.string.minimal_setup_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -579,15 +582,15 @@ private fun MinimalModeToggleScreen(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Características:",
+                    text = stringResource(R.string.minimal_setup_features_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("• Solo apps esenciales disponibles")
-                Text("• Interfaz simplificada")
-                Text("• Menos distracciones")
-                Text("• Enfoque en comunicación")
+                Text(stringResource(R.string.minimal_setup_feature_apps))
+                Text(stringResource(R.string.minimal_setup_feature_ui))
+                Text(stringResource(R.string.minimal_setup_feature_distractions))
+                Text(stringResource(R.string.minimal_setup_feature_comms))
             }
         }
         
@@ -597,7 +600,7 @@ private fun MinimalModeToggleScreen(
             onClick = onEnableMinimalMode,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Activar modo mínimo")
+            Text(stringResource(R.string.minimal_setup_enable))
         }
     }
 }
@@ -683,7 +686,7 @@ fun AllowedAppsManagementScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "Gestionar apps permitidas",
+            text = stringResource(R.string.minimal_manage_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -691,7 +694,7 @@ fun AllowedAppsManagementScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Selecciona qué apps estarán disponibles en modo mínimo:",
+            text = stringResource(R.string.minimal_manage_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -812,7 +815,7 @@ private fun CustomAppCard(
                 contentPadding = PaddingValues(4.dp)
             ) {
                 Text(
-                    text = "Cambiar",
+                    text = stringResource(R.string.minimal_change),
                     style = MaterialTheme.typography.labelSmall
                 )
             }
@@ -850,13 +853,13 @@ private fun AddCustomAppCard(
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Agregar app",
+                contentDescription = stringResource(R.string.a11y_add_app),
                 modifier = Modifier.size(36.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Agregar app",
+                text = stringResource(R.string.minimal_add_app),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -893,14 +896,14 @@ private fun AppSelectorDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Seleccionar aplicación adicional")
+            Text(stringResource(R.string.minimal_pick_extra_title))
         },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Elige una app para agregar al teléfono mínimo (solo una):",
+                    text = stringResource(R.string.minimal_pick_extra_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -910,7 +913,7 @@ private fun AppSelectorDialog(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    label = { Text("Buscar app") },
+                    label = { Text(stringResource(R.string.minimal_search_app)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -938,12 +941,12 @@ private fun AppSelectorDialog(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Quitar app actual",
+                                        text = stringResource(R.string.minimal_remove_current),
                                         color = MaterialTheme.colorScheme.onErrorContainer,
                                         fontWeight = FontWeight.Medium
                                     )
                                     TextButton(onClick = { onAppSelected(null) }) {
-                                        Text("Quitar")
+                                        Text(stringResource(R.string.minimal_remove))
                                     }
                                 }
                             }
@@ -990,7 +993,7 @@ private fun AppSelectorDialog(
                                     TextButton(
                                         onClick = { onAppSelected(appInfo.packageName) }
                                     ) {
-                                        Text("Seleccionar")
+                                        Text(stringResource(R.string.minimal_select))
                                     }
                                 }
                             }
@@ -1001,7 +1004,7 @@ private fun AppSelectorDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cerrar")
+                Text(stringResource(R.string.minimal_close))
             }
         }
     )
@@ -1013,6 +1016,6 @@ private fun getCurrentTime(): String {
 }
 
 private fun getCurrentDate(): String {
-    return java.text.SimpleDateFormat("EEE, d MMM", java.util.Locale("es", "ES"))
+    return java.text.SimpleDateFormat("EEE, d MMM", java.util.Locale.getDefault())
         .format(java.util.Date())
 }

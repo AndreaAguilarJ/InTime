@@ -80,7 +80,7 @@ fun WelcomeScreen(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = "Momentum",
+                    contentDescription = stringResource(R.string.a11y_app_logo),
                     modifier = Modifier.size(96.dp)
                 )
             }

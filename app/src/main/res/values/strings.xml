@@ -82,6 +82,7 @@
     <string name="onboarding_overlay_desc">Recomendado para mostrar la pantalla de bloqueo sobre otras apps. Esto permite que Momentum te proteja efectivamente.</string>
     <string name="onboarding_overlay_optional">Opcional: puedes activarlo más tarde desde Ajustes.</string>
     <string name="onboarding_enable">Habilitar</string>
+    <string name="onboarding_setup_complete">¡Configuración completada!</string>
     <string name="onboarding_all_set_title">¡Todo listo!</string>
     <string name="onboarding_all_set_desc">Momentum está preparado para ayudarte a recuperar el control de tu tiempo. A continuación configuraremos tu perfil.</string>
     <string name="onboarding_saving">Guardando…</string>
@@ -573,7 +574,7 @@
     <string name="lock_screen_show_password">Mostrar contraseña</string>
     <string name="lock_screen_temporarily_locked">Bloqueado por %1$d minuto(s)</string>
     <string name="lock_screen_unlock">Desbloquear</string>
-    <string name="lock_screen_biometric_title">Desbloquear InTime</string>
+    <string name="lock_screen_biometric_title">Desbloquear Momentum</string>
     <string name="lock_screen_biometric_subtitle">Usa tu huella o face ID</string>
     <string name="lock_screen_biometric_description">Verifica tu identidad para continuar</string>
     <string name="lock_screen_use_biometric">Usar Biometría</string>
@@ -647,7 +648,7 @@
     <string name="emergency_unlock_streak_risk">Tu racha de %1$d días está en riesgo</string>
     <string name="emergency_unlock_streak_warning">Piénsalo dos veces antes de rendirte</string>
     <string name="emergency_unlock_premium_title">Desbloqueo Premium</string>
-    <string name="emergency_unlock_premium_subtitle">Acceso instantáneo por 15 minutos</string>
+    <string name="emergency_unlock_premium_subtitle">Acceso instantáneo por %1$d minutos</string>
     <string name="emergency_unlock_premium_price">$0.99 USD</string>
     <string name="emergency_unlock_shame_title">Desbloqueo de la Vergüenza</string>
     <string name="emergency_unlock_shame_subtitle">Comparte tu fallo en redes sociales</string>
@@ -993,7 +994,8 @@
     <string name="analytics_app_usage_time_sessions">%1$dh %2$dm • %3$d sesiones</string>
     <string name="analytics_app_usage_last_used">Última vez: %1$s</string>
     <string name="analytics_productivity_insight_title">Insight de Productividad</string>
-    <string name="analytics_productivity_insight_message">Tu productividad aumenta un 23% los martes. Considera programar tareas importantes ese día.</string>
+    <string name="analytics_productivity_insight_message_day">%1$s es tu día con menos tiempo de pantalla: un %2$d %% por debajo de tu media. Considera programar ahí tus tareas importantes.</string>
+    <string name="analytics_productivity_insight_message_pending">Aún no hay suficiente historial para señalar tu mejor día. Sigue usando la app unos días más.</string>
     <string name="analytics_summary_title">Resumen Estadístico</string>
     <string name="analytics_summary_total_screen_time">Tiempo de Pantalla Total</string>
     <string name="analytics_summary_daily_average">Promedio Diario</string>
@@ -1054,7 +1056,7 @@
     
     <!-- Test Notification -->
     <string name="notification_test_title_sent">🔔 ¡Notificaciones Activas!</string>
-    <string name="notification_test_message">Las notificaciones de InTime están funcionando correctamente. Recibirás alertas sobre tus metas y límites.</string>
+    <string name="notification_test_message">Las notificaciones de Momentum están funcionando correctamente. Recibirás alertas sobre tus metas y límites.</string>
     
     <!-- Achievement Notifications -->
     <string name="notification_goal_achieved_title">🎉 ¡Meta Alcanzada!</string>
@@ -1147,14 +1149,14 @@
     <string name="motivational_widget_description">Muestra un mensaje motivacional diferente cada día para inspirarte</string>
     
     <!-- Device Admin - Uninstall Prevention -->
-    <string name="device_admin_label">InTime - Protección Anti-Desinstalación</string>
-    <string name="device_admin_description">Activa esta opción para prevenir la desinstalación accidental de InTime mientras tienes bloqueos activos. Puedes desactivarla en cualquier momento desde Ajustes.</string>
-    <string name="device_admin_explanation">InTime necesita permisos de administrador del dispositivo para prevenir su desinstalación mientras tienes bloqueos de apps activos.\n\nEsto es opcional pero recomendado para usuarios que quieren asegurarse de no poder desinstalar la app en momentos de debilidad.\n\nPuedes desactivar esto en cualquier momento desde Ajustes > Seguridad.</string>
+    <string name="device_admin_label">Momentum - Protección Anti-Desinstalación</string>
+    <string name="device_admin_description">Activa esta opción para prevenir la desinstalación accidental de Momentum mientras tienes bloqueos activos. Puedes desactivarla en cualquier momento desde Ajustes.</string>
+    <string name="device_admin_explanation">Momentum necesita permisos de administrador del dispositivo para prevenir su desinstalación mientras tienes bloqueos de apps activos.\n\nEsto es opcional pero recomendado para usuarios que quieren asegurarse de no poder desinstalar la app en momentos de debilidad.\n\nPuedes desactivar esto en cualquier momento desde Ajustes > Seguridad.</string>
     <string name="device_admin_enabled_toast">✅ Protección anti-desinstalación activada</string>
     <string name="device_admin_disabled_toast">Protección anti-desinstalación desactivada</string>
-    <string name="device_admin_disable_warning">⚠️ ADVERTENCIA: Si desactivas esto, podrás desinstalar InTime y perder el control sobre tu tiempo de pantalla. ¿Estás seguro?</string>
+    <string name="device_admin_disable_warning">⚠️ ADVERTENCIA: Si desactivas esto, podrás desinstalar Momentum y perder el control sobre tu tiempo de pantalla. ¿Estás seguro?</string>
     <string name="settings_uninstall_protection_title">Protección Anti-Desinstalación</string>
-    <string name="settings_uninstall_protection_subtitle">Previene desinstalar InTime mientras hay bloqueos activos</string>
+    <string name="settings_uninstall_protection_subtitle">Previene desinstalar Momentum mientras hay bloqueos activos</string>
     <string name="settings_uninstall_protection_active">Protección activa</string>
     <string name="settings_uninstall_protection_inactive">Protección inactiva</string>
     
@@ -1204,16 +1206,16 @@
     
     <!-- Device Admin Settings -->
     <string name="device_admin_settings_title">Protección Anti-Desinstalación</string>
-    <string name="device_admin_settings_subtitle">Previene que puedas desinstalar InTime en momentos de debilidad</string>
+    <string name="device_admin_settings_subtitle">Previene que puedas desinstalar Momentum en momentos de debilidad</string>
     <string name="device_admin_info_title">¿Cómo funciona?</string>
-    <string name="device_admin_info_description">Usa permisos de administrador del dispositivo para prevenir la desinstalación de InTime mientras tienes bloqueos activos.</string>
+    <string name="device_admin_info_description">Usa permisos de administrador del dispositivo para prevenir la desinstalación de Momentum mientras tienes bloqueos activos.</string>
     <string name="device_admin_benefit_1">Previene desinstalar la app impulsivamente</string>
     <string name="device_admin_benefit_2">Puedes desactivarlo en cualquier momento</string>
     <string name="device_admin_benefit_3">No afecta otras funciones del dispositivo</string>
     <string name="device_admin_status_active">Protección Activa</string>
-    <string name="device_admin_status_active_desc">No podrás desinstalar InTime hasta desactivar la protección</string>
+    <string name="device_admin_status_active_desc">No podrás desinstalar Momentum hasta desactivar la protección</string>
     <string name="device_admin_status_inactive">Protección Inactiva</string>
-    <string name="device_admin_status_inactive_desc">Puedes desinstalar InTime libremente</string>
+    <string name="device_admin_status_inactive_desc">Puedes desinstalar Momentum libremente</string>
     <string name="device_admin_activate">Activar Protección</string>
     <string name="device_admin_deactivate">Desactivar Protección</string>
     <string name="uninstall_protection_toggle">Activar al bloquear apps</string>
@@ -1249,7 +1251,7 @@
     <string name="account_settings_password_change_error">No se pudo cambiar la contraseña</string>
     <string name="about_link_error">No se pudo abrir el enlace</string>
     <string name="app_blocked_payment_failed">No se pudo completar el pago</string>
-    <string name="app_blocked_payment_unlocked">Desbloqueada 5 minutos</string>
+    <string name="app_blocked_payment_unlocked">Desbloqueada %1$d minutos</string>
 
     <!-- Rediseno UI: dashboard -->
     <string name="greeting_morning">Buenos días</string>
@@ -1281,4 +1283,14 @@
     <string name="subscription_per_year">/año</string>
     <string name="subscription_per_month">/mes</string>
     <string name="subscription_more_features">Y %1$d funciones más</string>
+    <string name="tutorial_widget_hint_momentum">Mantén pulsado en tu pantalla de inicio → Widgets → Momentum</string>
+    <string name="tutorial_widget_hint_life">Mantén pulsado en tu pantalla de inicio, elige «Widgets» y busca «Mi vida en semanas»</string>
+    <string name="tutorial_widget_add_later">También puedes añadirlo después desde Ajustes → Mi vida en semanas</string>
+    <string name="gam_restored">Progreso restaurado: nivel %1$d, %2$d XP</string>
+    <string name="gam_nothing_stored">Aún no hay progreso guardado en la nube</string>
+    <string name="gam_login_restore">Inicia sesión para restaurar tu progreso</string>
+    <string name="gam_restore_error">No se pudo restaurar: %1$s</string>
+    <string name="gam_synced">Progreso sincronizado</string>
+    <string name="gam_login_sync">Inicia sesión para sincronizar tu progreso</string>
+    <string name="motiv_message_of_day">💫 Mensaje del día</string>
 </resources>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="life_not_set">Nicht festgelegt</string>
+    <string name="life_title">Mein Leben in Wochen</string>
+    <string name="life_error">Fehler: %1$s</string>
+
+    <string name="life_your_numbers">Dein Leben in Zahlen</string>
+    <string name="life_weeks_lived">Gelebte Wochen</string>
+    <string name="life_weeks_remaining">Verbleibende Wochen</string>
+    <string name="life_age">Alter: %1$d</string>
+    <string name="life_tap_to_change">Zum Ändern tippen</string>
+    <string name="life_expectancy_hint">Passe den Wert an deine Gesundheit und Erwartungen an</string>
+
+    <string name="life_color_lived">Gelebte Wochen</string>
+    <string name="life_color_future">Kommende Wochen</string>
+    <string name="life_color_wallpaper">Hintergrund des Wallpapers</string>
+
+    <string name="life_widget_hint">Füge das Widget zu deinem Startbildschirm hinzu, um dein Leben in Wochen mit deinen Farben zu sehen.</string>
+    <string name="life_widget_manual_generic">Dein Launcher kann Widgets nicht automatisch hinzufügen. Halte den Startbildschirm gedrückt und wähle „Widgets“.</string>
+    <string name="life_widget_manual_search">Halte den Startbildschirm gedrückt, wähle „Widgets“ und suche „Mein Leben in Wochen“.</string>
+    <string name="life_widget_manual_path">So fügst du das Widget hinzu: Startbildschirm gedrückt halten → Widgets → Mein Leben in Wochen.</string>
+    <string name="life_widget_add">Widget zum Startbildschirm hinzufügen</string>
+    <string name="life_widget_update_error">Aktualisierung fehlgeschlagen: %1$s</string>
+    <string name="life_widget_update">Vorhandene Widgets aktualisieren</string>
+
+    <string name="life_set_birth_date_first">Lege zuerst dein Geburtsdatum fest</string>
+    <string name="life_save_image">Als Bild speichern</string>
+    <string name="life_set_wallpaper">Als Hintergrund festlegen</string>
+    <string name="life_saved">✅ Einstellungen gespeichert</string>
+    <string name="life_drag_widget">📌 Zieh das Widget auf deinen Bildschirm</string>
+    <string name="life_weeks_need_birthdate">Um dein Leben in Wochen zu sehen, lege dein Geburtsdatum in den Kontoeinstellungen fest.</string>
+    <string name="life_weeks_go_settings">Zu den Einstellungen</string>
+    <string name="life_weeks_legend">Jedes Kästchen ist eine Lebenswoche. Gelebte Wochen sind farbig, künftige grau.</string>
+    <string name="life_weeks_years_value">%1$d Jahre</string>
+    <string name="life_weeks_color_customization">🎨 Farbanpassung</string>
+    <string name="life_weeks_saved_gallery">✅ In der Galerie gespeichert</string>
+</resources>

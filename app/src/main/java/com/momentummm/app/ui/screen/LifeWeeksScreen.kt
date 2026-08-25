@@ -27,7 +27,8 @@ import com.momentummm.app.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LifeWeeksScreen(
-    viewModel: LifeWeeksViewModel
+    viewModel: LifeWeeksViewModel,
+    onNavigateToAccountSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -87,7 +88,7 @@ fun LifeWeeksScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "Para ver tu vida en semanas, necesitas configurar tu fecha de nacimiento en la configuración de tu cuenta.",
+                            text = stringResource(R.string.life_weeks_need_birthdate),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             textAlign = TextAlign.Center
@@ -96,12 +97,12 @@ fun LifeWeeksScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                            onClick = { /* Navigate to settings */ },
+                            onClick = onNavigateToAccountSettings,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.error
                             )
                         ) {
-                            Text("Ir a Configuración")
+                            Text(stringResource(R.string.life_weeks_go_settings))
                         }
                     }
                 }
@@ -194,7 +195,7 @@ fun LifeWeeksScreen(
                             )
 
                             Text(
-                                text = "Cada cuadrito representa una semana de vida. Las semanas vividas están en color, las futuras en gris.",
+                                text = stringResource(R.string.life_weeks_legend),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(bottom = 16.dp)

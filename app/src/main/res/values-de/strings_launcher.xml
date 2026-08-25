@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="launcher_back">← Zurück</string>
+    <string name="launcher_settings_title">Launcher-Einstellungen</string>
+
+    <string name="launcher_not_default">Nicht der Standard-Launcher</string>
+    <string name="launcher_is_default">Momentum ist dein Haupt-Launcher</string>
+    <string name="launcher_set_default_desc">Momentum als Standard-Launcher einrichten</string>
+    <string name="launcher_set_default_button">Als Standard-Launcher festlegen</string>
+
+    <string name="launcher_minimal_config">Einstellungen für den Minimal-Modus</string>
+    <string name="launcher_minimal_active">Minimal-Modus aktiv</string>
+    <string name="launcher_minimal_toggle_a11y">Minimal-Modus ein- oder ausschalten</string>
+    <string name="launcher_auto_enable">Minimal-Modus von selbst einschalten</string>
+    <string name="launcher_auto_enable_desc">Schaltet sich ein, wenn du den Launcher öffnest</string>
+
+    <string name="launcher_view_installed">Installierte Launcher ansehen</string>
+    <string name="launcher_open_system_settings">Systemeinstellungen öffnen</string>
+
+    <string name="launcher_instructions_title">📱 Anleitung</string>
+    <string name="launcher_step1">1. Tippe auf „%1$s“\n</string>
+    <string name="launcher_step2">2. Wähle „%1$s“ aus der Liste\n</string>
+    <string name="launcher_step3">3. Setze ein Häkchen bei „Immer verwenden“, wenn es dauerhaft sein soll\n</string>
+    <string name="launcher_step4">4. Schalte den Minimal-Modus für ein schlichteres Erlebnis ein</string>
+
+    <string name="launcher_installed_title">Installierte Launcher</string>
+    <string name="launcher_this_app">Diese App</string>
+
+    <string name="launcher_setup_title">Minimal-Launcher</string>
+    <string name="launcher_setup_desc">Verwandle dein Handy in ein schlichtes Gerät, nur mit dem Wesentlichen.</string>
+    <string name="launcher_status">Launcher-Status</string>
+    <string name="launcher_status_configured">Als Standard-Launcher eingerichtet</string>
+    <string name="launcher_status_not_configured">Nicht der Standard-Launcher</string>
+    <string name="launcher_minimal_mode">Minimal-Modus</string>
+    <string name="launcher_minimal_on">Minimal-Modus eingeschaltet</string>
+    <string name="launcher_minimal_off">Minimal-Modus ausgeschaltet</string>
+    <string name="launcher_configure_button">Als Launcher einrichten</string>
+    <string name="launcher_open_settings_button">Launcher-Einstellungen öffnen</string>
+    <string name="launcher_enable_minimal">Minimal-Modus einschalten</string>
+    <string name="launcher_disable_minimal">Minimal-Modus ausschalten</string>
+    <string name="launcher_home_hint">Sobald alles eingerichtet ist, drücke die Home-Taste, um den Minimal-Launcher zu nutzen.</string>
+</resources>

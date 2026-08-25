@@ -27,6 +27,8 @@ import com.momentummm.app.data.entity.MessageTone
 import com.momentummm.app.notification.MotivationalAlarmScheduler
 import com.momentummm.app.ui.viewmodel.MotivationalMessagesViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +49,7 @@ fun MotivationalMessagesSettingsScreen(
         }
     }
 
-    // El resultado del botón "Probar" viene del envío real, así que el mensaje
+    // El resultado del botón stringResource(R.string.motiv_test) viene del envío real, así que el mensaje
     // que ve el usuario dice lo que ha pasado de verdad.
     LaunchedEffect(uiState.testNotificationResult) {
         uiState.testNotificationResult?.let { result ->
@@ -71,15 +73,15 @@ fun MotivationalMessagesSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mensajes Motivacionales") },
+                title = { Text(stringResource(R.string.motiv_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.a11y_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = onOpenLibrary) {
-                        Icon(Icons.Default.LibraryBooks, contentDescription = "Biblioteca")
+                        Icon(Icons.Default.LibraryBooks, contentDescription = stringResource(R.string.a11y_message_library))
                     }
                 }
             )
@@ -105,7 +107,7 @@ fun MotivationalMessagesSettingsScreen(
                 // Stats Card
                 item {
                     MotivationalStatsCard(
-                        messageOfTheDay = uiState.messageOfTheDay?.content ?: "¡Hoy es un gran día!",
+                        messageOfTheDay = uiState.messageOfTheDay?.content ?: stringResource(R.string.motiv_default_message),
                         totalShown = uiState.totalMessagesShown,
                         totalLoved = uiState.totalLoved,
                         openRate = uiState.openRate
@@ -133,7 +135,7 @@ fun MotivationalMessagesSettingsScreen(
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        "Los mensajes pueden llegar tarde",
+                                        stringResource(R.string.motiv_late_warning_title),
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onErrorContainer
@@ -141,9 +143,7 @@ fun MotivationalMessagesSettingsScreen(
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    "Android no permite a Momentum usar alarmas exactas, así que " +
-                                        "un mensaje de las 9:00 puede aparecer más tarde. " +
-                                        "Concede el permiso para que lleguen a su hora.",
+                                    stringResource(R.string.motiv_late_warning_body),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
@@ -154,7 +154,7 @@ fun MotivationalMessagesSettingsScreen(
                                             runCatching { context.startActivity(intent) }
                                         }
                                 }) {
-                                    Text("Permitir alarmas exactas")
+                                    Text(stringResource(R.string.motiv_allow_exact_alarms))
                                 }
                             }
                         }
@@ -170,11 +170,10 @@ fun MotivationalMessagesSettingsScreen(
                     ) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Personalización", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.motiv_personalization), style = MaterialTheme.typography.titleMedium)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    "Los mensajes te llamarán por tu nombre y usarán tu racha y " +
-                                        "tu tiempo de pantalla de hoy.",
+                                    stringResource(R.string.motiv_personalization_body),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -182,8 +181,8 @@ fun MotivationalMessagesSettingsScreen(
                                 OutlinedTextField(
                                     value = uiState.displayName,
                                     onValueChange = { viewModel.setDisplayName(it) },
-                                    label = { Text("¿Cómo te llamamos?") },
-                                    placeholder = { Text("Tu nombre") },
+                                    label = { Text(stringResource(R.string.motiv_name_question)) },
+                                    placeholder = { Text(stringResource(R.string.motiv_name_placeholder)) },
                                     singleLine = true,
                                     leadingIcon = {
                                         Icon(Icons.Default.Person, contentDescription = null)
@@ -206,9 +205,9 @@ fun MotivationalMessagesSettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Notificaciones activas", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.motiv_notifications_active), style = MaterialTheme.typography.titleMedium)
                                 Text(
-                                    "Recibe mensajes motivacionales",
+                                    stringResource(R.string.motiv_notifications_active_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -230,7 +229,7 @@ fun MotivationalMessagesSettingsScreen(
                     ) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Frecuencia", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.motiv_frequency), style = MaterialTheme.typography.titleMedium)
                                 Spacer(modifier = Modifier.height(12.dp))
                                 FrequencySlider(
                                     value = uiState.preferences.dailyFrequency,
@@ -257,7 +256,7 @@ fun MotivationalMessagesSettingsScreen(
                     ) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Categorías", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.motiv_categories), style = MaterialTheme.typography.titleMedium)
                                 Spacer(modifier = Modifier.height(12.dp))
                                 CategorySelector(
                                     enabledCategories = uiState.preferences.getEnabledCategoriesList(),
@@ -297,28 +296,28 @@ fun MotivationalMessagesSettingsScreen(
                     ) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Funciones inteligentes", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.motiv_smart_features), style = MaterialTheme.typography.titleMedium)
                                 Spacer(modifier = Modifier.height(12.dp))
                                 
                                 SettingSwitch(
-                                    "Timing inteligente",
-                                    "Aprende tus mejores horarios",
+                                    stringResource(R.string.motiv_smart_timing),
+                                    stringResource(R.string.motiv_smart_timing_desc),
                                     uiState.preferences.smartTimingEnabled
                                 ) { viewModel.toggleSmartTiming(it) }
                                 
                                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                                 
                                 SettingSwitch(
-                                    "Horario fin de semana",
-                                    "Frecuencia diferente los fines de semana",
+                                    stringResource(R.string.motiv_weekend_schedule),
+                                    stringResource(R.string.motiv_weekend_schedule_desc),
                                     uiState.preferences.differentWeekendSchedule
                                 ) { viewModel.toggleWeekendSchedule(it) }
                                 
                                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                                 
                                 SettingSwitch(
-                                    "Mensajes con IA",
-                                    "Genera mensajes personalizados",
+                                    stringResource(R.string.motiv_ai_messages),
+                                    stringResource(R.string.motiv_ai_messages_desc),
                                     uiState.preferences.aiGenerationEnabled
                                 ) { viewModel.toggleAIMessages(it) }
                             }
@@ -330,7 +329,7 @@ fun MotivationalMessagesSettingsScreen(
                 item {
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Acciones", style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.motiv_actions), style = MaterialTheme.typography.titleMedium)
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -347,7 +346,7 @@ fun MotivationalMessagesSettingsScreen(
                                 ) {
                                     Icon(Icons.Default.NotificationsActive, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Probar")
+                                    Text(stringResource(R.string.motiv_test))
                                 }
                                 Button(
                                     onClick = onOpenLibrary,
@@ -355,7 +354,7 @@ fun MotivationalMessagesSettingsScreen(
                                 ) {
                                     Icon(Icons.Default.LibraryBooks, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Biblioteca")
+                                    Text(stringResource(R.string.motiv_library))
                                 }
                             }
                         }
@@ -410,7 +409,7 @@ private fun MotivationalStatsCard(
                 .padding(16.dp)
         ) {
             Text(
-                "💫 Mensaje del día",
+                stringResource(R.string.motiv_message_of_day),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
             )
@@ -461,7 +460,7 @@ private fun FrequencySlider(value: Int, onValueChange: (Int) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Mensajes por día", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.motiv_messages_per_day), style = MaterialTheme.typography.bodyMedium)
             Text(
                 "$value mensajes",
                 style = MaterialTheme.typography.bodyMedium,
@@ -498,27 +497,27 @@ private fun TimeRangePicker(
     var showEndPicker by remember { mutableStateOf(false) }
     
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text("Horario de notificaciones", style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.motiv_notification_hours), style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TimeButton("Desde", startHour) { showStartPicker = true }
+            TimeButton(stringResource(R.string.motiv_from), startHour) { showStartPicker = true }
             Icon(
                 Icons.Default.ArrowForward,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            TimeButton("Hasta", endHour) { showEndPicker = true }
+            TimeButton(stringResource(R.string.motiv_to), endHour) { showEndPicker = true }
         }
     }
     
     if (showStartPicker) {
         AlertDialog(
             onDismissRequest = { showStartPicker = false },
-            title = { Text("Hora de inicio") },
+            title = { Text(stringResource(R.string.limit_dialog_start_time_title)) },
             text = {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items((6..12).toList()) { hour ->
@@ -535,7 +534,7 @@ private fun TimeRangePicker(
             },
             confirmButton = {
                 TextButton(onClick = { showStartPicker = false }) {
-                    Text("Cerrar")
+                    Text(stringResource(R.string.motiv_close))
                 }
             }
         )
@@ -544,7 +543,7 @@ private fun TimeRangePicker(
     if (showEndPicker) {
         AlertDialog(
             onDismissRequest = { showEndPicker = false },
-            title = { Text("Hora de fin") },
+            title = { Text(stringResource(R.string.limit_dialog_end_time_title)) },
             text = {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items((18..23).toList()) { hour ->
@@ -561,7 +560,7 @@ private fun TimeRangePicker(
             },
             confirmButton = {
                 TextButton(onClick = { showEndPicker = false }) {
-                    Text("Cerrar")
+                    Text(stringResource(R.string.motiv_close))
                 }
             }
         )

@@ -50,7 +50,12 @@ class MainActivity : AppCompatActivity() {
         
         // Initialize managers
         launcherManager = LauncherManager(this)
-        minimalPhoneManager = MinimalPhoneManager(this)
+        // Usa el MinimalPhoneManager compartido de la Application. Antes se creaba
+        // aquí una segunda instancia con `MinimalPhoneManager(this)`: escribía en el
+        // mismo DataStore, pero su StateFlow en memoria era distinto del que observa
+        // la UI (que lee el de la Application), así que activar el modo mínimo por el
+        // intent del lanzador no se reflejaba en la interfaz hasta reiniciar.
+        minimalPhoneManager = (application as MomentumApplication).minimalPhoneManager
 
         val themeManager = ThemeManager(this)
         

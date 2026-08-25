@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subscription_trial_offer_title">Essai gratuit de %1$d jours</string>
+    <string name="subscription_trial_offer_subtitle">Toutes les fonctions Premium</string>
+    <string name="subscription_trial_active_title">Essai gratuit actif</string>
+    <string name="subscription_trial_active_subtitle">%1$d jours restants</string>
+    <string name="subscription_trial_start_button">Commencer</string>
+    <string name="sub_unlock_title">Libérez tout votre potentiel</string>
+    <string name="sub_unlock_desc">Accédez aux analyses avancées, aux séances de concentration et à la personnalisation complète</string>
+    <string name="sub_start_now">Commencer</string>
+    <string name="sub_guarantees">• Annulez à tout moment
+• Sauvegarde automatique dans le cloud
+• Assistance prioritaire</string>
+    <string name="sub_monthly">Mensuel</string>
+    <string name="sub_yearly">Annuel</string>
+    <string name="sub_save_percent">Économisez %1$d %%</string>
+    <string name="sub_why_premium">Pourquoi choisir Premium ?</string>
+    <string name="sub_feature">Fonction</string>
+    <string name="sub_free">Gratuit</string>
+    <string name="sub_premium">Premium</string>
+    <string name="sub_f_basic_analytics">Analyses de base</string>
+    <string name="sub_f_basic_widget">Widget de base</string>
+    <string name="sub_f_adv_analytics">Analyses avancées</string>
+    <string name="sub_f_focus">Séances de concentration</string>
+    <string name="sub_f_themes">Thèmes personnalisés</string>
+    <string name="sub_f_export">Export des données</string>
+    <string name="sub_f_profiles">Plusieurs profils</string>
+    <string name="sub_f_support">Assistance prioritaire</string>
+</resources>

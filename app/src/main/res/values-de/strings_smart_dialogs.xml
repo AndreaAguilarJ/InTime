@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_sleep_config_title">Schlafzeiten festlegen</string>
+    <string name="smart_sleep_config_desc">Die Nutzung in diesen Stunden wird nicht gezählt</string>
+    <string name="smart_start">Beginn</string>
+    <string name="smart_end">Ende</string>
+
+    <string name="smart_fasting_config_title">Digitales Fasten einrichten</string>
+    <string name="smart_fasting_config_desc">Während des Fastens gilt für alle Apps ein strenges Limit</string>
+    <string name="smart_fasting_limit_value">Limit während des Fastens: %1$d Min.</string>
+    <string name="smart_fasting_days">Fastentage</string>
+
+    <string name="smart_nuclear_duration">Dauer: %1$d Tage</string>
+    <string name="smart_nuclear_wait">Wartezeit bis zum Entsperren: %1$d Min.</string>
+
+    <string name="smart_pos_top_left">Oben links</string>
+    <string name="smart_pos_top_right">Oben rechts</string>
+    <string name="smart_pos_bottom_left">Unten links</string>
+    <string name="smart_pos_bottom_right">Unten rechts</string>
+    <string name="smart_size_small">Klein</string>
+    <string name="smart_size_medium">Mittel</string>
+    <string name="smart_size_large">Groß</string>
+    <string name="smart_timer_config_title">Schwebenden Timer einrichten</string>
+    <string name="smart_position_on_screen">Position auf dem Bildschirm:</string>
+    <string name="smart_size">Größe:</string>
+
+    <string name="smart_new_context_rule">Neue Kontextregel</string>
+    <string name="smart_rule_name_hint">Name (z. B. Arbeit, Schule)</string>
+    <string name="smart_rule_schedule">Zeitraum: %1$s - %2$s</string>
+    <string name="smart_rule_limit_value">Limit: %1$d Min.</string>
+    <string name="smart_days_label">Tage:</string>
+    <string name="smart_create">Erstellen</string>
+
+    <string name="smart_days_weekdays">Mo-Fr</string>
+    <string name="smart_days_everyday">Jeden Tag</string>
+
+    <string name="smart_help_title">Wie funktioniert intelligentes Sperren?</string>
+    <string name="smart_help_timer">Zeigt einen Zähler, der immer über allen Apps sichtbar ist, damit du siehst, wie lange du schon dabei bist.</string>
+    <string name="smart_help_sleep">Zeit am Handy während deiner Schlafstunden wird nicht auf deine Limits angerechnet.</string>
+    <string name="smart_help_fasting">Lege bestimmte Zeiten mit sehr strengen Limits fest – ideal für Arbeit oder Studium.</string>
+    <string name="smart_help_nuclear">Die extremste Sperre. Einmal aktiviert, kannst du sie NICHT abschalten, bis der Zeitraum endet.</string>
+    <string name="smart_help_streak">Nutze Kulanztage, um deine Serie zu schützen, wenn du dein Limit gelegentlich überschreitest.</string>
+    <string name="smart_help_context">Erstelle eigene Regeln nach Tageszeit und Wochentag.</string>
+    <string name="smart_help_communication_title">Nur Kommunikation</string>
+    <string name="smart_help_communication">Erlaubt Direktnachrichten, sperrt aber Feeds, Reels und Storys.</string>
+    <string name="smart_understood">Verstanden!</string>
+</resources>

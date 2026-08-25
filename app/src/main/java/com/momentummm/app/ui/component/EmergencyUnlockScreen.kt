@@ -239,7 +239,10 @@ fun EmergencyUnlockScreen(
                     icon = Icons.Filled.CreditCard,
                     iconTint = Indigo500,
                     title = stringResource(R.string.emergency_unlock_premium_title),
-                    subtitle = stringResource(R.string.emergency_unlock_premium_subtitle),
+                    subtitle = stringResource(
+                        R.string.emergency_unlock_premium_subtitle,
+                        BillingManager.EMERGENCY_UNLOCK_MINUTES
+                    ),
                     price = premiumPrice,
                     backgroundColor = Indigo500.copy(alpha = 0.1f),
                     borderColor = Indigo500.copy(alpha = 0.3f),

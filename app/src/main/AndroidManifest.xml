@@ -2,69 +2,45 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Required permissions -->
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+    <!-- Acceso especial solicitado por el usuario para medir uso de apps. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    
-    <!-- Internet permission for Appwrite -->
+
+    <!-- Red: Appwrite y Gemini. El tráfico HTTP sin TLS se bloquea en application. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
-    <!-- App blocking overlay permissions -->
+
+    <!-- Bloqueo y overlays persistentes. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <!-- ContextBlockingService declara foregroundServiceType="location".
-         Desde Android 14 (API 34) llamar a startForeground() con ese tipo sin
-         este permiso lanza SecurityException y tumba el proceso. BootReceiver
-         arranca ese servicio tras cada reinicio si hay reglas de contexto, así
-         que faltaba un crash al arrancar el teléfono. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- Minimal phone functionality permissions -->
+    <!-- ACTION_CALL sí requiere permiso; SMS, cámara y contactos se abren mediante
+         intents de otras apps y no necesitan acceso directo a sus datos. -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-    
-    <!-- Biometric permission -->
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
-    <!-- Notification permissions -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Alarmas exactas para los mensajes motivacionales.
-         WorkManager es "best effort" y con Doze puede retrasarse horas, por lo
-         que los mensajes programados a una hora concreta usan AlarmManager.
-         SCHEDULE_EXACT_ALARM se concede automáticamente en API 33+ y puede
-         revocarse; el scheduler comprueba canScheduleExactAlarms() y cae a
-         alarmas inexactas si no está disponible. -->
+    <!-- Permiso especial revocable. El scheduler comprueba canScheduleExactAlarms()
+         y usa una alarma inexacta cuando no está concedido. Su uso debe declararse
+         y justificarse también en Play Console. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    
-    <!-- Billing permission -->
+
     <uses-permission android:name="com.android.vending.BILLING" />
-    
-    <!-- Media permissions for Android 13+ -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    
-    <!-- Location permissions for Context Blocking -->
+
+    <!-- El bloqueo contextual mantiene ubicación en segundo plano. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-    <!-- Camera permission for minimal phone mode -->
-    <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- Hardware features -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -85,15 +61,15 @@
 
     <application
         android:name=".MomentumApplication"
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Momentum"
         android:localeConfig="@xml/locales_config"
+        android:usesCleartextTraffic="false"
         tools:targetApi="31">
 
         <!-- Main Activity -->
@@ -268,11 +244,33 @@
             </intent-filter>
         </receiver>
 
-        <!-- WorkManager Worker for periodic updates -->
+        <!-- Servicio interno de WorkManager. Ningún Worker actual usa modo
+             foreground, por lo que no se declara un tipo especial innecesario. -->
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="specialUse"
+            android:exported="false"
             tools:node="merge" />
+
+        <!-- MomentumApplication implementa Configuration.Provider (inicialización
+             a demanda de WorkManager). Mientras el inicializador por defecto de
+             App Startup siguiera declarado, WorkManager se inicializaba con la
+             configuración POR DEFECTO y la de la app se ignoraba, incluida la
+             HiltWorkerFactory: MotivationalNotificationWorker está anotado
+             @HiltWorker y sin esa fábrica WorkManager no puede construirlo, así
+             que la notificación motivacional nunca se ejecutaba.
+             Además, dejarlo declarado hace fallar `lintVitalRelease` con
+             RemoveWorkManagerInitializer, lo que impedía generar cualquier
+             artefacto de release. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
 
         <!-- App Monitoring Service for blocking distracting apps -->
         <service
@@ -335,7 +333,7 @@
         <!-- Accessibility Service to appear in system Accessibility settings -->
         <service
             android:name=".accessibility.MomentumAccessibilityService"
-            android:exported="false"
+            android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -348,7 +346,7 @@
         <!-- Website Block Accessibility Service -->
         <service
             android:name=".service.WebsiteBlockService"
-            android:exported="false"
+            android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />

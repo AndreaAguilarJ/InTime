@@ -2,7 +2,7 @@ package com.momentummm.app.ui.screen.websiteblock
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -30,7 +30,7 @@ import com.momentummm.app.ui.theme.MomentumTheme
  * del proyecto (AppBlockedActivity e InAppBlockedActivity) sí navegan al
  * inicio; a esta se le olvidó.
  */
-class WebsiteBlockedActivity : ComponentActivity() {
+class WebsiteBlockedActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

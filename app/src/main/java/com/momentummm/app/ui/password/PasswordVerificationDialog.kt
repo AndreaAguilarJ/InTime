@@ -15,14 +15,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import com.momentummm.app.R
 
 @Composable
 fun PasswordVerificationDialog(
     onDismiss: () -> Unit,
     onVerified: () -> Unit,
     viewModel: PasswordProtectionViewModel,
-    title: String = "Verificación Requerida",
-    message: String = "Ingresa tu contraseña para continuar"
+    title: String = stringResource(R.string.pwd_verify_title),
+    message: String = stringResource(R.string.pwd_verify_subtitle)
 ) {
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -56,12 +59,12 @@ fun PasswordVerificationDialog(
                 contentDescription = null
             )
         },
-        title = { Text(if (isLockedOut) "Bloqueado Temporalmente" else title) },
+        title = { Text(if (isLockedOut) stringResource(R.string.pwd_locked_title) else title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (isLockedOut) {
                     Text(
-                        "Has excedido el número de intentos permitidos. Por favor espera ${remainingLockoutTime / 1000 / 60} minutos antes de intentar nuevamente.",
+                        run { val m = (remainingLockoutTime / 1000 / 60).toInt(); pluralStringResource(R.plurals.pwd_locked_message, m, m) },
                         color = MaterialTheme.colorScheme.error
                     )
                 } else {
@@ -73,14 +76,14 @@ fun PasswordVerificationDialog(
                             password = it
                             showError = false
                         },
-                        label = { Text("Contraseña") },
+                        label = { Text(stringResource(R.string.pwd_password_label)) },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
                                     if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                    "Mostrar/Ocultar"
+                                    stringResource(R.string.pwd_toggle_visibility)
                                 )
                             }
                         },
@@ -102,7 +105,7 @@ fun PasswordVerificationDialog(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                "Contraseña incorrecta",
+                                stringResource(R.string.pwd_error_wrong),
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -135,13 +138,13 @@ fun PasswordVerificationDialog(
                     },
                     enabled = password.isNotEmpty() && !isVerifying
                 ) {
-                    Text("Verificar")
+                    Text(stringResource(R.string.pwd_verify_button))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.pwd_cancel))
             }
         }
     )

@@ -3,6 +3,7 @@ package com.momentummm.app.util
 import android.app.AppOpsManager
 import android.app.KeyguardManager
 import android.content.Context
+import android.os.Build
 import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
@@ -42,11 +43,24 @@ object BlockingCapabilities {
         return try {
             val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
                 ?: return false
-            val mode = appOps.unsafeCheckOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(),
-                context.packageName
-            )
+            // unsafeCheckOpNoThrow exige API 29 y el minimo de la app es 26: en Android 8 y 9
+            // esto lanzaba NoSuchMethodError justo al comprobar si el bloqueo puede
+            // funcionar, que es el permiso del que depende la funcion principal de la app.
+            // Antes de 29 el metodo equivalente es checkOpNoThrow (obsoleto pero valido).
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    Process.myUid(),
+                    context.packageName
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                appOps.checkOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    Process.myUid(),
+                    context.packageName
+                )
+            }
             when (mode) {
                 AppOpsManager.MODE_ALLOWED -> true
                 // MODE_DEFAULT significa "decide el permiso declarado en el

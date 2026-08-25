@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,6 +34,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -277,7 +282,12 @@ fun SegmentedTabs(
                     .background(
                         if (selected) MaterialTheme.momentum.surface else Color.Transparent
                     )
-                    .clickable(enabled = !selected) {
+                    .semantics {
+                        role = Role.Tab
+                        this.selected = selected
+                    }
+                    .minimumInteractiveComponentSize()
+                    .clickable(enabled = !selected, role = Role.Tab) {
                         haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         onSelect(index)
                     }

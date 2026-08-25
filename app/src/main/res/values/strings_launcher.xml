@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Los pasos de las instrucciones citan el texto de los botones. Se pasan como
+  argumento (%1$s) en vez de repetirlos, para que al traducir el botón la
+  instrucción cambie con él y no puedan quedar en idiomas distintos.
+-->
+<resources>
+    <string name="launcher_back">← Volver</string>
+    <string name="launcher_settings_title">Ajustes del lanzador</string>
+
+    <string name="launcher_not_default">No es el lanzador predeterminado</string>
+    <string name="launcher_is_default">Momentum es tu lanzador principal</string>
+    <string name="launcher_set_default_desc">Configura Momentum como lanzador predeterminado</string>
+    <string name="launcher_set_default_button">Establecer como lanzador predeterminado</string>
+
+    <string name="launcher_minimal_config">Ajustes del modo mínimo</string>
+    <string name="launcher_minimal_active">Modo mínimo activo</string>
+    <string name="launcher_minimal_toggle_a11y">Activar o desactivar el modo mínimo</string>
+    <string name="launcher_auto_enable">Activar el modo mínimo solo</string>
+    <string name="launcher_auto_enable_desc">Se activa al abrir el lanzador</string>
+
+    <string name="launcher_view_installed">Ver lanzadores instalados</string>
+    <string name="launcher_open_system_settings">Abrir los ajustes del sistema</string>
+
+    <string name="launcher_instructions_title">📱 Instrucciones</string>
+    <string name="launcher_step1">1. Pulsa «%1$s»\n</string>
+    <string name="launcher_step2">2. Elige «%1$s» en la lista\n</string>
+    <string name="launcher_step3">3. Marca «Usar siempre» si quieres que sea permanente\n</string>
+    <string name="launcher_step4">4. Activa el modo mínimo para una experiencia simplificada</string>
+
+    <string name="launcher_installed_title">Lanzadores instalados</string>
+    <string name="launcher_this_app">Esta aplicación</string>
+
+    <string name="launcher_setup_title">Lanzador mínimo</string>
+    <string name="launcher_setup_desc">Convierte tu teléfono en un dispositivo minimalista, solo con lo esencial.</string>
+    <string name="launcher_status">Estado del lanzador</string>
+    <string name="launcher_status_configured">Configurado como lanzador predeterminado</string>
+    <string name="launcher_status_not_configured">No es el lanzador predeterminado</string>
+    <string name="launcher_minimal_mode">Modo mínimo</string>
+    <string name="launcher_minimal_on">Modo mínimo activado</string>
+    <string name="launcher_minimal_off">Modo mínimo desactivado</string>
+    <string name="launcher_configure_button">Configurar como lanzador</string>
+    <string name="launcher_open_settings_button">Abrir los ajustes del lanzador</string>
+    <string name="launcher_enable_minimal">Activar el modo mínimo</string>
+    <string name="launcher_disable_minimal">Desactivar el modo mínimo</string>
+    <string name="launcher_home_hint">Cuando esté configurado, pulsa el botón de inicio para usar el lanzador mínimo.</string>
+</resources>

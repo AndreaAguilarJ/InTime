@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Segunda mitad de SmartBlockingScreen.kt: los diálogos de configuración y la ayuda.
+
+  Los nombres abreviados de los días NO están aquí a propósito. Antes eran un mapa fijo
+  en español ("Lun", "Mar", "Mié"...) dentro de getDaysText. Ahora se piden a
+  java.time.DayOfWeek con la configuración regional del dispositivo, así que salen
+  correctos en cualquier idioma, incluidos los que esta app no traduce.
+-->
+<resources>
+    <string name="smart_sleep_config_title">Configurar horario de sueño</string>
+    <string name="smart_sleep_config_desc">El uso de apps durante estas horas no se contará</string>
+    <string name="smart_start">Inicio</string>
+    <string name="smart_end">Fin</string>
+
+    <string name="smart_fasting_config_title">Configurar ayuno digital</string>
+    <string name="smart_fasting_config_desc">Durante el ayuno tendrás un límite estricto para todas las apps</string>
+    <string name="smart_fasting_limit_value">Límite durante ayuno: %1$d min</string>
+    <string name="smart_fasting_days">Días de ayuno</string>
+
+    <string name="smart_nuclear_duration">Duración: %1$d días</string>
+    <string name="smart_nuclear_wait">Tiempo de espera para desbloquear: %1$d min</string>
+
+    <string name="smart_pos_top_left">Arriba izquierda</string>
+    <string name="smart_pos_top_right">Arriba derecha</string>
+    <string name="smart_pos_bottom_left">Abajo izquierda</string>
+    <string name="smart_pos_bottom_right">Abajo derecha</string>
+    <string name="smart_size_small">Pequeño</string>
+    <string name="smart_size_medium">Mediano</string>
+    <string name="smart_size_large">Grande</string>
+    <string name="smart_timer_config_title">Configurar timer flotante</string>
+    <string name="smart_position_on_screen">Posición en pantalla:</string>
+    <string name="smart_size">Tamaño:</string>
+
+    <string name="smart_new_context_rule">Nueva regla de contexto</string>
+    <string name="smart_rule_name_hint">Nombre (ej.: Trabajo, Escuela)</string>
+    <string name="smart_rule_schedule">Horario: %1$s - %2$s</string>
+    <string name="smart_rule_limit_value">Límite: %1$d min</string>
+    <string name="smart_days_label">Días:</string>
+    <string name="smart_create">Crear</string>
+
+    <string name="smart_days_weekdays">L-V</string>
+    <string name="smart_days_everyday">Todos los días</string>
+
+    <string name="smart_help_title">¿Cómo funciona el bloqueo inteligente?</string>
+    <string name="smart_help_timer">Muestra un contador siempre visible sobre todas las apps para que veas cuánto tiempo llevas.</string>
+    <string name="smart_help_sleep">El tiempo que uses el móvil durante tus horas de sueño no se cuenta contra tus límites.</string>
+    <string name="smart_help_fasting">Establece horarios específicos con límites muy estrictos, ideal para trabajo o estudio.</string>
+    <string name="smart_help_nuclear">El bloqueo más extremo. Una vez activado, NO puedes desactivarlo hasta que termine el periodo.</string>
+    <string name="smart_help_streak">Usa días de gracia para proteger tu racha cuando superas tus límites ocasionalmente.</string>
+    <string name="smart_help_context">Crea reglas personalizadas por horario y día de la semana.</string>
+    <string name="smart_help_communication_title">Solo comunicación</string>
+    <string name="smart_help_communication">Permite mensajes directos pero bloquea feeds, reels e historias.</string>
+    <string name="smart_understood">¡Entendido!</string>
+</resources>

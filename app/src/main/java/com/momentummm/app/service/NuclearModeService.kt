@@ -27,7 +27,7 @@ import javax.inject.Inject
  * Servicio para el Modo Nuclear.
  * 
  * CARACTERÍSTICAS CRÍTICAS:
- * - El timer de desbloqueo SOLO avanza cuando InTime está en primer plano
+ * - El timer de desbloqueo SOLO avanza cuando Momentum está en primer plano
  * - El usuario DEBE tener la app visible para que el timer progrese
  * - Bloqueo de 1-90 días, no se puede cancelar fácilmente
  * - Muestra el progreso en tiempo real
@@ -259,7 +259,7 @@ class NuclearModeService : Service() {
             .setProgress(100, progress, false)
             .addAction(
                 R.drawable.ic_launcher_foreground,
-                if (isAppInForeground) "Timer Activo ⏱️" else "Abre InTime para continuar",
+                if (isAppInForeground) "Timer Activo ⏱️" else "Abre Momentum para continuar",
                 pendingIntent
             )
             .build()

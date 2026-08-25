@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de WebsiteBlockDialogs.kt.
+
+  Los nombres de categoría NO están aquí: ya existían en strings.xml como
+  website_block_category_*, traducidos a los cinco idiomas. El fichero de diálogos
+  tenía una copia sin traducir de esa función, así que el mismo desplegable mostraba
+  las categorías en español o en el idioma del usuario según por dónde se abriera.
+-->
+<resources>
+    <string name="web_dialog_add_title">Agregar sitio web</string>
+    <string name="web_dialog_url_label">URL o dominio</string>
+    <string name="web_dialog_name_label">Nombre para mostrar</string>
+    <string name="web_dialog_category_label">Categoría</string>
+    <string name="web_dialog_examples">Ejemplos: facebook.com, youtube.com, reddit.com</string>
+    <string name="web_dialog_add">Agregar</string>
+    <string name="web_dialog_cancel">Cancelar</string>
+
+    <string name="web_dialog_preset_title">Agregar categoría predefinida</string>
+    <string name="web_dialog_preset_desc">Selecciona una categoría para bloquear varios sitios comunes a la vez:</string>
+    <string name="web_dialog_preset_adult">Contenido para adultos</string>
+    <string name="web_dialog_preset_adult_desc">Bloquea los sitios de contenido adulto más populares</string>
+    <string name="web_dialog_preset_social">Redes sociales</string>
+    <string name="web_dialog_preset_social_desc">Facebook, Instagram, X, TikTok y similares</string>
+    <string name="web_dialog_preset_entertainment">Entretenimiento</string>
+    <string name="web_dialog_preset_entertainment_desc">YouTube, Netflix, plataformas de streaming</string>
+    <string name="web_dialog_preset_gaming">Juegos</string>
+    <string name="web_dialog_preset_gaming_desc">Sitios y plataformas de juegos en línea</string>
+</resources>

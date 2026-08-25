@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_title">Bloqueio inteligente</string>
+    <string name="smart_help">Ajuda</string>
+    <string name="smart_advanced_control">Controlo avançado</string>
+    <string name="smart_advanced_control_desc">Configure bloqueios inteligentes para melhorar a sua produtividade</string>
+
+    <string name="smart_tab_timer">Timer</string>
+    <string name="smart_tab_sleep">Sono</string>
+    <string name="smart_tab_fasting">Jejum</string>
+    <string name="smart_tab_nuclear">Nuclear</string>
+
+    <string name="smart_floating_timer">Timer flutuante</string>
+    <string name="smart_floating_timer_desc">Sempre visível sobre todas as apps</string>
+    <string name="smart_overlay_permission_needed">Requer permissão de sobreposição</string>
+    <string name="smart_grant">Permitir</string>
+    <string name="smart_opacity">Opacidade: %1$d %%</string>
+    <string name="smart_configure">Configurar</string>
+    <string name="smart_test_app">App de teste</string>
+    <string name="smart_timer_started">Timer flutuante iniciado — veja no canto superior direito</string>
+    <string name="smart_timer_needs_permission">Precisa da permissão de sobreposição — toque em «Permitir» primeiro</string>
+    <string name="smart_test_floating_timer">Testar timer flutuante</string>
+    <string name="smart_stop_timer">Parar timer</string>
+
+    <string name="smart_sleep_window">Janela de sono</string>
+    <string name="smart_sleep_window_desc">Não contar uso durante as horas de sono</string>
+    <string name="smart_sleep_schedule">Horário de sono</string>
+    <string name="smart_sleep_ignore_tracking">Ignorar registo durante o sono</string>
+
+    <string name="smart_digital_fasting">Jejum digital</string>
+    <string name="smart_digital_fasting_desc">Limites rígidos no horário de trabalho</string>
+    <string name="smart_fasting_schedule">Horário de jejum</string>
+    <string name="smart_fasting_limit">Limite durante o jejum</string>
+    <string name="smart_days">Dias: %1$s</string>
+
+    <string name="smart_nuclear_mode">Modo nuclear</string>
+    <string name="smart_nuclear_mode_desc">Bloqueio extremo de 1 a 3 meses</string>
+    <string name="smart_nuclear_active">MODO NUCLEAR ATIVO</string>
+
+    <string name="smart_streak_protection">Proteção de sequências</string>
+    <string name="smart_streak_protection_desc">Dias de tolerância para não perder a sua sequência</string>
+    <string name="smart_grace_days_per_week">Dias de tolerância por semana</string>
+    <string name="smart_grace_days_value">Dias de tolerância: %1$d por semana</string>
+    <string name="smart_warn_before_break">Avisar antes de quebrar a sequência</string>
+    <string name="smart_warn_minutes">Avisar %1$d min antes do limite</string>
+
+    <string name="smart_context_blocking">Bloqueio por contexto</string>
+    <string name="smart_context_blocking_desc">Regras por horário, localização ou Wi-Fi</string>
+    <string name="smart_location_permission_needed">Conceda a permissão de localização para usar o bloqueio por contexto</string>
+    <string name="smart_add_context_rule">Adicionar regra de contexto</string>
+
+    <string name="smart_communication_only">Modo só comunicação</string>
+    <string name="smart_communication_only_desc">Permite mensagens, bloqueia feeds e reels</string>
+    <string name="smart_communication_apps">Apps em modo comunicação:</string>
+    <string name="smart_blocking_config">Configuração de bloqueio:</string>
+    <string name="smart_rule_limit">Limite: %1$d min</string>
+    <string name="smart_context_service_started">📍 Serviço de contexto iniciado</string>
+    <string name="smart_b_floating_on">⏱️ Timer flutuante ativado</string>
+    <string name="smart_b_floating_info">ℹ️ O timer aparece automaticamente ao usar apps com limite</string>
+    <string name="smart_b_sleep_on">😴 Modo sono ativado</string>
+    <string name="smart_b_fasting_on">🥗 Jejum digital ativado</string>
+    <string name="smart_b_nuclear_warn_foreground">⚠️ O timer de desbloqueio só avança com o Momentum aberto</string>
+    <string name="smart_b_streak_on">🔥 Proteção de sequências ativada</string>
+    <string name="smart_b_grace_used">%1$d/%2$d usados</string>
+    <string name="smart_b_grace_info">ℹ️ Um dia de tolerância significa que a sua sequência não se quebra mesmo que ultrapasse o limite nesse dia</string>
+    <string name="smart_b_comm_on">💬 Modo comunicação ativado</string>
+    <string name="smart_b_allow_dms">✉️ Permitir DMs/mensagens</string>
+    <string name="smart_b_block_feed">📰 Bloquear feed</string>
+    <string name="smart_b_block_stories">📖 Bloquear stories</string>
+    <string name="smart_b_block_reels">🎬 Bloquear Reels/Shorts</string>
+    <string name="smart_b_comm_info">ℹ️ As apps de mensagens (WhatsApp, Telegram) já permitem comunicação por padrão</string>
+    <string name="smart_b_nuclear_warn_title">⚠️ AVISO: este modo é EXTREMO</string>
+    <string name="smart_b_nuclear_rule1">• Não poderá desativá-lo até terminar
+</string>
+    <string name="smart_b_nuclear_rule2">• O timer de desbloqueio só avança com o Momentum aberto
+</string>
+    <string name="smart_b_nuclear_activate">⚠️ ATIVAR MODO NUCLEAR</string>
+    <string name="smart_b_every_day">Todos os dias</string>
+    <plurals name="smart_b_days_remaining">
+        <item quantity="one">%1$d dia restante</item>
+        <item quantity="other">%1$d dias restantes</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_on">
+        <item quantity="one">☢️ Modo nuclear ativado por %1$d dia</item>
+        <item quantity="other">☢️ Modo nuclear ativado por %1$d dias</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_rule3">
+        <item quantity="one">• Terá de esperar %1$d minuto com a app visível</item>
+        <item quantity="other">• Terá de esperar %1$d minutos com a app visível</item>
+    </plurals>
+</resources>

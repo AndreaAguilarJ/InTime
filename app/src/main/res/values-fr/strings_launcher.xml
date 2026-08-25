@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  El francés de este fichero está redactado deliberadamente SIN apóstrofos.
+  Motivo comprobado: el apóstrofo tipográfico (’, U+2019) se perdió al escribir el
+  fichero y dejó frases incorrectas ("Sactive à louverture"), y el apóstrofo recto
+  (') ya rompió la compilación dos veces en este proyecto. Formular sin apóstrofo
+  da francés correcto y elimina las dos trampas de golpe.
+-->
+<resources>
+    <string name="launcher_back">← Retour</string>
+    <string name="launcher_settings_title">Réglages du lanceur</string>
+
+    <string name="launcher_not_default">Pas le lanceur par défaut</string>
+    <string name="launcher_is_default">Momentum est votre lanceur principal</string>
+    <string name="launcher_set_default_desc">Définir Momentum comme lanceur par défaut</string>
+    <string name="launcher_set_default_button">Définir comme lanceur par défaut</string>
+
+    <string name="launcher_minimal_config">Réglages du mode minimal</string>
+    <string name="launcher_minimal_active">Mode minimal actif</string>
+    <string name="launcher_minimal_toggle_a11y">Activer ou désactiver le mode minimal</string>
+    <string name="launcher_auto_enable">Activer le mode minimal tout seul</string>
+    <string name="launcher_auto_enable_desc">Se met en marche quand vous ouvrez le lanceur</string>
+
+    <string name="launcher_view_installed">Voir les lanceurs installés</string>
+    <string name="launcher_open_system_settings">Ouvrir les réglages du système</string>
+
+    <string name="launcher_instructions_title">📱 Instructions</string>
+    <string name="launcher_step1">1. Appuyez sur «%1$s»\n</string>
+    <string name="launcher_step2">2. Choisissez «%1$s» dans la liste\n</string>
+    <string name="launcher_step3">3. Cochez «Toujours utiliser» pour que ce soit permanent\n</string>
+    <string name="launcher_step4">4. Activez le mode minimal pour une expérience simplifiée</string>
+
+    <string name="launcher_installed_title">Lanceurs installés</string>
+    <string name="launcher_this_app">Cette application</string>
+
+    <string name="launcher_setup_title">Lanceur minimal</string>
+    <string name="launcher_setup_desc">Transformez votre téléphone en appareil minimaliste, avec seulement les fonctions essentielles.</string>
+    <string name="launcher_status">État du lanceur</string>
+    <string name="launcher_status_configured">Défini comme lanceur par défaut</string>
+    <string name="launcher_status_not_configured">Pas le lanceur par défaut</string>
+    <string name="launcher_minimal_mode">Mode minimal</string>
+    <string name="launcher_minimal_on">Mode minimal activé</string>
+    <string name="launcher_minimal_off">Mode minimal désactivé</string>
+    <string name="launcher_configure_button">Configurer comme lanceur</string>
+    <string name="launcher_open_settings_button">Ouvrir les réglages du lanceur</string>
+    <string name="launcher_enable_minimal">Activer le mode minimal</string>
+    <string name="launcher_disable_minimal">Désactiver le mode minimal</string>
+    <string name="launcher_home_hint">Une fois la configuration terminée, appuyez sur le bouton Accueil pour utiliser le lanceur minimal.</string>
+</resources>

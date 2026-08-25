@@ -14,6 +14,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.momentummm.app.data.repository.PasswordProtectionSettings
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +23,11 @@ fun PasswordProtectionSetupScreen(
     onNavigateBack: () -> Unit,
     viewModel: PasswordProtectionViewModel = hiltViewModel()
 ) {
+    // Los tres mensajes se resuelven en composición: se asignan dentro de un onClick,
+    // donde stringResource no es válido.
+    val errorTooShort = stringResource(R.string.pwd_error_too_short)
+    val errorMismatch = stringResource(R.string.pwd_error_mismatch)
+    val errorDigitsOnly = stringResource(R.string.pwd_error_digits_only)
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -35,7 +42,7 @@ fun PasswordProtectionSetupScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Protección por Contraseña") },
+                title = { Text(stringResource(R.string.pwd_setup_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Volver")
@@ -69,13 +76,13 @@ fun PasswordProtectionSetupScreen(
                     )
                     Column {
                         Text(
-                            "¿Por qué usar contraseña?",
+                            stringResource(R.string.pwd_why_title),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Protege tus configuraciones de bloqueo para que no puedas desactivarlas fácilmente en momentos de debilidad. Recomendamos una contraseña larga (20-30 dígitos) que escribas en papel y guardes en un lugar seguro.",
+                            stringResource(R.string.pwd_why_body),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -90,15 +97,15 @@ fun PasswordProtectionSetupScreen(
                     password = it
                     showError = false
                 },
-                label = { Text("Contraseña numérica") },
-                placeholder = { Text("Ej: 123456789012345678901234567890") },
+                label = { Text(stringResource(R.string.pwd_numeric_label)) },
+                placeholder = { Text(stringResource(R.string.pwd_numeric_hint)) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            "Mostrar/Ocultar contraseña"
+                            stringResource(R.string.pwd_toggle_visibility)
                         )
                     }
                 },
@@ -113,7 +120,7 @@ fun PasswordProtectionSetupScreen(
                     confirmPassword = it
                     showError = false
                 },
-                label = { Text("Confirmar contraseña") },
+                label = { Text(stringResource(R.string.pwd_confirm)) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 modifier = Modifier.fillMaxWidth(),
@@ -131,7 +138,7 @@ fun PasswordProtectionSetupScreen(
 
             // Opciones de protección
             Text(
-                "¿Qué funciones deseas proteger?",
+                stringResource(R.string.pwd_what_to_protect),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -142,7 +149,7 @@ fun PasswordProtectionSetupScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Límites de Apps")
+                        Text(stringResource(R.string.pwd_feature_app_limits))
                         Switch(
                             checked = protectAppLimits,
                             onCheckedChange = { protectAppLimits = it }
@@ -156,7 +163,7 @@ fun PasswordProtectionSetupScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Bloqueo dentro de Apps")
+                        Text(stringResource(R.string.pwd_feature_in_app_block))
                         Switch(
                             checked = protectInAppBlocking,
                             onCheckedChange = { protectInAppBlocking = it }
@@ -170,7 +177,7 @@ fun PasswordProtectionSetupScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Bloqueo de Sitios Web")
+                        Text(stringResource(R.string.pwd_feature_web_block))
                         Switch(
                             checked = protectWebsiteBlocking,
                             onCheckedChange = { protectWebsiteBlocking = it }
@@ -184,7 +191,7 @@ fun PasswordProtectionSetupScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Modo Minimalista")
+                        Text(stringResource(R.string.pwd_feature_minimal))
                         Switch(
                             checked = protectMinimalMode,
                             onCheckedChange = { protectMinimalMode = it }
@@ -201,15 +208,15 @@ fun PasswordProtectionSetupScreen(
                     when {
                         password.length < 6 -> {
                             showError = true
-                            errorMessage = "La contraseña debe tener al menos 6 dígitos"
+                            errorMessage = errorTooShort
                         }
                         password != confirmPassword -> {
                             showError = true
-                            errorMessage = "Las contraseñas no coinciden"
+                            errorMessage = errorMismatch
                         }
                         !password.all { it.isDigit() } -> {
                             showError = true
-                            errorMessage = "La contraseña solo debe contener números"
+                            errorMessage = errorDigitsOnly
                         }
                         else -> {
                             val settings = PasswordProtectionSettings(
@@ -228,7 +235,7 @@ fun PasswordProtectionSetupScreen(
             ) {
                 Icon(Icons.Default.Lock, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Establecer Contraseña")
+                Text(stringResource(R.string.pwd_set_button))
             }
         }
     }

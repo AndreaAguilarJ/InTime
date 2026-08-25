@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.data.entity.WebsiteCategory
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,7 +27,7 @@ fun AddWebsiteDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Agregar Sitio Web") },
+        title = { Text(stringResource(R.string.web_dialog_add_title)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -34,7 +36,7 @@ fun AddWebsiteDialog(
                 OutlinedTextField(
                     value = url,
                     onValueChange = { url = it },
-                    label = { Text("URL o Dominio") },
+                    label = { Text(stringResource(R.string.web_dialog_url_label)) },
                     placeholder = { Text("ejemplo: facebook.com") },
                     leadingIcon = { Icon(Icons.Filled.Language, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
@@ -44,7 +46,7 @@ fun AddWebsiteDialog(
                 OutlinedTextField(
                     value = displayName,
                     onValueChange = { displayName = it },
-                    label = { Text("Nombre para mostrar") },
+                    label = { Text(stringResource(R.string.web_dialog_name_label)) },
                     placeholder = { Text("Facebook") },
                     leadingIcon = { Icon(Icons.Filled.Label, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
@@ -59,7 +61,7 @@ fun AddWebsiteDialog(
                         value = getCategoryName(selectedCategory),
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Categoría") },
+                        label = { Text(stringResource(R.string.web_dialog_category_label)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -86,7 +88,7 @@ fun AddWebsiteDialog(
                 }
 
                 Text(
-                    text = "Ejemplos: facebook.com, pornhub.com, youtube.com",
+                    text = stringResource(R.string.web_dialog_examples),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -101,12 +103,12 @@ fun AddWebsiteDialog(
                 },
                 enabled = url.isNotBlank() && displayName.isNotBlank()
             ) {
-                Text("Agregar")
+                Text(stringResource(R.string.web_dialog_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.web_dialog_cancel))
             }
         }
     )
@@ -121,14 +123,14 @@ fun AddCategoryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Agregar Categoría Predefinida") },
+        title = { Text(stringResource(R.string.web_dialog_preset_title)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Selecciona una categoría para bloquear múltiples sitios comunes:",
+                    text = stringResource(R.string.web_dialog_preset_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -137,32 +139,32 @@ fun AddCategoryDialog(
 
                 CategoryOption(
                     category = WebsiteCategory.ADULT_CONTENT,
-                    title = "Contenido para Adultos",
-                    description = "Bloquea los 20+ sitios de contenido adulto más populares",
+                    title = stringResource(R.string.web_dialog_preset_adult),
+                    description = stringResource(R.string.web_dialog_preset_adult_desc),
                     isSelected = selectedCategory == WebsiteCategory.ADULT_CONTENT,
                     onSelect = { selectedCategory = WebsiteCategory.ADULT_CONTENT }
                 )
 
                 CategoryOption(
                     category = WebsiteCategory.SOCIAL_MEDIA,
-                    title = "Redes Sociales",
-                    description = "Facebook, Instagram, Twitter, TikTok, etc.",
+                    title = stringResource(R.string.web_dialog_preset_social),
+                    description = stringResource(R.string.web_dialog_preset_social_desc),
                     isSelected = selectedCategory == WebsiteCategory.SOCIAL_MEDIA,
                     onSelect = { selectedCategory = WebsiteCategory.SOCIAL_MEDIA }
                 )
 
                 CategoryOption(
                     category = WebsiteCategory.ENTERTAINMENT,
-                    title = "Entretenimiento",
-                    description = "YouTube, Netflix, streaming, etc.",
+                    title = stringResource(R.string.web_dialog_preset_entertainment),
+                    description = stringResource(R.string.web_dialog_preset_entertainment_desc),
                     isSelected = selectedCategory == WebsiteCategory.ENTERTAINMENT,
                     onSelect = { selectedCategory = WebsiteCategory.ENTERTAINMENT }
                 )
 
                 CategoryOption(
                     category = WebsiteCategory.GAMING,
-                    title = "Juegos",
-                    description = "Sitios de juegos online y plataformas",
+                    title = stringResource(R.string.web_dialog_preset_gaming),
+                    description = stringResource(R.string.web_dialog_preset_gaming_desc),
                     isSelected = selectedCategory == WebsiteCategory.GAMING,
                     onSelect = { selectedCategory = WebsiteCategory.GAMING }
                 )
@@ -175,12 +177,12 @@ fun AddCategoryDialog(
                 },
                 enabled = selectedCategory != null
             ) {
-                Text("Agregar")
+                Text(stringResource(R.string.web_dialog_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.web_dialog_cancel))
             }
         }
     )
@@ -253,13 +255,18 @@ private fun getCategoryIcon(category: WebsiteCategory) = when (category) {
     WebsiteCategory.CUSTOM -> Icons.Filled.Language
 }
 
+// Duplicado de la función que ya existía en WebsiteBlockScreen.kt: allí sí estaba
+// traducida y aquí devolvía español fijo, así que el mismo desplegable mostraba
+// categorías en dos idiomas distintos según por dónde se abriera.
+// Se usan las mismas claves para que no puedan volver a divergir.
+@Composable
 private fun getCategoryName(category: WebsiteCategory) = when (category) {
-    WebsiteCategory.ADULT_CONTENT -> "Contenido Adulto"
-    WebsiteCategory.SOCIAL_MEDIA -> "Redes Sociales"
-    WebsiteCategory.ENTERTAINMENT -> "Entretenimiento"
-    WebsiteCategory.GAMING -> "Juegos"
-    WebsiteCategory.NEWS -> "Noticias"
-    WebsiteCategory.SHOPPING -> "Compras"
-    WebsiteCategory.CUSTOM -> "Personalizado"
+    WebsiteCategory.ADULT_CONTENT -> stringResource(R.string.website_block_category_adult)
+    WebsiteCategory.SOCIAL_MEDIA -> stringResource(R.string.website_block_category_social)
+    WebsiteCategory.ENTERTAINMENT -> stringResource(R.string.website_block_category_entertainment)
+    WebsiteCategory.GAMING -> stringResource(R.string.website_block_category_gaming)
+    WebsiteCategory.NEWS -> stringResource(R.string.website_block_category_news)
+    WebsiteCategory.SHOPPING -> stringResource(R.string.website_block_category_shopping)
+    WebsiteCategory.CUSTOM -> stringResource(R.string.website_block_category_custom)
 }
 

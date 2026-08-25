@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="categories_auto_badge">Auto</string>
+    <string name="categories_used_minutes">Genutzt: %1$d Min.</string>
+    <string name="categories_limit_minutes">Limit: %1$d Min.</string>
+    <string name="categories_schedule">Gesperrt: %1$s (%2$s)</string>
+    <string name="categories_view_apps">Apps ansehen (%1$d)</string>
+    <string name="categories_no_apps">Keine Apps in dieser Kategorie</string>
+    <string name="categories_add_apps">Apps hinzufügen</string>
+    <string name="categories_edit">Bearbeiten</string>
+    <string name="categories_delete">Löschen</string>
+    <string name="categories_delete_title">Kategorie löschen</string>
+    <string name="categories_delete_message">Kategorie „%1$s“ wirklich löschen? Das kann nicht rückgängig gemacht werden.</string>
+    <string name="categories_edit_title">Kategorie bearbeiten</string>
+    <string name="categories_name">Name</string>
+    <string name="categories_description">Beschreibung</string>
+    <string name="categories_add_apps_title">Apps hinzufügen</string>
+    <string name="categories_add_count">Hinzufügen (%1$d)</string>
+    <string name="syscat_social">Soziales</string>
+    <string name="syscat_social_desc">Soziale Netzwerke und Messaging</string>
+    <string name="syscat_entertainment">Unterhaltung</string>
+    <string name="syscat_entertainment_desc">Videos, Streaming und Musik</string>
+    <string name="syscat_games">Spiele</string>
+    <string name="syscat_games_desc">Spiele und interaktive Unterhaltung</string>
+    <string name="syscat_productivity">Produktivität</string>
+    <string name="syscat_productivity_desc">Arbeit und Werkzeuge</string>
+    <string name="syscat_news">Nachrichten</string>
+    <string name="syscat_news_desc">Nachrichten und Aktuelles</string>
+    <string name="syscat_shopping">Shopping</string>
+    <string name="syscat_shopping_desc">E-Commerce und Einkaufen</string>
+</resources>

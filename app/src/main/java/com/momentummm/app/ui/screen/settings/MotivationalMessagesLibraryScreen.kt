@@ -18,11 +18,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.momentummm.app.data.entity.MessageCategory
 import com.momentummm.app.data.entity.MessageTone
 import com.momentummm.app.data.entity.MotivationalMessage
 import com.momentummm.app.ui.viewmodel.MotivationalMessagesViewModel
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,12 +55,12 @@ fun MotivationalMessagesLibraryScreen(
                 title = { Text("Biblioteca de Mensajes") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.a11y_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.showAddCustomDialog() }) {
-                        Icon(Icons.Default.Add, contentDescription = "Agregar mensaje")
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.a11y_add_message))
                     }
                 }
             )
@@ -63,7 +68,7 @@ fun MotivationalMessagesLibraryScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.showAddCustomDialog() }) {
-                Icon(Icons.Default.Add, contentDescription = "Agregar mensaje")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.a11y_add_message))
             }
         }
     ) { paddingValues ->
@@ -167,7 +172,7 @@ private fun SearchBar(
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                    Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.a11y_clear))
                 }
             }
         },
@@ -293,7 +298,7 @@ private fun MessageCard(
                 if (message.isFavorite) {
                     Icon(
                         Icons.Default.Favorite,
-                        contentDescription = "Favorito",
+                        contentDescription = stringResource(R.string.a11y_favorite),
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(20.dp)
                     )
@@ -329,7 +334,7 @@ private fun MessageCard(
                 IconButton(onClick = onShare) {
                     Icon(
                         Icons.Default.Share,
-                        contentDescription = "Compartir",
+                        contentDescription = stringResource(R.string.a11y_share),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -341,7 +346,7 @@ private fun MessageCard(
                     IconButton(onClick = it) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Eliminar",
+                            contentDescription = stringResource(R.string.a11y_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -349,15 +354,22 @@ private fun MessageCard(
             }
             
             // Tone badge
+            // Etiqueta informativa del tono, no una acción: sin esto TalkBack la
+            // anuncia como botón y al pulsarla no ocurre nada.
+            val toneLabel = "${message.tone.emoji} ${message.tone.displayName}"
             SuggestionChip(
                 onClick = { },
                 label = {
                     Text(
-                        "${message.tone.emoji} ${message.tone.displayName}",
+                        toneLabel,
                         style = MaterialTheme.typography.labelSmall
                     )
                 },
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .clearAndSetSemantics {
+                        text = AnnotatedString(toneLabel)
+                    }
             )
         }
     }

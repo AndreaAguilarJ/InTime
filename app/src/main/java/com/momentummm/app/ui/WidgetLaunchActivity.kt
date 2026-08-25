@@ -2,7 +2,7 @@ package com.momentummm.app.ui
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.momentummm.app.MainActivity
 import com.momentummm.app.data.UserPreferencesRepository
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
  * Marca un flag en DataStore para suprimir el tutorial una sola vez
  * y redirige inmediatamente a MainActivity.
  */
-class WidgetLaunchActivity : ComponentActivity() {
+class WidgetLaunchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

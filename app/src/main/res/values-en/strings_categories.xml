@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="categories_auto_badge">Auto</string>
+    <string name="categories_used_minutes">Used: %1$d min</string>
+    <string name="categories_limit_minutes">Limit: %1$d min</string>
+    <string name="categories_schedule">Blocked: %1$s (%2$s)</string>
+    <string name="categories_view_apps">View apps (%1$d)</string>
+    <string name="categories_no_apps">No apps in this category</string>
+    <string name="categories_add_apps">Add apps</string>
+    <string name="categories_edit">Edit</string>
+    <string name="categories_delete">Delete</string>
+    <string name="categories_delete_title">Delete category</string>
+    <string name="categories_delete_message">Delete the category “%1$s”? This cannot be undone.</string>
+    <string name="categories_edit_title">Edit category</string>
+    <string name="categories_name">Name</string>
+    <string name="categories_description">Description</string>
+    <string name="categories_add_apps_title">Add apps</string>
+    <string name="categories_add_count">Add (%1$d)</string>
+    <string name="syscat_social">Social</string>
+    <string name="syscat_social_desc">Social networks and messaging</string>
+    <string name="syscat_entertainment">Entertainment</string>
+    <string name="syscat_entertainment_desc">Video, streaming and music</string>
+    <string name="syscat_games">Games</string>
+    <string name="syscat_games_desc">Games and interactive entertainment</string>
+    <string name="syscat_productivity">Productivity</string>
+    <string name="syscat_productivity_desc">Work and tools</string>
+    <string name="syscat_news">News</string>
+    <string name="syscat_news_desc">News and current affairs</string>
+    <string name="syscat_shopping">Shopping</string>
+    <string name="syscat_shopping_desc">E-commerce and shopping</string>
+</resources>

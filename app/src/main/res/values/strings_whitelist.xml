@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de AppWhitelistScreen.kt.
+
+  Las razones predefinidas son etiqueta Y dato guardado a la vez: el texto elegido se
+  escribe en la base de datos junto a la app permitida y se vuelve a mostrar después.
+  Se traducen AL MOSTRAR y el valor guardado no cambia, así las entradas que ya
+  existen siguen funcionando y no hace falta migrar la base de datos. Una razón
+  escrita a mano por el usuario se muestra tal cual.
+-->
+<resources>
+    <string name="whitelist_emergency_apps">Apps de emergencia</string>
+    <string name="whitelist_title">Lista de apps permitidas</string>
+    <string name="whitelist_desc">Las apps de esta lista nunca se bloquean, aunque tengan límites configurados.</string>
+    <string name="whitelist_add_defaults">Agregar las apps de emergencia predeterminadas</string>
+    <string name="whitelist_empty">No hay apps permitidas</string>
+    <string name="whitelist_empty_desc">Agrega apps que nunca deban bloquearse</string>
+    <string name="whitelist_error">Error</string>
+
+    <string name="whitelist_reason_emergency">Emergencias</string>
+    <string name="whitelist_reason_work">Trabajo</string>
+    <string name="whitelist_reason_education">Educación</string>
+    <string name="whitelist_reason_health">Salud</string>
+    <string name="whitelist_reason_family">Comunicación familiar</string>
+    <string name="whitelist_reason_other">Otro</string>
+
+    <string name="whitelist_add_title">Agregar a la lista de permitidas</string>
+    <string name="whitelist_add_desc">Selecciona una app que nunca deba bloquearse:</string>
+    <string name="whitelist_select_app">Seleccionar app</string>
+    <string name="whitelist_reason_label">Razón:</string>
+    <string name="whitelist_add">Agregar</string>
+    <string name="whitelist_cancel">Cancelar</string>
+    <string name="whitelist_picker_title">Seleccionar aplicación</string>
+    <string name="whitelist_search">Buscar app</string>
+    <string name="whitelist_no_apps_found">No se encontraron apps</string>
+    <string name="whitelist_close">Cerrar</string>
+</resources>

@@ -18,6 +18,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+// Necesarios para leer los textos desde recursos en vez de tenerlos escritos a mano.
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.ui.accessibility.rememberSystemAnimationsEnabled
+import com.momentummm.app.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -167,7 +172,7 @@ private fun CommunityTopBar(
                     fontSize = 24.sp
                 )
                 Text(
-                    "Comunidad",
+                    stringResource(R.string.community_title),
                     fontWeight = FontWeight.Bold
                 ) 
             }
@@ -180,7 +185,7 @@ private fun CommunityTopBar(
                 exit = fadeOut() + scaleOut()
             ) {
                 IconButton(onClick = onAddFriendClick) {
-                    Icon(Icons.Default.PersonAdd, "Agregar amigo")
+                    Icon(Icons.Default.PersonAdd, stringResource(R.string.community_add_friend_title))
                 }
             }
             
@@ -200,7 +205,7 @@ private fun CommunityTabs(
     pendingCount: Int
 ) {
     val tabs = listOf(
-        TabInfo("Amigos", Icons.Default.People, if (pendingCount > 0) "$pendingCount" else null),
+        TabInfo(stringResource(R.string.community_tab_friends), Icons.Default.People, if (pendingCount > 0) "$pendingCount" else null),
         TabInfo("Ranking", Icons.Default.Leaderboard, null),
         TabInfo("Logros", Icons.Default.EmojiEvents, null)
     )
@@ -279,7 +284,7 @@ private fun FriendsTab(
                 item(key = "pending_header") {
                     SectionHeader(
                         emoji = "📬",
-                        title = "Solicitudes pendientes",
+                        title = stringResource(R.string.community_pending_requests),
                         count = pendingRequests.size,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -313,7 +318,7 @@ private fun FriendsTab(
             item(key = "friends_header") {
                 SectionHeader(
                     emoji = "👥",
-                    title = "Mis amigos",
+                    title = stringResource(R.string.community_my_friends),
                     count = friends.size,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -323,9 +328,9 @@ private fun FriendsTab(
                 item(key = "empty_friends") {
                     EnhancedEmptyStateCard(
                         emoji = "👥",
-                        title = "Sin amigos todavía",
-                        message = "Agrega amigos para competir y motivarse mutuamente",
-                        actionLabel = "¿Cómo agregar amigos?",
+                        title = stringResource(R.string.community_no_friends),
+                        message = stringResource(R.string.community_no_friends_desc),
+                        actionLabel = stringResource(R.string.community_how_to_add),
                         onAction = { /* Show help */ }
                     )
                 }
@@ -432,7 +437,7 @@ private fun EnhancedFriendCard(
                     )
                     StatBadge(
                         emoji = "⭐",
-                        value = "Lv.${friend.friendLevel}",
+                        value = stringResource(R.string.community_level_short, friend.friendLevel),
                         label = null
                     )
                 }
@@ -461,7 +466,7 @@ private fun EnhancedFriendCard(
                 IconButton(onClick = { showMenu = true }) {
                     Icon(
                         Icons.Default.MoreVert, 
-                        null,
+                        stringResource(R.string.a11y_more_options_for_friend, friend.friendName),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -470,7 +475,7 @@ private fun EnhancedFriendCard(
                     onDismissRequest = { showMenu = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Ver perfil") },
+                        text = { Text(stringResource(R.string.community_view_profile)) },
                         onClick = { showMenu = false },
                         leadingIcon = {
                             Icon(Icons.Default.Person, null)
@@ -478,7 +483,7 @@ private fun EnhancedFriendCard(
                     )
                     Divider()
                     DropdownMenuItem(
-                        text = { Text("Eliminar amigo", color = MaterialTheme.colorScheme.error) },
+                        text = { Text(stringResource(R.string.community_remove_friend), color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             showMenu = false
                             showDeleteConfirmation = true
@@ -497,8 +502,8 @@ private fun EnhancedFriendCard(
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             icon = { Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("¿Eliminar amigo?") },
-            text = { Text("¿Estás seguro de que quieres eliminar a ${friend.friendName} de tu lista de amigos?") },
+            title = { Text(stringResource(R.string.community_remove_friend_title)) },
+            text = { Text(stringResource(R.string.community_remove_friend_message, friend.friendName)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -509,12 +514,12 @@ private fun EnhancedFriendCard(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Eliminar")
+                    Text(stringResource(R.string.community_remove))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.community_cancel))
                 }
             }
         )
@@ -622,7 +627,7 @@ private fun FriendRequestCard(
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.02f,
+        targetValue = if (rememberSystemAnimationsEnabled()) 1.02f else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000),
             repeatMode = RepeatMode.Reverse
@@ -683,7 +688,7 @@ private fun FriendRequestCard(
                 ) {
                     Text("👋", fontSize = 14.sp)
                     Text(
-                        "Quiere ser tu amigo",
+                        stringResource(R.string.community_wants_to_be_friend),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -698,13 +703,24 @@ private fun FriendRequestCard(
                     ),
                     contentPadding = PaddingValues(12.dp)
                 ) {
-                    Icon(Icons.Default.Close, null, modifier = Modifier.size(20.dp))
+                    // Sin etiqueta, un lector de pantalla anunciaba dos veces "botón"
+                    // seguidas, sin forma de distinguir aceptar de rechazar en una acción
+                    // que añade a un desconocido a la lista de amigos.
+                    Icon(
+                        Icons.Default.Close,
+                        stringResource(R.string.a11y_reject_friend_request),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
                 Button(
                     onClick = onAccept,
                     contentPadding = PaddingValues(12.dp)
                 ) {
-                    Icon(Icons.Default.Check, null, modifier = Modifier.size(20.dp))
+                    Icon(
+                        Icons.Default.Check,
+                        stringResource(R.string.a11y_accept_friend_request),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
@@ -747,9 +763,9 @@ private fun LeaderboardTab(
                 item(key = "empty_leaderboard") {
                     EnhancedEmptyStateCard(
                         emoji = "🏆",
-                        title = if (showFriendsOnly) "Sin amigos en el ranking" else "Leaderboard vacío",
-                        message = if (showFriendsOnly) "Agrega amigos para ver su progreso" else "Sé el primero en aparecer",
-                        actionLabel = if (showFriendsOnly) "Agregar amigos" else null,
+                        title = if (showFriendsOnly) "Sin amigos en el ranking" else stringResource(R.string.community_leaderboard_empty),
+                        message = if (showFriendsOnly) "Agrega amigos para ver su progreso" else stringResource(R.string.community_leaderboard_empty_desc),
+                        actionLabel = if (showFriendsOnly) stringResource(R.string.community_add_friends) else null,
                         onAction = null
                     )
                 }
@@ -828,7 +844,7 @@ private fun MyRankCard(myRank: LeaderboardEntry?) {
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Tu posición",
+                    stringResource(R.string.community_your_position),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -865,7 +881,7 @@ private fun MyRankCard(myRank: LeaderboardEntry?) {
                     }
                 } else {
                     Text(
-                        "Completa sesiones para aparecer",
+                        stringResource(R.string.community_complete_sessions),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
                     )
@@ -893,14 +909,14 @@ private fun LeaderboardToggle(
                 selected = showFriendsOnly,
                 onClick = { onToggle(true) },
                 icon = Icons.Default.People,
-                label = "Amigos",
+                label = stringResource(R.string.community_tab_friends),
                 modifier = Modifier.weight(1f)
             )
             ToggleButton(
                 selected = !showFriendsOnly,
                 onClick = { onToggle(false) },
                 icon = Icons.Default.Public,
-                label = "Global",
+                label = stringResource(R.string.community_tab_global),
                 modifier = Modifier.weight(1f)
             )
         }
@@ -1136,7 +1152,7 @@ private fun EnhancedLeaderboardEntryCard(
                     )
                     LeaderboardMeta(
                         icon = Icons.Filled.Star,
-                        text = "Lv.${entry.userLevel}",
+                        text = stringResource(R.string.community_level_short, entry.userLevel),
                         tint = com.momentummm.app.ui.theme.Amber400,
                     )
                 }
@@ -1205,9 +1221,9 @@ private fun AchievementsTab(
                 item(key = "empty_achievements") {
                     EnhancedEmptyStateCard(
                         emoji = "🎯",
-                        title = "Sin logros todavía",
-                        message = "Completa objetivos para desbloquear logros compartibles. ¡Cada logro cuenta!",
-                        actionLabel = "Ver cómo ganar logros",
+                        title = stringResource(R.string.community_no_achievements),
+                        message = stringResource(R.string.community_no_achievements_desc),
+                        actionLabel = stringResource(R.string.community_how_to_earn),
                         onAction = null
                     )
                 }
@@ -1234,7 +1250,7 @@ private fun AchievementsTab(
                     item(key = "unshared_header") {
                         SectionHeader(
                             emoji = "✨",
-                            title = "Nuevos logros",
+                            title = stringResource(R.string.community_new_achievements),
                             count = unshared.size,
                             color = MaterialTheme.colorScheme.tertiary
                         )
@@ -1256,7 +1272,7 @@ private fun AchievementsTab(
                     item(key = "shared_header") {
                         SectionHeader(
                             emoji = "📤",
-                            title = "Logros compartidos",
+                            title = stringResource(R.string.community_shared_achievements),
                             count = shared.size,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -1312,7 +1328,7 @@ private fun AchievementsHeader(achievementsCount: Int) {
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Tus Logros",
+                    stringResource(R.string.community_your_achievements),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onTertiaryContainer
@@ -1340,13 +1356,13 @@ private fun PossibleAchievementsCard() {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            PossibleAchievementRow("🔥", "Racha de 7 días", "Mantén tu racha una semana completa")
+            PossibleAchievementRow("🔥", "Racha de 7 días", stringResource(R.string.community_hint_streak_week))
             Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            PossibleAchievementRow("✨", "Semana perfecta", "No excedas ningún límite en 7 días")
+            PossibleAchievementRow("✨", "Semana perfecta", stringResource(R.string.community_hint_no_limits))
             Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            PossibleAchievementRow("🏆", "Top 3 semanal", "Alcanza el podio del leaderboard")
+            PossibleAchievementRow("🏆", "Top 3 semanal", stringResource(R.string.community_hint_podium))
             Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            PossibleAchievementRow("☢️", "Modo Nuclear", "Completa un período nuclear")
+            PossibleAchievementRow("☢️", "Modo Nuclear", stringResource(R.string.community_hint_nuclear))
         }
     }
 }
@@ -1397,14 +1413,14 @@ private fun EnhancedAchievementCard(
     }
     
     val title = when (achievement.achievementType) {
-        AchievementType.STREAK_MILESTONE -> "¡Racha de ${achievement.achievementValue} días!"
-        AchievementType.LEVEL_UP -> "¡Alcanzaste el Nivel ${achievement.achievementValue}!"
-        AchievementType.PERFECT_WEEK -> "¡Semana perfecta completada!"
-        AchievementType.FOCUS_MILESTONE -> "¡${achievement.achievementValue} horas de foco!"
-        AchievementType.NUCLEAR_COMPLETED -> "¡Modo Nuclear superado!"
-        AchievementType.TOP_LEADERBOARD -> "¡Top ${achievement.achievementValue} del ranking!"
-        AchievementType.FIRST_WEEK -> "¡Primera semana completada!"
-        AchievementType.CUSTOM -> achievement.message.ifEmpty { "¡Logro especial!" }
+        AchievementType.STREAK_MILESTONE -> stringResource(R.string.community_ach_streak, achievement.achievementValue)
+        AchievementType.LEVEL_UP -> stringResource(R.string.community_ach_level, achievement.achievementValue)
+        AchievementType.PERFECT_WEEK -> stringResource(R.string.community_ach_perfect_week)
+        AchievementType.FOCUS_MILESTONE -> stringResource(R.string.community_ach_focus_hours, achievement.achievementValue)
+        AchievementType.NUCLEAR_COMPLETED -> stringResource(R.string.community_ach_nuclear)
+        AchievementType.TOP_LEADERBOARD -> stringResource(R.string.community_ach_top_rank, achievement.achievementValue)
+        AchievementType.FIRST_WEEK -> stringResource(R.string.community_ach_first_week)
+        AchievementType.CUSTOM -> achievement.message.ifEmpty { stringResource(R.string.community_ach_special) }
     }
     
     Card(
@@ -1444,7 +1460,7 @@ private fun EnhancedAchievementCard(
                         color = color
                     ) {
                         Text(
-                            "NUEVO",
+                            stringResource(R.string.community_badge_new),
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
@@ -1473,7 +1489,7 @@ private fun EnhancedAchievementCard(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            "Compartido ${achievement.shareCount} ${if (achievement.shareCount == 1) "vez" else "veces"}",
+                            pluralStringResource(R.plurals.community_shared_times, achievement.shareCount, achievement.shareCount),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1489,11 +1505,15 @@ private fun EnhancedAchievementCard(
                 ) {
                     Icon(Icons.Default.Share, null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Compartir")
+                    Text(stringResource(R.string.community_share))
                 }
             } else {
                 IconButton(onClick = onShare) {
-                    Icon(Icons.Default.Share, null, tint = color)
+                    Icon(
+                        Icons.Default.Share,
+                        stringResource(R.string.a11y_share_achievement),
+                        tint = color
+                    )
                 }
             }
         }
@@ -1561,10 +1581,13 @@ private fun AddFriendDialog(
     // Validar email
     val isValidEmail = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     
+    // El texto se resuelve en composición: stringResource no es válido dentro de
+    // LaunchedEffect, que corre en una corrutina.
+    val invalidEmailMessage = stringResource(R.string.community_invalid_email)
     LaunchedEffect(email) {
         emailError = when {
             email.isEmpty() -> null
-            !isValidEmail -> "Email inválido"
+            !isValidEmail -> invalidEmailMessage
             else -> null
         }
     }
@@ -1581,14 +1604,14 @@ private fun AddFriendDialog(
         },
         title = { 
             Text(
-                "Agregar amigo",
+                stringResource(R.string.community_add_friend_title),
                 fontWeight = FontWeight.Bold
             ) 
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    "Envía una solicitud de amistad a otro usuario de InTime",
+                    stringResource(R.string.community_add_friend_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1596,8 +1619,8 @@ private fun AddFriendDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre de tu amigo") },
-                    placeholder = { Text("Ej: Juan García") },
+                    label = { Text(stringResource(R.string.community_friend_name_label)) },
+                    placeholder = { Text(stringResource(R.string.community_friend_name_placeholder)) },
                     leadingIcon = { Icon(Icons.Default.Person, null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -1607,7 +1630,7 @@ private fun AddFriendDialog(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it.lowercase().trim() },
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.community_email_label)) },
                     placeholder = { Text("amigo@ejemplo.com") },
                     leadingIcon = { Icon(Icons.Default.Email, null) },
                     modifier = Modifier.fillMaxWidth(),
@@ -1625,12 +1648,12 @@ private fun AddFriendDialog(
             ) {
                 Icon(Icons.Default.Send, null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Enviar solicitud")
+                Text(stringResource(R.string.community_send_request))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.community_cancel))
             }
         }
     )
@@ -1669,7 +1692,7 @@ private fun CommunitySettingsSheet(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    "Configuración de Comunidad",
+                    stringResource(R.string.community_settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -1686,22 +1709,22 @@ private fun CommunitySettingsSheet(
             
             settings?.let { s ->
                 SettingsSwitch(
-                    title = "Aparecer en ranking global",
-                    subtitle = "Otros usuarios pueden verte en el leaderboard",
+                    title = stringResource(R.string.community_setting_global_rank),
+                    subtitle = stringResource(R.string.community_setting_global_rank_desc),
                     checked = s.showInGlobalLeaderboard,
                     onCheckedChange = { viewModel.updateShowInGlobalLeaderboard(it) }
                 )
                 
                 SettingsSwitch(
-                    title = "Mostrar racha a amigos",
-                    subtitle = "Tus amigos pueden ver tu racha actual",
+                    title = stringResource(R.string.community_setting_show_streak),
+                    subtitle = stringResource(R.string.community_setting_show_streak_desc),
                     checked = s.showStreakToFriends,
                     onCheckedChange = { viewModel.updateShowStreakToFriends(it) }
                 )
                 
                 SettingsSwitch(
-                    title = "Mostrar tiempo de foco",
-                    subtitle = "Tus amigos pueden ver tus minutos semanales",
+                    title = stringResource(R.string.community_setting_show_focus),
+                    subtitle = stringResource(R.string.community_setting_show_focus_desc),
                     checked = s.showFocusTimeToFriends,
                     onCheckedChange = { viewModel.updateShowFocusTimeToFriends(it) }
                 )
@@ -1716,22 +1739,22 @@ private fun CommunitySettingsSheet(
                 )
                 
                 SettingsSwitch(
-                    title = "Solicitudes de amistad",
-                    subtitle = "Recibir notificación cuando alguien te agregue",
+                    title = stringResource(R.string.community_setting_requests),
+                    subtitle = stringResource(R.string.community_setting_requests_desc),
                     checked = s.notifyFriendRequests,
                     onCheckedChange = { viewModel.updateNotifyFriendRequests(it) }
                 )
                 
                 SettingsSwitch(
-                    title = "Logros de amigos",
-                    subtitle = "Ver cuando tus amigos desbloquean logros",
+                    title = stringResource(R.string.community_setting_friend_ach),
+                    subtitle = stringResource(R.string.community_setting_friend_ach_desc),
                     checked = s.notifyFriendAchievements,
                     onCheckedChange = { viewModel.updateNotifyFriendAchievements(it) }
                 )
                 
                 SettingsSwitch(
-                    title = "Cambios en ranking",
-                    subtitle = "Notificar cuando cambies de posición",
+                    title = stringResource(R.string.community_setting_rank_changes),
+                    subtitle = stringResource(R.string.community_setting_rank_changes_desc),
                     checked = s.notifyLeaderboardChanges,
                     onCheckedChange = { viewModel.updateNotifyLeaderboardChanges(it) }
                 )

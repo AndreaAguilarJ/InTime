@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="web_dialog_add_title">Adicionar site</string>
+    <string name="web_dialog_url_label">URL ou domínio</string>
+    <string name="web_dialog_name_label">Nome a mostrar</string>
+    <string name="web_dialog_category_label">Categoria</string>
+    <string name="web_dialog_examples">Exemplos: facebook.com, youtube.com, reddit.com</string>
+    <string name="web_dialog_add">Adicionar</string>
+    <string name="web_dialog_cancel">Cancelar</string>
+
+    <string name="web_dialog_preset_title">Adicionar categoria predefinida</string>
+    <string name="web_dialog_preset_desc">Escolha uma categoria para bloquear vários sites comuns de uma vez:</string>
+    <string name="web_dialog_preset_adult">Conteúdo para adultos</string>
+    <string name="web_dialog_preset_adult_desc">Bloqueia os sites de conteúdo adulto mais populares</string>
+    <string name="web_dialog_preset_social">Redes sociais</string>
+    <string name="web_dialog_preset_social_desc">Facebook, Instagram, X, TikTok e semelhantes</string>
+    <string name="web_dialog_preset_entertainment">Entretenimento</string>
+    <string name="web_dialog_preset_entertainment_desc">YouTube, Netflix, plataformas de streaming</string>
+    <string name="web_dialog_preset_gaming">Jogos</string>
+    <string name="web_dialog_preset_gaming_desc">Sites e plataformas de jogos online</string>
+</resources>

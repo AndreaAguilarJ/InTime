@@ -17,6 +17,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.momentummm.app.data.entity.AppWhitelist
 import com.momentummm.app.data.repository.AppUsageInfo
 import com.momentummm.app.ui.system.*
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,15 +33,15 @@ fun AppWhitelistScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Apps de Emergencia") },
+                title = { Text(stringResource(R.string.whitelist_emergency_apps)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.a11y_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showAddDialog = true }) {
-                        Icon(Icons.Filled.Add, contentDescription = "Agregar app")
+                        Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.a11y_add_app))
                     }
                 }
             )
@@ -72,13 +74,13 @@ fun AppWhitelistScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
-                            "Lista Blanca de Aplicaciones",
+                            stringResource(R.string.whitelist_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "Las apps en esta lista nunca serán bloqueadas, incluso si tienen límites configurados.",
+                            stringResource(R.string.whitelist_desc),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -95,7 +97,7 @@ fun AppWhitelistScreen(
                 ) {
                     Icon(Icons.Filled.LocalHospital, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Agregar Apps de Emergencia Predeterminadas")
+                    Text(stringResource(R.string.whitelist_add_defaults))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -117,12 +119,12 @@ fun AppWhitelistScreen(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            "No hay apps en la lista blanca",
+                            stringResource(R.string.whitelist_empty),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            "Agrega apps que nunca deben ser bloqueadas",
+                            stringResource(R.string.whitelist_empty_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -163,7 +165,7 @@ fun AppWhitelistScreen(
     uiState.error?.let { error ->
         AlertDialog(
             onDismissRequest = { viewModel.clearError() },
-            title = { Text("Error") },
+            title = { Text(stringResource(R.string.whitelist_error)) },
             text = { Text(error) },
             confirmButton = {
                 TextButton(onClick = { viewModel.clearError() }) {
@@ -215,7 +217,7 @@ private fun WhitelistAppCard(
             IconButton(onClick = onRemove) {
                 Icon(
                     Icons.Filled.Delete,
-                    contentDescription = "Quitar de whitelist",
+                    contentDescription = stringResource(R.string.a11y_remove_from_whitelist),
                     tint = MaterialTheme.colorScheme.error
                 )
             }
@@ -231,6 +233,8 @@ private fun AddToWhitelistDialog(
     onConfirm: (String, String, String) -> Unit
 ) {
     var selectedApp by remember { mutableStateOf<AppUsageInfo?>(null) }
+    // "Emergencias" es el VALOR que se guarda, no un texto de interfaz: no se traduce.
+    // La etiqueta visible sale de predefinedReasons más abajo.
     var reason by remember { mutableStateOf("Emergencias") }
     var showAppPicker by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
@@ -245,24 +249,27 @@ private fun AddToWhitelistDialog(
         }
     }
 
+    // Pares (valor que se guarda, etiqueta que se muestra).
+    // El valor guardado sigue siendo el mismo de siempre para que las entradas
+    // existentes en la base de datos no se rompan; solo cambia lo que se ve.
     val predefinedReasons = listOf(
-        "Emergencias",
-        "Trabajo",
-        "Educación",
-        "Salud",
-        "Comunicación Familiar",
-        "Otro"
+        "Emergencias" to stringResource(R.string.whitelist_reason_emergency),
+        "Trabajo" to stringResource(R.string.whitelist_reason_work),
+        "Educación" to stringResource(R.string.whitelist_reason_education),
+        "Salud" to stringResource(R.string.whitelist_reason_health),
+        "Comunicación Familiar" to stringResource(R.string.whitelist_reason_family),
+        "Otro" to stringResource(R.string.whitelist_reason_other)
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Agregar a Lista Blanca") },
+        title = { Text(stringResource(R.string.whitelist_add_title)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Selecciona una app que nunca debe ser bloqueada:",
+                    stringResource(R.string.whitelist_add_desc),
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -273,21 +280,21 @@ private fun AddToWhitelistDialog(
                 ) {
                     Icon(Icons.Filled.Apps, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(selectedApp?.appName ?: "Seleccionar App")
+                    Text(selectedApp?.appName ?: stringResource(R.string.whitelist_select_app))
                 }
 
                 // Selector de razón
-                Text("Razón:", style = MaterialTheme.typography.labelMedium)
-                predefinedReasons.forEach { predefinedReason ->
+                Text(stringResource(R.string.whitelist_reason_label), style = MaterialTheme.typography.labelMedium)
+                predefinedReasons.forEach { (reasonValue, reasonLabel) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = reason == predefinedReason,
-                            onClick = { reason = predefinedReason }
+                            selected = reason == reasonValue,
+                            onClick = { reason = reasonValue }
                         )
                         Text(
-                            text = predefinedReason,
+                            text = reasonLabel,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -304,12 +311,12 @@ private fun AddToWhitelistDialog(
                 enabled = selectedApp != null,
                 style = ButtonStyle.Primary
             ) {
-                Text("Agregar")
+                Text(stringResource(R.string.whitelist_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.whitelist_cancel))
             }
         }
     )
@@ -318,13 +325,13 @@ private fun AddToWhitelistDialog(
     if (showAppPicker) {
         AlertDialog(
             onDismissRequest = { showAppPicker = false },
-            title = { Text("Seleccionar Aplicación") },
+            title = { Text(stringResource(R.string.whitelist_picker_title)) },
             text = {
                 Column(modifier = Modifier.heightIn(max = 400.dp)) {
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        label = { Text("Buscar app") },
+                        label = { Text(stringResource(R.string.whitelist_search)) },
                         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
@@ -347,7 +354,7 @@ private fun AddToWhitelistDialog(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    "No se encontraron apps",
+                                    stringResource(R.string.whitelist_no_apps_found),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -374,7 +381,7 @@ private fun AddToWhitelistDialog(
             },
             confirmButton = {
                 TextButton(onClick = { showAppPicker = false }) {
-                    Text("Cerrar")
+                    Text(stringResource(R.string.whitelist_close))
                 }
             }
         )

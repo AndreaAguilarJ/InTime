@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -7,8 +9,37 @@ plugins {
     id("dagger.hilt.android.plugin")
 }
 
+val localProperties = Properties().apply {
+    rootProject.file("local.properties")
+        .takeIf { it.isFile }
+        ?.inputStream()
+        ?.use { load(it) }
+}
+
+// CI puede inyectar la variable de entorno; en desarrollo se usa local.properties.
+// El valor nunca se imprime. Una cadena vacía desactiva Gemini de forma segura.
+val geminiApiKey = providers.environmentVariable("GEMINI_API_KEY").orNull
+    ?: localProperties.getProperty("GEMINI_API_KEY")
+    ?: ""
+val geminiBuildConfigValue = "\"${geminiApiKey
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
+    .replace("\n", "\\n")
+    .replace("\r", "\\r")
+    .replace("\t", "\\t")}\""
+
+val releaseSigningPropertyNames = listOf(
+    "MOMENTUM_STORE_FILE",
+    "MOMENTUM_STORE_PASSWORD",
+    "MOMENTUM_KEY_ALIAS",
+    "MOMENTUM_KEY_PASSWORD"
+)
+val releaseSigningValues = releaseSigningPropertyNames.associateWith { propertyName ->
+    providers.gradleProperty(propertyName).orNull
+}
+
 android {
-        namespace = "com.momentummm.app"
+    namespace = "com.momentummm.app"
     compileSdk = 36
 
     defaultConfig {
@@ -18,6 +49,7 @@ android {
         versionCode = 13
         versionName = "1.1.0"
 
+        buildConfigField("String", "GEMINI_API_KEY", geminiBuildConfigValue)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -26,11 +58,12 @@ android {
 
     signingConfigs {
         create("release") {
-            // Estas propiedades deben estar en gradle.properties (no en Git)
-            storeFile = file(project.findProperty("MOMENTUM_STORE_FILE") as String? ?: "momentum-release-key.jks")
-            storePassword = project.findProperty("MOMENTUM_STORE_PASSWORD") as String?
-            keyAlias = project.findProperty("MOMENTUM_KEY_ALIAS") as String?
-            keyPassword = project.findProperty("MOMENTUM_KEY_PASSWORD") as String?
+            storeFile = releaseSigningValues["MOMENTUM_STORE_FILE"]
+                ?.takeIf { it.isNotBlank() }
+                ?.let { rootProject.file(it) }
+            storePassword = releaseSigningValues["MOMENTUM_STORE_PASSWORD"]
+            keyAlias = releaseSigningValues["MOMENTUM_KEY_ALIAS"]
+            keyPassword = releaseSigningValues["MOMENTUM_KEY_PASSWORD"]
         }
     }
 
@@ -64,6 +97,29 @@ android {
         compose = true
         buildConfig = true
     }
+    lint {
+        // Dos detectores de Compose crashean sobre MinimalAppListScreen.kt y abortan TODO
+        // el analisis. La causa de fondo es una combinacion de versiones incompatible:
+        // el proyecto usa Kotlin 2.0.21 con Compose BOM 2023.10.01, que es de octubre de
+        // 2023 y viene pensado para Kotlin 1.9; sus artefactos de lint no entienden el
+        // UAST de Kotlin 2.0. Son fallos de la herramienta, no del codigo de la app, y el
+        // remedio lo sugiere lint en su propio mensaje de error. Sin esto el analisis
+        // completo NO se puede ejecutar: es preferible perder DOS comprobaciones antes
+        // que quedarse sin ninguna. La solucion de fondo es subir el Compose BOM.
+        disable += "AutoboxingStateCreation"
+        disable += "MutableCollectionMutableState"
+    }
+    testOptions {
+        unitTests {
+            // Las pruebas unitarias corren en la JVM, sin framework de Android: sin esto,
+            // cualquier llamada a android.util.Log lanza "Method e in android.util.Log not
+            // mocked" y tumba la prueba aunque la logica bajo prueba sea correcta.
+            // OJO: esto hace que las APIs de Android devuelvan valores por defecto, asi que
+            // la logica verificable (por ejemplo el hash de contrasena) debe usar APIs de la
+            // JVM y no del framework, o la prueba quedaria verde midiendo nada.
+            isReturnDefaultValues = true
+        }
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -71,6 +127,35 @@ android {
     }
     ndkVersion = "29.0.13599879 rc2"
     buildToolsVersion = "36.0.0"
+}
+
+// Se ejecuta antes de la validación opaca de AGP, pero solo cuando se pide release.
+tasks.configureEach {
+    if (name == "validateSigningRelease") {
+        doFirst {
+            val missingProperties = releaseSigningValues
+                .filterValues { it.isNullOrBlank() }
+                .keys
+                .sorted()
+            if (missingProperties.isNotEmpty()) {
+                throw GradleException(
+                    "No se puede generar release: faltan ${missingProperties.joinToString()}. " +
+                        "Defínelas en ~/.gradle/gradle.properties (recomendado) o con -P; " +
+                        "no guardes el keystore ni las contraseñas en el repositorio."
+                )
+            }
+
+            val configuredStoreFile = rootProject.file(
+                checkNotNull(releaseSigningValues["MOMENTUM_STORE_FILE"])
+            )
+            if (!configuredStoreFile.isFile) {
+                throw GradleException(
+                    "No se puede generar release: MOMENTUM_STORE_FILE no apunta a un fichero " +
+                        "de keystore existente (${configuredStoreFile.absolutePath})."
+                )
+            }
+        }
+    }
 }
 
 kotlin {

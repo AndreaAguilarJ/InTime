@@ -2,7 +2,7 @@ package com.momentummm.app.ui
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import androidx.lifecycle.lifecycleScope
 
-class BirthDateActivity : ComponentActivity() {
+class BirthDateActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -23,6 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -336,10 +339,17 @@ fun AppBlockSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                // Este chip es un contador, no una acción. Sin clearAndSetSemantics
+                // TalkBack lo anuncia como "botón" y al pulsarlo no ocurre nada.
+                // El texto se conserva para que siga leyéndose.
+                val rulesCountLabel = stringResource(R.string.in_app_block_rules_count, rules.size)
                 AssistChip(
                     onClick = { },
+                    modifier = Modifier.clearAndSetSemantics {
+                        text = AnnotatedString(rulesCountLabel)
+                    },
                     label = {
-                        Text(stringResource(R.string.in_app_block_rules_count, rules.size))
+                        Text(rulesCountLabel)
                     },
                     leadingIcon = {
                         Icon(

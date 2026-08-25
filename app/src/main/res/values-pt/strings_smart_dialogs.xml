@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_sleep_config_title">Definir horário de sono</string>
+    <string name="smart_sleep_config_desc">O uso de apps nestas horas não será contado</string>
+    <string name="smart_start">Início</string>
+    <string name="smart_end">Fim</string>
+
+    <string name="smart_fasting_config_title">Configurar jejum digital</string>
+    <string name="smart_fasting_config_desc">Durante o jejum terá um limite rígido para todas as apps</string>
+    <string name="smart_fasting_limit_value">Limite durante o jejum: %1$d min</string>
+    <string name="smart_fasting_days">Dias de jejum</string>
+
+    <string name="smart_nuclear_duration">Duração: %1$d dias</string>
+    <string name="smart_nuclear_wait">Tempo de espera para desbloquear: %1$d min</string>
+
+    <string name="smart_pos_top_left">Cima à esquerda</string>
+    <string name="smart_pos_top_right">Cima à direita</string>
+    <string name="smart_pos_bottom_left">Baixo à esquerda</string>
+    <string name="smart_pos_bottom_right">Baixo à direita</string>
+    <string name="smart_size_small">Pequeno</string>
+    <string name="smart_size_medium">Médio</string>
+    <string name="smart_size_large">Grande</string>
+    <string name="smart_timer_config_title">Configurar timer flutuante</string>
+    <string name="smart_position_on_screen">Posição no ecrã:</string>
+    <string name="smart_size">Tamanho:</string>
+
+    <string name="smart_new_context_rule">Nova regra de contexto</string>
+    <string name="smart_rule_name_hint">Nome (ex.: Trabalho, Escola)</string>
+    <string name="smart_rule_schedule">Horário: %1$s - %2$s</string>
+    <string name="smart_rule_limit_value">Limite: %1$d min</string>
+    <string name="smart_days_label">Dias:</string>
+    <string name="smart_create">Criar</string>
+
+    <string name="smart_days_weekdays">Seg-Sex</string>
+    <string name="smart_days_everyday">Todos os dias</string>
+
+    <string name="smart_help_title">Como funciona o bloqueio inteligente?</string>
+    <string name="smart_help_timer">Mostra um contador sempre visível sobre todas as apps para ver quanto tempo já passou.</string>
+    <string name="smart_help_sleep">O tempo que usar o telemóvel durante as horas de sono não conta para os seus limites.</string>
+    <string name="smart_help_fasting">Defina horários específicos com limites muito rígidos — ideal para trabalho ou estudo.</string>
+    <string name="smart_help_nuclear">O bloqueio mais extremo. Uma vez ativado, NÃO pode desativá-lo até terminar o período.</string>
+    <string name="smart_help_streak">Use dias de tolerância para proteger a sua sequência quando excede os limites ocasionalmente.</string>
+    <string name="smart_help_context">Crie regras personalizadas por horário e dia da semana.</string>
+    <string name="smart_help_communication_title">Só comunicação</string>
+    <string name="smart_help_communication">Permite mensagens diretas mas bloqueia feeds, reels e stories.</string>
+    <string name="smart_understood">Entendido!</string>
+</resources>

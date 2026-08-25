@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="limits_screen_title">App-Limits</string>
+    <string name="limits_screen_subtitle">Steuere die Zeit, die du in ablenkenden Apps verbringst</string>
+    <string name="limits_common_apps">Häufig gesperrte Apps</string>
+    <string name="limits_common_apps_desc">Die suchterzeugendsten Apps auf deinem Gerät</string>
+    <string name="limits_emergency_apps">Notfall-Apps</string>
+    <string name="limits_emergency_apps_desc">Apps, die nie gesperrt werden</string>
+    <string name="limits_apps_with_limits">Apps mit Limit</string>
+    <string name="limits_add_app">App hinzufügen</string>
+    <string name="limits_added">Limit hinzugefügt</string>
+    <string name="limits_permission_needed">Berechtigung erforderlich</string>
+    <string name="limits_permission_message">Um Apps beim Überschreiten des Limits zu sperren, musst du „Über anderen Apps anzeigen“ erlauben.</string>
+    <string name="limits_open_settings">Einstellungen öffnen</string>
+    <string name="limits_already_enabled">Habe ich schon erlaubt</string>
+    <string name="limits_verification_required">Bestätigung erforderlich</string>
+    <string name="limits_verification_message">Gib dein Passwort ein, um App-Limits zu ändern</string>
+    <string name="limits_summary_title">Limit-Übersicht</string>
+    <string name="limits_summary_limited_apps">Begrenzte\nApps</string>
+    <string name="limits_summary_active">Aktive\nLimits</string>
+    <string name="limits_summary_average">Durchschn.\nLimit</string>
+    <string name="limits_empty_title">Keine Limits festgelegt</string>
+    <string name="limits_empty_message">Füge ablenkende Apps hinzu, um deine Zeit darin zu steuern</string>
+    <string name="limits_empty_action">Erste App hinzufügen</string>
+    <string name="limits_monitoring_inactive">Überwachung inaktiv</string>
+    <string name="limits_monitoring_active_desc">Apps werden automatisch gesperrt, wenn sie ihr Limit überschreiten</string>
+    <string name="limits_monitoring_inactive_desc">Aktiviere die Überwachung, um Apps automatisch zu sperren</string>
+    <string name="limits_badge_limited">Begrenzt</string>
+    <string name="limits_action_limit">Begrenzen</string>
+    <string name="limits_set_limit">Limit festlegen</string>
+    <string name="limits_set_limit_question">Wie lange möchtest du %1$s täglich nutzen?</string>
+</resources>

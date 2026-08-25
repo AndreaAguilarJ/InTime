@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_app_logo">Momentum logo</string>
+    <string name="a11y_state_expanded">Expanded</string>
+    <string name="a11y_state_collapsed">Collapsed</string>
+    <string name="a11y_state_enabled">On</string>
+    <string name="a11y_state_disabled">Off</string>
+    <string name="a11y_reject_friend_request">Reject friend request</string>
+    <string name="a11y_accept_friend_request">Accept friend request</string>
+    <string name="a11y_more_options_for_friend">More options for %1$s</string>
+    <string name="a11y_share_achievement">Share achievement</string>
+    <string name="a11y_stop_focus_session">Stop focus session</string>
+    <string name="a11y_edit_app_limit">Edit app limit</string>
+    <string name="a11y_delete_app_limit">Delete app limit</string>
+    <string name="a11y_remove_app">Remove app</string>
+    <string name="a11y_day_option">Day %1$s</string>
+    <string name="a11y_color_option">Color %1$s</string>
+    <string name="a11y_emoji_option">Emoji %1$s</string>
+    <string name="a11y_analytics_empty_title">No usage data yet</string>
+    <string name="a11y_analytics_empty_message">Use a few apps and refresh again to see your statistics.</string>
+    <string name="a11y_back">Back</string>
+    <string name="a11y_close">Close</string>
+    <string name="a11y_delete">Delete</string>
+    <string name="a11y_add_message">Add message</string>
+    <string name="a11y_clear">Clear</string>
+    <string name="a11y_favorite">Favourite</string>
+    <string name="a11y_share">Share</string>
+    <string name="a11y_message_library">Message library</string>
+    <string name="a11y_create_custom_session">Create custom session</string>
+    <string name="a11y_emergency_apps">Emergency apps</string>
+    <string name="a11y_add_app">Add app</string>
+    <string name="a11y_remove_from_whitelist">Remove from allowed list</string>
+    <string name="a11y_auto_detect_categories">Auto-detect categories</string>
+    <string name="a11y_blocked">Blocked</string>
+    <string name="a11y_delete_digit">Delete digit</string>
+    <string name="a11y_call">Call</string>
+    <string name="a11y_exit_minimal_mode">Exit minimal mode</string>
+    <string name="a11y_default">Default</string>
+</resources>

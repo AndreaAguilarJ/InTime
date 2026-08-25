@@ -41,26 +41,23 @@ fun NotificationSettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Estados para cada configuración
-    val appLimitsEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.APP_LIMITS_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
+    // Estados para cada configuración.
+    // Antes habia CINCO bloques `.data.map { ... }.collectAsStateWithLifecycle(...)`:
+    // el operador .map se ejecutaba DENTRO de la composicion, asi que en cada
+    // recomposicion se creaba un Flow nuevo y se abria una suscripcion nueva al
+    // DataStore, cinco veces. Lint lo marcaba como error
+    // (FlowOperatorInvokedInComposition) y el efecto real es trabajo y suscripciones
+    // que se rehacen sin necesidad.
+    // Ahora se recoge UNA sola vez el objeto de preferencias, con el Flow memorizado
+    // para que no se recree, y los cinco valores se derivan por lectura directa.
+    val prefsFlow = remember(context) { context.notificationPrefs.data }
+    val prefs by prefsFlow.collectAsStateWithLifecycle(initialValue = null)
 
-    val dailyMotivationEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.DAILY_MOTIVATION_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
-
-    val weeklySummaryEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.WEEKLY_SUMMARY_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
-
-    val achievementsEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.ACHIEVEMENTS_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
-
-    val screenTimeRemindersEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.SCREEN_TIME_REMINDERS_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
+    val appLimitsEnabled = prefs?.get(NotificationPrefsKeys.APP_LIMITS_ENABLED) ?: true
+    val dailyMotivationEnabled = prefs?.get(NotificationPrefsKeys.DAILY_MOTIVATION_ENABLED) ?: true
+    val weeklySummaryEnabled = prefs?.get(NotificationPrefsKeys.WEEKLY_SUMMARY_ENABLED) ?: true
+    val achievementsEnabled = prefs?.get(NotificationPrefsKeys.ACHIEVEMENTS_ENABLED) ?: true
+    val screenTimeRemindersEnabled = prefs?.get(NotificationPrefsKeys.SCREEN_TIME_REMINDERS_ENABLED) ?: true
 
     Scaffold(
         topBar = {

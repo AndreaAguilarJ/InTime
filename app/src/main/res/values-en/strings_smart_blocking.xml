@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_title">Smart blocking</string>
+    <string name="smart_help">Help</string>
+    <string name="smart_advanced_control">Advanced control</string>
+    <string name="smart_advanced_control_desc">Set up smart blocks to improve your productivity</string>
+
+    <string name="smart_tab_timer">Timer</string>
+    <string name="smart_tab_sleep">Sleep</string>
+    <string name="smart_tab_fasting">Fasting</string>
+    <string name="smart_tab_nuclear">Nuclear</string>
+
+    <string name="smart_floating_timer">Floating timer</string>
+    <string name="smart_floating_timer_desc">Always visible over all apps</string>
+    <string name="smart_overlay_permission_needed">Requires overlay permission</string>
+    <string name="smart_grant">Grant</string>
+    <string name="smart_opacity">Opacity: %1$d %%</string>
+    <string name="smart_configure">Configure</string>
+    <string name="smart_test_app">Test app</string>
+    <string name="smart_timer_started">Floating timer started — look at the top right corner</string>
+    <string name="smart_timer_needs_permission">You need the overlay permission — tap “Grant” first</string>
+    <string name="smart_test_floating_timer">Test floating timer</string>
+    <string name="smart_stop_timer">Stop timer</string>
+
+    <string name="smart_sleep_window">Sleep window</string>
+    <string name="smart_sleep_window_desc">Don\'t count usage during sleeping hours</string>
+    <string name="smart_sleep_schedule">Sleep schedule</string>
+    <string name="smart_sleep_ignore_tracking">Ignore tracking while asleep</string>
+
+    <string name="smart_digital_fasting">Digital fasting</string>
+    <string name="smart_digital_fasting_desc">Strict limits during working hours</string>
+    <string name="smart_fasting_schedule">Fasting schedule</string>
+    <string name="smart_fasting_limit">Limit while fasting</string>
+    <string name="smart_days">Days: %1$s</string>
+
+    <string name="smart_nuclear_mode">Nuclear mode</string>
+    <string name="smart_nuclear_mode_desc">Extreme block from 1 to 3 months</string>
+    <string name="smart_nuclear_active">NUCLEAR MODE ACTIVE</string>
+
+    <string name="smart_streak_protection">Streak protection</string>
+    <string name="smart_streak_protection_desc">Grace days so you don\'t lose your streak</string>
+    <string name="smart_grace_days_per_week">Grace days per week</string>
+    <string name="smart_grace_days_value">Grace days: %1$d per week</string>
+    <string name="smart_warn_before_break">Warn before breaking the streak</string>
+    <string name="smart_warn_minutes">Warn %1$d min before the limit</string>
+
+    <string name="smart_context_blocking">Context blocking</string>
+    <string name="smart_context_blocking_desc">Rules by schedule, location or Wi-Fi</string>
+    <string name="smart_location_permission_needed">Grant the location permission to use context blocking</string>
+    <string name="smart_add_context_rule">Add context rule</string>
+
+    <string name="smart_communication_only">Communication-only mode</string>
+    <string name="smart_communication_only_desc">Allows messages, blocks feeds and reels</string>
+    <string name="smart_communication_apps">Apps in communication mode:</string>
+    <string name="smart_blocking_config">Blocking settings:</string>
+    <string name="smart_rule_limit">Limit: %1$d min</string>
+    <string name="smart_context_service_started">📍 Context service started</string>
+    <string name="smart_b_floating_on">⏱️ Floating timer on</string>
+    <string name="smart_b_floating_info">ℹ️ The timer appears automatically when you use apps with a limit</string>
+    <string name="smart_b_sleep_on">😴 Sleep mode on</string>
+    <string name="smart_b_fasting_on">🥗 Digital fasting on</string>
+    <string name="smart_b_nuclear_warn_foreground">⚠️ The unlock timer only moves while Momentum is open</string>
+    <string name="smart_b_streak_on">🔥 Streak protection on</string>
+    <string name="smart_b_grace_used">%1$d/%2$d used</string>
+    <string name="smart_b_grace_info">ℹ️ A grace day means your streak does not break even if you go over the limit that day</string>
+    <string name="smart_b_comm_on">💬 Communication mode on</string>
+    <string name="smart_b_allow_dms">✉️ Allow DMs/messages</string>
+    <string name="smart_b_block_feed">📰 Block feed</string>
+    <string name="smart_b_block_stories">📖 Block stories</string>
+    <string name="smart_b_block_reels">🎬 Block Reels/Shorts</string>
+    <string name="smart_b_comm_info">ℹ️ Messaging apps (WhatsApp, Telegram) already allow communication by default</string>
+    <string name="smart_b_nuclear_warn_title">⚠️ WARNING: This mode is EXTREME</string>
+    <string name="smart_b_nuclear_rule1">• You cannot turn it off until it ends
+</string>
+    <string name="smart_b_nuclear_rule2">• The unlock timer ONLY moves while Momentum is open
+</string>
+    <string name="smart_b_nuclear_activate">⚠️ TURN ON NUCLEAR MODE</string>
+    <string name="smart_b_every_day">Every day</string>
+    <plurals name="smart_b_days_remaining">
+        <item quantity="one">%1$d day left</item>
+        <item quantity="other">%1$d days left</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_on">
+        <item quantity="one">☢️ Nuclear mode on for %1$d day</item>
+        <item quantity="other">☢️ Nuclear mode on for %1$d days</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_rule3">
+        <item quantity="one">• You must wait %1$d minute with the app visible</item>
+        <item quantity="other">• You must wait %1$d minutes with the app visible</item>
+    </plurals>
+</resources>

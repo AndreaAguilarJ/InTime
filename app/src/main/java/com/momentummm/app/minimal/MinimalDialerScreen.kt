@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +73,7 @@ fun MinimalDialerScreen(
             ) {
                 Icon(
                     Icons.Rounded.ArrowBack, 
-                    contentDescription = "Volver",
+                    contentDescription = stringResource(R.string.a11y_back),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -155,7 +157,7 @@ fun MinimalDialerScreen(
             ) {
                 Icon(
                     Icons.Default.Backspace, 
-                    contentDescription = "Borrar",
+                    contentDescription = stringResource(R.string.a11y_delete_digit),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -189,7 +191,7 @@ fun MinimalDialerScreen(
             ) {
                 Icon(
                     Icons.Default.Call, 
-                    contentDescription = "Llamar",
+                    contentDescription = stringResource(R.string.a11y_call),
                     modifier = Modifier.size(28.dp),
                     tint = if (phoneNumber.isNotEmpty())
                         MaterialTheme.colorScheme.onPrimary

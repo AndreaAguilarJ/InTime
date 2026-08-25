@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.ui.accessibility.rememberSystemAnimationsEnabled
 import com.momentummm.app.R
 import com.momentummm.app.ui.theme.*
 
@@ -62,11 +63,15 @@ fun AnimatedTimeCoinCounter(
         label = "coinScale"
     )
 
-    // Animación de rotación de la moneda
+    // Animación de rotación de la moneda.
+    // isAnimating ya era una condición del propio proyecto; se le suma el ajuste de
+    // accesibilidad del sistema, que hasta ahora se leía pero no se aplicaba en
+    // ninguna parte.
+    val animationsEnabled = rememberSystemAnimationsEnabled()
     val infiniteTransition = rememberInfiniteTransition(label = "coinRotation")
     val coinRotation by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = if (isAnimating) 360f else 0f,
+        targetValue = if (isAnimating && animationsEnabled) 360f else 0f,
         animationSpec = infiniteRepeatable(
             animation = tween(800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart
@@ -213,9 +218,10 @@ fun CoinEarnedToast(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Moneda animada
+                    val toastAnimationsEnabled = rememberSystemAnimationsEnabled()
                     val rotation by rememberInfiniteTransition(label = "toast").animateFloat(
                         initialValue = 0f,
-                        targetValue = 360f,
+                        targetValue = if (toastAnimationsEnabled) 360f else 0f,
                         animationSpec = infiniteRepeatable(
                             animation = tween(1000),
                             repeatMode = RepeatMode.Restart

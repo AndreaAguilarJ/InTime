@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="life_not_set">Non définie</string>
+    <string name="life_title">Ma vie en semaines</string>
+    <string name="life_error">Erreur : %1$s</string>
+
+    <string name="life_your_numbers">Votre vie en chiffres</string>
+    <string name="life_weeks_lived">Semaines vécues</string>
+    <string name="life_weeks_remaining">Semaines restantes</string>
+    <string name="life_age">Âge : %1$d ans</string>
+    <string name="life_tap_to_change">Appuyez pour modifier</string>
+    <string name="life_expectancy_hint">Ajustez selon votre santé et vos attentes personnelles</string>
+
+    <string name="life_color_lived">Semaines vécues</string>
+    <string name="life_color_future">Semaines à venir</string>
+    <string name="life_color_wallpaper">Fond du papier peint</string>
+
+    <string name="life_widget_hint">Ajoutez le widget à votre écran d\'accueil pour voir votre vie en semaines avec les couleurs choisies.</string>
+    <string name="life_widget_manual_generic">Votre lanceur ne peut pas ajouter de widgets automatiquement. Appuyez longuement sur l\'écran d\'accueil et choisissez « Widgets ».</string>
+    <string name="life_widget_manual_search">Appuyez longuement sur l\'écran d\'accueil, choisissez « Widgets » et cherchez « Ma vie en semaines ».</string>
+    <string name="life_widget_manual_path">Pour ajouter le widget : appui long sur l\'écran d\'accueil → Widgets → Ma vie en semaines.</string>
+    <string name="life_widget_add">Ajouter le widget à l\'écran d\'accueil</string>
+    <string name="life_widget_update_error">Échec de la mise à jour : %1$s</string>
+    <string name="life_widget_update">Mettre à jour les widgets existants</string>
+
+    <string name="life_set_birth_date_first">Renseignez d\'abord votre date de naissance</string>
+    <string name="life_save_image">Enregistrer comme image</string>
+    <string name="life_set_wallpaper">Définir comme fond d\'écran</string>
+    <string name="life_saved">✅ Réglages enregistrés</string>
+    <string name="life_drag_widget">📌 Faites glisser le widget sur votre écran</string>
+    <string name="life_weeks_need_birthdate">Pour voir votre vie en semaines, indiquez votre date de naissance dans les réglages du compte.</string>
+    <string name="life_weeks_go_settings">Aller aux réglages</string>
+    <string name="life_weeks_legend">Chaque case est une semaine de vie. Les semaines vécues sont en couleur, les futures en gris.</string>
+    <string name="life_weeks_years_value">%1$d ans</string>
+    <string name="life_weeks_color_customization">🎨 Personnalisation des couleurs</string>
+    <string name="life_weeks_saved_gallery">✅ Enregistré dans la galerie</string>
+</resources>

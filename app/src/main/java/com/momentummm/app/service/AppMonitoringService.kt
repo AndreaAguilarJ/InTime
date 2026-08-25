@@ -296,7 +296,7 @@ class AppMonitoringService : Service() {
             // Timeout de 3 segundos para esta operación
             withTimeoutOrNull(3000L) {
                 if (currentApp.isEmpty() || currentApp == packageName) {
-                    // Si estamos en InTime, ocultar el timer flotante
+                    // Si estamos en Momentum, ocultar el timer flotante
                     if (floatingTimerActive) {
                         FloatingTimerService.stop(this@AppMonitoringService)
                         floatingTimerActive = false

@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,6 +45,10 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.ui.theme.momentum
@@ -97,14 +102,17 @@ fun MomentumCard(
             .scale(scale)
             .then(
                 if (onClick != null) {
-                    Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = LocalIndication.current,
-                        onClick = {
-                            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onClick()
-                        }
-                    )
+                    Modifier
+                        .semantics { role = Role.Button }
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = LocalIndication.current,
+                            role = Role.Button,
+                            onClick = {
+                                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onClick()
+                            }
+                        )
                 } else Modifier
             ),
         shape = shape,
@@ -143,7 +151,7 @@ fun MomentumButton(
     )
 
     val height = when (size) {
-        ButtonSize.Small -> 40.dp
+        ButtonSize.Small -> 48.dp
         ButtonSize.Medium -> 48.dp
         ButtonSize.Large -> 56.dp
     }
@@ -282,14 +290,17 @@ fun MomentumGradientCard(
             .background(gradient)
             .then(
                 if (onClick != null) {
-                    Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = LocalIndication.current,
-                        onClick = {
-                            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onClick()
-                        }
-                    )
+                    Modifier
+                        .semantics { role = Role.Button }
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = LocalIndication.current,
+                            role = Role.Button,
+                            onClick = {
+                                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onClick()
+                            }
+                        )
                 } else Modifier
             )
             .padding(MomentumDesign.Spacing.cozy),
@@ -365,8 +376,13 @@ fun MomentumChip(
 
     Surface(
         modifier = modifier
+            .semantics {
+                role = Role.Checkbox
+                selected = isSelected
+            }
+            .minimumInteractiveComponentSize()
             .clip(MomentumDesign.Shapes.pill)
-            .clickable {
+            .clickable(role = Role.Checkbox) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
             },

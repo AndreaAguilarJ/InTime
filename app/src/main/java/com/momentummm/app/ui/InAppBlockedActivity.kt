@@ -2,7 +2,7 @@ package com.momentummm.app.ui
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.background
@@ -39,8 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.momentummm.app.ui.theme.MomentumTheme
 import kotlinx.coroutines.delay
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
-class InAppBlockedActivity : ComponentActivity() {
+class InAppBlockedActivity : AppCompatActivity() {
 
     private var appName: String = ""
     private var featureName: String = ""
@@ -116,7 +118,7 @@ fun InAppBlockedScreen(
                 // Ícono de bloqueo
                 Icon(
                     imageVector = Icons.Default.Block,
-                    contentDescription = "Bloqueado",
+                    contentDescription = stringResource(R.string.a11y_blocked),
                     modifier = Modifier.size(96.dp),
                     tint = MaterialTheme.colorScheme.onError
                 )
@@ -216,7 +218,7 @@ fun InAppBlockedScreen(
 
                 // Texto informativo
                 Text(
-                    text = "💡 Puedes desactivar este bloqueo desde la configuración de InTime",
+                    text = "💡 Puedes desactivar este bloqueo desde la configuración de Momentum",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onError.copy(alpha = 0.75f),
                     textAlign = TextAlign.Center,

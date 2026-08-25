@@ -1095,21 +1095,21 @@ private fun WidgetStepContent() {
                             } else {
                                 android.widget.Toast.makeText(
                                     context, 
-                                    "Mantén presionado en tu pantalla de inicio → Widgets → Momentum", 
+                                    context.getString(R.string.tutorial_widget_hint_momentum), 
                                     android.widget.Toast.LENGTH_LONG
                                 ).show()
                             }
                         } else {
                             android.widget.Toast.makeText(
                                 context, 
-                                "Mantén presionado en tu pantalla de inicio, selecciona 'Widgets' y busca 'Mi Vida en Semanas'", 
+                                context.getString(R.string.tutorial_widget_hint_life), 
                                 android.widget.Toast.LENGTH_LONG
                             ).show()
                         }
                     } catch (e: Exception) {
                         android.widget.Toast.makeText(
                             context, 
-                            "Mantén presionado en tu pantalla de inicio → Widgets → Momentum", 
+                            context.getString(R.string.tutorial_widget_hint_momentum), 
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                     }
@@ -1142,7 +1142,7 @@ private fun WidgetStepContent() {
         if (!widgetAdded) {
             item {
                 Text(
-                    text = "También puedes añadirlo después desde Configuración → Mi Vida en Semanas",
+                    text = stringResource(R.string.tutorial_widget_add_later),
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

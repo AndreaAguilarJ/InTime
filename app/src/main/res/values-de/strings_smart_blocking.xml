@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_title">Intelligentes Sperren</string>
+    <string name="smart_help">Hilfe</string>
+    <string name="smart_advanced_control">Erweiterte Steuerung</string>
+    <string name="smart_advanced_control_desc">Richte intelligente Sperren ein, um produktiver zu werden</string>
+
+    <string name="smart_tab_timer">Timer</string>
+    <string name="smart_tab_sleep">Schlaf</string>
+    <string name="smart_tab_fasting">Fasten</string>
+    <string name="smart_tab_nuclear">Nuklear</string>
+
+    <string name="smart_floating_timer">Schwebender Timer</string>
+    <string name="smart_floating_timer_desc">Immer über allen Apps sichtbar</string>
+    <string name="smart_overlay_permission_needed">Overlay-Berechtigung erforderlich</string>
+    <string name="smart_grant">Erlauben</string>
+    <string name="smart_opacity">Deckkraft: %1$d %%</string>
+    <string name="smart_configure">Einrichten</string>
+    <string name="smart_test_app">Test-App</string>
+    <string name="smart_timer_started">Schwebender Timer gestartet – schau oben rechts</string>
+    <string name="smart_timer_needs_permission">Du brauchst die Overlay-Berechtigung – tippe zuerst auf „Erlauben“</string>
+    <string name="smart_test_floating_timer">Schwebenden Timer testen</string>
+    <string name="smart_stop_timer">Timer stoppen</string>
+
+    <string name="smart_sleep_window">Schlaffenster</string>
+    <string name="smart_sleep_window_desc">Nutzung während der Schlafzeit nicht zählen</string>
+    <string name="smart_sleep_schedule">Schlafzeiten</string>
+    <string name="smart_sleep_ignore_tracking">Erfassung im Schlaf ignorieren</string>
+
+    <string name="smart_digital_fasting">Digitales Fasten</string>
+    <string name="smart_digital_fasting_desc">Strenge Limits während der Arbeitszeit</string>
+    <string name="smart_fasting_schedule">Fastenzeiten</string>
+    <string name="smart_fasting_limit">Limit während des Fastens</string>
+    <string name="smart_days">Tage: %1$s</string>
+
+    <string name="smart_nuclear_mode">Nuklear-Modus</string>
+    <string name="smart_nuclear_mode_desc">Extreme Sperre von 1 bis 3 Monaten</string>
+    <string name="smart_nuclear_active">NUKLEAR-MODUS AKTIV</string>
+
+    <string name="smart_streak_protection">Serienschutz</string>
+    <string name="smart_streak_protection_desc">Kulanztage, damit deine Serie nicht reißt</string>
+    <string name="smart_grace_days_per_week">Kulanztage pro Woche</string>
+    <string name="smart_grace_days_value">Kulanztage: %1$d pro Woche</string>
+    <string name="smart_warn_before_break">Warnen, bevor die Serie reißt</string>
+    <string name="smart_warn_minutes">%1$d Min. vor dem Limit warnen</string>
+
+    <string name="smart_context_blocking">Kontextsperre</string>
+    <string name="smart_context_blocking_desc">Regeln nach Zeit, Ort oder WLAN</string>
+    <string name="smart_location_permission_needed">Erteile die Standortberechtigung, um die Kontextsperre zu nutzen</string>
+    <string name="smart_add_context_rule">Kontextregel hinzufügen</string>
+
+    <string name="smart_communication_only">Nur-Kommunikation-Modus</string>
+    <string name="smart_communication_only_desc">Erlaubt Nachrichten, sperrt Feeds und Reels</string>
+    <string name="smart_communication_apps">Apps im Kommunikationsmodus:</string>
+    <string name="smart_blocking_config">Sperreinstellungen:</string>
+    <string name="smart_rule_limit">Limit: %1$d Min.</string>
+    <string name="smart_context_service_started">📍 Kontextdienst gestartet</string>
+    <string name="smart_b_floating_on">⏱️ Schwebender Timer an</string>
+    <string name="smart_b_floating_info">ℹ️ Der Timer erscheint automatisch, wenn du Apps mit Limit nutzt</string>
+    <string name="smart_b_sleep_on">😴 Schlafmodus an</string>
+    <string name="smart_b_fasting_on">🥗 Digitales Fasten an</string>
+    <string name="smart_b_nuclear_warn_foreground">⚠️ Der Entsperr-Timer läuft nur, während Momentum offen ist</string>
+    <string name="smart_b_streak_on">🔥 Serien-Schutz an</string>
+    <string name="smart_b_grace_used">%1$d/%2$d genutzt</string>
+    <string name="smart_b_grace_info">ℹ️ Ein Kulanztag bedeutet, dass deine Serie nicht reißt, auch wenn du an dem Tag das Limit überschreitest</string>
+    <string name="smart_b_comm_on">💬 Kommunikationsmodus an</string>
+    <string name="smart_b_allow_dms">✉️ DMs/Nachrichten erlauben</string>
+    <string name="smart_b_block_feed">📰 Feed blockieren</string>
+    <string name="smart_b_block_stories">📖 Storys blockieren</string>
+    <string name="smart_b_block_reels">🎬 Reels/Shorts blockieren</string>
+    <string name="smart_b_comm_info">ℹ️ Messaging-Apps (WhatsApp, Telegram) erlauben Kommunikation bereits standardmäßig</string>
+    <string name="smart_b_nuclear_warn_title">⚠️ WARNUNG: Dieser Modus ist EXTREM</string>
+    <string name="smart_b_nuclear_rule1">• Du kannst ihn nicht ausschalten, bis er endet
+</string>
+    <string name="smart_b_nuclear_rule2">• Der Entsperr-Timer läuft NUR, während Momentum offen ist
+</string>
+    <string name="smart_b_nuclear_activate">⚠️ NUKLEARMODUS AKTIVIEREN</string>
+    <string name="smart_b_every_day">Jeden Tag</string>
+    <plurals name="smart_b_days_remaining">
+        <item quantity="one">Noch %1$d Tag</item>
+        <item quantity="other">Noch %1$d Tage</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_on">
+        <item quantity="one">☢️ Nuklearmodus für %1$d Tag an</item>
+        <item quantity="other">☢️ Nuklearmodus für %1$d Tage an</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_rule3">
+        <item quantity="one">• Du musst %1$d Minute mit sichtbarer App warten</item>
+        <item quantity="other">• Du musst %1$d Minuten mit sichtbarer App warten</item>
+    </plurals>
+</resources>

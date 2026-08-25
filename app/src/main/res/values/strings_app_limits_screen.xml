@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de la pantalla de límites de aplicaciones (AppLimitsScreen.kt). Estaban en
+  español dentro del código. Junto con strings_app_limits.xml completan el flujo: antes
+  quedaba a medias traducido, con la pantalla en un idioma y sus diálogos en otro.
+
+  Las tres etiquetas del resumen llevan un salto de línea a propósito, para que quepan
+  en dos renglones dentro de su tarjeta.
+-->
+<resources>
+    <string name="limits_screen_title">Límites de aplicaciones</string>
+    <string name="limits_screen_subtitle">Controla el tiempo que pasas en apps distractoras</string>
+    <string name="limits_common_apps">Apps comunes para bloquear</string>
+    <string name="limits_common_apps_desc">Las más adictivas detectadas en tu dispositivo</string>
+    <string name="limits_emergency_apps">Apps de emergencia</string>
+    <string name="limits_emergency_apps_desc">Apps que nunca se bloquean</string>
+    <string name="limits_apps_with_limits">Apps con límites</string>
+    <string name="limits_add_app">Agregar app</string>
+    <string name="limits_added">Límite agregado</string>
+    <string name="limits_permission_needed">Permiso necesario</string>
+    <string name="limits_permission_message">Para bloquear apps al exceder el límite, debes permitir «Mostrar sobre otras apps».</string>
+    <string name="limits_open_settings">Abrir ajustes</string>
+    <string name="limits_already_enabled">Ya lo habilité</string>
+    <string name="limits_verification_required">Verificación requerida</string>
+    <string name="limits_verification_message">Ingresa tu contraseña para modificar los límites de apps</string>
+    <string name="limits_summary_title">Resumen de límites</string>
+    <string name="limits_summary_limited_apps">Apps\nlimitadas</string>
+    <string name="limits_summary_active">Límites\nactivos</string>
+    <string name="limits_summary_average">Límite\npromedio</string>
+    <string name="limits_empty_title">No hay límites configurados</string>
+    <string name="limits_empty_message">Agrega aplicaciones distractoras para controlar el tiempo que pasas en ellas</string>
+    <string name="limits_empty_action">Agregar primera app</string>
+    <string name="limits_monitoring_inactive">Monitoreo inactivo</string>
+    <string name="limits_monitoring_active_desc">Las apps serán bloqueadas automáticamente al exceder sus límites</string>
+    <string name="limits_monitoring_inactive_desc">Activa el monitoreo para bloquear apps automáticamente</string>
+    <string name="limits_badge_limited">Limitada</string>
+    <string name="limits_action_limit">Limitar</string>
+    <string name="limits_set_limit">Establecer límite</string>
+    <string name="limits_set_limit_question">¿Cuánto tiempo quieres usar %1$s al día?</string>
+</resources>

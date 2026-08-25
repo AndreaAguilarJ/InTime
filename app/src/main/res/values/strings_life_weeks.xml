@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de LifeWeeksSettingsScreen.kt.
+
+  Los tres mensajes sobre cómo añadir el widget cambian según el launcher del
+  dispositivo. Cada uno cita el nombre del menú del sistema ("Widgets"), que Android
+  ya traduce por su cuenta: aquí se traduce la instrucción, no ese nombre.
+
+  Los mensajes de error llevan el detalle técnico como argumento, sin traducirlo:
+  viene del sistema y no siempre está en el idioma del usuario.
+-->
+<resources>
+    <string name="life_not_set">No configurada</string>
+    <string name="life_title">Mi vida en semanas</string>
+    <string name="life_error">Error: %1$s</string>
+
+    <string name="life_your_numbers">Tu vida en números</string>
+    <string name="life_weeks_lived">Semanas vividas</string>
+    <string name="life_weeks_remaining">Semanas restantes</string>
+    <string name="life_age">Edad: %1$d años</string>
+    <string name="life_tap_to_change">Toca para cambiar</string>
+    <string name="life_expectancy_hint">Ajusta según tu salud y expectativas personales</string>
+
+    <string name="life_color_lived">Semanas vividas</string>
+    <string name="life_color_future">Semanas futuras</string>
+    <string name="life_color_wallpaper">Fondo del wallpaper</string>
+
+    <string name="life_widget_hint">Añade el widget a tu pantalla de inicio para ver tu vida en semanas con los colores que has elegido.</string>
+    <string name="life_widget_manual_generic">Tu launcher no permite añadir widgets automáticamente. Mantén pulsada la pantalla de inicio y elige «Widgets».</string>
+    <string name="life_widget_manual_search">Mantén pulsada la pantalla de inicio, elige «Widgets» y busca «Mi vida en semanas».</string>
+    <string name="life_widget_manual_path">Para añadir el widget: mantén pulsada la pantalla de inicio → Widgets → Mi vida en semanas.</string>
+    <string name="life_widget_add">Añadir widget a la pantalla de inicio</string>
+    <string name="life_widget_update_error">Error al actualizar: %1$s</string>
+    <string name="life_widget_update">Actualizar los widgets existentes</string>
+
+    <string name="life_set_birth_date_first">Configura primero tu fecha de nacimiento</string>
+    <string name="life_save_image">Guardar como imagen</string>
+    <string name="life_set_wallpaper">Establecer como fondo</string>
+    <string name="life_saved">✅ Configuración guardada</string>
+    <string name="life_drag_widget">📌 Arrastra el widget a tu pantalla</string>
+    <string name="life_weeks_need_birthdate">Para ver tu vida en semanas, configura tu fecha de nacimiento en los ajustes de tu cuenta.</string>
+    <string name="life_weeks_go_settings">Ir a ajustes</string>
+    <string name="life_weeks_legend">Cada cuadrito es una semana de vida. Las semanas vividas van en color; las futuras, en gris.</string>
+    <string name="life_weeks_years_value">%1$d años</string>
+    <string name="life_weeks_color_customization">🎨 Personalización de colores</string>
+    <string name="life_weeks_saved_gallery">✅ Guardado en la galería</string>
+</resources>

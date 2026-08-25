@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="minimal_setup_title">Minimal-Telefon-Modus</string>
+    <string name="minimal_setup_subtitle">Beschränke dein Telefon auf das Wesentliche: Anrufe, Nachrichten und Kontakte.</string>
+    <string name="minimal_setup_features_title">Funktionen:</string>
+    <string name="minimal_setup_feature_apps">• Nur wesentliche Apps verfügbar</string>
+    <string name="minimal_setup_feature_ui">• Vereinfachte Oberfläche</string>
+    <string name="minimal_setup_feature_distractions">• Weniger Ablenkungen</string>
+    <string name="minimal_setup_feature_comms">• Fokus auf Kommunikation</string>
+    <string name="minimal_setup_enable">Minimal-Modus aktivieren</string>
+    <string name="minimal_exit_message">Das vollständige Momentum-Erlebnis wird mit allen Funktionen wiederhergestellt.</string>
+    <string name="minimal_exit_confirm">Ja, beenden</string>
+    <string name="minimal_exit_cancel">Hier bleiben</string>
+
+    <string name="minimal_manage_title">Erlaubte Apps verwalten</string>
+    <string name="minimal_manage_subtitle">Wähle, welche Apps im Minimal-Modus verfügbar sind:</string>
+    <string name="minimal_change">Ändern</string>
+    <string name="minimal_add_app">App hinzufügen</string>
+    <string name="minimal_pick_extra_title">Zusätzliche App auswählen</string>
+    <string name="minimal_pick_extra_subtitle">Wähle eine App, die du zum Minimal-Telefon hinzufügen möchtest (nur eine):</string>
+    <string name="minimal_search_app">App suchen</string>
+    <string name="minimal_remove_current">Aktuelle App entfernen</string>
+    <string name="minimal_remove">Entfernen</string>
+    <string name="minimal_select">Auswählen</string>
+    <string name="minimal_close">Schließen</string>
+    <string name="minimal_all_apps">Alle Apps</string>
+    <string name="minimal_exit_title">Minimal-Modus verlassen?</string>
+</resources>

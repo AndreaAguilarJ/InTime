@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subscription_trial_offer_title">%1$d Tage kostenlos testen</string>
+    <string name="subscription_trial_offer_subtitle">Alle Premium-Funktionen</string>
+    <string name="subscription_trial_active_title">Testphase aktiv</string>
+    <string name="subscription_trial_active_subtitle">Noch %1$d Tage</string>
+    <string name="subscription_trial_start_button">Starten</string>
+    <string name="sub_unlock_title">Entfalte dein volles Potenzial</string>
+    <string name="sub_unlock_desc">Erhalte erweiterte Analysen, Fokus-Sitzungen und volle Anpassung</string>
+    <string name="sub_start_now">Jetzt starten</string>
+    <string name="sub_guarantees">• Jederzeit kündbar
+• Automatisches Cloud-Backup
+• Vorrangiger Support</string>
+    <string name="sub_monthly">Monatlich</string>
+    <string name="sub_yearly">Jährlich</string>
+    <string name="sub_save_percent">%1$d %% sparen</string>
+    <string name="sub_why_premium">Warum Premium?</string>
+    <string name="sub_feature">Funktion</string>
+    <string name="sub_free">Gratis</string>
+    <string name="sub_premium">Premium</string>
+    <string name="sub_f_basic_analytics">Basis-Analysen</string>
+    <string name="sub_f_basic_widget">Basis-Widget</string>
+    <string name="sub_f_adv_analytics">Erweiterte Analysen</string>
+    <string name="sub_f_focus">Fokus-Sitzungen</string>
+    <string name="sub_f_themes">Eigene Themes</string>
+    <string name="sub_f_export">Datenexport</string>
+    <string name="sub_f_profiles">Mehrere Profile</string>
+    <string name="sub_f_support">Vorrangiger Support</string>
+</resources>

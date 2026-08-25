@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de la pantalla de Comunidad.
+  Estaban escritos a mano en CommunityScreen.kt, asi que salian siempre en espanol.
+  Verificado en el emulador: con la app en ingles, esta pantalla aparecia en espanol.
+  Dos claves llevan argumento posicional; el orden debe conservarse en todos los idiomas.
+-->
+<resources>
+    <string name="community_view_profile">Ver perfil</string>
+    <string name="community_remove_friend">Eliminar amigo</string>
+    <string name="community_remove_friend_title">¿Eliminar amigo?</string>
+    <string name="community_remove_friend_message">¿Estás seguro de que quieres eliminar a %1$s de tu lista de amigos?</string>
+    <string name="community_remove">Eliminar</string>
+    <string name="community_cancel">Cancelar</string>
+    <string name="community_level_short">Lv.%1$d</string>
+    <string name="community_share">Compartir</string>
+    <string name="community_friend_name_label">Nombre de tu amigo</string>
+    <string name="community_friend_name_placeholder">Ej.: Juan García</string>
+    <string name="community_email_label">Email</string>
+    <string name="community_send_request">Enviar solicitud</string>
+    <string name="community_leaderboard_self_label">Yo</string>
+</resources>

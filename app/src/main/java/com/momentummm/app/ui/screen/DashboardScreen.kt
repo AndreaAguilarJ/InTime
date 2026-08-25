@@ -75,7 +75,11 @@ import java.util.Calendar
 fun DashboardScreen(
     viewModel: DashboardViewModel,
     isPremiumUser: Boolean = false,
-    onUpgradeClick: () -> Unit = {}
+    onUpgradeClick: () -> Unit = {},
+    // Las monedas y el nivel de la cabecera eran pulsables pero su onClick estaba
+    // vacio: el usuario tocaba y no pasaba nada. Se expone el destino para que el
+    // host decida a donde lleva.
+    onCoinsClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -118,7 +122,7 @@ fun DashboardScreen(
                     Spacer(Modifier.height(MomentumDesign.Spacing.medium))
                     GamificationHeader(
                         gamificationState = uiState.gamificationState,
-                        onCoinsClick = { }
+                        onCoinsClick = onCoinsClick
                     )
                 }
             }

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_title">Blocage intelligent</string>
+    <string name="smart_help">Aide</string>
+    <string name="smart_advanced_control">Contrôle avancé</string>
+    <string name="smart_advanced_control_desc">Configurez des blocages intelligents pour être plus productif</string>
+
+    <string name="smart_tab_timer">Minuteur</string>
+    <string name="smart_tab_sleep">Sommeil</string>
+    <string name="smart_tab_fasting">Jeûne</string>
+    <string name="smart_tab_nuclear">Nucléaire</string>
+
+    <string name="smart_floating_timer">Minuteur flottant</string>
+    <string name="smart_floating_timer_desc">Toujours visible au-dessus des applications</string>
+    <string name="smart_overlay_permission_needed">Autorisation de superposition requise</string>
+    <string name="smart_grant">Autoriser</string>
+    <string name="smart_opacity">Opacité : %1$d %%</string>
+    <string name="smart_configure">Configurer</string>
+    <string name="smart_test_app">Application de test</string>
+    <string name="smart_timer_started">Minuteur flottant lancé — regardez en haut à droite</string>
+    <string name="smart_timer_needs_permission">Vous devez autoriser la superposition — appuyez d\'abord sur « Autoriser »</string>
+    <string name="smart_test_floating_timer">Tester le minuteur flottant</string>
+    <string name="smart_stop_timer">Arrêter le minuteur</string>
+
+    <string name="smart_sleep_window">Fenêtre de sommeil</string>
+    <string name="smart_sleep_window_desc">Ne pas compter l\'usage pendant les heures de sommeil</string>
+    <string name="smart_sleep_schedule">Horaires de sommeil</string>
+    <string name="smart_sleep_ignore_tracking">Ignorer le suivi pendant le sommeil</string>
+
+    <string name="smart_digital_fasting">Jeûne numérique</string>
+    <string name="smart_digital_fasting_desc">Limites strictes pendant les heures de travail</string>
+    <string name="smart_fasting_schedule">Horaires de jeûne</string>
+    <string name="smart_fasting_limit">Limite pendant le jeûne</string>
+    <string name="smart_days">Jours : %1$s</string>
+
+    <string name="smart_nuclear_mode">Mode nucléaire</string>
+    <string name="smart_nuclear_mode_desc">Blocage extrême de 1 à 3 mois</string>
+    <string name="smart_nuclear_active">MODE NUCLÉAIRE ACTIF</string>
+
+    <string name="smart_streak_protection">Protection des séries</string>
+    <string name="smart_streak_protection_desc">Jours de grâce pour ne pas perdre votre série</string>
+    <string name="smart_grace_days_per_week">Jours de grâce par semaine</string>
+    <string name="smart_grace_days_value">Jours de grâce : %1$d par semaine</string>
+    <string name="smart_warn_before_break">Avertir avant de rompre la série</string>
+    <string name="smart_warn_minutes">Avertir %1$d min avant la limite</string>
+
+    <string name="smart_context_blocking">Blocage contextuel</string>
+    <string name="smart_context_blocking_desc">Règles par horaire, lieu ou Wi-Fi</string>
+    <string name="smart_location_permission_needed">Accordez l\'autorisation de localisation pour utiliser le blocage contextuel</string>
+    <string name="smart_add_context_rule">Ajouter une règle contextuelle</string>
+
+    <string name="smart_communication_only">Mode communication seule</string>
+    <string name="smart_communication_only_desc">Autorise les messages, bloque les fils et les reels</string>
+    <string name="smart_communication_apps">Applications en mode communication :</string>
+    <string name="smart_blocking_config">Réglages de blocage :</string>
+    <string name="smart_rule_limit">Limite : %1$d min</string>
+    <string name="smart_context_service_started">📍 Service contextuel démarré</string>
+    <string name="smart_b_floating_on">⏱️ Minuteur flottant activé</string>
+    <string name="smart_b_floating_info">ℹ️ Le minuteur apparaît tout seul quand vous utilisez des apps avec une limite</string>
+    <string name="smart_b_sleep_on">😴 Mode sommeil activé</string>
+    <string name="smart_b_fasting_on">🥗 Jeûne numérique activé</string>
+    <string name="smart_b_nuclear_warn_foreground">⚠️ Le minuteur de déverrouillage avance seulement quand Momentum est ouvert</string>
+    <string name="smart_b_streak_on">🔥 Protection des séries activée</string>
+    <string name="smart_b_grace_used">%1$d/%2$d utilisés</string>
+    <string name="smart_b_grace_info">ℹ️ Un jour de grâce veut dire que votre série ne casse pas même si vous dépassez la limite ce jour-là</string>
+    <string name="smart_b_comm_on">💬 Mode communication activé</string>
+    <string name="smart_b_allow_dms">✉️ Autoriser les DM/messages</string>
+    <string name="smart_b_block_feed">📰 Bloquer le fil</string>
+    <string name="smart_b_block_stories">📖 Bloquer les stories</string>
+    <string name="smart_b_block_reels">🎬 Bloquer les Reels/Shorts</string>
+    <string name="smart_b_comm_info">ℹ️ Les apps de messagerie (WhatsApp, Telegram) autorisent déjà la communication par défaut</string>
+    <string name="smart_b_nuclear_warn_title">⚠️ ATTENTION : ce mode est EXTRÊME</string>
+    <string name="smart_b_nuclear_rule1">• Vous ne pourrez pas le désactiver avant la fin
+</string>
+    <string name="smart_b_nuclear_rule2">• Le minuteur de déverrouillage avance UNIQUEMENT quand Momentum est ouvert
+</string>
+    <string name="smart_b_nuclear_activate">⚠️ ACTIVER LE MODE NUCLÉAIRE</string>
+    <string name="smart_b_every_day">Tous les jours</string>
+    <plurals name="smart_b_days_remaining">
+        <item quantity="one">%1$d jour restant</item>
+        <item quantity="other">%1$d jours restants</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_on">
+        <item quantity="one">☢️ Mode nucléaire activé pour %1$d jour</item>
+        <item quantity="other">☢️ Mode nucléaire activé pour %1$d jours</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_rule3">
+        <item quantity="one">• Vous devrez attendre %1$d minute avec l’app visible</item>
+        <item quantity="other">• Vous devrez attendre %1$d minutes avec l’app visible</item>
+    </plurals>
+</resources>

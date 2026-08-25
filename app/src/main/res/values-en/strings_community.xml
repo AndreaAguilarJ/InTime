@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="community_view_profile">View profile</string>
+    <string name="community_remove_friend">Remove friend</string>
+    <string name="community_remove_friend_title">Remove friend?</string>
+    <string name="community_remove_friend_message">Are you sure you want to remove %1$s from your friends list?</string>
+    <string name="community_remove">Remove</string>
+    <string name="community_cancel">Cancel</string>
+    <string name="community_level_short">Lv.%1$d</string>
+    <string name="community_share">Share</string>
+    <string name="community_friend_name_label">Your friend\'s name</string>
+    <string name="community_friend_name_placeholder">E.g. Alex Morgan</string>
+    <string name="community_email_label">Email</string>
+    <string name="community_send_request">Send request</string>
+    <string name="community_leaderboard_self_label">You</string>
+</resources>

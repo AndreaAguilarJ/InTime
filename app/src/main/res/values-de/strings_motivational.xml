@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="motiv_title">Motivationsnachrichten</string>
+    <string name="motiv_default_message">Heute ist ein großartiger Tag!</string>
+
+    <string name="motiv_late_warning_title">Nachrichten können verspätet kommen</string>
+    <string name="motiv_late_warning_body">Android erlaubt Momentum keine exakten Alarme, daher kann eine Nachricht für 9:00 später erscheinen. Erteile die Berechtigung, damit sie pünktlich ankommen.</string>
+    <string name="motiv_allow_exact_alarms">Exakte Alarme erlauben</string>
+
+    <string name="motiv_personalization">Personalisierung</string>
+    <string name="motiv_personalization_body">Die Nachrichten sprechen dich mit deinem Namen an und nutzen deine Serie und deine heutige Bildschirmzeit.</string>
+    <string name="motiv_name_question">Wie sollen wir dich nennen?</string>
+    <string name="motiv_name_placeholder">Dein Name</string>
+
+    <string name="motiv_notifications_active">Benachrichtigungen aktiv</string>
+    <string name="motiv_notifications_active_desc">Motivationsnachrichten erhalten</string>
+    <string name="motiv_frequency">Häufigkeit</string>
+    <string name="motiv_categories">Kategorien</string>
+
+    <string name="motiv_smart_features">Intelligente Funktionen</string>
+    <string name="motiv_smart_timing">Intelligentes Timing</string>
+    <string name="motiv_smart_timing_desc">Lernt deine besten Zeiten</string>
+    <string name="motiv_weekend_schedule">Wochenend-Zeitplan</string>
+    <string name="motiv_weekend_schedule_desc">Andere Häufigkeit am Wochenende</string>
+    <string name="motiv_ai_messages">KI-Nachrichten</string>
+    <string name="motiv_ai_messages_desc">Erstellt personalisierte Nachrichten</string>
+
+    <string name="motiv_actions">Aktionen</string>
+    <string name="motiv_test">Testen</string>
+    <string name="motiv_library">Bibliothek</string>
+
+    <string name="motiv_messages_per_day">Nachrichten pro Tag</string>
+    <string name="motiv_notification_hours">Benachrichtigungszeiten</string>
+    <string name="motiv_from">Von</string>
+    <string name="motiv_to">Bis</string>
+    <string name="motiv_close">Schließen</string>
+</resources>

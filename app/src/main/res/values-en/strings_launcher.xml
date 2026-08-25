@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="launcher_back">← Back</string>
+    <string name="launcher_settings_title">Launcher settings</string>
+
+    <string name="launcher_not_default">Not the default launcher</string>
+    <string name="launcher_is_default">Momentum is your main launcher</string>
+    <string name="launcher_set_default_desc">Set Momentum as your default launcher</string>
+    <string name="launcher_set_default_button">Set as default launcher</string>
+
+    <string name="launcher_minimal_config">Minimal mode settings</string>
+    <string name="launcher_minimal_active">Minimal mode active</string>
+    <string name="launcher_minimal_toggle_a11y">Turn minimal mode on or off</string>
+    <string name="launcher_auto_enable">Turn on minimal mode by itself</string>
+    <string name="launcher_auto_enable_desc">Turns on when you open the launcher</string>
+
+    <string name="launcher_view_installed">View installed launchers</string>
+    <string name="launcher_open_system_settings">Open system settings</string>
+
+    <string name="launcher_instructions_title">📱 Instructions</string>
+    <string name="launcher_step1">1. Tap “%1$s”\n</string>
+    <string name="launcher_step2">2. Pick “%1$s” from the list\n</string>
+    <string name="launcher_step3">3. Tick “Always use” if you want it to stay\n</string>
+    <string name="launcher_step4">4. Turn on minimal mode for a simplified experience</string>
+
+    <string name="launcher_installed_title">Installed launchers</string>
+    <string name="launcher_this_app">This app</string>
+
+    <string name="launcher_setup_title">Minimal launcher</string>
+    <string name="launcher_setup_desc">Turn your phone into a minimal device, with only the essentials.</string>
+    <string name="launcher_status">Launcher status</string>
+    <string name="launcher_status_configured">Set as the default launcher</string>
+    <string name="launcher_status_not_configured">Not the default launcher</string>
+    <string name="launcher_minimal_mode">Minimal mode</string>
+    <string name="launcher_minimal_on">Minimal mode on</string>
+    <string name="launcher_minimal_off">Minimal mode off</string>
+    <string name="launcher_configure_button">Set up as launcher</string>
+    <string name="launcher_open_settings_button">Open launcher settings</string>
+    <string name="launcher_enable_minimal">Turn on minimal mode</string>
+    <string name="launcher_disable_minimal">Turn off minimal mode</string>
+    <string name="launcher_home_hint">Once it is set up, press the home button to use the minimal launcher.</string>
+</resources>

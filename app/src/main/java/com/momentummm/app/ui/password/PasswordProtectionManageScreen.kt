@@ -14,6 +14,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +32,7 @@ fun PasswordProtectionManageScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestionar Contraseña") },
+                title = { Text(stringResource(R.string.pwd_manage_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, "Volver")
@@ -58,12 +60,12 @@ fun PasswordProtectionManageScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "No hay contraseña configurada",
+                    stringResource(R.string.pwd_none_set),
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Establece una contraseña para proteger tus configuraciones de bloqueo",
+                    stringResource(R.string.pwd_none_set_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -74,7 +76,7 @@ fun PasswordProtectionManageScreen(
                 ) {
                     Icon(Icons.Default.Lock, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Configurar Contraseña")
+                    Text(stringResource(R.string.pwd_setup))
                 }
             }
         } else {
@@ -105,12 +107,12 @@ fun PasswordProtectionManageScreen(
                         )
                         Column {
                             Text(
-                                "Contraseña Activa",
+                                stringResource(R.string.pwd_active),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Text(
-                                "Tus configuraciones están protegidas",
+                                stringResource(R.string.pwd_active_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -120,26 +122,26 @@ fun PasswordProtectionManageScreen(
 
                 // Funciones protegidas
                 Text(
-                    "Funciones Protegidas",
+                    stringResource(R.string.pwd_protected_features),
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 Card {
                     Column(modifier = Modifier.padding(16.dp)) {
                         ProtectionStatusItem(
-                            label = "Límites de Apps",
+                            label = stringResource(R.string.pwd_feature_app_limits),
                             isProtected = protection.protectAppLimits
                         )
                         ProtectionStatusItem(
-                            label = "Bloqueo dentro de Apps",
+                            label = stringResource(R.string.pwd_feature_in_app_block),
                             isProtected = protection.protectInAppBlocking
                         )
                         ProtectionStatusItem(
-                            label = "Bloqueo de Sitios Web",
+                            label = stringResource(R.string.pwd_feature_web_block),
                             isProtected = protection.protectWebsiteBlocking
                         )
                         ProtectionStatusItem(
-                            label = "Modo Minimalista",
+                            label = stringResource(R.string.pwd_feature_minimal),
                             isProtected = protection.protectMinimalMode
                         )
                     }
@@ -154,7 +156,7 @@ fun PasswordProtectionManageScreen(
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cambiar Contraseña")
+                    Text(stringResource(R.string.pwd_change_title))
                 }
 
                 Button(
@@ -166,7 +168,7 @@ fun PasswordProtectionManageScreen(
                 ) {
                     Icon(Icons.Default.LockOpen, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Desactivar Protección")
+                    Text(stringResource(R.string.pwd_disable_action))
                 }
             }
         }
@@ -208,7 +210,7 @@ private fun ProtectionStatusItem(label: String, isProtected: Boolean) {
                 modifier = Modifier.size(20.dp)
             )
             Text(
-                if (isProtected) "Protegido" else "No protegido",
+                if (isProtected) "Protegido" else stringResource(R.string.pwd_not_protected),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (isProtected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             )
@@ -221,6 +223,12 @@ private fun ChangePasswordDialog(
     onDismiss: () -> Unit,
     viewModel: PasswordProtectionViewModel
 ) {
+    // Los cuatro mensajes se resuelven en composición: se asignan dentro de un
+    // onClick, donde stringResource no es válido.
+    val errorTooShort = stringResource(R.string.pwd_error_too_short)
+    val errorMismatch = stringResource(R.string.pwd_error_mismatch)
+    val errorDigitsOnly = stringResource(R.string.pwd_error_digits_only)
+    val errorCurrentWrong = stringResource(R.string.pwd_error_current_wrong)
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -230,7 +238,7 @@ private fun ChangePasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Cambiar Contraseña") },
+        title = { Text(stringResource(R.string.pwd_change_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -239,7 +247,7 @@ private fun ChangePasswordDialog(
                         oldPassword = it
                         showError = false
                     },
-                    label = { Text("Contraseña Actual") },
+                    label = { Text(stringResource(R.string.pwd_current)) },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     modifier = Modifier.fillMaxWidth(),
@@ -252,7 +260,7 @@ private fun ChangePasswordDialog(
                         newPassword = it
                         showError = false
                     },
-                    label = { Text("Nueva Contraseña") },
+                    label = { Text(stringResource(R.string.pwd_new)) },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     modifier = Modifier.fillMaxWidth(),
@@ -265,7 +273,7 @@ private fun ChangePasswordDialog(
                         confirmPassword = it
                         showError = false
                     },
-                    label = { Text("Confirmar Nueva") },
+                    label = { Text(stringResource(R.string.pwd_confirm_new)) },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     modifier = Modifier.fillMaxWidth(),
@@ -281,7 +289,7 @@ private fun ChangePasswordDialog(
                         checked = passwordVisible,
                         onCheckedChange = { passwordVisible = it }
                     )
-                    Text("Mostrar contraseñas", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.pwd_show_passwords), style = MaterialTheme.typography.bodySmall)
                 }
 
                 if (showError) {
@@ -299,15 +307,15 @@ private fun ChangePasswordDialog(
                     when {
                         newPassword.length < 6 -> {
                             showError = true
-                            errorMessage = "La contraseña debe tener al menos 6 dígitos"
+                            errorMessage = errorTooShort
                         }
                         newPassword != confirmPassword -> {
                             showError = true
-                            errorMessage = "Las contraseñas no coinciden"
+                            errorMessage = errorMismatch
                         }
                         !newPassword.all { it.isDigit() } -> {
                             showError = true
-                            errorMessage = "La contraseña solo debe contener números"
+                            errorMessage = errorDigitsOnly
                         }
                         else -> {
                             viewModel.changePassword(oldPassword, newPassword) { success ->
@@ -315,19 +323,19 @@ private fun ChangePasswordDialog(
                                     onDismiss()
                                 } else {
                                     showError = true
-                                    errorMessage = "Contraseña actual incorrecta"
+                                    errorMessage = errorCurrentWrong
                                 }
                             }
                         }
                     }
                 }
             ) {
-                Text("Cambiar")
+                Text(stringResource(R.string.pwd_change_button))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.pwd_cancel))
             }
         }
     )
@@ -345,10 +353,10 @@ private fun DisablePasswordDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-        title = { Text("¿Desactivar Protección?") },
+        title = { Text(stringResource(R.string.pwd_disable_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Esta acción eliminará la protección por contraseña. Podrás modificar todas las configuraciones sin restricciones.")
+                Text(stringResource(R.string.pwd_disable_message))
 
                 OutlinedTextField(
                     value = password,
@@ -356,14 +364,14 @@ private fun DisablePasswordDialog(
                         password = it
                         showError = false
                     },
-                    label = { Text("Ingresa tu contraseña") },
+                    label = { Text(stringResource(R.string.pwd_enter)) },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                "Mostrar/Ocultar"
+                                stringResource(R.string.pwd_toggle_visibility)
                             )
                         }
                     },
@@ -374,7 +382,7 @@ private fun DisablePasswordDialog(
 
                 if (showError) {
                     Text(
-                        "Contraseña incorrecta",
+                        stringResource(R.string.pwd_error_wrong),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -396,12 +404,12 @@ private fun DisablePasswordDialog(
                     containerColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text("Desactivar")
+                Text(stringResource(R.string.pwd_disable_button))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.pwd_cancel))
             }
         }
     )

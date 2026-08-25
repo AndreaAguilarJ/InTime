@@ -23,6 +23,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import android.content.Intent
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +71,7 @@ fun MinimalAppListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.ArrowBack, 
-                    contentDescription = "Volver",
+                    contentDescription = stringResource(R.string.a11y_back),
                     modifier = Modifier.size(20.dp)
                 )
             }

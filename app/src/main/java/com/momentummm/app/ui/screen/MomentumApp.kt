@@ -199,37 +199,58 @@ fun MomentumApp() {
                             initialLivedColor = cachedSettings?.livedWeeksColor,
                             initialFutureColor = cachedSettings?.futureWeeksColor,
                             onBirthDateSelected = { birthDate ->
-                                val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
+                                // La persistencia LOCAL va primero y SIN condiciones. Antes esto
+                                // empezaba con `?: return@AppTutorialScreen` sobre la sesión de
+                                // Appwrite, así que un usuario invitado o sin red completaba el
+                                // tutorial y su fecha se descartaba en silencio, dejando «Mi Vida
+                                // en Semanas» sin el único dato del que depende.
+                                val userId = application.appwriteService.currentUser.value?.id
                                 val iso = birthDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
                                 coroutineScope.launch {
                                     try {
-                                        val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = "")
-                                        val updated = existing.copy(birthDate = iso)
-                                        application.appwriteUserRepository.updateUserSettings(userId, updated)
                                         UserPreferencesRepository.setDobIso(context, iso)
-                                        val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                        // Locale.ROOT: es un formato legible por máquina. Con el
+                                        // locale del dispositivo, un calendario no gregoriano
+                                        // (por ejemplo th-TH) interpretaría mal el año.
+                                        val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.ROOT)
                                         val date = dateFormatter.parse(iso)
                                         if (date != null) {
                                             application.userRepository.setBirthDate(date)
                                         }
                                         LifeWeeksWidget.updateAllWidgets(context)
                                     } catch (e: Exception) {
-                                        android.util.Log.e("TutorialFlow", "Error saving birth date", e)
+                                        android.util.Log.e("TutorialFlow", "Error guardando la fecha en local", e)
+                                    }
+                                    // La nube es un extra: si falla o no hay sesión, lo local ya quedó guardado.
+                                    if (userId != null) {
+                                        try {
+                                            val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = "")
+                                            val updated = existing.copy(birthDate = iso)
+                                            application.appwriteUserRepository.updateUserSettings(userId, updated)
+                                        } catch (e: Exception) {
+                                            android.util.Log.e("TutorialFlow", "Error sincronizando la fecha con Appwrite", e)
+                                        }
                                     }
                                 }
                             },
                             onColorPreferencesSelected = { livedColor, futureColor ->
-                                val userId = application.appwriteService.currentUser.value?.id ?: return@AppTutorialScreen
+                                val userId = application.appwriteService.currentUser.value?.id
                                 coroutineScope.launch {
                                     try {
-                                        val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = cachedSettings?.birthDate ?: "")
-                                        val updated = existing.copy(livedWeeksColor = livedColor, futureWeeksColor = futureColor)
-                                        application.appwriteUserRepository.updateUserSettings(userId, updated)
                                         UserPreferencesRepository.setWidgetColors(context, livedColor, futureColor)
                                         application.userRepository.updateColors(livedColor, futureColor, "#FFFFFF")
                                         LifeWeeksWidget.updateAllWidgets(context)
                                     } catch (e: Exception) {
-                                        android.util.Log.e("TutorialFlow", "Error saving colors", e)
+                                        android.util.Log.e("TutorialFlow", "Error guardando los colores en local", e)
+                                    }
+                                    if (userId != null) {
+                                        try {
+                                            val existing = cachedSettings ?: AppwriteUserSettings(userId = userId, birthDate = cachedSettings?.birthDate ?: "")
+                                            val updated = existing.copy(livedWeeksColor = livedColor, futureWeeksColor = futureColor)
+                                            application.appwriteUserRepository.updateUserSettings(userId, updated)
+                                        } catch (e: Exception) {
+                                            android.util.Log.e("TutorialFlow", "Error sincronizando los colores con Appwrite", e)
+                                        }
                                     }
                                 }
                             },
@@ -461,6 +482,11 @@ private fun MainAppContent(
                         isPremiumUser = application.subscriptionRepository.isPremiumUser(),
                         onUpgradeClick = {
                             navController.navigate(Screen.Subscription.route)
+                        },
+                        // Las monedas, el nivel y el XP llevan al detalle de
+                        // gamificacion, que es donde esos datos se explican.
+                        onCoinsClick = {
+                            navController.navigate("gamification_settings")
                         }
                     )
                 }
@@ -468,7 +494,7 @@ private fun MainAppContent(
                     val viewModel: com.momentummm.app.ui.viewmodel.LifeWeeksViewModel = viewModel(
                         factory = LifeWeeksViewModelFactory(application.userRepository)
                     )
-                    LifeWeeksScreen(viewModel = viewModel)
+                    LifeWeeksScreen(viewModel = viewModel, onNavigateToAccountSettings = { navController.navigate("account_settings") })
                 }
                 composable(Screen.Analytics.route) {
                     com.momentummm.app.ui.screen.analytics.AdvancedAnalyticsScreen(
@@ -514,8 +540,38 @@ private fun MainAppContent(
                 }
                 composable(Screen.Subscription.route) {
                     com.momentummm.app.ui.screen.subscription.SubscriptionScreen(
-                        onSubscriptionSelected = { _, _ -> },
-                        onStartTrial = { },
+                        // OJO: NO conectar esto a subscriptionRepository.upgradeToPremium.
+                        // SubscriptionScreen.kt:153 llama a este callback al pulsar «suscribirse»
+                        // SIN haber lanzado ningún cobro: BillingManager tiene un
+                        // launchPurchaseFlow() real (BillingManager.kt:149) pero NINGUNA pantalla
+                        // lo invoca. Conceder premium aquí sería regalar la suscripción a
+                        // cualquiera que pulse el botón. Queda como bloqueo declarado: hace falta
+                        // crear los productos en Play Console, lanzar el flujo real de compra y
+                        // verificar la compra antes de conceder nada.
+                        onSubscriptionSelected = { plan, isYearly ->
+                            android.util.Log.w(
+                                "Subscription",
+                                "Compra solicitada (plan=$plan, anual=$isYearly) pero el flujo de " +
+                                    "Google Play no está cableado; no se concede premium sin cobro verificado."
+                            )
+                        },
+                        // La prueba gratuita sí es segura de cablear: no implica cobro.
+                        // Antes era una lambda vacía, así que el botón no hacía absolutamente nada.
+                        onStartTrial = {
+                            val userId = application.appwriteService.currentUser.value?.id
+                            coroutineScope.launch {
+                                if (userId == null) {
+                                    android.util.Log.w("Subscription", "Prueba gratuita sin sesión: no hay usuario al que asociarla")
+                                    return@launch
+                                }
+                                try {
+                                    val iniciada = application.subscriptionRepository.startFreeTrial(userId)
+                                    android.util.Log.i("Subscription", "Prueba gratuita iniciada=$iniciada")
+                                } catch (e: Exception) {
+                                    android.util.Log.e("Subscription", "Error iniciando la prueba gratuita", e)
+                                }
+                            }
+                        },
                         onBackClick = { navController.popBackStack() },
                         isTrialAvailable = application.subscriptionRepository.isTrialAvailable(),
                         remainingTrialDays = application.subscriptionRepository.getRemainingTrialDays()
@@ -563,9 +619,20 @@ private fun MainAppContent(
                                 // Información
                                 "about" -> navController.navigate("about")
                                 "permissions_settings" -> navController.navigate("permissions_settings")
-                                
-                                // Legado
-                                "launcher_settings" -> navController.navigate("launcher_settings")
+
+                                // Estas dos entradas existen en SettingsScreen (líneas 422 y
+                                // 468) y sus pantallas están declaradas más abajo, pero no
+                                // tenían rama aquí: el toque se descartaba en silencio y las
+                                // dos pantallas eran inalcanzables.
+                                "protection_settings" -> navController.navigate("protection_settings")
+                                "app_categories" -> navController.navigate("app_categories")
+
+                                // Sin `else`, un destino sin cablear vuelve a fallar en
+                                // silencio y nadie se entera. Que quede en el log.
+                                else -> android.util.Log.w(
+                                    "MomentumApp",
+                                    "Ajustes pidió navegar a un destino no gestionado: $screen"
+                                )
                             }
                         }
                     )
@@ -698,7 +765,11 @@ private fun MainAppContent(
 
                 composable("account_settings") {
                     com.momentummm.app.ui.screen.settings.AccountSettingsScreen(
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStack() },
+                        // "Colores del widget / Personaliza los colores de tu visualización"
+                        // apuntaba a un TODO vacío. El destino ya existía: LifeWeeksSettingsScreen,
+                        // que es justo donde se eligen esos colores.
+                        onCustomizeColors = { navController.navigate("mi_vida_en_semanas") }
                     )
                 }
 

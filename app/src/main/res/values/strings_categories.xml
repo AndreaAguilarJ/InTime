@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de la pantalla de categorías de apps (AppCategoriesScreen.kt).
+
+  Solo se extrajeron los textos VISIBLES. Los identificadores de icono del mismo
+  fichero ("Games", "Social", "Productivity"...) se dejaron intactos a propósito:
+  no son texto de interfaz, son las claves que getCategoryIcon usa para elegir el
+  icono y que se guardan en la base de datos. Traducirlas rompería la selección de
+  iconos de todas las categorías existentes.
+
+  Los textos con datos usan argumentos posicionales; el resto reutiliza las claves
+  de strings_app_limits.xml para no duplicar traducciones.
+-->
+<resources>
+    <string name="categories_auto_badge">Auto</string>
+    <string name="categories_used_minutes">Usado: %1$d min</string>
+    <string name="categories_limit_minutes">Límite: %1$d min</string>
+    <string name="categories_schedule">Bloqueo: %1$s (%2$s)</string>
+    <string name="categories_view_apps">Ver apps (%1$d)</string>
+    <string name="categories_no_apps">No hay apps en esta categoría</string>
+    <string name="categories_add_apps">Añadir apps</string>
+    <string name="categories_edit">Editar</string>
+    <string name="categories_delete">Eliminar</string>
+    <string name="categories_delete_title">Eliminar categoría</string>
+    <string name="categories_delete_message">¿Seguro que quieres eliminar la categoría «%1$s»? Esta acción no se puede deshacer.</string>
+    <string name="categories_edit_title">Editar categoría</string>
+    <string name="categories_name">Nombre</string>
+    <string name="categories_description">Descripción</string>
+    <string name="categories_add_apps_title">Añadir apps</string>
+    <string name="categories_add_count">Añadir (%1$d)</string>
+    <string name="syscat_social">Social</string>
+    <string name="syscat_social_desc">Redes sociales y mensajería</string>
+    <string name="syscat_entertainment">Entretenimiento</string>
+    <string name="syscat_entertainment_desc">Vídeos, streaming y música</string>
+    <string name="syscat_games">Juegos</string>
+    <string name="syscat_games_desc">Juegos y entretenimiento interactivo</string>
+    <string name="syscat_productivity">Productividad</string>
+    <string name="syscat_productivity_desc">Trabajo y herramientas</string>
+    <string name="syscat_news">Noticias</string>
+    <string name="syscat_news_desc">Noticias y actualidad</string>
+    <string name="syscat_shopping">Compras</string>
+    <string name="syscat_shopping_desc">Comercio electrónico y compras</string>
+</resources>

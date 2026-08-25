@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.ui.accessibility.rememberSystemAnimationsEnabled
 import com.momentummm.app.R
 import com.momentummm.app.MainActivity
 import com.momentummm.app.data.manager.BillingManager
@@ -52,7 +53,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.activity.OnBackPressedCallback
 
 @AndroidEntryPoint
-class AppBlockedActivity : ComponentActivity() {
+class AppBlockedActivity : AppCompatActivity() {
 
     @Inject
     lateinit var billingManager: BillingManager
@@ -228,7 +229,9 @@ class AppBlockedActivity : ComponentActivity() {
             return
         }
 
-        val expiration = System.currentTimeMillis() + SocialShareHelper.UNLOCK_DURATION_MS
+        // Duración de la compra, NO la de compartir. Este método solo se invoca tras
+        // PurchaseState.Purchased, así que aquí el usuario ya ha pagado.
+        val expiration = System.currentTimeMillis() + BillingManager.EMERGENCY_UNLOCK_DURATION_MS
 
         // En memoria, para que el monitor deje de bloquear de inmediato.
         if (::smartBlockingManager.isInitialized) {
@@ -247,7 +250,10 @@ class AppBlockedActivity : ComponentActivity() {
             }
             Toast.makeText(
                 this@AppBlockedActivity,
-                getString(R.string.app_blocked_payment_unlocked),
+                getString(
+                    R.string.app_blocked_payment_unlocked,
+                    BillingManager.EMERGENCY_UNLOCK_MINUTES
+                ),
                 Toast.LENGTH_LONG
             ).show()
             finish()
@@ -317,11 +323,16 @@ private fun AppBlockedScreen(
         }
     }
 
-    // Animación de pulso para el ícono
+    // Animación de pulso para el ícono.
+    // Se respeta la reducción de movimiento del sistema: con las animaciones
+    // desactivadas el destino coincide con el origen, así que el icono queda quieto.
+    // Esta pantalla aparece sin que el usuario la pida, así que un elemento que late
+    // sin parar es especialmente molesto para quien tiene sensibilidad vestibular.
+    val animationsEnabled = rememberSystemAnimationsEnabled()
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.1f,
+        targetValue = if (animationsEnabled) 1.1f else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -330,7 +341,7 @@ private fun AppBlockedScreen(
     )
 
     val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.7f,
+        initialValue = if (animationsEnabled) 0.7f else 1f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = FastOutSlowInEasing),

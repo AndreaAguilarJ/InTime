@@ -82,16 +82,16 @@ fun AppLimitsScreen(
         // Top App Bar
         onBackClick?.let {
             TopAppBar(
-                title = { Text("Límites de Aplicaciones") },
+                title = { Text(stringResource(R.string.limits_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = it) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.a11y_back))
                     }
                 },
                 actions = {
                     onNavigateToWhitelist?.let { navigate ->
                         IconButton(onClick = navigate) {
-                            Icon(Icons.Filled.Shield, contentDescription = "Apps de Emergencia")
+                            Icon(Icons.Filled.Shield, contentDescription = stringResource(R.string.a11y_emergency_apps))
                         }
                     }
                 }
@@ -126,12 +126,12 @@ fun AppLimitsScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Límites de Aplicaciones",
+                                text = stringResource(R.string.limits_screen_title),
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Controla el tiempo que pasas en apps distractoras",
+                                text = stringResource(R.string.limits_screen_subtitle),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -178,12 +178,12 @@ fun AppLimitsScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Apps comunes para bloquear",
+                                    text = stringResource(R.string.limits_common_apps),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "Las más adictivas detectadas en tu dispositivo",
+                                    text = stringResource(R.string.limits_common_apps_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -245,13 +245,13 @@ fun AppLimitsScreen(
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Apps de Emergencia",
+                                    stringResource(R.string.limits_emergency_apps),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
-                                    "Apps que nunca se bloquean",
+                                    stringResource(R.string.limits_emergency_apps_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                                 )
@@ -274,7 +274,7 @@ fun AppLimitsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Apps con Límites",
+                        text = stringResource(R.string.limits_apps_with_limits),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -285,7 +285,7 @@ fun AppLimitsScreen(
                         size = ButtonSize.Small,
                         icon = Icons.Filled.Add
                     ) {
-                        Text("Agregar App")
+                        Text(stringResource(R.string.limits_add_app))
                     }
                 }
             }
@@ -352,7 +352,13 @@ fun AppLimitsScreen(
                 onAddApp = { packageName, appName, limitMinutes ->
                     viewModel.addAppLimit(packageName, appName, limitMinutes)
                     showAddAppDialog = false
-                    scope.launch { snackbarHostState.showSnackbar("Límite agregado") }
+                    // getString y no stringResource: esto corre dentro de una corrutina,
+                    // no en composición, y stringResource solo es válido en composables.
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            context.getString(R.string.limits_added)
+                        )
+                    }
                 }
             )
         }
@@ -361,10 +367,10 @@ fun AppLimitsScreen(
         if (showOverlayPermissionDialog) {
             AlertDialog(
                 onDismissRequest = { showOverlayPermissionDialog = false },
-                title = { Text("Permiso necesario") },
+                title = { Text(stringResource(R.string.limits_permission_needed)) },
                 text = {
                     Text(
-                        "Para bloquear apps al exceder el límite, debes permitir 'Mostrar sobre otras apps'."
+                        stringResource(R.string.limits_permission_message)
                     )
                 },
                 confirmButton = {
@@ -379,12 +385,12 @@ fun AppLimitsScreen(
                                 context.startActivity(intent)
                             } catch (_: Exception) { }
                         }
-                    ) { Text("Abrir ajustes") }
+                    ) { Text(stringResource(R.string.limits_open_settings)) }
                 },
                 dismissButton = {
                     Row {
                         TextButton(onClick = { showOverlayPermissionDialog = false }) {
-                            Text("Cancelar")
+                            Text(stringResource(R.string.limit_dialog_cancel))
                         }
                         Spacer(Modifier.width(8.dp))
                         TextButton(
@@ -395,7 +401,7 @@ fun AppLimitsScreen(
                                     viewModel.toggleAppMonitoring(true)
                                 }
                             }
-                        ) { Text("Ya lo habilité") }
+                        ) { Text(stringResource(R.string.limits_already_enabled)) }
                     }
                 }
             )
@@ -414,8 +420,8 @@ fun AppLimitsScreen(
                     pendingAction = null
                 },
                 viewModel = passwordViewModel,
-                title = "Verificación Requerida",
-                message = "Ingresa tu contraseña para modificar los límites de apps"
+                title = stringResource(R.string.limits_verification_required),
+                message = stringResource(R.string.limits_verification_message)
             )
         }
 
@@ -437,7 +443,7 @@ private fun AppLimitsStatsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Resumen de Límites",
+                text = stringResource(R.string.limits_summary_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -450,21 +456,21 @@ private fun AppLimitsStatsCard(
             ) {
                 StatItem(
                     value = totalAppsLimited.toString(),
-                    label = "Apps\nlimitadas",
+                    label = stringResource(R.string.limits_summary_limited_apps),
                     icon = Icons.Filled.Apps,
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 StatItem(
                     value = activeBlocks.toString(),
-                    label = "Límites\nactivos",
+                    label = stringResource(R.string.limits_summary_active),
                     icon = Icons.Filled.Block,
                     color = MaterialTheme.colorScheme.secondary
                 )
 
                 StatItem(
                     value = "${avgDailyLimit}m",
-                    label = "Límite\npromedio",
+                    label = stringResource(R.string.limits_summary_average),
                     icon = Icons.Filled.Schedule,
                     color = MaterialTheme.colorScheme.tertiary
                 )
@@ -689,7 +695,7 @@ private fun EmptyAppLimitsCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "No hay límites configurados",
+                text = stringResource(R.string.limits_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -698,7 +704,7 @@ private fun EmptyAppLimitsCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Agrega aplicaciones distractoras para controlar el tiempo que pasas en ellas",
+                text = stringResource(R.string.limits_empty_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -711,7 +717,7 @@ private fun EmptyAppLimitsCard(
                 style = ButtonStyle.Primary,
                 icon = Icons.Filled.Add
             ) {
-                Text("Agregar Primera App")
+                Text(stringResource(R.string.limits_empty_action))
             }
         }
     }
@@ -744,15 +750,15 @@ private fun MonitoringStatusCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = if (isMonitoring) "Monitoreo Activo" else "Monitoreo Inactivo",
+                    text = if (isMonitoring) "Monitoreo Activo" else stringResource(R.string.limits_monitoring_inactive),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = if (isMonitoring) {
-                        "Las apps serán bloqueadas automáticamente al exceder sus límites"
+                        stringResource(R.string.limits_monitoring_active_desc)
                     } else {
-                        "Activa el monitoreo para bloquear apps automáticamente"
+                        stringResource(R.string.limits_monitoring_inactive_desc)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -862,7 +868,7 @@ private fun SuggestedAppCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Limitada",
+                        text = stringResource(R.string.limits_badge_limited),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
@@ -880,7 +886,7 @@ private fun SuggestedAppCard(
                     )
                 ) {
                     Text(
-                        text = "Limitar",
+                        text = stringResource(R.string.limits_action_limit),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -934,7 +940,7 @@ private fun QuickLimitDialog(
         },
         title = {
             Text(
-                text = "Establecer límite",
+                text = stringResource(R.string.limits_set_limit),
                 fontWeight = FontWeight.Bold
             )
         },
@@ -943,7 +949,7 @@ private fun QuickLimitDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "¿Cuánto tiempo quieres usar $appName al día?",
+                    text = stringResource(R.string.limits_set_limit_question, appName),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
@@ -974,12 +980,12 @@ private fun QuickLimitDialog(
             Button(
                 onClick = { onConfirm(selectedMinutes) }
             ) {
-                Text("Establecer límite")
+                Text(stringResource(R.string.limits_set_limit))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.limit_dialog_cancel))
             }
         }
     )

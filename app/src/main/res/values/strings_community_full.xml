@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Resto de textos de CommunityScreen.kt. Complementa strings_community.xml, que solo
+  cubría 13 claves: en una sesión anterior se declaró esta pantalla "sin literales" y
+  era falso, quedaban 51.
+
+  El nombre de la app en community_add_friend_desc estaba escrito como "InTime", el
+  nombre de la carpeta del repositorio. La app se llama Momentum.
+-->
+<resources>
+    <string name="community_title">Comunidad</string>
+    <string name="community_pending_requests">Solicitudes pendientes</string>
+    <string name="community_my_friends">Mis amigos</string>
+    <string name="community_no_friends">Sin amigos todavía</string>
+    <string name="community_no_friends_desc">Agrega amigos para competir y motivarse mutuamente</string>
+    <string name="community_how_to_add">¿Cómo agregar amigos?</string>
+    <string name="community_wants_to_be_friend">Quiere ser tu amigo</string>
+    <string name="community_leaderboard_empty">Clasificación vacía</string>
+    <string name="community_leaderboard_empty_desc">Sé el primero en aparecer</string>
+    <string name="community_add_friends">Agregar amigos</string>
+    <string name="community_your_position">Tu posición</string>
+    <string name="community_complete_sessions">Completa sesiones para aparecer</string>
+    <string name="community_tab_friends">Amigos</string>
+    <string name="community_tab_global">Global</string>
+
+    <string name="community_no_achievements">Sin logros todavía</string>
+    <string name="community_no_achievements_desc">Completa objetivos para desbloquear logros compartibles. ¡Cada logro cuenta!</string>
+    <string name="community_how_to_earn">Ver cómo ganar logros</string>
+    <string name="community_new_achievements">Nuevos logros</string>
+    <string name="community_shared_achievements">Logros compartidos</string>
+    <string name="community_your_achievements">Tus logros</string>
+    <string name="community_badge_new">NUEVO</string>
+
+    <string name="community_hint_streak_week">Mantén tu racha una semana completa</string>
+    <string name="community_hint_no_limits">No excedas ningún límite en 7 días</string>
+    <string name="community_hint_podium">Alcanza el podio de la clasificación</string>
+    <string name="community_hint_nuclear">Completa un período nuclear</string>
+
+    <string name="community_ach_streak">¡Racha de %1$s días!</string>
+    <string name="community_ach_level">¡Alcanzaste el nivel %1$s!</string>
+    <string name="community_ach_perfect_week">¡Semana perfecta completada!</string>
+    <string name="community_ach_focus_hours">¡%1$s horas de foco!</string>
+    <string name="community_ach_nuclear">¡Modo nuclear superado!</string>
+    <string name="community_ach_top_rank">¡Top %1$s del ranking!</string>
+    <string name="community_ach_first_week">¡Primera semana completada!</string>
+    <string name="community_ach_special">¡Logro especial!</string>
+
+    <string name="community_invalid_email">Email inválido</string>
+    <string name="community_add_friend_title">Agregar amigo</string>
+    <string name="community_add_friend_desc">Envía una solicitud de amistad a otro usuario de Momentum</string>
+
+    <string name="community_settings_title">Configuración de comunidad</string>
+    <string name="community_setting_global_rank">Aparecer en el ranking global</string>
+    <string name="community_setting_global_rank_desc">Otros usuarios pueden verte en la clasificación</string>
+    <string name="community_setting_show_streak">Mostrar racha a amigos</string>
+    <string name="community_setting_show_streak_desc">Tus amigos pueden ver tu racha actual</string>
+    <string name="community_setting_show_focus">Mostrar tiempo de foco</string>
+    <string name="community_setting_show_focus_desc">Tus amigos pueden ver tus minutos semanales</string>
+    <string name="community_setting_requests">Solicitudes de amistad</string>
+    <string name="community_setting_requests_desc">Recibir notificación cuando alguien te agregue</string>
+    <string name="community_setting_friend_ach">Logros de amigos</string>
+    <string name="community_setting_friend_ach_desc">Ver cuando tus amigos desbloquean logros</string>
+    <string name="community_setting_rank_changes">Cambios en el ranking</string>
+    <string name="community_setting_rank_changes_desc">Notificar cuando cambies de posición</string>
+    <plurals name="community_shared_times">
+        <item quantity="one">Compartido %1$d vez</item>
+        <item quantity="other">Compartido %1$d veces</item>
+    </plurals>
+</resources>

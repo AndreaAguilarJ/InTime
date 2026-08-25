@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="limits_screen_title">Limites d\'applications</string>
+    <string name="limits_screen_subtitle">Contrôlez le temps passé sur les applications distrayantes</string>
+    <string name="limits_common_apps">Applications souvent bloquées</string>
+    <string name="limits_common_apps_desc">Les plus addictives détectées sur votre appareil</string>
+    <string name="limits_emergency_apps">Applications d\'urgence</string>
+    <string name="limits_emergency_apps_desc">Applications jamais bloquées</string>
+    <string name="limits_apps_with_limits">Applications avec limite</string>
+    <string name="limits_add_app">Ajouter une application</string>
+    <string name="limits_added">Limite ajoutée</string>
+    <string name="limits_permission_needed">Autorisation requise</string>
+    <string name="limits_permission_message">Pour bloquer les applications qui dépassent la limite, vous devez autoriser « Superposer aux autres applications ».</string>
+    <string name="limits_open_settings">Ouvrir les réglages</string>
+    <string name="limits_already_enabled">C\'est déjà activé</string>
+    <string name="limits_verification_required">Vérification requise</string>
+    <string name="limits_verification_message">Saisissez votre mot de passe pour modifier les limites</string>
+    <string name="limits_summary_title">Résumé des limites</string>
+    <string name="limits_summary_limited_apps">Applications\nlimitées</string>
+    <string name="limits_summary_active">Limites\nactives</string>
+    <string name="limits_summary_average">Limite\nmoyenne</string>
+    <string name="limits_empty_title">Aucune limite définie</string>
+    <string name="limits_empty_message">Ajoutez des applications distrayantes pour contrôler le temps que vous y passez</string>
+    <string name="limits_empty_action">Ajouter la première application</string>
+    <string name="limits_monitoring_inactive">Surveillance inactive</string>
+    <string name="limits_monitoring_active_desc">Les applications seront bloquées automatiquement lorsqu\'elles dépassent leur limite</string>
+    <string name="limits_monitoring_inactive_desc">Activez la surveillance pour bloquer les applications automatiquement</string>
+    <string name="limits_badge_limited">Limitée</string>
+    <string name="limits_action_limit">Limiter</string>
+    <string name="limits_set_limit">Définir la limite</string>
+    <string name="limits_set_limit_question">Combien de temps voulez-vous utiliser %1$s par jour ?</string>
+</resources>

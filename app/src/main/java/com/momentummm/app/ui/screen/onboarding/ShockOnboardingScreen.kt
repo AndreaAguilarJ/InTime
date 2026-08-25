@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.momentummm.app.ui.accessibility.rememberSystemAnimationsEnabled
 import com.momentummm.app.R
 import com.momentummm.app.data.repository.UsageStatsRepository
 import com.momentummm.app.util.PermissionUtils
@@ -164,7 +165,7 @@ private fun ShockContent(
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulse by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.08f,
+        targetValue = if (rememberSystemAnimationsEnabled()) 1.08f else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -174,7 +175,7 @@ private fun ShockContent(
     
     // Animación de resplandor rojo
     val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
+        initialValue = if (rememberSystemAnimationsEnabled()) 0.3f else 0.7f,
         targetValue = 0.7f,
         animationSpec = infiniteRepeatable(
             animation = tween(1200, easing = LinearEasing),
