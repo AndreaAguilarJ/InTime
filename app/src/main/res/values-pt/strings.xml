@@ -136,7 +136,6 @@
     <string name="app_blocked_default_app_name">Aplicativo</string>
     <string name="app_blocked_time_up_title">⏰ Tempo esgotado</string>
     <string name="app_blocked_daily_limit_subtitle">Você atingiu seu limite diário</string>
-    <string name="app_blocked_daily_limit_minutes">%1$d minutos</string>
     <string name="app_blocked_daily_limit_reached">Limite diário atingido</string>
     <string name="app_blocked_stat_achievement_value">Conquista!</string>
     <string name="app_blocked_stat_achievement_label">Meta cumprida</string>
@@ -165,7 +164,6 @@
     <string name="lock_screen_subtitle">Digite sua senha para continuar</string>
     <string name="lock_screen_password_label">Senha</string>
     <string name="lock_screen_password_placeholder">Digite sua senha</string>
-    <string name="lock_screen_too_many_attempts">Muitas tentativas falhas. Tente novamente em %1$d minutos</string>
     <string name="lock_screen_password_incorrect">Senha incorreta</string>
     <string name="lock_screen_hide_password">Ocultar senha</string>
     <string name="lock_screen_show_password">Mostrar senha</string>
@@ -529,7 +527,6 @@
     <string name="emergency_unlock_question_line2">agora mesmo?</string>
     <string name="emergency_unlock_streak_warning">Pense duas vezes antes de desistir</string>
     <string name="emergency_unlock_premium_title">Desbloqueio Premium</string>
-    <string name="emergency_unlock_premium_subtitle">Acesso instantâneo por %1$d minutos</string>
     <string name="emergency_unlock_premium_price">$0.99 USD</string>
     <string name="emergency_unlock_shame_title">Desbloqueio da Vergonha</string>
     <string name="emergency_unlock_shame_subtitle">Compartilhe sua falha nas redes sociais</string>
@@ -1260,5 +1257,17 @@
     <plurals name="lock_screen_temporarily_locked">
         <item quantity="one">Bloqueado por %1$d minuto</item>
         <item quantity="other">Bloqueado por %1$d minutos</item>
+    </plurals>
+    <plurals name="app_blocked_daily_limit_minutes">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="other">%1$d minutos</item>
+    </plurals>
+    <plurals name="lock_screen_too_many_attempts">
+        <item quantity="one">Muitas tentativas falhas. Tente novamente em %1$d minuto</item>
+        <item quantity="other">Muitas tentativas falhas. Tente novamente em %1$d minutos</item>
+    </plurals>
+    <plurals name="emergency_unlock_premium_subtitle">
+        <item quantity="one">Acesso instantâneo por %1$d minuto</item>
+        <item quantity="other">Acesso instantâneo por %1$d minutos</item>
     </plurals>
 </resources>

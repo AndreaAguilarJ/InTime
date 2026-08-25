@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -519,7 +520,7 @@ private fun AppBlockedScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(horizontalAlignment = Alignment.Start) {
                                 Text(
-                                    text = stringResource(R.string.app_blocked_daily_limit_minutes, dailyLimit),
+                                    text = pluralStringResource(R.plurals.app_blocked_daily_limit_minutes, dailyLimit, dailyLimit),
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary

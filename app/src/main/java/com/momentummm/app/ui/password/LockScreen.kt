@@ -73,10 +73,7 @@ fun LockScreen(
     val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsStateWithLifecycle()
     val isBiometricAvailable = viewModel.isBiometricAvailable()
     val biometricFailedMessage = stringResource(R.string.lock_screen_biometric_failed)
-    val tooManyAttemptsMessage = stringResource(
-        R.string.lock_screen_too_many_attempts,
-        remainingLockoutTime / 1000 / 60
-    )
+    val tooManyAttemptsMessage = run { val m = (remainingLockoutTime / 1000 / 60).toInt(); pluralStringResource(R.plurals.lock_screen_too_many_attempts, m, m) }
     val incorrectPasswordMessage = stringResource(R.string.lock_screen_password_incorrect)
 
     // Observar resultados de biometría

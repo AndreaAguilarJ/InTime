@@ -437,7 +437,6 @@
     <string name="app_blocked_default_app_name">App</string>
     <string name="app_blocked_time_up_title">⏰ Zeit abgelaufen</string>
     <string name="app_blocked_daily_limit_subtitle">Du hast dein tägliches Limit erreicht</string>
-    <string name="app_blocked_daily_limit_minutes">%1$d Minuten</string>
     <string name="app_blocked_daily_limit_reached">Tägliches Limit erreicht</string>
     <string name="app_blocked_stat_achievement_value">Erfolg!</string>
     <string name="app_blocked_stat_achievement_label">Ziel erreicht</string>
@@ -466,7 +465,6 @@
     <string name="lock_screen_subtitle">Gib dein Passwort ein, um fortzufahren</string>
     <string name="lock_screen_password_label">Passwort</string>
     <string name="lock_screen_password_placeholder">Passwort eingeben</string>
-    <string name="lock_screen_too_many_attempts">Zu viele Fehlversuche. Versuche es in %1$d Minuten erneut</string>
     <string name="lock_screen_password_incorrect">Falsches Passwort</string>
     <string name="lock_screen_hide_password">Passwort verbergen</string>
     <string name="lock_screen_show_password">Passwort anzeigen</string>
@@ -529,7 +527,6 @@
     <string name="emergency_unlock_question_line2">jetzt zugreifen?</string>
     <string name="emergency_unlock_streak_warning">Denk zweimal nach, bevor du aufgibst</string>
     <string name="emergency_unlock_premium_title">Premium-Entsperrung</string>
-    <string name="emergency_unlock_premium_subtitle">Sofortzugriff für %1$d Minuten</string>
     <string name="emergency_unlock_premium_price">$0.99 USD</string>
     <string name="emergency_unlock_shame_title">Scham-Entsperrung</string>
     <string name="emergency_unlock_shame_subtitle">Teile deinen Ausrutscher in sozialen Netzwerken</string>
@@ -1260,5 +1257,17 @@
     <plurals name="lock_screen_temporarily_locked">
         <item quantity="one">Gesperrt für %1$d Minute</item>
         <item quantity="other">Gesperrt für %1$d Minuten</item>
+    </plurals>
+    <plurals name="app_blocked_daily_limit_minutes">
+        <item quantity="one">%1$d Minute</item>
+        <item quantity="other">%1$d Minuten</item>
+    </plurals>
+    <plurals name="lock_screen_too_many_attempts">
+        <item quantity="one">Zu viele Fehlversuche. Versuche es in %1$d Minute erneut</item>
+        <item quantity="other">Zu viele Fehlversuche. Versuche es in %1$d Minuten erneut</item>
+    </plurals>
+    <plurals name="emergency_unlock_premium_subtitle">
+        <item quantity="one">Sofortzugriff für %1$d Minute</item>
+        <item quantity="other">Sofortzugriff für %1$d Minuten</item>
     </plurals>
 </resources>
