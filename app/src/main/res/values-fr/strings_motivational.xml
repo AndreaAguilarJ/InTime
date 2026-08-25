@@ -45,4 +45,7 @@
     <string name="motiv_streak_amazing">🔥🔥 Série de %1$d jours ! Incroyable !</string>
     <string name="motiv_streak_keep">🔥 Série de %1$d jours ! Continuez !</string>
     <string name="motiv_streak_basic">🔥 Série de %1$d jours !</string>
+    <string name="motiv_comeback_title">🔄 Bon retour !</string>
+    <string name="motiv_action_love">❤️ J’adore</string>
+    <string name="motiv_action_another">🔄 Une autre</string>
 </resources>

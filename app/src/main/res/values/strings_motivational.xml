@@ -52,4 +52,7 @@
     <string name="motiv_streak_amazing">🔥🔥 ¡%1$d días de racha! ¡Increíble!</string>
     <string name="motiv_streak_keep">🔥 ¡%1$d días de racha! ¡Sigue así!</string>
     <string name="motiv_streak_basic">🔥 ¡%1$d días de racha!</string>
+    <string name="motiv_comeback_title">🔄 ¡Bienvenido de vuelta!</string>
+    <string name="motiv_action_love">❤️ Me encantó</string>
+    <string name="motiv_action_another">🔄 Otro</string>
 </resources>

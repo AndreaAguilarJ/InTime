@@ -45,4 +45,7 @@
     <string name="motiv_streak_amazing">🔥🔥 %1$d-day streak! Amazing!</string>
     <string name="motiv_streak_keep">🔥 %1$d-day streak! Keep it up!</string>
     <string name="motiv_streak_basic">🔥 %1$d-day streak!</string>
+    <string name="motiv_comeback_title">🔄 Welcome back!</string>
+    <string name="motiv_action_love">❤️ Loved it</string>
+    <string name="motiv_action_another">🔄 Another</string>
 </resources>

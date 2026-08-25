@@ -327,7 +327,7 @@ class MotivationalNotificationManager @Inject constructor(
             showNotificationInternal(
                 message = message,
                 notificationId = NOTIFICATION_ID_COMEBACK,
-                customTitle = "🔄 ¡Bienvenido de vuelta!"
+                customTitle = context.getString(R.string.motiv_comeback_title)
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error showing comeback notification", e)
@@ -495,8 +495,8 @@ class MotivationalNotificationManager @Inject constructor(
                 .setContentIntent(contentPendingIntent)
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .addAction(0, "❤️ Me encantó", lovePendingIntent)
-                .addAction(0, "🔄 Otro", anotherPendingIntent)
+                .addAction(0, context.getString(R.string.motiv_action_love), lovePendingIntent)
+                .addAction(0, context.getString(R.string.motiv_action_another), anotherPendingIntent)
                 .addAction(0, "⚙️", settingsPendingIntent)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .build()
