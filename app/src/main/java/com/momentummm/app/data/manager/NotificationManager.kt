@@ -622,7 +622,7 @@ class SmartNotificationManager @Inject constructor(
                     return@launch
                 }
                 
-                val title = context.getString(R.string.notification_streak_warning_title, currentStreak)
+                val title = context.resources.getQuantityString(R.plurals.notification_streak_warning_title, currentStreak, currentStreak)
                 val message = context.getString(R.string.notification_streak_warning_message, remainingMinutes, appName)
                 
                 showNotification(
@@ -1028,7 +1028,7 @@ class SmartNotificationManager @Inject constructor(
                 if (!isNotificationEnabled(STREAK_WARNINGS_ENABLED)) return@launch
                 
                 val title = context.getString(R.string.notification_streak_broken_title)
-                val message = context.getString(R.string.notification_streak_broken_message, previousStreak)
+                val message = context.resources.getQuantityString(R.plurals.notification_streak_broken_message, previousStreak, previousStreak)
                 
                 showNotification(
                     channelId = CHANNEL_ID_GOALS,

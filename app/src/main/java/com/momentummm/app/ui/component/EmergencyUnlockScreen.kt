@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -208,10 +209,7 @@ fun EmergencyUnlockScreen(
                             Text("🔥", fontSize = 32.sp)
                             Column {
                                 Text(
-                                    text = stringResource(
-                                        R.string.emergency_unlock_streak_risk,
-                                        currentStreakDays
-                                    ),
+                                    text = pluralStringResource(R.plurals.emergency_unlock_streak_risk, currentStreakDays, currentStreakDays),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = Rose400

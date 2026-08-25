@@ -644,7 +644,6 @@
     <string name="emergency_unlock_title">⚠️ Emergency Unlock</string>
     <string name="emergency_unlock_question_line1">Do you really need to access</string>
     <string name="emergency_unlock_question_line2">right now?</string>
-    <string name="emergency_unlock_streak_risk">Your %1$d-day streak is at risk</string>
     <string name="emergency_unlock_streak_warning">Think twice before giving up</string>
     <string name="emergency_unlock_premium_title">Premium Unlock</string>
     <string name="emergency_unlock_premium_subtitle">Instant access for %1$d minutes</string>
@@ -1063,7 +1062,6 @@
     <string name="notification_balanced_day_message">Healthy usage today: %1$s</string>
     
     <!-- Streak Protection Notifications -->
-    <string name="notification_streak_warning_title">⚠️ %1$d-day streak at risk</string>
     <string name="notification_streak_warning_message">%1$d min left on %2$s. Protect your streak!</string>
     <string name="notification_grace_day_used_title">🛡️ Grace Day Used</string>
     <string name="notification_grace_day_used_message">Your streak is protected. %1$d grace days remaining.</string>
@@ -1081,9 +1079,7 @@
     <string name="notification_level_up_title">🎊 Level Up to %1$d!</string>
     <string name="notification_level_up_message">%1$s - You earned %2$d TimeCoins bonus</string>
     <string name="notification_streak_started_title">🔥 Streak Started!</string>
-    <string name="notification_streak_continued_title">🔥 Streak: %1$d days</string>
     <string name="notification_streak_broken_title">💔 Streak Lost</string>
-    <string name="notification_streak_broken_message">Your %1$d-day streak has been lost. Start again!</string>
     <string name="notification_perfect_day_title">🌟 Perfect Day!</string>
     <string name="notification_perfect_day_message">You completed all your daily goals. +500 XP bonus</string>
     <string name="notification_xp_gained_title">✨ +%1$d XP</string>
@@ -1293,4 +1289,20 @@
     <string name="community_request_failed">❌ %1$s</string>
     <string name="billing_error">Billing error: %1$s</string>
     <string name="life_weeks_load_error">Error loading settings</string>
+    <plurals name="emergency_unlock_streak_risk">
+        <item quantity="one">Your %1$d-day streak is at risk</item>
+        <item quantity="other">Your %1$d-day streak is at risk</item>
+    </plurals>
+    <plurals name="notification_streak_warning_title">
+        <item quantity="one">⚠️ %1$d-day streak at risk</item>
+        <item quantity="other">⚠️ %1$d-day streak at risk</item>
+    </plurals>
+    <plurals name="notification_streak_continued_title">
+        <item quantity="one">🔥 Streak: %1$d day</item>
+        <item quantity="other">🔥 Streak: %1$d days</item>
+    </plurals>
+    <plurals name="notification_streak_broken_message">
+        <item quantity="one">Your %1$d-day streak has been lost. Start again!</item>
+        <item quantity="other">Your %1$d-day streak has been lost. Start again!</item>
+    </plurals>
 </resources>

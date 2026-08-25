@@ -529,7 +529,6 @@
     <string name="emergency_unlock_title">⚠️ Desbloqueio de Emergência</string>
     <string name="emergency_unlock_question_line1">Você realmente precisa acessar</string>
     <string name="emergency_unlock_question_line2">agora mesmo?</string>
-    <string name="emergency_unlock_streak_risk">Sua sequência de %1$d dias está em risco</string>
     <string name="emergency_unlock_streak_warning">Pense duas vezes antes de desistir</string>
     <string name="emergency_unlock_premium_title">Desbloqueio Premium</string>
     <string name="emergency_unlock_premium_subtitle">Acesso instantâneo por %1$d minutos</string>
@@ -942,7 +941,6 @@
     <string name="notification_completion_title">⭐ %1$dx concluído</string>
     <string name="notification_balanced_day_title">✨ Dia equilibrado</string>
     <string name="notification_balanced_day_message">Uso saudável hoje: %1$s</string>
-    <string name="notification_streak_warning_title">⚠️ Sequência de %1$d dias em risco</string>
     <string name="notification_streak_warning_message">Restam %1$d min em %2$s. Proteja sua sequência!</string>
     <string name="notification_grace_day_used_title">🛡️ Dia de graça usado</string>
     <string name="notification_grace_day_used_message">Sua sequência está protegida. Restam %1$d dias de graça.</string>
@@ -956,9 +954,7 @@
     <string name="notification_level_up_title">🎊 Subiu para o nível %1$d!</string>
     <string name="notification_level_up_message">%1$s - Você ganhou %2$d TimeCoins de bônus</string>
     <string name="notification_streak_started_title">🔥 Sequência iniciada!</string>
-    <string name="notification_streak_continued_title">🔥 Sequência: %1$d dias</string>
     <string name="notification_streak_broken_title">💔 Sequência perdida</string>
-    <string name="notification_streak_broken_message">Sua sequência de %1$d dias foi perdida. Comece novamente!</string>
     <string name="notification_perfect_day_title">🌟 Dia perfeito!</string>
     <string name="notification_perfect_day_message">Você completou todas as suas metas diárias. +500 XP de bônus</string>
     <string name="notification_xp_gained_title">✨ +%1$d XP</string>
@@ -1240,4 +1236,20 @@
     <string name="community_request_failed">❌ %1$s</string>
     <string name="billing_error">Erro na faturação: %1$s</string>
     <string name="life_weeks_load_error">Erro ao carregar as definições</string>
+    <plurals name="emergency_unlock_streak_risk">
+        <item quantity="one">Sua sequência de %1$d dia está em risco</item>
+        <item quantity="other">Sua sequência de %1$d dias está em risco</item>
+    </plurals>
+    <plurals name="notification_streak_warning_title">
+        <item quantity="one">⚠️ Sequência de %1$d dia em risco</item>
+        <item quantity="other">⚠️ Sequência de %1$d dias em risco</item>
+    </plurals>
+    <plurals name="notification_streak_continued_title">
+        <item quantity="one">🔥 Sequência: %1$d dia</item>
+        <item quantity="other">🔥 Sequência: %1$d dias</item>
+    </plurals>
+    <plurals name="notification_streak_broken_message">
+        <item quantity="one">Sua sequência de %1$d dia foi perdida. Comece novamente!</item>
+        <item quantity="other">Sua sequência de %1$d dias foi perdida. Comece novamente!</item>
+    </plurals>
 </resources>

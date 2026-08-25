@@ -529,7 +529,6 @@
     <string name="emergency_unlock_title">⚠️ Déverrouillage d’urgence</string>
     <string name="emergency_unlock_question_line1">Avez-vous vraiment besoin d’accéder à</string>
     <string name="emergency_unlock_question_line2">tout de suite ?</string>
-    <string name="emergency_unlock_streak_risk">Votre série de %1$d jours est en danger</string>
     <string name="emergency_unlock_streak_warning">Réfléchissez à deux fois avant d’abandonner</string>
     <string name="emergency_unlock_premium_title">Déverrouillage Premium</string>
     <string name="emergency_unlock_premium_subtitle">Accès instantané pendant %1$d minutes</string>
@@ -942,7 +941,6 @@
     <string name="notification_completion_title">⭐ %1$dx complété</string>
     <string name="notification_balanced_day_title">✨ Journée équilibrée</string>
     <string name="notification_balanced_day_message">Usage sain aujourd’hui : %1$s</string>
-    <string name="notification_streak_warning_title">⚠️ Série de %1$d jours en risque</string>
     <string name="notification_streak_warning_message">Il vous reste %1$d min dans %2$s. Protégez votre série !</string>
     <string name="notification_grace_day_used_title">🛡️ Jour de grâce utilisé</string>
     <string name="notification_grace_day_used_message">Votre série est protégée. Il vous reste %1$d jours de grâce.</string>
@@ -956,9 +954,7 @@
     <string name="notification_level_up_title">🎊 Niveau %1$d atteint !</string>
     <string name="notification_level_up_message">%1$s – Vous avez gagné %2$d TimeCoins de bonus</string>
     <string name="notification_streak_started_title">🔥 Série démarrée !</string>
-    <string name="notification_streak_continued_title">🔥 Série : %1$d jours</string>
     <string name="notification_streak_broken_title">💔 Série perdue</string>
-    <string name="notification_streak_broken_message">Votre série de %1$d jours est perdue. Recommencez !</string>
     <string name="notification_perfect_day_title">🌟 Journée parfaite !</string>
     <string name="notification_perfect_day_message">Vous avez complété tous vos objectifs quotidiens. +500 XP bonus</string>
     <string name="notification_xp_gained_title">✨ +%1$d XP</string>
@@ -1240,4 +1236,20 @@
     <string name="community_request_failed">❌ %1$s</string>
     <string name="billing_error">Erreur de facturation : %1$s</string>
     <string name="life_weeks_load_error">Erreur de chargement des réglages</string>
+    <plurals name="emergency_unlock_streak_risk">
+        <item quantity="one">Votre série de %1$d jour est en danger</item>
+        <item quantity="other">Votre série de %1$d jours est en danger</item>
+    </plurals>
+    <plurals name="notification_streak_warning_title">
+        <item quantity="one">⚠️ Série de %1$d jour en risque</item>
+        <item quantity="other">⚠️ Série de %1$d jours en risque</item>
+    </plurals>
+    <plurals name="notification_streak_continued_title">
+        <item quantity="one">🔥 Série : %1$d jour</item>
+        <item quantity="other">🔥 Série : %1$d jours</item>
+    </plurals>
+    <plurals name="notification_streak_broken_message">
+        <item quantity="one">Votre série de %1$d jour est perdue. Recommencez !</item>
+        <item quantity="other">Votre série de %1$d jours est perdue. Recommencez !</item>
+    </plurals>
 </resources>

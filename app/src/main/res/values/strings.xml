@@ -645,7 +645,6 @@
     <string name="emergency_unlock_title">⚠️ Desbloqueo de Emergencia</string>
     <string name="emergency_unlock_question_line1">¿Realmente necesitas acceder a</string>
     <string name="emergency_unlock_question_line2">ahora mismo?</string>
-    <string name="emergency_unlock_streak_risk">Tu racha de %1$d días está en riesgo</string>
     <string name="emergency_unlock_streak_warning">Piénsalo dos veces antes de rendirte</string>
     <string name="emergency_unlock_premium_title">Desbloqueo Premium</string>
     <string name="emergency_unlock_premium_subtitle">Acceso instantáneo por %1$d minutos</string>
@@ -1072,7 +1071,6 @@
     <string name="notification_balanced_day_message">Uso saludable hoy: %1$s</string>
     
     <!-- Streak Protection Notifications -->
-    <string name="notification_streak_warning_title">⚠️ Racha de %1$d días en riesgo</string>
     <string name="notification_streak_warning_message">Te quedan %1$d min en %2$s. ¡Protege tu racha!</string>
     <string name="notification_grace_day_used_title">🛡️ Día de Gracia Usado</string>
     <string name="notification_grace_day_used_message">Tu racha está protegida. Te quedan %1$d días de gracia.</string>
@@ -1090,9 +1088,7 @@
     <string name="notification_level_up_title">🎊 ¡Subiste al Nivel %1$d!</string>
     <string name="notification_level_up_message">%1$s - Has ganado %2$d TimeCoins de bonificación</string>
     <string name="notification_streak_started_title">🔥 ¡Racha Iniciada!</string>
-    <string name="notification_streak_continued_title">🔥 Racha: %1$d días</string>
     <string name="notification_streak_broken_title">💔 Racha Perdida</string>
-    <string name="notification_streak_broken_message">Tu racha de %1$d días se ha perdido. ¡Empieza de nuevo!</string>
     <string name="notification_perfect_day_title">🌟 ¡Día Perfecto!</string>
     <string name="notification_perfect_day_message">Completaste todas tus metas diarias. +500 XP bonus</string>
     <string name="notification_xp_gained_title">✨ +%1$d XP</string>
@@ -1314,4 +1310,20 @@
     <string name="community_request_failed">❌ %1$s</string>
     <string name="billing_error">Error en la facturación: %1$s</string>
     <string name="life_weeks_load_error">Error al cargar la configuración</string>
+    <plurals name="emergency_unlock_streak_risk">
+        <item quantity="one">Tu racha de %1$d día está en riesgo</item>
+        <item quantity="other">Tu racha de %1$d días está en riesgo</item>
+    </plurals>
+    <plurals name="notification_streak_warning_title">
+        <item quantity="one">⚠️ Racha de %1$d día en riesgo</item>
+        <item quantity="other">⚠️ Racha de %1$d días en riesgo</item>
+    </plurals>
+    <plurals name="notification_streak_continued_title">
+        <item quantity="one">🔥 Racha: %1$d día</item>
+        <item quantity="other">🔥 Racha: %1$d días</item>
+    </plurals>
+    <plurals name="notification_streak_broken_message">
+        <item quantity="one">Tu racha de %1$d día se ha perdido. ¡Empieza de nuevo!</item>
+        <item quantity="other">Tu racha de %1$d días se ha perdido. ¡Empieza de nuevo!</item>
+    </plurals>
 </resources>
