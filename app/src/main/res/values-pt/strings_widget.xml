@@ -4,4 +4,9 @@
     <string name="widget_percent_of_life">%1$s%% da sua vida</string>
     <string name="widget_tap_to_open">Toque para abrir</string>
     <string name="widget_life_title">A MINHA VIDA EM SEMANAS</string>
+    <string name="widget_weeks_lived">vividas</string>
+    <string name="widget_weeks_remaining">restantes</string>
+    <string name="widget_days_past">passados</string>
+    <string name="widget_quote_of_day">Frase motivacional do dia</string>
+    <string name="widget_motivation_label">✨ Motivação</string>
 </resources>

@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="✨ Motivación"
+        android:text="@string/widget_motivation_label"
         android:textSize="10sp"
         android:alpha="0.7" />
 
