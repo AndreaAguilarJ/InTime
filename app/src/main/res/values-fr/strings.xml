@@ -1232,4 +1232,10 @@
     <string name="date_day">Jour</string>
     <string name="date_month">Mois</string>
     <string name="date_year">Année</string>
+    <string name="community_err_load">Erreur de chargement des données : %1$s</string>
+    <string name="community_err_ranking">Erreur de mise à jour du classement : %1$s</string>
+    <string name="community_err_friends">Erreur de mise à jour des amis : %1$s</string>
+    <string name="community_err_achievements">Erreur de chargement des succès : %1$s</string>
+    <string name="community_request_sent">✅ Demande envoyée à %1$s</string>
+    <string name="community_request_failed">❌ %1$s</string>
 </resources>

@@ -1285,4 +1285,10 @@
     <string name="date_day">Day</string>
     <string name="date_month">Month</string>
     <string name="date_year">Year</string>
+    <string name="community_err_load">Error loading data: %1$s</string>
+    <string name="community_err_ranking">Error updating the ranking: %1$s</string>
+    <string name="community_err_friends">Error updating friends: %1$s</string>
+    <string name="community_err_achievements">Error loading achievements: %1$s</string>
+    <string name="community_request_sent">✅ Request sent to %1$s</string>
+    <string name="community_request_failed">❌ %1$s</string>
 </resources>

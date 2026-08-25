@@ -1232,4 +1232,10 @@
     <string name="date_day">Tag</string>
     <string name="date_month">Monat</string>
     <string name="date_year">Jahr</string>
+    <string name="community_err_load">Fehler beim Laden der Daten: %1$s</string>
+    <string name="community_err_ranking">Fehler beim Aktualisieren der Rangliste: %1$s</string>
+    <string name="community_err_friends">Fehler beim Aktualisieren der Freunde: %1$s</string>
+    <string name="community_err_achievements">Fehler beim Laden der Erfolge: %1$s</string>
+    <string name="community_request_sent">✅ Anfrage an %1$s gesendet</string>
+    <string name="community_request_failed">❌ %1$s</string>
 </resources>

@@ -14,10 +14,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.momentummm.app.R
 
 @HiltViewModel
 class CommunityViewModel @Inject constructor(
-    private val communityManager: CommunityManager
+    private val communityManager: CommunityManager,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
 
     val friends: StateFlow<List<Friend>> = communityManager.friends
@@ -84,7 +86,7 @@ class CommunityViewModel @Inject constructor(
                 communityManager.updateMyLeaderboardEntry()
                 loadAchievements()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al cargar datos: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_load, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -109,7 +111,7 @@ class CommunityViewModel @Inject constructor(
                 communityManager.loadFriendsLeaderboard()
                 communityManager.updateMyLeaderboardEntry()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al actualizar ranking: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_ranking, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -122,7 +124,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 communityManager.refreshFriends()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al actualizar amigos: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_friends, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -135,7 +137,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 loadAchievements()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al cargar logros: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_achievements, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -150,9 +152,9 @@ class CommunityViewModel @Inject constructor(
         viewModelScope.launch {
             val result = communityManager.sendFriendRequest(email, name)
             result.onSuccess {
-                _errorMessage.value = "✅ Solicitud enviada a $name"
+                _errorMessage.value = context.getString(R.string.community_request_sent, name)
             }.onFailure { e ->
-                _errorMessage.value = "❌ ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_request_failed, e.message ?: "")
             }
         }
     }
