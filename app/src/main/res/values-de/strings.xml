@@ -1219,4 +1219,6 @@
     <string name="gam_synced">Fortschritt synchronisiert</string>
     <string name="gam_login_sync">Melde dich an, um deinen Fortschritt zu synchronisieren</string>
     <string name="motiv_message_of_day">💫 Nachricht des Tages</string>
+    <string name="settings_smart_title">Intelligente Sperre</string>
+    <string name="settings_smart_subtitle">Schwebender Timer, Nuklearmodus, Schlaf, digitales Fasten</string>
 </resources>

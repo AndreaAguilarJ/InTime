@@ -1272,4 +1272,6 @@
     <string name="gam_synced">Progress synced</string>
     <string name="gam_login_sync">Sign in to sync your progress</string>
     <string name="motiv_message_of_day">💫 Message of the day</string>
+    <string name="settings_smart_title">Smart blocking</string>
+    <string name="settings_smart_subtitle">Floating timer, nuclear mode, sleep, digital fasting</string>
 </resources>

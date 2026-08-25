@@ -487,8 +487,8 @@ fun SettingsScreen(
                         onClick = { onNavigateToScreen("app_categories") }
                     )
                     PreferenceItem(
-                        title = "Bloqueo Inteligente",
-                        subtitle = "Timer flotante, modo nuclear, sueño, ayuno digital",
+                        title = stringResource(R.string.settings_smart_title),
+                        subtitle = stringResource(R.string.settings_smart_subtitle),
                         icon = Icons.Default.AutoAwesome,
                         onClick = { onNavigateToScreen("smart_blocking") },
                         showDivider = false

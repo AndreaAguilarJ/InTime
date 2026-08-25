@@ -1219,4 +1219,6 @@
     <string name="gam_synced">Progresso sincronizado</string>
     <string name="gam_login_sync">Inicie sessão para sincronizar o seu progresso</string>
     <string name="motiv_message_of_day">💫 Mensagem do dia</string>
+    <string name="settings_smart_title">Bloqueio inteligente</string>
+    <string name="settings_smart_subtitle">Temporizador flutuante, modo nuclear, sono, jejum digital</string>
 </resources>

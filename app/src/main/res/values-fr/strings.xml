@@ -1219,4 +1219,6 @@
     <string name="gam_synced">Progression synchronisée</string>
     <string name="gam_login_sync">Connectez-vous pour synchroniser votre progression</string>
     <string name="motiv_message_of_day">💫 Message du jour</string>
+    <string name="settings_smart_title">Blocage intelligent</string>
+    <string name="settings_smart_subtitle">Minuteur flottant, mode nucléaire, sommeil, jeûne numérique</string>
 </resources>
