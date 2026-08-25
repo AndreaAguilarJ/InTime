@@ -8,4 +8,12 @@
     <string name="svc_nuclear_action_open">Öffne Momentum, um fortzufahren</string>
     <string name="svc_nuclear_unlock_title">🎉 Nukleare Freigabe verfügbar!</string>
     <string name="svc_nuclear_unlock_text">Du hast die Wartezeit abgeschlossen. Du kannst den Nuklearmodus jetzt ausschalten.</string>
+    <string name="svc_context_channel_name">Kontextsperre</string>
+    <string name="svc_context_channel_desc">Erkennt deinen Standort und dein WLAN, um Sperrregeln anzuwenden</string>
+    <string name="svc_context_title">📍 Kontextsperre</string>
+    <string name="svc_context_monitoring">Kontext wird überwacht…</string>
+    <plurals name="svc_context_rules_active">
+        <item quantity="one">%1$d aktive Regel</item>
+        <item quantity="other">%1$d aktive Regeln</item>
+    </plurals>
 </resources>

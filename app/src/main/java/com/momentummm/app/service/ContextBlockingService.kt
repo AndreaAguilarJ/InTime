@@ -390,10 +390,10 @@ class ContextBlockingService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Bloqueo por Contexto",
+                getString(R.string.svc_context_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Detecta tu ubicación y WiFi para aplicar reglas de bloqueo"
+                description = getString(R.string.svc_context_channel_desc)
                 setShowBadge(false)
             }
             val manager = getSystemService(NotificationManager::class.java)
@@ -410,13 +410,13 @@ class ContextBlockingService : Service() {
         
         val activeRulesCount = _activeLocationRules.value.size + _activeWifiRules.value.size
         val statusText = if (activeRulesCount > 0) {
-            "$activeRulesCount regla(s) activa(s)"
+            resources.getQuantityString(R.plurals.svc_context_rules_active, activeRulesCount, activeRulesCount)
         } else {
-            "Monitoreando contexto..."
+            getString(R.string.svc_context_monitoring)
         }
         
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("📍 Bloqueo por Contexto")
+            .setContentTitle(getString(R.string.svc_context_title))
             .setContentText(statusText)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)

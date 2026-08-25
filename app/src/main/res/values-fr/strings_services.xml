@@ -8,4 +8,12 @@
     <string name="svc_nuclear_action_open">Ouvrez Momentum pour continuer</string>
     <string name="svc_nuclear_unlock_title">🎉 Déblocage nucléaire disponible !</string>
     <string name="svc_nuclear_unlock_text">Vous avez terminé le temps d’attente. Vous pouvez maintenant désactiver le mode nucléaire.</string>
+    <string name="svc_context_channel_name">Blocage par contexte</string>
+    <string name="svc_context_channel_desc">Détecte votre position et votre Wi-Fi pour appliquer les règles de blocage</string>
+    <string name="svc_context_title">📍 Blocage par contexte</string>
+    <string name="svc_context_monitoring">Surveillance du contexte…</string>
+    <plurals name="svc_context_rules_active">
+        <item quantity="one">%1$d règle active</item>
+        <item quantity="other">%1$d règles actives</item>
+    </plurals>
 </resources>

@@ -8,4 +8,12 @@
     <string name="svc_nuclear_action_open">Open Momentum to continue</string>
     <string name="svc_nuclear_unlock_title">🎉 Nuclear unlock available!</string>
     <string name="svc_nuclear_unlock_text">You have completed the waiting time. You can now turn off Nuclear mode.</string>
+    <string name="svc_context_channel_name">Context blocking</string>
+    <string name="svc_context_channel_desc">Detects your location and Wi-Fi to apply blocking rules</string>
+    <string name="svc_context_title">📍 Context blocking</string>
+    <string name="svc_context_monitoring">Watching context…</string>
+    <plurals name="svc_context_rules_active">
+        <item quantity="one">%1$d active rule</item>
+        <item quantity="other">%1$d active rules</item>
+    </plurals>
 </resources>
