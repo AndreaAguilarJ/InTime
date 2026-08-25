@@ -11,4 +11,6 @@
     <string name="err_network">Network error. Check your internet connection.</string>
     <string name="err_timeout">The operation took too long. Try again.</string>
     <string name="err_unexpected">An unexpected error occurred. Try again.</string>
+    <string name="err_cannot_open_app">Could not open this app</string>
+    <string name="err_permission_denied">Permission denied</string>
 </resources>

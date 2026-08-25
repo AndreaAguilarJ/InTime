@@ -11,4 +11,6 @@
     <string name="err_network">Netzwerkfehler. Prüfe deine Internetverbindung.</string>
     <string name="err_timeout">Der Vorgang hat zu lange gedauert. Versuche es erneut.</string>
     <string name="err_unexpected">Ein unerwarteter Fehler ist aufgetreten. Versuche es erneut.</string>
+    <string name="err_cannot_open_app">Diese App konnte nicht geöffnet werden</string>
+    <string name="err_permission_denied">Zugriff verweigert</string>
 </resources>

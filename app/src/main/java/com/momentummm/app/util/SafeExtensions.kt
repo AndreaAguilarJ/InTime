@@ -1,5 +1,6 @@
 package com.momentummm.app.util
 
+import com.momentummm.app.R
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -32,27 +33,29 @@ private const val TAG = "SafeExtensions"
 fun Context.safeStartActivity(
     intent: Intent,
     showToastOnError: Boolean = true,
-    errorMessage: String = "No se pudo abrir esta aplicación"
+    errorMessage: String? = null
 ): Boolean {
+    // Mensaje por defecto desde recursos, para que salga en el idioma del usuario.
+    val message = errorMessage ?: getString(R.string.err_cannot_open_app)
     return try {
         startActivity(intent)
         true
     } catch (e: ActivityNotFoundException) {
         Log.w(TAG, "No activity found for intent: ${intent.action}", e)
         if (showToastOnError) {
-            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
         false
     } catch (e: SecurityException) {
         Log.w(TAG, "Security exception starting activity", e)
         if (showToastOnError) {
-            Toast.makeText(this, "Permiso denegado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.err_permission_denied), Toast.LENGTH_SHORT).show()
         }
         false
     } catch (e: Exception) {
         Log.e(TAG, "Error starting activity", e)
         if (showToastOnError) {
-            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
         false
     }

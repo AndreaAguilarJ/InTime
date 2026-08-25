@@ -11,4 +11,6 @@
     <string name="err_network">Erreur réseau. Vérifiez votre connexion internet.</string>
     <string name="err_timeout">L’opération a pris trop de temps. Réessayez.</string>
     <string name="err_unexpected">Une erreur inattendue est survenue. Réessayez.</string>
+    <string name="err_cannot_open_app">Impossible d’ouvrir cette application</string>
+    <string name="err_permission_denied">Autorisation refusée</string>
 </resources>
