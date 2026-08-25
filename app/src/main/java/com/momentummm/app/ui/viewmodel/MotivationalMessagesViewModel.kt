@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.momentummm.app.R
 
 /**
  * UI State for motivational messages settings and library screens.
@@ -270,7 +271,7 @@ class MotivationalMessagesViewModel @Inject constructor(
     
     fun saveCustomMessage() {
         val state = _uiState.value
-        if (state.customMessageContent.isBlank()) { _uiState.update { it.copy(error = "El mensaje no puede estar vacío") }; return }
+        if (state.customMessageContent.isBlank()) { _uiState.update { it.copy(error = context.getString(R.string.motiv_error_empty)) }; return }
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
@@ -307,7 +308,7 @@ class MotivationalMessagesViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     testNotificationResult = result.error
-                        ?: "Notificación enviada. Míralas en la barra de estado.",
+                        ?: context.getString(R.string.motiv_test_sent),
                     testNotificationFailed = !result.delivered,
                     showMessagePreview = result.message
                 )

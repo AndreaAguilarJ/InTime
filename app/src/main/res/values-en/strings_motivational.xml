@@ -34,4 +34,6 @@
     <string name="motiv_from">From</string>
     <string name="motiv_to">To</string>
     <string name="motiv_close">Close</string>
+    <string name="motiv_error_empty">The message cannot be empty</string>
+    <string name="motiv_test_sent">Notification sent. Check your status bar.</string>
 </resources>

@@ -34,4 +34,6 @@
     <string name="motiv_from">Von</string>
     <string name="motiv_to">Bis</string>
     <string name="motiv_close">Schließen</string>
+    <string name="motiv_error_empty">Die Nachricht darf nicht leer sein</string>
+    <string name="motiv_test_sent">Benachrichtigung gesendet. Sieh in deiner Statusleiste nach.</string>
 </resources>

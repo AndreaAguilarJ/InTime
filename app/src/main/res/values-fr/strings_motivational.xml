@@ -34,4 +34,6 @@
     <string name="motiv_from">De</string>
     <string name="motiv_to">À</string>
     <string name="motiv_close">Fermer</string>
+    <string name="motiv_error_empty">Le message ne peut pas être vide</string>
+    <string name="motiv_test_sent">Notification envoyée. Regardez dans votre barre d’état.</string>
 </resources>

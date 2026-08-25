@@ -41,4 +41,6 @@
     <string name="motiv_from">Desde</string>
     <string name="motiv_to">Hasta</string>
     <string name="motiv_close">Cerrar</string>
+    <string name="motiv_error_empty">El mensaje no puede estar vacío</string>
+    <string name="motiv_test_sent">Notificación enviada. Míralas en la barra de estado.</string>
 </resources>
