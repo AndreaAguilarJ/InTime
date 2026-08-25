@@ -1221,4 +1221,12 @@
     <string name="motiv_message_of_day">💫 Mensagem do dia</string>
     <string name="settings_smart_title">Bloqueio inteligente</string>
     <string name="settings_smart_subtitle">Temporizador flutuante, modo nuclear, sono, jejum digital</string>
+    <string name="gam_ev_session_done">Sessão concluída! +%1$d XP</string>
+    <string name="gam_ev_streak_started">🔥 Sequência iniciada!</string>
+    <string name="gam_ev_streak_current">🔥 Sequência: %1$d dias</string>
+    <string name="gam_ev_streak_days">🔥 Sequência de %1$d dias!</string>
+    <string name="gam_ev_streak_lost">💔 Sequência de %1$d dias perdida. -%2$d XP</string>
+    <string name="gam_ev_streak_restart">Comece uma nova sequência amanhã</string>
+    <string name="gam_ev_perfect_day">⭐ Dia perfeito! +%1$d XP</string>
+    <string name="gam_ev_level_up">🎉 Subiste ao nível %1$d!</string>
 </resources>

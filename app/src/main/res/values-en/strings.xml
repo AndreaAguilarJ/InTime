@@ -1274,4 +1274,12 @@
     <string name="motiv_message_of_day">💫 Message of the day</string>
     <string name="settings_smart_title">Smart blocking</string>
     <string name="settings_smart_subtitle">Floating timer, nuclear mode, sleep, digital fasting</string>
+    <string name="gam_ev_session_done">Session complete! +%1$d XP</string>
+    <string name="gam_ev_streak_started">🔥 Streak started!</string>
+    <string name="gam_ev_streak_current">🔥 Streak: %1$d days</string>
+    <string name="gam_ev_streak_days">🔥 %1$d-day streak!</string>
+    <string name="gam_ev_streak_lost">💔 %1$d-day streak lost. -%2$d XP</string>
+    <string name="gam_ev_streak_restart">Start a new streak tomorrow</string>
+    <string name="gam_ev_perfect_day">⭐ Perfect day! +%1$d XP</string>
+    <string name="gam_ev_level_up">🎉 You reached level %1$d!</string>
 </resources>

@@ -166,7 +166,7 @@ class GamificationManager @Inject constructor(
             type = EventType.SESSION_COMPLETED,
             xpGained = xpBonus,
             coinsGained = coinsBonus,
-            message = "¡Sesión completada! +$xpBonus XP"
+            message = context.getString(R.string.gam_ev_session_done, xpBonus)
         )
     }
 
@@ -191,7 +191,7 @@ class GamificationManager @Inject constructor(
             return GamificationEvent(
                 type = EventType.STREAK_CONTINUED,
                 streakDays = 1,
-                message = "🔥 ¡Racha iniciada!"
+                message = context.getString(R.string.gam_ev_streak_started)
             )
         }
         
@@ -218,7 +218,7 @@ class GamificationManager @Inject constructor(
                 GamificationEvent(
                     type = EventType.STREAK_CONTINUED,
                     streakDays = settings.currentStreak,
-                    message = "🔥 Racha: ${settings.currentStreak} días"
+                    message = context.getString(R.string.gam_ev_streak_current, settings.currentStreak)
                 )
             }
             daysDifference == 1 -> {
@@ -228,7 +228,7 @@ class GamificationManager @Inject constructor(
                 GamificationEvent(
                     type = EventType.STREAK_CONTINUED,
                     streakDays = newStreak,
-                    message = "🔥 ¡$newStreak días de racha!"
+                    message = context.getString(R.string.gam_ev_streak_days, newStreak)
                 )
             }
             else -> {
@@ -257,7 +257,7 @@ class GamificationManager @Inject constructor(
                 type = EventType.STREAK_BROKEN,
                 xpGained = -UserSettings.XP_STREAK_BREAK_PENALTY,
                 streakDays = 0,
-                message = "💔 Racha de $previousStreak días perdida. -${UserSettings.XP_STREAK_BREAK_PENALTY} XP"
+                message = context.getString(R.string.gam_ev_streak_lost, previousStreak, UserSettings.XP_STREAK_BREAK_PENALTY)
             )
         }
 
@@ -271,7 +271,7 @@ class GamificationManager @Inject constructor(
         return GamificationEvent(
             type = EventType.STREAK_BROKEN,
             streakDays = 0,
-            message = "Inicia una nueva racha mañana"
+            message = context.getString(R.string.gam_ev_streak_restart)
         )
     }
 
@@ -299,7 +299,7 @@ class GamificationManager @Inject constructor(
             type = EventType.PERFECT_DAY,
             xpGained = xpBonus,
             coinsGained = coinsBonus,
-            message = "⭐ ¡Día perfecto! +$xpBonus XP"
+            message = context.getString(R.string.gam_ev_perfect_day, xpBonus)
         )
     }
 
@@ -331,7 +331,7 @@ class GamificationManager @Inject constructor(
                 type = EventType.LEVEL_UP,
                 newLevel = newLevel,
                 coinsGained = levelUpCoins,
-                message = "🎉 ¡Subiste a nivel $newLevel!"
+                message = context.getString(R.string.gam_ev_level_up, newLevel)
             )
         }
         

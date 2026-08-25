@@ -1221,4 +1221,12 @@
     <string name="motiv_message_of_day">💫 Message du jour</string>
     <string name="settings_smart_title">Blocage intelligent</string>
     <string name="settings_smart_subtitle">Minuteur flottant, mode nucléaire, sommeil, jeûne numérique</string>
+    <string name="gam_ev_session_done">Séance terminée ! +%1$d XP</string>
+    <string name="gam_ev_streak_started">🔥 Série lancée !</string>
+    <string name="gam_ev_streak_current">🔥 Série : %1$d jours</string>
+    <string name="gam_ev_streak_days">🔥 Série de %1$d jours !</string>
+    <string name="gam_ev_streak_lost">💔 Série de %1$d jours perdue. -%2$d XP</string>
+    <string name="gam_ev_streak_restart">Lancez une nouvelle série demain</string>
+    <string name="gam_ev_perfect_day">⭐ Journée parfaite ! +%1$d XP</string>
+    <string name="gam_ev_level_up">🎉 Vous avez atteint le niveau %1$d !</string>
 </resources>

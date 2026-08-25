@@ -1295,4 +1295,12 @@
     <string name="motiv_message_of_day">💫 Mensaje del día</string>
     <string name="settings_smart_title">Bloqueo inteligente</string>
     <string name="settings_smart_subtitle">Temporizador flotante, modo nuclear, sueño, ayuno digital</string>
+    <string name="gam_ev_session_done">¡Sesión completada! +%1$d XP</string>
+    <string name="gam_ev_streak_started">🔥 ¡Racha iniciada!</string>
+    <string name="gam_ev_streak_current">🔥 Racha: %1$d días</string>
+    <string name="gam_ev_streak_days">🔥 ¡%1$d días de racha!</string>
+    <string name="gam_ev_streak_lost">💔 Racha de %1$d días perdida. -%2$d XP</string>
+    <string name="gam_ev_streak_restart">Inicia una nueva racha mañana</string>
+    <string name="gam_ev_perfect_day">⭐ ¡Día perfecto! +%1$d XP</string>
+    <string name="gam_ev_level_up">🎉 ¡Subiste a nivel %1$d!</string>
 </resources>
