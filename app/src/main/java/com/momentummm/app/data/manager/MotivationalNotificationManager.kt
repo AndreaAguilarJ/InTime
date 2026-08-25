@@ -269,11 +269,11 @@ class MotivationalNotificationManager @Inject constructor(
 
             // Customize title based on progress
             val title = when {
-                progressPercent >= 100 -> "🎉 ¡Meta completada: $goalTitle!"
-                progressPercent >= 75 -> "🚀 ¡75% completado: $goalTitle!"
-                progressPercent >= 50 -> "💪 ¡Mitad del camino: $goalTitle!"
-                progressPercent >= 25 -> "🌟 ¡25% completado: $goalTitle!"
-                else -> "📈 Progreso en: $goalTitle"
+                progressPercent >= 100 -> context.getString(R.string.motiv_goal_complete, goalTitle)
+                progressPercent >= 75 -> context.getString(R.string.motiv_goal_75, goalTitle)
+                progressPercent >= 50 -> context.getString(R.string.motiv_goal_50, goalTitle)
+                progressPercent >= 25 -> context.getString(R.string.motiv_goal_25, goalTitle)
+                else -> context.getString(R.string.motiv_goal_progress, goalTitle)
             }
 
             showNotificationInternal(
@@ -299,10 +299,10 @@ class MotivationalNotificationManager @Inject constructor(
             messagesRepository.markMessageAsShown(message.id, contextInfo)
 
             val title = when {
-                streakDays >= 100 -> "🔥🔥🔥 ¡$streakDays días de racha! ¡Legendario!"
-                streakDays >= 30 -> "🔥🔥 ¡$streakDays días de racha! ¡Increíble!"
-                streakDays >= 7 -> "🔥 ¡$streakDays días de racha! ¡Sigue así!"
-                else -> "🔥 ¡$streakDays días de racha!"
+                streakDays >= 100 -> context.getString(R.string.motiv_streak_legendary, streakDays)
+                streakDays >= 30 -> context.getString(R.string.motiv_streak_amazing, streakDays)
+                streakDays >= 7 -> context.getString(R.string.motiv_streak_keep, streakDays)
+                else -> context.getString(R.string.motiv_streak_basic, streakDays)
             }
 
             showNotificationInternal(

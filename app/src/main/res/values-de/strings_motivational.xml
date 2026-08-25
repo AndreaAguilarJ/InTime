@@ -36,4 +36,13 @@
     <string name="motiv_close">Schließen</string>
     <string name="motiv_error_empty">Die Nachricht darf nicht leer sein</string>
     <string name="motiv_test_sent">Benachrichtigung gesendet. Sieh in deiner Statusleiste nach.</string>
+    <string name="motiv_goal_complete">🎉 Ziel erreicht: %1$s!</string>
+    <string name="motiv_goal_75">🚀 75%% geschafft: %1$s!</string>
+    <string name="motiv_goal_50">💪 Halbzeit: %1$s!</string>
+    <string name="motiv_goal_25">🌟 25%% geschafft: %1$s!</string>
+    <string name="motiv_goal_progress">📈 Fortschritt bei: %1$s</string>
+    <string name="motiv_streak_legendary">🔥🔥🔥 %1$d-Tage-Serie! Legendär!</string>
+    <string name="motiv_streak_amazing">🔥🔥 %1$d-Tage-Serie! Unglaublich!</string>
+    <string name="motiv_streak_keep">🔥 %1$d-Tage-Serie! Weiter so!</string>
+    <string name="motiv_streak_basic">🔥 %1$d-Tage-Serie!</string>
 </resources>
