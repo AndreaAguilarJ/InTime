@@ -27,4 +27,24 @@
     <string name="svc_block_category_schedule">Category “%1$s” blocked: %2$s - %3$s</string>
     <string name="svc_block_fasting">Digital fasting: limit reduced to %1$d min</string>
     <string name="svc_block_context_active">Context blocking active</string>
+    <string name="goal_challenge_title">Challenge in progress</string>
+    <string name="goal_challenge_text">%1$s - %2$d%% complete</string>
+    <string name="goal_achievement_title">New achievement unlocked!</string>
+    <string name="goal_streak_title">Amazing streak! 🔥</string>
+    <string name="goal_streak_text">%1$d days in a row on %2$s</string>
+    <string name="fav_saved">❤️ Saved to favorites!</string>
+    <string name="motiv_notif_disabled">Momentum notifications are turned off in system settings</string>
+    <string name="motiv_notif_error">Could not send the notification: %1$s</string>
+    <string name="web_delete_category_error">Error deleting category: %1$s</string>
+    <string name="goal_ch_goals_name">Goal reminders</string>
+    <string name="goal_ch_goals_desc">Notifications to remind you of your goal progress</string>
+    <string name="goal_ch_challenges_name">Challenge reminders</string>
+    <string name="goal_ch_challenges_desc">Notifications about your active challenges</string>
+    <string name="goal_ch_achievements_name">Achievements and rewards</string>
+    <string name="goal_ch_achievements_desc">Notifications when you complete achievements</string>
+    <string name="goal_challenge_bigtext">%1$s
+%2$d days left to complete</string>
+    <string name="goal_action_continue">Continue challenge</string>
+    <string name="goal_streak_bigtext">🔥 You are on a %1$d-day streak toward your goal!
+Keep it up and do not break the streak!</string>
 </resources>

@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.momentummm.app.data.manager.MotivationalNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import com.momentummm.app.R
 
 /**
  * Broadcast receiver for handling motivational notification actions.
@@ -56,7 +57,7 @@ class MotivationalNotificationReceiver : BroadcastReceiver() {
             motivationalNotificationManager.handleLoveAction(messageId)
             
             // Show quick feedback
-            Toast.makeText(context, "❤️ ¡Guardado en favoritos!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.fav_saved), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e(TAG, "Error handling love action", e)
         }

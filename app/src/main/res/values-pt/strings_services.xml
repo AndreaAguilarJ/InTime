@@ -27,4 +27,24 @@
     <string name="svc_block_category_schedule">Categoria «%1$s» bloqueada: %2$s - %3$s</string>
     <string name="svc_block_fasting">Jejum digital: limite reduzido a %1$d min</string>
     <string name="svc_block_context_active">Bloqueio por contexto ativo</string>
+    <string name="goal_challenge_title">Desafio em curso</string>
+    <string name="goal_challenge_text">%1$s - %2$d%% concluído</string>
+    <string name="goal_achievement_title">Nova conquista desbloqueada!</string>
+    <string name="goal_streak_title">Sequência incrível! 🔥</string>
+    <string name="goal_streak_text">%1$d dias seguidos em %2$s</string>
+    <string name="fav_saved">❤️ Guardado nos favoritos!</string>
+    <string name="motiv_notif_disabled">As notificações do Momentum estão desativadas nas definições do sistema</string>
+    <string name="motiv_notif_error">Não foi possível enviar a notificação: %1$s</string>
+    <string name="web_delete_category_error">Erro ao eliminar a categoria: %1$s</string>
+    <string name="goal_ch_goals_name">Lembretes de metas</string>
+    <string name="goal_ch_goals_desc">Notificações para lembrar o progresso das suas metas</string>
+    <string name="goal_ch_challenges_name">Lembretes de desafios</string>
+    <string name="goal_ch_challenges_desc">Notificações sobre os seus desafios ativos</string>
+    <string name="goal_ch_achievements_name">Conquistas e recompensas</string>
+    <string name="goal_ch_achievements_desc">Notificações quando concluis conquistas</string>
+    <string name="goal_challenge_bigtext">%1$s
+Faltam %2$d dias para concluir</string>
+    <string name="goal_action_continue">Continuar desafio</string>
+    <string name="goal_streak_bigtext">🔥 Tens uma sequência de %1$d dias rumo à tua meta!
+Continua e não quebres a sequência!</string>
 </resources>

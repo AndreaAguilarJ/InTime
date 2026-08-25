@@ -166,7 +166,7 @@ class MotivationalNotificationManager @Inject constructor(
             if (!areSystemNotificationsEnabled()) {
                 return TestResult(
                     delivered = false,
-                    error = "Las notificaciones de Momentum están desactivadas en los ajustes del sistema"
+                    error = context.getString(R.string.motiv_notif_disabled)
                 )
             }
             val message = resolveMessage(null)
@@ -178,7 +178,7 @@ class MotivationalNotificationManager @Inject constructor(
             Log.e(TAG, "Error enviando el mensaje de prueba", e)
             TestResult(
                 delivered = false,
-                error = "No se pudo enviar la notificación: ${e.message ?: "error desconocido"}"
+                error = context.getString(R.string.motiv_notif_error, e.message ?: "?")
             )
         }
     }
