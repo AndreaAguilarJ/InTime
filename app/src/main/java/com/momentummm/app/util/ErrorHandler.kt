@@ -49,24 +49,35 @@ object ErrorHandler {
     
     private fun getDetailedErrorMessage(error: Throwable, context: Context): String {
         val errorMsg = error.message?.lowercase() ?: ""
-
         // Los mensajes se resuelven desde recursos para que aparezcan en el idioma
         // del usuario; antes estaban fijos en español y todos los idiomas veían
         // el error en español.
-        val res = when {
-            !NetworkUtils.isNetworkAvailable(context) -> R.string.err_no_internet
-            errorMsg.contains("invalid credentials") || errorMsg.contains("invalid_credentials") -> R.string.err_invalid_credentials
-            errorMsg.contains("user_not_found") || errorMsg.contains("user not found") -> R.string.err_user_not_found
-            errorMsg.contains("user_already_exists") || errorMsg.contains("already exists") -> R.string.err_user_exists
-            errorMsg.contains("password") && errorMsg.contains("invalid") -> R.string.err_password_invalid
-            errorMsg.contains("email") && errorMsg.contains("invalid") -> R.string.err_email_invalid
-            errorMsg.contains("rate_limit") || errorMsg.contains("too many") -> R.string.err_rate_limit
-            errorMsg.contains("authentication") -> R.string.err_authentication
-            errorMsg.contains("network") -> R.string.err_network
-            errorMsg.contains("timeout") -> R.string.err_timeout
-            else -> R.string.err_unexpected
-        }
+        val res = errorMessageRes(errorMsg, NetworkUtils.isNetworkAvailable(context))
         return context.getString(res)
+    }
+
+    /**
+     * Mapeo puro de un mensaje de error (ya en minúsculas) a un recurso de texto.
+     * Se extrae de [getDetailedErrorMessage] para poder probarlo sin un Context:
+     * un reordenamiento de las ramas o una colisión de palabras clave mostraría el
+     * error equivocado, y esto es un fallo invisible al compilar.
+     *
+     * @param errorMsgLower el mensaje de la excepción en minúsculas ("" si es null)
+     * @param networkAvailable si hay conexión; si no la hay, gana sobre todo lo demás
+     */
+    @androidx.annotation.StringRes
+    fun errorMessageRes(errorMsgLower: String, networkAvailable: Boolean): Int = when {
+        !networkAvailable -> R.string.err_no_internet
+        errorMsgLower.contains("invalid credentials") || errorMsgLower.contains("invalid_credentials") -> R.string.err_invalid_credentials
+        errorMsgLower.contains("user_not_found") || errorMsgLower.contains("user not found") -> R.string.err_user_not_found
+        errorMsgLower.contains("user_already_exists") || errorMsgLower.contains("already exists") -> R.string.err_user_exists
+        errorMsgLower.contains("password") && errorMsgLower.contains("invalid") -> R.string.err_password_invalid
+        errorMsgLower.contains("email") && errorMsgLower.contains("invalid") -> R.string.err_email_invalid
+        errorMsgLower.contains("rate_limit") || errorMsgLower.contains("too many") -> R.string.err_rate_limit
+        errorMsgLower.contains("authentication") -> R.string.err_authentication
+        errorMsgLower.contains("network") -> R.string.err_network
+        errorMsgLower.contains("timeout") -> R.string.err_timeout
+        else -> R.string.err_unexpected
     }
     
     fun getErrorMessage(error: Throwable, context: Context): String {
