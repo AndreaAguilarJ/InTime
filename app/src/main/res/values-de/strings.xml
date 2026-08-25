@@ -216,7 +216,7 @@
     <string name="backup_settings_cloud_title">Cloud-Backup</string>
     <string name="backup_settings_last_backup">Letztes Backup: %1$s</string>
     <string name="backup_settings_no_backups">Keine Backups</string>
-    <string name="backup_settings_syncing">Backup läuft... %1$d%%</string>
+    <string name="backup_settings_syncing">Backup läuft… %1$d%%</string>
     <string name="backup_settings_backup_button">Sichern</string>
     <string name="backup_settings_restore_button">Wiederherstellen</string>
     <string name="backup_settings_export_title">Daten exportieren</string>
@@ -240,7 +240,7 @@
     <string name="sync_settings_status_success_cd">Synchronisiert</string>
     <string name="sync_settings_status_failed_cd">Fehler</string>
     <string name="sync_settings_status_idle">Nicht synchronisiert</string>
-    <string name="sync_settings_status_syncing">Synchronisierung...</string>
+    <string name="sync_settings_status_syncing">Synchronisierung…</string>
     <string name="sync_settings_status_success">Synchronisierung erfolgreich</string>
     <string name="sync_settings_status_failed">Fehler bei der Synchronisierung. Deine Daten sind lokal gespeichert.</string>
     <string name="sync_settings_last_sync_label">Letzte Synchronisierung:</string>
@@ -455,7 +455,7 @@
     <string name="app_blocked_suggestion_creative_title">Kreatives Hobby</string>
     <string name="app_blocked_suggestion_creative_desc">Entfalte deine Kreativität</string>
     <string name="app_blocked_open_momentum">Momentum öffnen</string>
-    <string name="app_blocked_close_in">Schließt in %1$d...</string>
+    <string name="app_blocked_close_in">Schließt in %1$d…</string>
     <string name="app_blocked_close">Schließen</string>
     <string name="app_blocked_emergency_unlock">🚨 Notfall-Entsperrung</string>
 
@@ -538,7 +538,7 @@
     <string name="emergency_unlock_shame_subtitle">Teile deinen Ausrutscher in sozialen Netzwerken</string>
     <string name="emergency_unlock_shame_price">KOSTENLOS</string>
     <string name="emergency_unlock_shame_badge">🤡 VIRAL</string>
-    <string name="emergency_unlock_shame_preparing">Dein Moment der Scham wird vorbereitet...</string>
+    <string name="emergency_unlock_shame_preparing">Dein Moment der Scham wird vorbereitet…</string>
     <string name="emergency_unlock_shame_share_ready">Der Teilen-Dialog wird geöffnet</string>
     <string name="emergency_unlock_cancel_button">Lieber nicht, ich bleibe stark 💪</string>
     <string name="emergency_unlock_motivation_quote">„Der Schmerz der Disziplin wiegt Gramm,&#10;Reue wiegt Tonnen“</string>
@@ -554,7 +554,7 @@
     <!-- Error Components -->
     <string name="offline_indicator_message">Keine Internetverbindung&#10;Eingeschränkte Funktionen verfügbar</string>
     <string name="offline_indicator_retry_cd">Erneut versuchen</string>
-    <string name="loading_indicator_message">Wird geladen...</string>
+    <string name="loading_indicator_message">Wird geladen…</string>
 
     <!-- Website Blocked Screen -->
     <string name="website_blocked_unknown_site">Unbekannte Website</string>
@@ -761,7 +761,7 @@
     <string name="goals_title_label">Zieltitel</string>
     <string name="goals_title_placeholder">z. B. Bildschirmzeit reduzieren</string>
     <string name="goals_description_label">Beschreibung</string>
-    <string name="goals_description_placeholder">Beschreibe dein Ziel...</string>
+    <string name="goals_description_placeholder">Beschreibe dein Ziel…</string>
     <string name="goals_target_time_label">Zielzeit</string>
     <string name="goals_hours_label">Stunden</string>
     <string name="goals_minutes_label">Minuten</string>
@@ -997,7 +997,7 @@
     <string name="notification_sync_completed_title">☁️ Synchronisierung abgeschlossen</string>
     <string name="notification_sync_completed_message">Deine Daten sind in der Cloud gesichert</string>
     <string name="notification_sync_failed_title">⚠️ Synchronisierungsfehler</string>
-    <string name="notification_sync_failed_message">Deine Daten konnten nicht synchronisiert werden. Neuer Versuch...</string>
+    <string name="notification_sync_failed_message">Deine Daten konnten nicht synchronisiert werden. Neuer Versuch…</string>
     <string name="motivational_widget_description">Zeigt jeden Tag eine andere motivierende Nachricht, um dich zu inspirieren</string>
     <string name="device_admin_label">Momentum - Anti-Deinstallationsschutz</string>
     <string name="device_admin_description">Aktiviere diese Option, um eine versehentliche Deinstallation von Momentum zu verhindern, solange Sperren aktiv sind. Du kannst sie jederzeit in den Einstellungen deaktivieren.</string>
