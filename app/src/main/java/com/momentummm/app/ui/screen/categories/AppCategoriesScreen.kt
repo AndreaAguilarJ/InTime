@@ -694,7 +694,9 @@ private fun CategoryAppItem(
         
         IconButton(
             onClick = onRemove,
-            modifier = Modifier.size(32.dp)
+            // Objetivo táctil de 48 dp (mínimo WCAG 2.5.5 / Material). El icono se
+            // mantiene a 16 dp, así que se ve igual; solo crece el área pulsable.
+            modifier = Modifier.size(48.dp)
         ) {
             Icon(
                 Icons.Filled.Close,
