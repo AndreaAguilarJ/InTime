@@ -38,7 +38,13 @@
     <!-- El bloqueo contextual mantiene ubicación en segundo plano. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!--
+      ACCESS_BACKGROUND_LOCATION se eliminó a propósito: toda la ubicación se usa
+      dentro de ContextBlockingService, un servicio en primer plano con
+      foregroundServiceType="location". Un servicio en primer plano NO necesita
+      ubicación en segundo plano, y declararla obliga a un formulario especial de
+      revisión en Play. El código solo pide ACCESS_FINE/COARSE_LOCATION.
+    -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <uses-feature
