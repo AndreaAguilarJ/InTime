@@ -1,5 +1,6 @@
 package com.momentummm.app.util
 
+import com.momentummm.app.R
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -48,31 +49,24 @@ object ErrorHandler {
     
     private fun getDetailedErrorMessage(error: Throwable, context: Context): String {
         val errorMsg = error.message?.lowercase() ?: ""
-        
-        return when {
-            !NetworkUtils.isNetworkAvailable(context) -> 
-                "Sin conexión a internet. Verifica tu conexión y vuelve a intentar."
-            errorMsg.contains("invalid credentials") || errorMsg.contains("invalid_credentials") ->
-                "Email o contraseña incorrectos"
-            errorMsg.contains("user_not_found") || errorMsg.contains("user not found") ->
-                "No existe una cuenta con este email"
-            errorMsg.contains("user_already_exists") || errorMsg.contains("already exists") ->
-                "Ya existe una cuenta con este email"
-            errorMsg.contains("password") && errorMsg.contains("invalid") ->
-                "La contraseña es incorrecta"
-            errorMsg.contains("email") && errorMsg.contains("invalid") ->
-                "El formato del email no es válido"
-            errorMsg.contains("rate_limit") || errorMsg.contains("too many") ->
-                "Demasiados intentos. Espera unos minutos"
-            errorMsg.contains("authentication") ->
-                "Error de autenticación. Verifica tus credenciales."
-            errorMsg.contains("network") ->
-                "Error de red. Verifica tu conexión a internet."
-            errorMsg.contains("timeout") ->
-                "La operación tardó demasiado. Inténtalo de nuevo."
-            else -> 
-                "Ha ocurrido un error inesperado. Inténtalo de nuevo."
+
+        // Los mensajes se resuelven desde recursos para que aparezcan en el idioma
+        // del usuario; antes estaban fijos en español y todos los idiomas veían
+        // el error en español.
+        val res = when {
+            !NetworkUtils.isNetworkAvailable(context) -> R.string.err_no_internet
+            errorMsg.contains("invalid credentials") || errorMsg.contains("invalid_credentials") -> R.string.err_invalid_credentials
+            errorMsg.contains("user_not_found") || errorMsg.contains("user not found") -> R.string.err_user_not_found
+            errorMsg.contains("user_already_exists") || errorMsg.contains("already exists") -> R.string.err_user_exists
+            errorMsg.contains("password") && errorMsg.contains("invalid") -> R.string.err_password_invalid
+            errorMsg.contains("email") && errorMsg.contains("invalid") -> R.string.err_email_invalid
+            errorMsg.contains("rate_limit") || errorMsg.contains("too many") -> R.string.err_rate_limit
+            errorMsg.contains("authentication") -> R.string.err_authentication
+            errorMsg.contains("network") -> R.string.err_network
+            errorMsg.contains("timeout") -> R.string.err_timeout
+            else -> R.string.err_unexpected
         }
+        return context.getString(res)
     }
     
     fun getErrorMessage(error: Throwable, context: Context): String {

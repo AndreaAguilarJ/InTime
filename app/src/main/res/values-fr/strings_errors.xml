@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="err_no_internet">Pas de connexion internet. Vérifiez votre connexion et réessayez.</string>
+    <string name="err_invalid_credentials">E-mail ou mot de passe incorrect</string>
+    <string name="err_user_not_found">Aucun compte avec cet e-mail</string>
+    <string name="err_user_exists">Un compte avec cet e-mail existe déjà</string>
+    <string name="err_password_invalid">Le mot de passe est incorrect</string>
+    <string name="err_email_invalid">Le format de l’e-mail n’est pas valide</string>
+    <string name="err_rate_limit">Trop de tentatives. Attendez quelques minutes</string>
+    <string name="err_authentication">Erreur d’authentification. Vérifiez vos identifiants.</string>
+    <string name="err_network">Erreur réseau. Vérifiez votre connexion internet.</string>
+    <string name="err_timeout">L’opération a pris trop de temps. Réessayez.</string>
+    <string name="err_unexpected">Une erreur inattendue est survenue. Réessayez.</string>
+</resources>
