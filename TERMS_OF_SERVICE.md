@@ -7,7 +7,7 @@
 
 > **Nota para el propietario:** Este documento es una base completa y lista para
 > usar, redactada a partir del funcionamiento real de la app. Antes de publicar,
-> revisa los dos campos marcados con `[...]` (correo de contacto y jurisdicción) y,
+> revisa el campo marcado con `[...]` (la jurisdicción legal) y,
 > si tu caso lo requiere, pídele a un profesional que lo valide. No es asesoría
 > legal.
 
@@ -91,7 +91,7 @@ aceptación.
 
 ## 11. Contacto
 
-Para cualquier duda sobre estos Términos, escríbenos a: **[correo de contacto]**
+Para cualquier duda sobre estos Términos, escríbenos a: **support.momentum.app@gmail.com**
 
 ## 12. Legislación Aplicable
 
