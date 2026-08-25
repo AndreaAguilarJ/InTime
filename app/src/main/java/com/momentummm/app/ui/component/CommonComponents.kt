@@ -12,6 +12,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 /**
  * Función de extensión para realizar feedback táctil ligero
@@ -65,7 +67,7 @@ fun SimpleDatePicker(
                         onValueChange = { 
                             if (it.length <= 2) selectedDay = it.filter { char -> char.isDigit() }
                         },
-                        label = { Text("Día") },
+                        label = { Text(stringResource(R.string.date_day)) },
                         placeholder = { Text("01") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
@@ -77,7 +79,7 @@ fun SimpleDatePicker(
                         onValueChange = { 
                             if (it.length <= 2) selectedMonth = it.filter { char -> char.isDigit() }
                         },
-                        label = { Text("Mes") },
+                        label = { Text(stringResource(R.string.date_month)) },
                         placeholder = { Text("01") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
@@ -89,7 +91,7 @@ fun SimpleDatePicker(
                         onValueChange = { 
                             if (it.length <= 4) selectedYear = it.filter { char -> char.isDigit() }
                         },
-                        label = { Text("Año") },
+                        label = { Text(stringResource(R.string.date_year)) },
                         placeholder = { Text("1990") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(2f),

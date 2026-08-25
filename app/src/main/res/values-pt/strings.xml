@@ -1229,4 +1229,7 @@
     <string name="gam_ev_streak_restart">Comece uma nova sequência amanhã</string>
     <string name="gam_ev_perfect_day">⭐ Dia perfeito! +%1$d XP</string>
     <string name="gam_ev_level_up">🎉 Subiste ao nível %1$d!</string>
+    <string name="date_day">Dia</string>
+    <string name="date_month">Mês</string>
+    <string name="date_year">Ano</string>
 </resources>
