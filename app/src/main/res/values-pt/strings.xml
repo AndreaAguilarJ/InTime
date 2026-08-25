@@ -1270,4 +1270,10 @@
         <item quantity="one">Acesso instantâneo por %1$d minuto</item>
         <item quantity="other">Acesso instantâneo por %1$d minutos</item>
     </plurals>
+    <string-array name="auth_signup_benefits">
+        <item>Sincronize os seus dados entre dispositivos</item>
+        <item>Faça uma cópia de segurança em segurança</item>
+        <item>Aceda a funções premium</item>
+        <item>Obtenha estatísticas avançadas</item>
+    </string-array>
 </resources>
