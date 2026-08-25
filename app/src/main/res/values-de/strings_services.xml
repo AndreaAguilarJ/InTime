@@ -16,4 +16,15 @@
         <item quantity="one">%1$d aktive Regel</item>
         <item quantity="other">%1$d aktive Regeln</item>
     </plurals>
+    <string name="svc_block_comm_only">Nur Kommunikations-Apps sind erlaubt</string>
+    <string name="svc_block_nuclear">Nuklearmodus: noch %1$d Tage gesperrt</string>
+    <string name="svc_block_sleep">Zeit zum Ausruhen. Die Apps sind morgen wieder verfügbar.</string>
+    <string name="svc_block_rule">Gesperrt durch Regel: %1$s</string>
+    <string name="svc_block_rule_fallback">Kontext</string>
+    <string name="svc_block_daily_limit">Du hast dein Limit von %1$d Minuten heute erreicht</string>
+    <string name="svc_block_schedule">Nach Zeitplan gesperrt: %1$s</string>
+    <string name="svc_block_category_limit">Limit der Kategorie „%1$s“ überschritten (%2$d Min)</string>
+    <string name="svc_block_category_schedule">Kategorie „%1$s“ gesperrt: %2$s - %3$s</string>
+    <string name="svc_block_fasting">Digitales Fasten: Limit auf %1$d Min reduziert</string>
+    <string name="svc_block_context_active">Kontextsperre aktiv</string>
 </resources>

@@ -16,4 +16,15 @@
         <item quantity="one">%1$d règle active</item>
         <item quantity="other">%1$d règles actives</item>
     </plurals>
+    <string name="svc_block_comm_only">Seules les apps de communication sont autorisées</string>
+    <string name="svc_block_nuclear">Mode nucléaire : bloqué pendant %1$d jours de plus</string>
+    <string name="svc_block_sleep">Il est temps de se reposer. Les apps seront de nouveau disponibles demain.</string>
+    <string name="svc_block_rule">Bloqué par la règle : %1$s</string>
+    <string name="svc_block_rule_fallback">Contexte</string>
+    <string name="svc_block_daily_limit">Vous avez atteint votre limite de %1$d minutes aujourd’hui</string>
+    <string name="svc_block_schedule">Bloquée par horaire : %1$s</string>
+    <string name="svc_block_category_limit">Limite de la catégorie «%1$s» dépassée (%2$d min)</string>
+    <string name="svc_block_category_schedule">Catégorie «%1$s» bloquée : %2$s - %3$s</string>
+    <string name="svc_block_fasting">Jeûne numérique : limite réduite à %1$d min</string>
+    <string name="svc_block_context_active">Blocage par contexte actif</string>
 </resources>

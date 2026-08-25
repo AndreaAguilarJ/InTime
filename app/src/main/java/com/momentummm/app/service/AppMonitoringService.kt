@@ -34,6 +34,7 @@ import com.momentummm.app.ui.overlay.AppBlockOverlayService
 import com.momentummm.app.util.BlockingCapabilities
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import com.momentummm.app.R
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -325,7 +326,7 @@ class AppMonitoringService : Service() {
                     val allowedApps = smartBlockingManager.getCommunicationOnlyAllowedApps()
                     if (!allowedApps.contains(currentApp)) {
                         Log.d(TAG, "Modo Solo Comunicación activo - bloqueando $currentApp")
-                        blockApp(currentApp, "Solo están permitidas apps de comunicación")
+                        blockApp(currentApp, getString(R.string.svc_block_comm_only))
                         return@withTimeoutOrNull
                     }
                 }
@@ -334,7 +335,7 @@ class AppMonitoringService : Service() {
                 if (smartBlockingManager.isAppInNuclearMode(currentApp)) {
                     val remainingDays = smartBlockingManager.getNuclearModeRemainingDays()
                     Log.d(TAG, "Modo Nuclear activo - bloqueando $currentApp (faltan $remainingDays días)")
-                    blockApp(currentApp, "Modo Nuclear: Bloqueado por $remainingDays días más")
+                    blockApp(currentApp, getString(R.string.svc_block_nuclear, remainingDays))
                     return@withTimeoutOrNull
                 }
 
@@ -346,7 +347,7 @@ class AppMonitoringService : Service() {
                     }
                     if (!isWhitelisted) {
                         Log.d(TAG, "Ventana de Sueño activa - bloqueando $currentApp")
-                        blockApp(currentApp, "Es hora de descansar. Las apps estarán disponibles mañana.")
+                        blockApp(currentApp, getString(R.string.svc_block_sleep))
                         return@withTimeoutOrNull
                     }
                 }
@@ -355,7 +356,7 @@ class AppMonitoringService : Service() {
                 if (smartBlockingManager.isAppBlockedByContext(currentApp)) {
                     val activeRule = smartBlockingManager.activeContextRules.value.firstOrNull()
                     Log.d(TAG, "Bloqueo por contexto activo - bloqueando $currentApp")
-                    blockApp(currentApp, "Bloqueado por regla: ${activeRule?.ruleName ?: "Contexto"}")
+                    blockApp(currentApp, getString(R.string.svc_block_rule, activeRule?.ruleName ?: getString(R.string.svc_block_rule_fallback)))
                     return@withTimeoutOrNull
                 }
 
@@ -411,7 +412,7 @@ class AppMonitoringService : Service() {
                         val dailyLimit = activeLimit.dailyLimitMinutes
                         Log.d(TAG, "App $currentApp está bloqueada hoy - FORZANDO pantalla de bloqueo")
                         smartBlockingManager.registerBlockScreenShown(currentApp)
-                        blockApp(currentApp, "Ya alcanzaste tu límite de $dailyLimit minutos hoy")
+                        blockApp(currentApp, getString(R.string.svc_block_daily_limit, dailyLimit))
                     } else {
                         // Incluso si no podemos mostrar pantalla (cooldown),
                         // volver a tapar la app para sacar al usuario de ella
@@ -450,7 +451,7 @@ class AppMonitoringService : Service() {
                     // Feature solicitada: "block certain apps... at a certain time"
                     if (appLimit != null && appLimit.isEnabled && appLimit.isWithinScheduleBlock()) {
                         Log.d(TAG, "App $currentApp bloqueada por horario: ${appLimit.getScheduleFormatted()}")
-                        blockApp(currentApp, "Bloqueada por horario: ${appLimit.getScheduleFormatted()}")
+                        blockApp(currentApp, getString(R.string.svc_block_schedule, appLimit.getScheduleFormatted()))
                         return@withTimeoutOrNull
                     }
                     
@@ -462,9 +463,9 @@ class AppMonitoringService : Service() {
                     if (categoryBlockReason != null) {
                         val message = when (categoryBlockReason) {
                             is com.momentummm.app.data.repository.CategoryBlockReason.LimitExceeded -> 
-                                "Límite de categoría '${categoryBlockReason.categoryName}' excedido (${categoryBlockReason.limitMinutes}m)"
+                                getString(R.string.svc_block_category_limit, categoryBlockReason.categoryName, categoryBlockReason.limitMinutes)
                             is com.momentummm.app.data.repository.CategoryBlockReason.ScheduleBlock ->
-                                "Categoría '${categoryBlockReason.categoryName}' bloqueada: ${categoryBlockReason.startTime} - ${categoryBlockReason.endTime}"
+                                getString(R.string.svc_block_category_schedule, categoryBlockReason.categoryName, categoryBlockReason.startTime, categoryBlockReason.endTime)
                         }
                         Log.d(TAG, "App $currentApp bloqueada por categoría: $message")
                         blockApp(currentApp, message)
@@ -573,8 +574,8 @@ class AppMonitoringService : Service() {
                                 if (currentApp != lastCheckedApp || (currentTime - lastBlockedTime) > BLOCK_COOLDOWN) {
                                     val blockReason = if (effectiveLimit < originalLimit) {
                                         when {
-                                            smartBlockingManager.isInFastingMode.value -> "Ayuno Digital: Límite reducido a ${effectiveLimit}m"
-                                            smartBlockingManager.activeContextRules.value.isNotEmpty() -> "Bloqueo por Contexto activo"
+                                            smartBlockingManager.isInFastingMode.value -> getString(R.string.svc_block_fasting, effectiveLimit)
+                                            smartBlockingManager.activeContextRules.value.isNotEmpty() -> getString(R.string.svc_block_context_active)
                                             else -> null
                                         }
                                     } else null

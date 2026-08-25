@@ -22,4 +22,15 @@
         <item quantity="one">%1$d regla activa</item>
         <item quantity="other">%1$d reglas activas</item>
     </plurals>
+    <string name="svc_block_comm_only">Solo se permiten apps de comunicación</string>
+    <string name="svc_block_nuclear">Modo Nuclear: bloqueado durante %1$d días más</string>
+    <string name="svc_block_sleep">Hora de descansar. Las apps volverán a estar disponibles mañana.</string>
+    <string name="svc_block_rule">Bloqueado por la regla: %1$s</string>
+    <string name="svc_block_rule_fallback">Contexto</string>
+    <string name="svc_block_daily_limit">Ya alcanzaste tu límite de %1$d minutos hoy</string>
+    <string name="svc_block_schedule">Bloqueada por horario: %1$s</string>
+    <string name="svc_block_category_limit">Límite de la categoría «%1$s» superado (%2$d min)</string>
+    <string name="svc_block_category_schedule">Categoría «%1$s» bloqueada: %2$s - %3$s</string>
+    <string name="svc_block_fasting">Ayuno digital: límite reducido a %1$d min</string>
+    <string name="svc_block_context_active">Bloqueo por contexto activo</string>
 </resources>
