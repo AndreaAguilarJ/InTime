@@ -11,7 +11,7 @@ object AppLinks {
 
     private const val TAG = "AppLinks"
 
-    const val REPOSITORY_URL = "https://github.com/AndreaAguilarJ/Momentum"
+    const val REPOSITORY_URL = "https://github.com/AndreaAguilarJ/InTime"
 
     /** Documento público verificado el 24/08/2026. */
     const val PRIVACY_POLICY_URL = "$REPOSITORY_URL/blob/main/PRIVACY_POLICY.md"
