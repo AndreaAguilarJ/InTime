@@ -34,4 +34,6 @@
     <string name="life_weeks_years_value">%1$d years</string>
     <string name="life_weeks_color_customization">🎨 Colour customization</string>
     <string name="life_weeks_saved_gallery">✅ Saved to gallery</string>
+    <string name="life_weeks_current_age">Current age: %1$d years</string>
+    <string name="life_weeks_progress">Life progress: %1$s%%</string>
 </resources>

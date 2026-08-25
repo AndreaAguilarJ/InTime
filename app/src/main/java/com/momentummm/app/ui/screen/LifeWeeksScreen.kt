@@ -154,7 +154,7 @@ fun LifeWeeksScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = "Edad actual: ${data.currentAge} años",
+                                text = stringResource(R.string.life_weeks_current_age, data.currentAge),
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center,
@@ -162,7 +162,7 @@ fun LifeWeeksScreen(
                             )
 
                             Text(
-                                text = "Progreso de vida: ${String.format("%.1f", data.progressPercentage)}%",
+                                text = stringResource(R.string.life_weeks_progress, String.format("%.1f", data.progressPercentage)),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center,

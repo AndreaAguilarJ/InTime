@@ -34,4 +34,6 @@
     <string name="life_weeks_years_value">%1$d ans</string>
     <string name="life_weeks_color_customization">🎨 Personnalisation des couleurs</string>
     <string name="life_weeks_saved_gallery">✅ Enregistré dans la galerie</string>
+    <string name="life_weeks_current_age">Âge actuel : %1$d ans</string>
+    <string name="life_weeks_progress">Progression de vie : %1$s%%</string>
 </resources>
