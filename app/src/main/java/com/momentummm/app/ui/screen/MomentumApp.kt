@@ -492,7 +492,7 @@ private fun MainAppContent(
                 }
                 composable(Screen.MyLife.route) {
                     val viewModel: com.momentummm.app.ui.viewmodel.LifeWeeksViewModel = viewModel(
-                        factory = LifeWeeksViewModelFactory(application.userRepository)
+                        factory = LifeWeeksViewModelFactory(application.userRepository, application)
                     )
                     LifeWeeksScreen(viewModel = viewModel, onNavigateToAccountSettings = { navController.navigate("account_settings") })
                 }

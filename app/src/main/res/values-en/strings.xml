@@ -1291,4 +1291,6 @@
     <string name="community_err_achievements">Error loading achievements: %1$s</string>
     <string name="community_request_sent">✅ Request sent to %1$s</string>
     <string name="community_request_failed">❌ %1$s</string>
+    <string name="billing_error">Billing error: %1$s</string>
+    <string name="life_weeks_load_error">Error loading settings</string>
 </resources>

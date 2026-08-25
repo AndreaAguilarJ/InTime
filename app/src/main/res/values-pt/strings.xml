@@ -1238,4 +1238,6 @@
     <string name="community_err_achievements">Erro ao carregar as conquistas: %1$s</string>
     <string name="community_request_sent">✅ Pedido enviado a %1$s</string>
     <string name="community_request_failed">❌ %1$s</string>
+    <string name="billing_error">Erro na faturação: %1$s</string>
+    <string name="life_weeks_load_error">Erro ao carregar as definições</string>
 </resources>

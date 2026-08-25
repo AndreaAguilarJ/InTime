@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
+import com.momentummm.app.R
 
 data class LifeWeeksUiState(
     val isLoading: Boolean = true,
@@ -24,7 +25,8 @@ data class LifeWeeksUiState(
 )
 
 class LifeWeeksViewModel(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val appContext: android.content.Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LifeWeeksUiState())
@@ -41,7 +43,7 @@ class LifeWeeksViewModel(
                     e.printStackTrace()
                     _uiState.update { it.copy(
                         isLoading = false,
-                        errorMessage = "Error cargando configuración"
+                        errorMessage = appContext.getString(R.string.life_weeks_load_error)
                     ) }
                 }
                 .collect { settings ->
@@ -97,12 +99,13 @@ class LifeWeeksViewModel(
 }
 
 class LifeWeeksViewModelFactory(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val appContext: android.content.Context
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LifeWeeksViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return LifeWeeksViewModel(userRepository) as T
+            return LifeWeeksViewModel(userRepository, appContext) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

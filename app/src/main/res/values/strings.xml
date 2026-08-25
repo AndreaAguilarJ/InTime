@@ -1312,4 +1312,6 @@
     <string name="community_err_achievements">Error al cargar los logros: %1$s</string>
     <string name="community_request_sent">✅ Solicitud enviada a %1$s</string>
     <string name="community_request_failed">❌ %1$s</string>
+    <string name="billing_error">Error en la facturación: %1$s</string>
+    <string name="life_weeks_load_error">Error al cargar la configuración</string>
 </resources>

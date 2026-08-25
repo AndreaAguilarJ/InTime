@@ -1238,4 +1238,6 @@
     <string name="community_err_achievements">Erreur de chargement des succès : %1$s</string>
     <string name="community_request_sent">✅ Demande envoyée à %1$s</string>
     <string name="community_request_failed">❌ %1$s</string>
+    <string name="billing_error">Erreur de facturation : %1$s</string>
+    <string name="life_weeks_load_error">Erreur de chargement des réglages</string>
 </resources>
