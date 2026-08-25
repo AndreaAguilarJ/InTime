@@ -88,6 +88,9 @@ class StringFormatParityTest {
             }
         return resultado
     }
+
+    @Test
+    fun `cada traduccion conserva los mismos especificadores de formato que el original`() {
         val res = raizDeRecursos()
         val base = leerCadenas(File(res, "values"))
         assertTrue("el idioma por defecto debe tener cadenas", base.isNotEmpty())

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos visibles de las notificaciones de servicios en primer plano (barra de estado
+  y pantalla de bloqueo). Antes estaban fijos en español dentro de los .kt, así que un
+  usuario con el móvil en otro idioma veía la notificación en español.
+-->
+<resources>
+    <!-- Modo Nuclear -->
+    <string name="svc_nuclear_channel_name">Modo Nuclear</string>
+    <string name="svc_nuclear_channel_desc">Notificaciones del Modo Nuclear</string>
+    <string name="svc_nuclear_title">☢️ Modo Nuclear activo</string>
+    <string name="svc_nuclear_text">%1$d días restantes | Temporizador: %2$d min para desbloquear</string>
+    <string name="svc_nuclear_action_running">Temporizador activo ⏱️</string>
+    <string name="svc_nuclear_action_open">Abre Momentum para continuar</string>
+    <string name="svc_nuclear_unlock_title">🎉 ¡Desbloqueo nuclear disponible!</string>
+    <string name="svc_nuclear_unlock_text">Has completado el tiempo de espera. Ya puedes desactivar el Modo Nuclear.</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_nuclear_channel_name">Nuclear mode</string>
+    <string name="svc_nuclear_channel_desc">Nuclear mode notifications</string>
+    <string name="svc_nuclear_title">☢️ Nuclear mode active</string>
+    <string name="svc_nuclear_text">%1$d days left | Timer: %2$d min to unlock</string>
+    <string name="svc_nuclear_action_running">Timer running ⏱️</string>
+    <string name="svc_nuclear_action_open">Open Momentum to continue</string>
+    <string name="svc_nuclear_unlock_title">🎉 Nuclear unlock available!</string>
+    <string name="svc_nuclear_unlock_text">You have completed the waiting time. You can now turn off Nuclear mode.</string>
+</resources>

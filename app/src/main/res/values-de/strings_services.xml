@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_nuclear_channel_name">Nuklearmodus</string>
+    <string name="svc_nuclear_channel_desc">Benachrichtigungen des Nuklearmodus</string>
+    <string name="svc_nuclear_title">☢️ Nuklearmodus aktiv</string>
+    <string name="svc_nuclear_text">Noch %1$d Tage | Timer: %2$d Min bis zur Freigabe</string>
+    <string name="svc_nuclear_action_running">Timer läuft ⏱️</string>
+    <string name="svc_nuclear_action_open">Öffne Momentum, um fortzufahren</string>
+    <string name="svc_nuclear_unlock_title">🎉 Nukleare Freigabe verfügbar!</string>
+    <string name="svc_nuclear_unlock_text">Du hast die Wartezeit abgeschlossen. Du kannst den Nuklearmodus jetzt ausschalten.</string>
+</resources>

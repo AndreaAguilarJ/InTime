@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_nuclear_channel_name">Modo nuclear</string>
+    <string name="svc_nuclear_channel_desc">Notificações do Modo nuclear</string>
+    <string name="svc_nuclear_title">☢️ Modo nuclear ativo</string>
+    <string name="svc_nuclear_text">%1$d dias restantes | Temporizador: %2$d min para desbloquear</string>
+    <string name="svc_nuclear_action_running">Temporizador ativo ⏱️</string>
+    <string name="svc_nuclear_action_open">Abra o Momentum para continuar</string>
+    <string name="svc_nuclear_unlock_title">🎉 Desbloqueio nuclear disponível!</string>
+    <string name="svc_nuclear_unlock_text">Concluiu o tempo de espera. Já pode desativar o Modo nuclear.</string>
+</resources>
