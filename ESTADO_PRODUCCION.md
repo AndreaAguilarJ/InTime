@@ -388,3 +388,44 @@ numérica fallaba en cada iteración y el error estaba silenciado. Un resultado
 limpio obtenido con una herramienta que no puede fallar visiblemente no es
 evidencia de nada. Se detectó probando el barrido contra un caso cuya respuesta
 ya se conocía.
+
+
+---
+
+## Estado a 2026-08-25 (sesión de continuación) — todo subido al PR #6
+
+Todo el trabajo está confirmado y subido a la rama `feat/perf-safearea-cleanup`
+en el PR #6 (https://github.com/AndreaAguilarJ/InTime/pull/6). 91 pruebas
+unitarias en verde. `assembleDebug` y `assembleRelease` (con R8) compilan; los
+recursos nuevos sobreviven al recorte de recursos del release.
+
+### Verificado limpio esta sesión (evidencia)
+
+| Área | Resultado |
+|---|---|
+| Traducción de interfaz (es/en/de/fr/pt) | Completa en pantallas, diálogos, notificaciones de los 3 servicios, pantallas de bloqueo, widget y errores. Solo queda español en el corpus motivacional (contenido) y el subsistema de analítica desconectado (código muerto). |
+| Plurales | 5 claves numéricas con formas one/other; test de paridad ampliado para vigilar `<plurals>`. |
+| Etiquetado de accesibilidad | 0 `IconButton` sin etiqueta; 0 `Image` con significado sin descripción; 0 `contentDescription` fija en español. |
+| Tamaños táctiles | Único objetivo bajo 48 dp (botón «quitar app») corregido a 48 dp. |
+| Contraste de color | Textos del widget calculados: todos pasan WCAG AA (mínimo 4,81:1). |
+| Seguridad del manifiesto | 5 componentes exportados, todos protegidos (BIND_ACCESSIBILITY_SERVICE / BIND_DEVICE_ADMIN / lanzadores). FileProvider `exported=false`. `allowBackup=false`, `usesCleartextTraffic=false`. |
+
+### Bloqueos que impiden el 100 % — NO son de código
+
+Ninguno de estos lo puede resolver el desarrollo; dependen del propietario:
+
+1. **Play Console**: crear los productos de suscripción reales y una vía de
+   compra/verificación (hoy `SubscriptionScreen` concede premium sin cobrar, a
+   propósito, como bloqueo declarado).
+2. **URLs legales**: direcciones reales de política de privacidad y términos.
+3. **`GEMINI_API_KEY`** en `local.properties` para la generación por IA.
+4. **Keystore de firma de producción** con sus contraseñas.
+5. **Verificación en dispositivo desbloqueado**: TalkBack, orden de foco y
+   render de los idiomas en pantalla (solo-compila hasta ahora).
+
+### Decisiones de contenido pendientes del propietario
+
+- Traducir (o no) los 584 mensajes motivacionales y el prompt de IA a los otros
+  4 idiomas.
+- Conectar o eliminar el subsistema de analítica de patrones de uso, hoy
+  desconectado.
