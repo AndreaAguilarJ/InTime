@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -342,7 +343,7 @@ fun AppBlockSection(
                 // Este chip es un contador, no una acción. Sin clearAndSetSemantics
                 // TalkBack lo anuncia como "botón" y al pulsarlo no ocurre nada.
                 // El texto se conserva para que siga leyéndose.
-                val rulesCountLabel = stringResource(R.string.in_app_block_rules_count, rules.size)
+                val rulesCountLabel = pluralStringResource(R.plurals.in_app_block_rules_count, rules.size, rules.size)
                 AssistChip(
                     onClick = { },
                     modifier = Modifier.clearAndSetSemantics {

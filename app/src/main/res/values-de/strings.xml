@@ -470,7 +470,6 @@
     <string name="lock_screen_password_incorrect">Falsches Passwort</string>
     <string name="lock_screen_hide_password">Passwort verbergen</string>
     <string name="lock_screen_show_password">Passwort anzeigen</string>
-    <string name="lock_screen_temporarily_locked">Gesperrt für %1$d Minute(n)</string>
     <string name="lock_screen_unlock">Entsperren</string>
     <string name="lock_screen_biometric_title">Momentum entsperren</string>
     <string name="lock_screen_biometric_subtitle">Nutze deinen Fingerabdruck oder Face ID</string>
@@ -493,7 +492,6 @@
     <string name="in_app_block_no_results_title">Keine Ergebnisse</string>
     <string name="in_app_block_no_results_subtitle">Keine Übereinstimmungen für deine Suche gefunden.</string>
     <string name="in_app_block_enabled_count">%1$d von %2$d aktiv</string>
-    <string name="in_app_block_rules_count">%1$d Regeln</string>
     <string name="block_type_reels_desc">Kurze vertikale Videos</string>
     <string name="block_type_shorts_desc">Kurze YouTube-Videos</string>
     <string name="block_type_explore_desc">Neue Inhalte entdecken</string>
@@ -877,7 +875,6 @@
     <string name="analytics_summary_total_screen_time">Gesamte Bildschirmzeit</string>
     <string name="analytics_summary_daily_average">Täglicher Durchschnitt</string>
     <string name="analytics_summary_total_pickups">Gesamtzahl der Entsperrungen</string>
-    <string name="analytics_summary_pickups_times">%1$d Mal</string>
     <string name="analytics_summary_top_app">Top-App</string>
 
     <plurals name="analytics_last_used_minutes">
@@ -1251,5 +1248,17 @@
     <plurals name="notification_streak_broken_message">
         <item quantity="one">Deine Serie von %1$d Tag ist verloren. Starte neu!</item>
         <item quantity="other">Deine Serie von %1$d Tagen ist verloren. Starte neu!</item>
+    </plurals>
+    <plurals name="analytics_summary_pickups_times">
+        <item quantity="one">%1$d Mal</item>
+        <item quantity="other">%1$d Mal</item>
+    </plurals>
+    <plurals name="in_app_block_rules_count">
+        <item quantity="one">%1$d Regel</item>
+        <item quantity="other">%1$d Regeln</item>
+    </plurals>
+    <plurals name="lock_screen_temporarily_locked">
+        <item quantity="one">Gesperrt für %1$d Minute</item>
+        <item quantity="other">Gesperrt für %1$d Minuten</item>
     </plurals>
 </resources>
