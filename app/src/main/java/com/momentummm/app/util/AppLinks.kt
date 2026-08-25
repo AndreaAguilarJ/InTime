@@ -16,12 +16,8 @@ object AppLinks {
     /** Documento público verificado el 24/08/2026. */
     const val PRIVACY_POLICY_URL = "$REPOSITORY_URL/blob/main/PRIVACY_POLICY.md"
 
-    /**
-     * No existe todavía un documento de términos en el repositorio ni un asset
-     * local. Una cadena vacía representa esa ausencia de forma explícita; no se
-     * dirige al usuario a una URL inventada.
-     */
-    const val TERMS_URL = ""
+    /** Documento de términos de servicio publicado en el repositorio público. */
+    const val TERMS_URL = "$REPOSITORY_URL/blob/main/TERMS_OF_SERVICE.md"
 
     /** Permite a la UI deshabilitar un enlace que aún no está publicado. */
     fun isConfigured(url: String): Boolean {
