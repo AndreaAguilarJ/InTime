@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_years">anos</string>
+    <string name="widget_percent_of_life">%1$s%% da sua vida</string>
+    <string name="widget_tap_to_open">Toque para abrir</string>
+    <string name="widget_life_title">A MINHA VIDA EM SEMANAS</string>
+</resources>
