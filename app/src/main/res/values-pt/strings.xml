@@ -1272,7 +1272,7 @@
     </plurals>
     <string-array name="auth_signup_benefits">
         <item>Sincronize os seus dados entre dispositivos</item>
-        <item>Faça uma cópia de segurança em segurança</item>
+        <item>Faça uma cópia de segurança das suas informações</item>
         <item>Aceda a funções premium</item>
         <item>Obtenha estatísticas avançadas</item>
     </string-array>
