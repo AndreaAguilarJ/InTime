@@ -31,7 +31,8 @@ import com.momentummm.app.widget.LifeWeeksWidget
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSettingsScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onCustomizeColors: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as MomentumApplication
@@ -426,9 +427,7 @@ fun AccountSettingsScreen(
                             }
 
                             TextButton(
-                                onClick = {
-                                    // TODO: Abrir configuración de colores
-                                }
+                                onClick = onCustomizeColors
                             ) {
                                 Text(stringResource(R.string.account_settings_customize_button))
                             }

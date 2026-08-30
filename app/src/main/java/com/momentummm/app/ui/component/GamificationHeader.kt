@@ -213,7 +213,7 @@ fun GamificationHeader(
                         Text(
                             text = stringResource(
                                 R.string.gamification_header_xp_to_next_level,
-                                formatNumber(gamificationState.xpForNextLevel),
+                                formatNumber(gamificationState.xpToNextLevel),
                                 gamificationState.level + 1
                             ),
                             style = MaterialTheme.typography.labelSmall,

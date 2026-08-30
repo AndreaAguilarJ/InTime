@@ -52,6 +52,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.momentummm.app.ui.theme.*
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
@@ -208,7 +210,7 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
         // FLAG_NOT_FOCUSABLE se OMITE para que el overlay reciba el foco.
         //
         // BUG CORREGIDO: aquí había además FLAG_KEEP_SCREEN_ON. Como el overlay
-        // sólo desaparecía cuando el usuario pulsaba "Cerrar", ese flag dejaba
+        // sólo desaparecía cuando el usuario pulsaba stringResource(R.string.block_close), ese flag dejaba
         // la pantalla encendida de forma indefinida —toda la noche si el límite
         // se alcanzaba con el teléfono en el bolsillo—. El overlay ya no
         // necesita mantener la pantalla despierta: se retira solo (ver
@@ -259,7 +261,7 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
      * Retira el overlay automáticamente cuando deja de tener sentido.
      *
      * ─── EL BUG QUE ESTO ARREGLA ──────────────────────────────────────────
-     * El overlay sólo desaparecía si el usuario pulsaba "Cerrar", y ese botón
+     * El overlay sólo desaparecía si el usuario pulsaba stringResource(R.string.block_close), y ese botón
      * se habilita a los 10 segundos. Consecuencia: bastaba pulsar el botón de
      * inicio para salir de la app bloqueada y **el overlay se quedaba encima
      * del lanzador**, tapando el teléfono entero hasta que el usuario
@@ -400,7 +402,7 @@ private fun AppBlockOverlayContent(
     onDismiss: () -> Unit,
     onOpenMomentum: () -> Unit
 ) {
-    // CRITICAL FIX: El countdown ahora solo es un timer de espera para el botón "Cerrar"
+    // CRITICAL FIX: El countdown ahora solo es un timer de espera para el botón stringResource(R.string.block_close)
     // Ya NO auto-destruye el overlay después de terminar
     var countdown by remember { mutableStateOf(10) }
     var canDismiss by remember { mutableStateOf(false) }
@@ -434,7 +436,7 @@ private fun AppBlockOverlayContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                // Scroll para que el botón "Cerrar" y las sugerencias sigan
+                // Scroll para que el botón stringResource(R.string.block_close) y las sugerencias sigan
                 // siendo alcanzables en pantallas pequeñas o con fuente grande:
                 // el contenido fijo se salía por abajo sin posibilidad de verlo.
                 .verticalScroll(rememberScrollState())
@@ -462,7 +464,7 @@ private fun AppBlockOverlayContent(
 
             // Título principal
             Text(
-                text = "¡Tiempo agotado!",
+                text = stringResource(R.string.block_time_up),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -475,7 +477,7 @@ private fun AppBlockOverlayContent(
             // (modo nuclear, horario, categoría, ventana de sueño...) se muestra
             // la razón concreta en lugar del texto genérico de límite.
             Text(
-                text = reason ?: "Has alcanzado tu límite diario de $dailyLimit minutos para",
+                text = reason ?: stringResource(R.string.block_daily_limit_reason, dailyLimit),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center
@@ -574,7 +576,7 @@ private fun AppBlockOverlayContent(
 
             // Sugerencias
             Text(
-                text = "💡 Sugerencias para ti:",
+                text = stringResource(R.string.block_suggestions_header),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold
@@ -583,11 +585,11 @@ private fun AppBlockOverlayContent(
             Spacer(modifier = Modifier.height(12.dp))
 
             val suggestions = listOf(
-                "📚 Lee un libro o artículo interesante",
-                "🚶 Sal a caminar al aire libre",
-                "🧘 Practica meditación por 5 minutos",
-                "💪 Haz algunos ejercicios de estiramiento",
-                "☕ Toma un descanso y bebe agua"
+                stringResource(R.string.block_sugg_read),
+                stringResource(R.string.block_sugg_walk),
+                stringResource(R.string.block_sugg_meditate),
+                stringResource(R.string.block_sugg_stretch),
+                stringResource(R.string.block_sugg_water)
             )
 
             suggestions.take(2).forEach { suggestion ->

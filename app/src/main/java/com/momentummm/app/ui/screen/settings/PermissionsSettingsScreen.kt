@@ -20,6 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
 import com.momentummm.app.R
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,19 +38,25 @@ fun PermissionsSettingsScreen(
     val hasAccessibilityPermission = remember { mutableStateOf(checkAccessibilityPermission(context)) }
     val isDefaultLauncher = remember { mutableStateOf(checkIsDefaultLauncher(context)) }
 
-    // Refrescar permisos cuando la pantalla obtiene el foco
-    DisposableEffect(Unit) {
-        onDispose { }
-    }
-
-    LaunchedEffect(Unit) {
-        // Actualizar estados de permisos periódicamente
-        kotlinx.coroutines.delay(500)
-        hasUsageStatsPermission.value = checkUsageStatsPermission(context)
-        hasOverlayPermission.value = checkOverlayPermission(context)
-        hasNotificationPermission.value = checkNotificationPermission(context)
-        hasAccessibilityPermission.value = checkAccessibilityPermission(context)
-        isDefaultLauncher.value = checkIsDefaultLauncher(context)
+    // Refrescar permisos al volver a primer plano.
+    //
+    // BUG CORREGIDO: el comentario decía «periódicamente», pero sólo había un
+    // `delay(500)` dentro de un LaunchedEffect(Unit), es decir UNA vez al
+    // entrar. El usuario iba a los ajustes de Android, concedía el permiso,
+    // volvía, y la pantalla seguía diciendo que faltaba.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasUsageStatsPermission.value = checkUsageStatsPermission(context)
+                hasOverlayPermission.value = checkOverlayPermission(context)
+                hasNotificationPermission.value = checkNotificationPermission(context)
+                hasAccessibilityPermission.value = checkAccessibilityPermission(context)
+                isDefaultLauncher.value = checkIsDefaultLauncher(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     Scaffold(
@@ -393,19 +402,20 @@ private fun checkNotificationPermission(context: Context): Boolean {
     return NotificationManagerCompat.from(context).areNotificationsEnabled()
 }
 
-private fun checkAccessibilityPermission(context: Context): Boolean {
-    val pm = context.packageManager
-    val packageName = context.packageName
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        Settings.Secure.getInt(
-            context.contentResolver,
-            "accessibility_enabled",
-            0
-        ) == 1
-    } else {
-        false
-    }
-}
+/**
+ * ¿Está habilitado NUESTRO servicio de accesibilidad?
+ *
+ * BUG CORREGIDO: antes se leía el ajuste global `accessibility_enabled`, que
+ * está a 1 si el usuario tiene habilitado CUALQUIER servicio de accesibilidad
+ * —TalkBack, un teclado, otra app—. La pantalla mostraba «concedido» mientras
+ * Momentum seguía apagado, y el bloqueo dentro de apps no funcionaba sin que
+ * nada lo indicara.
+ *
+ * Se reutiliza la comprobación específica que ya usaban `InAppBlockScreen` y
+ * `BlockingCapabilities`, en vez de mantener una tercera versión distinta.
+ */
+private fun checkAccessibilityPermission(context: Context): Boolean =
+    com.momentummm.app.util.BlockingCapabilities.isAccessibilityEnabled(context)
 
 private fun checkIsDefaultLauncher(context: Context): Boolean {
     val intent = Intent(Intent.ACTION_MAIN).apply {

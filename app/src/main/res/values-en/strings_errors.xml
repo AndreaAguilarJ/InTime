@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="err_no_internet">No internet connection. Check your connection and try again.</string>
+    <string name="err_invalid_credentials">Incorrect email or password</string>
+    <string name="err_user_not_found">There is no account with this email</string>
+    <string name="err_user_exists">An account with this email already exists</string>
+    <string name="err_password_invalid">The password is incorrect</string>
+    <string name="err_email_invalid">The email format is not valid</string>
+    <string name="err_rate_limit">Too many attempts. Wait a few minutes</string>
+    <string name="err_authentication">Authentication error. Check your credentials.</string>
+    <string name="err_network">Network error. Check your internet connection.</string>
+    <string name="err_timeout">The operation took too long. Try again.</string>
+    <string name="err_unexpected">An unexpected error occurred. Try again.</string>
+    <string name="err_cannot_open_app">Could not open this app</string>
+    <string name="err_permission_denied">Permission denied</string>
+</resources>

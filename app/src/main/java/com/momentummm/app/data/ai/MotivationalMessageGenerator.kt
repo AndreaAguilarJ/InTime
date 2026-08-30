@@ -37,26 +37,76 @@ class MotivationalMessageGenerator @Inject constructor(
     companion object {
         private const val TAG = "MotivationalMsgGen"
         private const val MODEL_NAME = "gemini-1.5-flash"
-        
-        // API key should be stored in BuildConfig or secured storage
-        // For development, you can add it to local.properties: GEMINI_API_KEY=your_key
-        private val API_KEY: String by lazy {
-            try {
-                BuildConfig::class.java.getField("GEMINI_API_KEY").get(null) as? String ?: ""
-            } catch (e: Exception) {
-                ""
+    }
+
+    enum class AIAvailability {
+        AVAILABLE,
+        BUILD_CONFIG_FIELD_MISSING,
+        API_KEY_MISSING
+    }
+
+    data class AIAvailabilityState(
+        val status: AIAvailability,
+        val userMessage: String?
+    ) {
+        val isAvailable: Boolean
+            get() = status == AIAvailability.AVAILABLE
+    }
+
+    private data class ApiKeyConfig(
+        val value: String,
+        val availability: AIAvailabilityState
+    )
+
+    private val apiKeyConfig: ApiKeyConfig by lazy {
+        try {
+            val key = (BuildConfig::class.java.getField("GEMINI_API_KEY").get(null) as? String)
+                .orEmpty()
+                .trim()
+            if (key.isBlank()) {
+                Log.w(TAG, "GEMINI_API_KEY existe, pero está vacía")
+                ApiKeyConfig(
+                    value = "",
+                    availability = AIAvailabilityState(
+                        AIAvailability.API_KEY_MISSING,
+                        "La generación con IA no está configurada en esta instalación."
+                    )
+                )
+            } else {
+                ApiKeyConfig(
+                    value = key,
+                    availability = AIAvailabilityState(AIAvailability.AVAILABLE, null)
+                )
             }
+        } catch (error: NoSuchFieldException) {
+            Log.w(TAG, "BuildConfig no declara GEMINI_API_KEY; IA deshabilitada", error)
+            ApiKeyConfig(
+                value = "",
+                availability = AIAvailabilityState(
+                    AIAvailability.BUILD_CONFIG_FIELD_MISSING,
+                    "La generación con IA no está incluida en esta versión."
+                )
+            )
+        } catch (error: ReflectiveOperationException) {
+            Log.e(TAG, "No se pudo leer GEMINI_API_KEY de BuildConfig", error)
+            ApiKeyConfig(
+                value = "",
+                availability = AIAvailabilityState(
+                    AIAvailability.API_KEY_MISSING,
+                    "La generación con IA no está disponible temporalmente."
+                )
+            )
         }
     }
-    
+
     private val generativeModel: GenerativeModel? by lazy {
-        if (API_KEY.isBlank()) {
-            Log.w(TAG, "Gemini API key not configured")
+        val keyConfig = apiKeyConfig
+        if (!keyConfig.availability.isAvailable) {
             null
         } else {
             GenerativeModel(
                 modelName = MODEL_NAME,
-                apiKey = API_KEY,
+                apiKey = keyConfig.value,
                 generationConfig = generationConfig {
                     temperature = 0.9f
                     topK = 40
@@ -66,13 +116,12 @@ class MotivationalMessageGenerator @Inject constructor(
             )
         }
     }
-    
-    /**
-     * Check if AI generation is available.
-     */
-    fun isAvailable(): Boolean {
-        return generativeModel != null && API_KEY.isNotBlank()
-    }
+
+    /** Estado detallado y seguro para presentar en la UI. */
+    fun getAvailability(): AIAvailabilityState = apiKeyConfig.availability
+
+    /** Mantiene la API anterior para consumidores existentes. */
+    fun isAvailable(): Boolean = getAvailability().isAvailable
     
     /**
      * Generate a personalized motivational message.

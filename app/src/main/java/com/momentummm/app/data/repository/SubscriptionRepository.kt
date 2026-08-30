@@ -16,6 +16,17 @@ import java.time.format.DateTimeFormatter
 class SubscriptionRepository(
     private val appwriteService: AppwriteService
 ) {
+    companion object {
+        /**
+         * Días que dura la prueba gratuita.
+         *
+         * Única fuente de verdad: la interfaz recibe este número como argumento en lugar
+         * de escribirlo en el texto. Antes el "7" vivía duplicado en la copia y en
+         * plusDays(7), sin nada que los mantuviera de acuerdo.
+         */
+        const val TRIAL_DAYS = 7
+    }
+
     private val _userSubscription = MutableStateFlow<UserSubscription?>(null)
     val userSubscription: Flow<UserSubscription?> = _userSubscription.asStateFlow()
     
@@ -114,7 +125,8 @@ class SubscriptionRepository(
             return false // Trial already used
         }
         
-        val trialEndDate = LocalDate.now().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE)
+        val trialEndDate = LocalDate.now().plusDays(TRIAL_DAYS.toLong())
+            .format(DateTimeFormatter.ISO_LOCAL_DATE)
         val trialSubscription = UserSubscription(
             userId = userId,
             status = SubscriptionStatus.TRIAL,

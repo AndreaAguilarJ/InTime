@@ -79,7 +79,7 @@ fun OnboardingScreen(
                     CircularProgressIndicator()
                 } else {
                     Text(
-                        text = "¡Configuración completada!",
+                        text = stringResource(R.string.onboarding_setup_complete),
                         style = MaterialTheme.typography.headlineMedium,
                         textAlign = TextAlign.Center
                     )

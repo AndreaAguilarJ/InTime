@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "password_protection")
 data class PasswordProtection(
     @PrimaryKey val id: Int = 1,
-    val passwordHash: String? = null, // Hash SHA-256 de la contraseña
+    val passwordHash: String? = null, // PBKDF2-HMAC-SHA256 con sal; SHA-256 legado se migra al verificar
     val isEnabled: Boolean = false,
     val protectAppLimits: Boolean = true,
     val protectInAppBlocking: Boolean = true,

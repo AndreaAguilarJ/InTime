@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos visibles de las notificaciones de servicios en primer plano (barra de estado
+  y pantalla de bloqueo). Antes estaban fijos en español dentro de los .kt, así que un
+  usuario con el móvil en otro idioma veía la notificación en español.
+-->
+<resources>
+    <!-- Modo Nuclear -->
+    <string name="svc_nuclear_channel_name">Modo Nuclear</string>
+    <string name="svc_nuclear_channel_desc">Notificaciones del Modo Nuclear</string>
+    <string name="svc_nuclear_title">☢️ Modo Nuclear activo</string>
+    <string name="svc_nuclear_text">%1$d días restantes | Temporizador: %2$d min para desbloquear</string>
+    <string name="svc_nuclear_action_running">Temporizador activo ⏱️</string>
+    <string name="svc_nuclear_action_open">Abre Momentum para continuar</string>
+    <string name="svc_nuclear_unlock_title">🎉 ¡Desbloqueo nuclear disponible!</string>
+    <string name="svc_nuclear_unlock_text">Has completado el tiempo de espera. Ya puedes desactivar el Modo Nuclear.</string>
+    <string name="svc_context_channel_name">Bloqueo por contexto</string>
+    <string name="svc_context_channel_desc">Detecta tu ubicación y wifi para aplicar reglas de bloqueo</string>
+    <string name="svc_context_title">📍 Bloqueo por contexto</string>
+    <string name="svc_context_monitoring">Vigilando el contexto…</string>
+    <plurals name="svc_context_rules_active">
+        <item quantity="one">%1$d regla activa</item>
+        <item quantity="other">%1$d reglas activas</item>
+    </plurals>
+    <string name="svc_block_comm_only">Solo se permiten apps de comunicación</string>
+    <string name="svc_block_nuclear">Modo Nuclear: bloqueado durante %1$d días más</string>
+    <string name="svc_block_sleep">Hora de descansar. Las apps volverán a estar disponibles mañana.</string>
+    <string name="svc_block_rule">Bloqueado por la regla: %1$s</string>
+    <string name="svc_block_rule_fallback">Contexto</string>
+    <string name="svc_block_daily_limit">Ya alcanzaste tu límite de %1$d minutos hoy</string>
+    <string name="svc_block_schedule">Bloqueada por horario: %1$s</string>
+    <string name="svc_block_category_limit">Límite de la categoría «%1$s» superado (%2$d min)</string>
+    <string name="svc_block_category_schedule">Categoría «%1$s» bloqueada: %2$s - %3$s</string>
+    <string name="svc_block_fasting">Ayuno digital: límite reducido a %1$d min</string>
+    <string name="svc_block_context_active">Bloqueo por contexto activo</string>
+    <string name="goal_challenge_title">Desafío en progreso</string>
+    <string name="goal_challenge_text">%1$s - %2$d%% completado</string>
+    <string name="goal_achievement_title">¡Nuevo logro desbloqueado!</string>
+    <string name="goal_streak_title">¡Racha increíble! 🔥</string>
+    <string name="goal_streak_text">%1$d días seguidos en %2$s</string>
+    <string name="fav_saved">❤️ ¡Guardado en favoritos!</string>
+    <string name="motiv_notif_disabled">Las notificaciones de Momentum están desactivadas en los ajustes del sistema</string>
+    <string name="motiv_notif_error">No se pudo enviar la notificación: %1$s</string>
+    <string name="web_delete_category_error">Error al eliminar la categoría: %1$s</string>
+    <string name="goal_ch_goals_name">Recordatorios de metas</string>
+    <string name="goal_ch_goals_desc">Notificaciones para recordar el progreso de tus metas</string>
+    <string name="goal_ch_challenges_name">Recordatorios de desafíos</string>
+    <string name="goal_ch_challenges_desc">Notificaciones sobre tus desafíos activos</string>
+    <string name="goal_ch_achievements_name">Logros y recompensas</string>
+    <string name="goal_ch_achievements_desc">Notificaciones cuando completas logros</string>
+    <string name="goal_challenge_bigtext">%1$s
+Quedan %2$d días para completar</string>
+    <string name="goal_action_continue">Continuar desafío</string>
+    <string name="goal_streak_bigtext">🔥 ¡Llevas %1$d días seguidos cumpliendo tu meta!
+¡Sigue así y no rompas la racha!</string>
+
+    <!-- Temporizador de Enfoque (FocusTimerService) -->
+    <string name="svc_focus_channel_name">Temporizador de Enfoque</string>
+    <string name="svc_focus_channel_desc">Notificaciones del temporizador de enfoque</string>
+    <string name="svc_focus_title_running">Sesión de enfoque activa</string>
+    <string name="svc_focus_title_paused">Sesión pausada</string>
+    <string name="svc_focus_title_break">Descanso</string>
+    <string name="svc_focus_title_completed">Sesión completada</string>
+    <string name="svc_focus_title_default">Modo enfoque</string>
+    <string name="svc_focus_text_running">Quedan %1$s</string>
+    <string name="svc_focus_text_paused">Pausado en %1$s</string>
+    <string name="svc_focus_text_break">Descanso: %1$s</string>
+    <string name="svc_focus_text_completed">¡Completado!</string>
+    <string name="svc_focus_action_stop">Detener</string>
+    <string name="svc_focus_title_break_over">Descanso terminado</string>
+    <string name="svc_focus_text_break_over">Listo para otra sesión de enfoque</string>
+
+    <!-- Timer flotante del límite de apps (FloatingTimerService) -->
+    <string name="svc_floating_channel_name">Timer flotante</string>
+    <string name="svc_floating_channel_desc">Muestra el timer de uso de apps</string>
+    <string name="svc_floating_title">Timer activo</string>
+    <string name="svc_floating_text">%1$s: %2$d min restantes</string>
+</resources>

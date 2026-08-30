@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="limit_dialog_add_title">Add app limit</string>
+    <string name="limit_dialog_search_app">Search app</string>
+    <string name="limit_dialog_select_app">Select an app:</string>
+    <string name="limit_dialog_no_apps_found">No apps found</string>
+    <string name="limit_dialog_daily_minutes">Daily limit (minutes)</string>
+    <string name="limit_dialog_minutes_example">Example: 60 minutes = 1 hour</string>
+    <string name="limit_dialog_cancel">Cancel</string>
+    <string name="limit_dialog_add_button">Add limit</string>
+    <string name="limit_dialog_edit_title">Edit limit</string>
+    <string name="limit_dialog_app_label">App: %1$s</string>
+    <string name="limit_dialog_daily_time_limit">Daily time limit</string>
+    <string name="limit_dialog_current_limit">Current limit: %1$d minutes</string>
+    <string name="limit_dialog_presets">Preset limits:</string>
+    <string name="limit_dialog_schedule_block">Schedule block</string>
+    <string name="limit_dialog_schedule_block_desc">Block this app during specific hours, independently of the time limit</string>
+    <string name="limit_dialog_start_time">Start time:</string>
+    <string name="limit_dialog_end_time">End time:</string>
+    <string name="limit_dialog_active_days">Active days:</string>
+    <string name="limit_dialog_save">Save</string>
+    <string name="limit_dialog_start_time_title">Start time</string>
+    <string name="limit_dialog_end_time_title">End time</string>
+    <string name="limit_dialog_confirm">Confirm</string>
+</resources>

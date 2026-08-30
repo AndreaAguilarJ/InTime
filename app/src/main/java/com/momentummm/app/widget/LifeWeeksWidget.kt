@@ -15,6 +15,7 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.LocalContext
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
@@ -31,6 +32,7 @@ import com.momentummm.app.util.LifeWeeksCalculator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import com.momentummm.app.R
 
 /**
  * Widget de Vida en Semanas - Muestra una cuadrícula visual de las semanas vividas
@@ -133,6 +135,7 @@ class LifeWeeksWidget : GlanceAppWidget() {
 
     @Composable
     private fun LifeWeeksWidgetContent(data: WidgetData) {
+        val context = LocalContext.current
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
@@ -148,7 +151,7 @@ class LifeWeeksWidget : GlanceAppWidget() {
             if (data.lifeWeeksData != null) {
                 // Título
                 Text(
-                    text = "MI VIDA EN SEMANAS",
+                    text = context.getString(R.string.widget_life_title),
                     style = TextStyle(
                         color = ColorProvider(Color.White),
                         fontSize = 11.sp,
@@ -246,7 +249,7 @@ class LifeWeeksWidget : GlanceAppWidget() {
                             )
                         )
                         Text(
-                            text = "años",
+                            text = context.getString(R.string.widget_years),
                             style = TextStyle(
                                 color = ColorProvider(Color(0xFFAAAAAA)),
                                 fontSize = 9.sp
@@ -277,7 +280,7 @@ class LifeWeeksWidget : GlanceAppWidget() {
                 }
                 
                 Text(
-                    text = "${String.format("%.1f", data.lifeWeeksData.progressPercentage)}% de tu vida",
+                    text = context.getString(R.string.widget_percent_of_life, String.format("%.1f", data.lifeWeeksData.progressPercentage)),
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF888888)),
                         fontSize = 9.sp,
@@ -318,7 +321,7 @@ class LifeWeeksWidget : GlanceAppWidget() {
                 Spacer(modifier = GlanceModifier.height(8.dp))
                 
                 Text(
-                    text = "Toca para abrir",
+                    text = context.getString(R.string.widget_tap_to_open),
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF10B981)),
                         fontSize = 10.sp

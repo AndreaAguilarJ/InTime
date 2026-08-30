@@ -149,6 +149,42 @@ enum class TrendDirection {
 /**
  * DAO para registros de patrones de uso.
  */
+/**
+ * Devuelve 0 en lugar de NaN o infinito.
+ *
+ * Existe por un fallo real: `List<Int>.average()` sobre una lista vacia devuelve NaN,
+ * SQLite no tiene NaN y lo almacena como NULL, y la columna
+ * `addiction_scores.overallScore` es NOT NULL. Resultado: la insercion fallaba con
+ * SQLiteConstraintException para TODAS las apps en cualquier instalacion nueva, sin
+ * que se viera nada raro en pantalla.
+ */
+internal fun Float.orZeroIfNotFinite(): Float = if (this.isFinite()) this else 0f
+
+/**
+ * Media ponderada de los seis componentes del score de adiccion.
+ *
+ * Funcion pura a proposito: el calculo vivia dentro de UsagePatternEngine, que necesita
+ * un Context de Android y por eso no se podia cubrir con una prueba unitaria. Cada
+ * componente se sanea por separado porque un solo NaN contamina la suma entera, y el
+ * resultado se acota a 0..100. Esto es un guardarrail, NO un sustituto de proteger cada
+ * division en su origen.
+ */
+internal fun weightedAddictionScore(
+    frequencyScore: Float,
+    durationScore: Float,
+    resistanceScore: Float,
+    escalationScore: Float,
+    timingScore: Float,
+    compulsionScore: Float
+): Float = (
+    frequencyScore.orZeroIfNotFinite() * 0.15f +
+    durationScore.orZeroIfNotFinite() * 0.25f +
+    resistanceScore.orZeroIfNotFinite() * 0.20f +
+    escalationScore.orZeroIfNotFinite() * 0.20f +
+    timingScore.orZeroIfNotFinite() * 0.10f +
+    compulsionScore.orZeroIfNotFinite() * 0.10f
+).orZeroIfNotFinite().coerceIn(0f, 100f)
+
 @Dao
 interface UsagePatternDao {
     
@@ -600,8 +636,14 @@ class UsagePatternEngine @Inject constructor(
         // 3. RESISTANCE SCORE - Dificultad para dejar de usarla (0-100)
         val blockedCount = recentRecords.count { it.wasBlocked }.toFloat()
         val shameCount = recentRecords.count { it.wasUnlockedByShame }.toFloat()
-        val avgSessionLength = recentRecords.filter { it.longestSessionMinutes > 0 }
-            .map { it.longestSessionMinutes }.average().toFloat()
+        // Esta media se quedo sin proteger en la pasada anterior y era la causa real del
+        // fallo: average() sobre una lista vacia devuelve NaN, y SQLite guarda NaN como NULL,
+        // lo que rompia la restriccion NOT NULL de addiction_scores.overallScore y hacia
+        // fallar el analisis de TODAS las apps en una instalacion nueva.
+        val sessionLengths = recentRecords.filter { it.longestSessionMinutes > 0 }
+            .map { it.longestSessionMinutes }
+        val avgSessionLength = if (sessionLengths.isEmpty()) 0f
+            else sessionLengths.average().toFloat()
         val resistanceScore = min(100f, 
             (blockedCount * 5f) + (shameCount * 15f) + (avgSessionLength / 3f))
         
@@ -627,13 +669,17 @@ class UsagePatternEngine @Inject constructor(
         val compulsionScore = min(100f, highOpenLowDuration * 10f)
         
         // OVERALL SCORE - Promedio ponderado
-        val overallScore = (
-            frequencyScore * 0.15f +
-            durationScore * 0.25f +
-            resistanceScore * 0.20f +
-            escalationScore * 0.20f +
-            timingScore * 0.10f +
-            compulsionScore * 0.10f
+        // El calculo vive en weightedAddictionScore, una funcion pura y testeable: el
+        // fallo original (un NaN que SQLite convertia en NULL y hacia fallar la insercion
+        // en TODAS las apps) no tenia ninguna prueba que lo vigilara porque estaba
+        // enterrado en una clase que necesita Context de Android.
+        val overallScore = weightedAddictionScore(
+            frequencyScore = frequencyScore,
+            durationScore = durationScore,
+            resistanceScore = resistanceScore,
+            escalationScore = escalationScore,
+            timingScore = timingScore,
+            compulsionScore = compulsionScore
         )
         
         // Calcular tendencias
@@ -662,14 +708,14 @@ class UsagePatternEngine @Inject constructor(
             packageName = packageName,
             date = getDayStart(Calendar.getInstance()),
             overallScore = overallScore,
-            frequencyScore = frequencyScore,
-            durationScore = durationScore,
-            resistanceScore = resistanceScore,
-            escalationScore = escalationScore,
-            timingScore = timingScore,
-            compulsionScore = compulsionScore,
-            weeklyTrend = weeklyTrend,
-            monthlyTrend = monthlyTrend,
+            frequencyScore = frequencyScore.orZeroIfNotFinite(),
+            durationScore = durationScore.orZeroIfNotFinite(),
+            resistanceScore = resistanceScore.orZeroIfNotFinite(),
+            escalationScore = escalationScore.orZeroIfNotFinite(),
+            timingScore = timingScore.orZeroIfNotFinite(),
+            compulsionScore = compulsionScore.orZeroIfNotFinite(),
+            weeklyTrend = weeklyTrend.orZeroIfNotFinite(),
+            monthlyTrend = monthlyTrend.orZeroIfNotFinite(),
             suggestedAction = suggestedAction
         )
     }

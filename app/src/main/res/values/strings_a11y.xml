@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_app_logo">Logotipo de Momentum</string>
+    <string name="a11y_state_expanded">Expandido</string>
+    <string name="a11y_state_collapsed">Contraído</string>
+    <string name="a11y_state_enabled">Activado</string>
+    <string name="a11y_state_disabled">Desactivado</string>
+    <string name="a11y_reject_friend_request">Rechazar solicitud de amistad</string>
+    <string name="a11y_accept_friend_request">Aceptar solicitud de amistad</string>
+    <string name="a11y_more_options_for_friend">Más opciones para %1$s</string>
+    <string name="a11y_share_achievement">Compartir logro</string>
+    <string name="a11y_stop_focus_session">Detener sesión de enfoque</string>
+    <string name="a11y_edit_app_limit">Editar límite de la aplicación</string>
+    <string name="a11y_delete_app_limit">Eliminar límite de la aplicación</string>
+    <string name="a11y_remove_app">Quitar aplicación</string>
+    <string name="a11y_day_option">Día %1$s</string>
+    <string name="a11y_color_option">Color %1$s</string>
+    <string name="a11y_emoji_option">Emoji %1$s</string>
+    <string name="a11y_analytics_empty_title">Aún no hay datos de uso</string>
+    <string name="a11y_analytics_empty_message">Usa algunas aplicaciones y vuelve a actualizar para ver tus estadísticas.</string>
+    <string name="a11y_back">Volver</string>
+    <string name="a11y_close">Cerrar</string>
+    <string name="a11y_delete">Eliminar</string>
+    <string name="a11y_add_message">Agregar mensaje</string>
+    <string name="a11y_clear">Limpiar</string>
+    <string name="a11y_favorite">Favorito</string>
+    <string name="a11y_share">Compartir</string>
+    <string name="a11y_message_library">Biblioteca de mensajes</string>
+    <string name="a11y_create_custom_session">Crear sesión personalizada</string>
+    <string name="a11y_emergency_apps">Apps de emergencia</string>
+    <string name="a11y_add_app">Agregar app</string>
+    <string name="a11y_remove_from_whitelist">Quitar de la lista de permitidas</string>
+    <string name="a11y_auto_detect_categories">Detectar categorías automáticamente</string>
+    <string name="a11y_blocked">Bloqueado</string>
+    <string name="a11y_delete_digit">Borrar dígito</string>
+    <string name="a11y_call">Llamar</string>
+    <string name="a11y_exit_minimal_mode">Salir del modo mínimo</string>
+    <string name="a11y_default">Por defecto</string>
+</resources>

@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MI VIDA EN SEMANAS"
+            android:text="@string/widget_life_title"
             android:textStyle="bold"
             android:textSize="11sp"
             android:textColor="#FFFFFF"
@@ -132,7 +132,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="vividas"
+                    android:text="@string/widget_weeks_lived"
                     android:textSize="9sp"
                     android:textColor="#AAAAAA" />
             </LinearLayout>
@@ -169,7 +169,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="restantes"
+                    android:text="@string/widget_weeks_remaining"
                     android:textSize="9sp"
                     android:textColor="#AAAAAA" />
             </LinearLayout>
@@ -206,7 +206,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="años"
+                    android:text="@string/widget_years"
                     android:textSize="9sp"
                     android:textColor="#AAAAAA" />
             </LinearLayout>

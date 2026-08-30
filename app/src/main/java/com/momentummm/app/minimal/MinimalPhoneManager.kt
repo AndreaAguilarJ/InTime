@@ -15,6 +15,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.LocalTime
@@ -23,6 +26,10 @@ import java.time.format.DateTimeFormatter
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "minimal_phone_prefs")
 
 class MinimalPhoneManager(private val context: Context) {
+
+    // Scope propio para leer DataStore al arrancar. El manager no es un ViewModel,
+    // así que necesita su propio ámbito; IO porque solo hace lecturas de disco.
+    private val scope = CoroutineScope(Dispatchers.IO)
     
     private object PreferencesKeys {
         val IS_MINIMAL_MODE_ENABLED = booleanPreferencesKey("minimal_mode_enabled")
@@ -56,8 +63,21 @@ class MinimalPhoneManager(private val context: Context) {
     }
     
     private fun loadPreferences() {
-        // This would be properly implemented with coroutines
-        // For now, using default values
+        // Restaura el estado guardado al crear el manager. Antes esto estaba vacío
+        // ("For now, using default values"): el modo mínimo y la lista de apps
+        // permitidas se escribían en DataStore pero nunca se releían, así que al
+        // reiniciar el proceso (o el teléfono) la configuración del usuario se
+        // perdía de memoria y el launcher volvía a los valores por defecto.
+        scope.launch {
+            val prefs = context.dataStore.data.first()
+            prefs[PreferencesKeys.IS_MINIMAL_MODE_ENABLED]?.let { _isMinimalModeEnabled.value = it }
+            prefs[PreferencesKeys.ALLOWED_APPS]?.let { saved ->
+                if (saved.isNotEmpty()) _allowedApps.value = saved.toList()
+            }
+            prefs[PreferencesKeys.SCHEDULE_ENABLED]?.let { _scheduleEnabled.value = it }
+            prefs[PreferencesKeys.EMERGENCY_CONTACTS]?.let { _emergencyContacts.value = it.toList() }
+            prefs[PreferencesKeys.CUSTOM_APP]?.firstOrNull()?.let { _customApp.value = it }
+        }
     }
     
     suspend fun enableMinimalMode() {

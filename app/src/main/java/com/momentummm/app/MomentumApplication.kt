@@ -51,6 +51,12 @@ class MomentumApplication : Application(), Configuration.Provider {
     // Security managers (injected by Hilt)
     @Inject
     lateinit var appLockManager: AppLockManager
+
+    // Necesaria para que WorkManager pueda construir los workers anotados
+    // @HiltWorker (hoy MotivationalNotificationWorker). Se consume mas abajo en
+    // workManagerConfiguration.
+    @Inject
+    lateinit var workerFactory: androidx.hilt.work.HiltWorkerFactory
     
     @Inject
     lateinit var biometricPromptManager: BiometricPromptManager
@@ -291,5 +297,11 @@ class MomentumApplication : Application(), Configuration.Provider {
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setMinimumLoggingLevel(android.util.Log.INFO)
+            // MotivationalNotificationWorker esta anotado @HiltWorker con
+            // @AssistedInject, asi que su constructor recibe dependencias inyectadas y
+            // la fabrica por defecto de WorkManager NO puede instanciarlo. Sin esta
+            // linea, WorkManager falla al crear el worker y la notificacion
+            // motivacional programada en onCreate (linea ~225) nunca llega a ejecutarse.
+            .setWorkerFactory(workerFactory)
             .build()
 }

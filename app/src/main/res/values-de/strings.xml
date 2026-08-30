@@ -216,7 +216,7 @@
     <string name="backup_settings_cloud_title">Cloud-Backup</string>
     <string name="backup_settings_last_backup">Letztes Backup: %1$s</string>
     <string name="backup_settings_no_backups">Keine Backups</string>
-    <string name="backup_settings_syncing">Backup läuft... %1$d%%</string>
+    <string name="backup_settings_syncing">Backup läuft… %1$d%%</string>
     <string name="backup_settings_backup_button">Sichern</string>
     <string name="backup_settings_restore_button">Wiederherstellen</string>
     <string name="backup_settings_export_title">Daten exportieren</string>
@@ -240,7 +240,7 @@
     <string name="sync_settings_status_success_cd">Synchronisiert</string>
     <string name="sync_settings_status_failed_cd">Fehler</string>
     <string name="sync_settings_status_idle">Nicht synchronisiert</string>
-    <string name="sync_settings_status_syncing">Synchronisierung...</string>
+    <string name="sync_settings_status_syncing">Synchronisierung…</string>
     <string name="sync_settings_status_success">Synchronisierung erfolgreich</string>
     <string name="sync_settings_status_failed">Fehler bei der Synchronisierung. Deine Daten sind lokal gespeichert.</string>
     <string name="sync_settings_last_sync_label">Letzte Synchronisierung:</string>
@@ -430,6 +430,7 @@
     <string name="action_cancel">Abbrechen</string>
     <string name="action_change">Ändern</string>
     <string name="action_back">Zurück</string>
+    <string name="action_save">Speichern</string>
     <string name="action_selected">Ausgewählt</string>
     <string name="dialog_logout_message">Möchtest du dich wirklich abmelden? Deine lokalen Daten bleiben synchronisiert.</string>
 
@@ -437,7 +438,6 @@
     <string name="app_blocked_default_app_name">App</string>
     <string name="app_blocked_time_up_title">⏰ Zeit abgelaufen</string>
     <string name="app_blocked_daily_limit_subtitle">Du hast dein tägliches Limit erreicht</string>
-    <string name="app_blocked_daily_limit_minutes">%1$d Minuten</string>
     <string name="app_blocked_daily_limit_reached">Tägliches Limit erreicht</string>
     <string name="app_blocked_stat_achievement_value">Erfolg!</string>
     <string name="app_blocked_stat_achievement_label">Ziel erreicht</string>
@@ -455,7 +455,7 @@
     <string name="app_blocked_suggestion_creative_title">Kreatives Hobby</string>
     <string name="app_blocked_suggestion_creative_desc">Entfalte deine Kreativität</string>
     <string name="app_blocked_open_momentum">Momentum öffnen</string>
-    <string name="app_blocked_close_in">Schließt in %1$d...</string>
+    <string name="app_blocked_close_in">Schließt in %1$d…</string>
     <string name="app_blocked_close">Schließen</string>
     <string name="app_blocked_emergency_unlock">🚨 Notfall-Entsperrung</string>
 
@@ -466,13 +466,11 @@
     <string name="lock_screen_subtitle">Gib dein Passwort ein, um fortzufahren</string>
     <string name="lock_screen_password_label">Passwort</string>
     <string name="lock_screen_password_placeholder">Passwort eingeben</string>
-    <string name="lock_screen_too_many_attempts">Zu viele Fehlversuche. Versuche es in %1$d Minuten erneut</string>
     <string name="lock_screen_password_incorrect">Falsches Passwort</string>
     <string name="lock_screen_hide_password">Passwort verbergen</string>
     <string name="lock_screen_show_password">Passwort anzeigen</string>
-    <string name="lock_screen_temporarily_locked">Gesperrt für %1$d Minute(n)</string>
     <string name="lock_screen_unlock">Entsperren</string>
-    <string name="lock_screen_biometric_title">InTime entsperren</string>
+    <string name="lock_screen_biometric_title">Momentum entsperren</string>
     <string name="lock_screen_biometric_subtitle">Nutze deinen Fingerabdruck oder Face ID</string>
     <string name="lock_screen_biometric_description">Bestätige deine Identität, um fortzufahren</string>
     <string name="lock_screen_use_biometric">Biometrie verwenden</string>
@@ -493,8 +491,15 @@
     <string name="in_app_block_no_results_title">Keine Ergebnisse</string>
     <string name="in_app_block_no_results_subtitle">Keine Übereinstimmungen für deine Suche gefunden.</string>
     <string name="in_app_block_enabled_count">%1$d von %2$d aktiv</string>
-    <string name="in_app_block_rules_count">%1$d Regeln</string>
     <string name="block_type_reels_desc">Kurze vertikale Videos</string>
+    <string name="block_type_reels_name">Reels</string>
+    <string name="block_type_shorts_name">Shorts</string>
+    <string name="block_type_explore_name">Entdecken</string>
+    <string name="block_type_search_name">Suche</string>
+    <string name="block_type_for_you_name">Für dich</string>
+    <string name="block_type_discover_name">Entdecken</string>
+    <string name="block_type_stories_name">Stories</string>
+    <string name="block_type_feed_name">Feed</string>
     <string name="block_type_shorts_desc">Kurze YouTube-Videos</string>
     <string name="block_type_explore_desc">Neue Inhalte entdecken</string>
     <string name="block_type_search_desc">Suche in der App</string>
@@ -529,23 +534,21 @@
     <string name="emergency_unlock_title">⚠️ Notfall-Entsperrung</string>
     <string name="emergency_unlock_question_line1">Musst du wirklich auf</string>
     <string name="emergency_unlock_question_line2">jetzt zugreifen?</string>
-    <string name="emergency_unlock_streak_risk">Deine %1$d-Tage-Serie ist in Gefahr</string>
     <string name="emergency_unlock_streak_warning">Denk zweimal nach, bevor du aufgibst</string>
     <string name="emergency_unlock_premium_title">Premium-Entsperrung</string>
-    <string name="emergency_unlock_premium_subtitle">Sofortzugriff für 15 Minuten</string>
     <string name="emergency_unlock_premium_price">$0.99 USD</string>
     <string name="emergency_unlock_shame_title">Scham-Entsperrung</string>
     <string name="emergency_unlock_shame_subtitle">Teile deinen Ausrutscher in sozialen Netzwerken</string>
     <string name="emergency_unlock_shame_price">KOSTENLOS</string>
     <string name="emergency_unlock_shame_badge">🤡 VIRAL</string>
-    <string name="emergency_unlock_shame_preparing">Dein Moment der Scham wird vorbereitet...</string>
+    <string name="emergency_unlock_shame_preparing">Dein Moment der Scham wird vorbereitet…</string>
     <string name="emergency_unlock_shame_share_ready">Der Teilen-Dialog wird geöffnet</string>
     <string name="emergency_unlock_cancel_button">Lieber nicht, ich bleibe stark 💪</string>
     <string name="emergency_unlock_motivation_quote">„Der Schmerz der Disziplin wiegt Gramm,&#10;Reue wiegt Tonnen“</string>
     <string name="emergency_unlock_confirm_payment_title">Zahlung bestätigen</string>
     <string name="emergency_unlock_confirm_shame_title">Bist du sicher?</string>
     <string name="emergency_unlock_confirm_payment_message">Es werden $0.99 USD für 15 Minuten Zugriff auf %1$s berechnet.</string>
-    <string name="emergency_unlock_confirm_shame_message">Es wird ein Bild mit dem Text „Ich habe meine Dopamin-Diät in InTime vermasselt 🤡“ erstellt und der Teilen-Dialog wird geöffnet, um es in deinen sozialen Netzwerken zu teilen.&#10;&#10;Deine Freunde werden es sehen! 😱</string>
+    <string name="emergency_unlock_confirm_shame_message">Es wird ein Bild mit dem Text „Ich habe meine Dopamin-Diät in Momentum vermasselt 🤡“ erstellt und der Teilen-Dialog wird geöffnet, um es in deinen sozialen Netzwerken zu teilen.&#10;&#10;Deine Freunde werden es sehen! 😱</string>
     <string name="emergency_unlock_confirm_payment_button">Zahlen $0.99</string>
     <string name="emergency_unlock_confirm_shame_button">Ja, meine Scham posten 🤡</string>
     <string name="emergency_unlock_confirm_default_button">Bestätigen</string>
@@ -554,7 +557,7 @@
     <!-- Error Components -->
     <string name="offline_indicator_message">Keine Internetverbindung&#10;Eingeschränkte Funktionen verfügbar</string>
     <string name="offline_indicator_retry_cd">Erneut versuchen</string>
-    <string name="loading_indicator_message">Wird geladen...</string>
+    <string name="loading_indicator_message">Wird geladen…</string>
 
     <!-- Website Blocked Screen -->
     <string name="website_blocked_unknown_site">Unbekannte Website</string>
@@ -761,7 +764,7 @@
     <string name="goals_title_label">Zieltitel</string>
     <string name="goals_title_placeholder">z. B. Bildschirmzeit reduzieren</string>
     <string name="goals_description_label">Beschreibung</string>
-    <string name="goals_description_placeholder">Beschreibe dein Ziel...</string>
+    <string name="goals_description_placeholder">Beschreibe dein Ziel…</string>
     <string name="goals_target_time_label">Zielzeit</string>
     <string name="goals_hours_label">Stunden</string>
     <string name="goals_minutes_label">Minuten</string>
@@ -872,12 +875,12 @@
     <string name="analytics_app_usage_time_sessions">%1$dh %2$dm • %3$d Sitzungen</string>
     <string name="analytics_app_usage_last_used">Zuletzt verwendet: %1$s</string>
     <string name="analytics_productivity_insight_title">Produktivitäts-Insight</string>
-    <string name="analytics_productivity_insight_message">Deine Produktivität ist dienstags um 23 % höher. Plane wichtige Aufgaben an diesem Tag.</string>
+    <string name="analytics_productivity_insight_message_day">%1$s ist dein Tag mit der geringsten Bildschirmzeit: %2$d %% unter deinem Durchschnitt. Plane wichtige Aufgaben an diesem Tag.</string>
+    <string name="analytics_productivity_insight_message_pending">Noch nicht genug Verlauf, um deinen besten Tag zu erkennen. Nutze die App noch ein paar Tage.</string>
     <string name="analytics_summary_title">Statistische Übersicht</string>
     <string name="analytics_summary_total_screen_time">Gesamte Bildschirmzeit</string>
     <string name="analytics_summary_daily_average">Täglicher Durchschnitt</string>
     <string name="analytics_summary_total_pickups">Gesamtzahl der Entsperrungen</string>
-    <string name="analytics_summary_pickups_times">%1$d Mal</string>
     <string name="analytics_summary_top_app">Top-App</string>
 
     <plurals name="analytics_last_used_minutes">
@@ -929,7 +932,7 @@
     <string name="notification_motivation_title">💡 Inspiration des Tages</string>
     <string name="notification_motivation_message">\"%1$s\"</string>
     <string name="notification_test_title_sent">🔔 Benachrichtigungen aktiv!</string>
-    <string name="notification_test_message">Die Benachrichtigungen von InTime funktionieren korrekt. Du erhältst Hinweise zu deinen Zielen und Limits.</string>
+    <string name="notification_test_message">Die Benachrichtigungen von Momentum funktionieren korrekt. Du erhältst Hinweise zu deinen Zielen und Limits.</string>
     <string name="notification_goal_achieved_title">🎉 Ziel erreicht!</string>
     <string name="notification_goal_achieved_message">Abgeschlossen: %1$s</string>
     <string name="notification_streak_7_title">🔥 7 Tage Serie!</string>
@@ -941,7 +944,6 @@
     <string name="notification_completion_title">⭐ %1$dx abgeschlossen</string>
     <string name="notification_balanced_day_title">✨ Ausgeglichener Tag</string>
     <string name="notification_balanced_day_message">Gesunde Nutzung heute: %1$s</string>
-    <string name="notification_streak_warning_title">⚠️ Serie von %1$d Tagen in Gefahr</string>
     <string name="notification_streak_warning_message">Dir bleiben %1$d Min in %2$s. Schütze deine Serie!</string>
     <string name="notification_grace_day_used_title">🛡️ Gnadentag genutzt</string>
     <string name="notification_grace_day_used_message">Deine Serie ist geschützt. Dir bleiben %1$d Gnadentage.</string>
@@ -955,9 +957,7 @@
     <string name="notification_level_up_title">🎊 Level %1$d erreicht!</string>
     <string name="notification_level_up_message">%1$s – Du hast %2$d Bonus-TimeCoins erhalten</string>
     <string name="notification_streak_started_title">🔥 Serie gestartet!</string>
-    <string name="notification_streak_continued_title">🔥 Serie: %1$d Tage</string>
     <string name="notification_streak_broken_title">💔 Serie verloren</string>
-    <string name="notification_streak_broken_message">Deine Serie von %1$d Tagen ist verloren. Starte neu!</string>
     <string name="notification_perfect_day_title">🌟 Perfekter Tag!</string>
     <string name="notification_perfect_day_message">Du hast alle täglichen Ziele abgeschlossen. +500 XP Bonus</string>
     <string name="notification_xp_gained_title">✨ +%1$d XP</string>
@@ -996,16 +996,16 @@
     <string name="notification_sync_completed_title">☁️ Synchronisierung abgeschlossen</string>
     <string name="notification_sync_completed_message">Deine Daten sind in der Cloud gesichert</string>
     <string name="notification_sync_failed_title">⚠️ Synchronisierungsfehler</string>
-    <string name="notification_sync_failed_message">Deine Daten konnten nicht synchronisiert werden. Neuer Versuch...</string>
+    <string name="notification_sync_failed_message">Deine Daten konnten nicht synchronisiert werden. Neuer Versuch…</string>
     <string name="motivational_widget_description">Zeigt jeden Tag eine andere motivierende Nachricht, um dich zu inspirieren</string>
-    <string name="device_admin_label">InTime - Anti-Deinstallationsschutz</string>
-    <string name="device_admin_description">Aktiviere diese Option, um eine versehentliche Deinstallation von InTime zu verhindern, solange Sperren aktiv sind. Du kannst sie jederzeit in den Einstellungen deaktivieren.</string>
-    <string name="device_admin_explanation">InTime benötigt Geräteadministratorrechte, um die Deinstallation zu verhindern, solange App-Sperren aktiv sind.\n\nDas ist optional, aber empfohlen für Nutzer, die sicherstellen möchten, dass sie die App in schwachen Momenten nicht deinstallieren können.\n\nDu kannst dies jederzeit unter Einstellungen &gt; Sicherheit deaktivieren.</string>
+    <string name="device_admin_label">Momentum - Anti-Deinstallationsschutz</string>
+    <string name="device_admin_description">Aktiviere diese Option, um eine versehentliche Deinstallation von Momentum zu verhindern, solange Sperren aktiv sind. Du kannst sie jederzeit in den Einstellungen deaktivieren.</string>
+    <string name="device_admin_explanation">Momentum benötigt Geräteadministratorrechte, um die Deinstallation zu verhindern, solange App-Sperren aktiv sind.\n\nDas ist optional, aber empfohlen für Nutzer, die sicherstellen möchten, dass sie die App in schwachen Momenten nicht deinstallieren können.\n\nDu kannst dies jederzeit unter Einstellungen &gt; Sicherheit deaktivieren.</string>
     <string name="device_admin_enabled_toast">✅ Anti-Deinstallationsschutz aktiviert</string>
     <string name="device_admin_disabled_toast">Anti-Deinstallationsschutz deaktiviert</string>
-    <string name="device_admin_disable_warning">⚠️ WARNUNG: Wenn du das deaktivierst, kannst du InTime deinstallieren und die Kontrolle über deine Bildschirmzeit verlieren. Bist du sicher?</string>
+    <string name="device_admin_disable_warning">⚠️ WARNUNG: Wenn du das deaktivierst, kannst du Momentum deinstallieren und die Kontrolle über deine Bildschirmzeit verlieren. Bist du sicher?</string>
     <string name="settings_uninstall_protection_title">Anti-Deinstallationsschutz</string>
-    <string name="settings_uninstall_protection_subtitle">Verhindert die Deinstallation von InTime, solange Sperren aktiv sind</string>
+    <string name="settings_uninstall_protection_subtitle">Verhindert die Deinstallation von Momentum, solange Sperren aktiv sind</string>
     <string name="settings_uninstall_protection_active">Schutz aktiv</string>
     <string name="settings_uninstall_protection_inactive">Schutz inaktiv</string>
     <string name="settings_day_start_title">Tagesbeginn</string>
@@ -1041,16 +1041,16 @@
     <string name="day_start_picker_title">Uhrzeit auswählen</string>
     <string name="day_start_picker_description">Wähle die Uhrzeit, zu der dein Tag für die Nutzungsstatistik beginnt</string>
     <string name="device_admin_settings_title">Anti-Deinstallationsschutz</string>
-    <string name="device_admin_settings_subtitle">Verhindert die Deinstallation von InTime in schwachen Momenten</string>
+    <string name="device_admin_settings_subtitle">Verhindert die Deinstallation von Momentum in schwachen Momenten</string>
     <string name="device_admin_info_title">Wie funktioniert es?</string>
-    <string name="device_admin_info_description">Verwendet Geräteadministratorrechte, um die Deinstallation von InTime zu verhindern, solange Sperren aktiv sind.</string>
+    <string name="device_admin_info_description">Verwendet Geräteadministratorrechte, um die Deinstallation von Momentum zu verhindern, solange Sperren aktiv sind.</string>
     <string name="device_admin_benefit_1">Verhindert impulsive Deinstallationen</string>
     <string name="device_admin_benefit_2">Du kannst es jederzeit deaktivieren</string>
     <string name="device_admin_benefit_3">Hat keinen Einfluss auf andere Gerätefunktionen</string>
     <string name="device_admin_status_active">Schutz aktiv</string>
-    <string name="device_admin_status_active_desc">Du kannst InTime erst deinstallieren, wenn du den Schutz deaktivierst</string>
+    <string name="device_admin_status_active_desc">Du kannst Momentum erst deinstallieren, wenn du den Schutz deaktivierst</string>
     <string name="device_admin_status_inactive">Schutz inaktiv</string>
-    <string name="device_admin_status_inactive_desc">Du kannst InTime frei deinstallieren</string>
+    <string name="device_admin_status_inactive_desc">Du kannst Momentum frei deinstallieren</string>
     <string name="device_admin_activate">Schutz aktivieren</string>
     <string name="device_admin_deactivate">Schutz deaktivieren</string>
     <string name="uninstall_protection_toggle">Beim Blockieren von Apps aktivieren</string>
@@ -1081,5 +1081,217 @@
     <string name="account_settings_password_change_error">Passwort konnte nicht geändert werden</string>
     <string name="about_link_error">Link konnte nicht geöffnet werden</string>
     <string name="app_blocked_payment_failed">Zahlung konnte nicht abgeschlossen werden</string>
-    <string name="app_blocked_payment_unlocked">5 Minuten freigeschaltet</string>
+    <string name="app_blocked_payment_unlocked">%1$d Minuten freigeschaltet</string>
+
+    <!-- Authentication, impact, onboarding, dashboard, analytics, limits, and subscription -->
+    <string name="auth_a11y_password_tips">Passworttipps</string>
+    <string name="auth_a11y_show_password">Passwort anzeigen</string>
+    <string name="auth_a11y_hide_password">Passwort ausblenden</string>
+    <string name="auth_welcome_title">Willkommen bei Momentum</string>
+    <string name="auth_welcome_subtitle">Dein Leben in Wochen</string>
+    <string name="auth_welcome_desc">Visualisiere deine Zeit, übernimm die Kontrolle über dein digitales Wohlbefinden und lebe jede Woche bewusst.</string>
+    <string name="auth_create_account">Konto erstellen</string>
+    <string name="auth_sign_in">Anmelden</string>
+    <string name="auth_terms_continue">Wenn du fortfährst, akzeptierst du unsere Nutzungsbedingungen und Datenschutzrichtlinie.</string>
+    <string name="auth_terms_create">Wenn du ein Konto erstellst, akzeptierst du unsere Nutzungsbedingungen und Datenschutzrichtlinie.</string>
+    <string name="auth_signup_subtitle">Schließe dich Tausenden Menschen an, die ihre Beziehung zur Zeit verändert haben</string>
+    <string name="auth_field_full_name">Vollständiger Name</string>
+    <string name="auth_field_email">E-Mail-Adresse</string>
+    <string name="auth_field_password">Passwort</string>
+    <string name="auth_field_confirm_password">Passwort bestätigen</string>
+    <string name="auth_error_name_too_short">Dein Name muss mindestens 2 Zeichen lang sein</string>
+    <string name="auth_error_invalid_email">Gib eine gültige E-Mail-Adresse ein</string>
+    <string name="auth_error_passwords_differ">Die Passwörter stimmen nicht überein</string>
+    <string name="auth_password_strength">Stärke: %1$s</string>
+    <string name="auth_password_weak">Schwach</string>
+    <string name="auth_password_medium">Mittel</string>
+    <string name="auth_password_strong">Stark</string>
+    <string name="auth_password_tip_length">Verwende mindestens 8 Zeichen</string>
+    <string name="auth_password_tip_upper">Füge mindestens einen Großbuchstaben ein</string>
+    <string name="auth_password_tip_lower">Füge mindestens einen Kleinbuchstaben ein</string>
+    <string name="auth_password_tip_digit">Füge mindestens eine Zahl ein</string>
+    <string name="auth_password_tip_symbol">Füge mindestens ein Sonderzeichen ein</string>
+    <string name="auth_why_create_account">Warum ein Konto erstellen?</string>
+    <string name="auth_bullet">• %1$s</string>
+    <string name="auth_have_account">Hast du schon ein Konto? Anmelden</string>
+    <string name="auth_no_account">Noch kein Konto? Konto erstellen</string>
+    <string name="shock_analyzing">Deine Handynutzung wird analysiert…</string>
+    <string name="shock_title">DIE HARTE REALITÄT</string>
+    <string name="shock_subtitle_real">basierend auf DEINER tatsächlichen Nutzung</string>
+    <string name="shock_subtitle_average">basierend auf Durchschnittswerten</string>
+    <string name="shock_at_current_rate">Bei diesem Tempo wirst du</string>
+    <string name="shock_years">JAHRE</string>
+    <string name="shock_of_your_life">deines Lebens auf einen Bildschirm starren</string>
+    <string name="shock_full_days_nonstop">≈ %1$s volle Tage (24 Std.) ohne Pause</string>
+    <string name="shock_projection_title">📊 Deine persönliche Hochrechnung</string>
+    <string name="shock_unit_hours_per_day">Stunden/Tag</string>
+    <string name="shock_desc_daily_average">dein täglicher Durchschnitt</string>
+    <string name="shock_unit_full_days">volle Tage</string>
+    <string name="shock_desc_24h_nonstop">24 Stunden ohne Pause</string>
+    <string name="shock_unit_books">Bücher</string>
+    <string name="shock_desc_books">die du in dieser Zeit lesen könntest</string>
+    <string name="shock_unit_trips">Reisen</string>
+    <string name="shock_desc_trips">von je 2 Wochen, die du machen könntest</string>
+    <string name="shock_waking_life_percent">%1$s%% deines wachen Lebens</string>
+    <string name="shock_waking_life_detail">verbringst du jeden Tag am Handy</string>
+    <string name="shock_quote">\"Das Leben ist zu kurz, um es mit Scrollen zu verbringen.\"</string>
+    <string name="shock_cta">Ich will das ändern 💪</string>
+    <string name="shock_skip">Ich ignoriere die Realität lieber…</string>
+    <string name="onboarding_wizard_step">Schritt %1$d von %2$d</string>
+    <string name="onboarding_welcome_title">Willkommen bei Momentum!</string>
+    <string name="onboarding_welcome_desc">Richte die wichtigsten Berechtigungen ein, damit Blockierung und Erfassung richtig funktionieren.</string>
+    <string name="onboarding_start_setup">Einrichtung starten</string>
+    <string name="onboarding_usage_title">Zugriff auf Nutzungsdaten</string>
+    <string name="onboarding_usage_desc">Wir benötigen Zugriff auf deine Nutzungsdaten, um deine Bildschirmzeit zu messen und Limits durchzusetzen. Dieser Zugriff ist für die App unverzichtbar.</string>
+    <string name="onboarding_open_settings">Einstellungen öffnen</string>
+    <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_notif_title">Benachrichtigungsberechtigung</string>
+    <string name="onboarding_notif_desc">Wir nutzen Benachrichtigungen für Erinnerungen und Blockierungswarnungen. Wir sagen dir Bescheid, wenn du dich deinem Limit näherst.</string>
+    <string name="onboarding_allow">Zulassen</string>
+    <string name="onboarding_skip_for_now">Vorerst überspringen</string>
+    <string name="onboarding_notif_not_required">Deine Android-Version benötigt diese Berechtigung nicht.</string>
+    <string name="onboarding_overlay_title">Über anderen Apps anzeigen</string>
+    <string name="onboarding_overlay_desc">Empfohlen, damit der Sperrbildschirm über anderen Apps angezeigt werden kann. So kann Momentum dich wirksam schützen.</string>
+    <string name="onboarding_overlay_optional">Optional: Du kannst dies später in den Einstellungen aktivieren.</string>
+    <string name="onboarding_enable">Aktivieren</string>
+    <string name="onboarding_setup_complete">Einrichtung abgeschlossen!</string>
+    <string name="onboarding_all_set_title">Alles bereit!</string>
+    <string name="onboarding_all_set_desc">Momentum ist bereit, dir zu helfen, die Kontrolle über deine Zeit zurückzugewinnen. Als Nächstes richten wir dein Profil ein.</string>
+    <string name="onboarding_saving">Wird gespeichert…</string>
+    <string name="onboarding_continue_tutorial">Weiter zum Tutorial</string>
+    <string name="onboarding_permission_granted">✓ Berechtigung erfolgreich erteilt</string>
+    <string name="onboarding_summary_title">Einrichtungsübersicht:</string>
+    <string name="onboarding_summary_usage">Nutzungsdatenzugriff</string>
+    <string name="onboarding_summary_notifications">Benachrichtigungen</string>
+    <string name="onboarding_summary_overlay">Über anderen Apps anzeigen</string>
+    <string name="dashboard_greeting">Guten Tag!</string>
+    <string name="dashboard_screen_time_total_today">Gesamte Bildschirmzeit heute</string>
+    <string name="dashboard_permission_required">Berechtigung erforderlich</string>
+    <string name="dashboard_permission_required_desc">Für echte Statistiken</string>
+    <string name="dashboard_quote_author">— %1$s</string>
+    <string name="dashboard_no_usage_data">Für heute sind keine Nutzungsdaten verfügbar</string>
+    <string name="dashboard_no_usage_data_hint">Nutze einige Apps und schau später noch einmal vorbei</string>
+    <string name="dashboard_usage_permission_needed">Für die Nutzungsstatistik ist der Zugriff auf Nutzungsdaten erforderlich</string>
+    <string name="dashboard_usage_permission_desc">Erlaube den Zugriff auf Nutzungsdaten, um deine meistgenutzten Apps zu sehen</string>
+    <string name="dashboard_unlock_premium">Premium freischalten</string>
+    <string name="dashboard_unlock_premium_desc">Erweiterte Analysen, Fokus-Sitzungen und vieles mehr</string>
+    <string name="level_title_1">Einsteiger</string>
+    <string name="level_title_2">Lehrling</string>
+    <string name="level_title_3">Fokussiert</string>
+    <string name="level_title_4">Diszipliniert</string>
+    <string name="level_title_5">Zeitkrieger</string>
+    <string name="level_title_6">Fokusmeister</string>
+    <string name="level_title_7">Produktivitätslegende</string>
+    <string name="level_title_8">Zeittitan</string>
+    <string name="level_title_9">Oberster Wächter</string>
+    <string name="level_title_grandmaster">Großmeister St.%1$d</string>
+    <string name="greeting_morning">Guten Morgen</string>
+    <string name="greeting_afternoon">Guten Tag</string>
+    <string name="greeting_evening">Guten Abend</string>
+    <string name="dashboard_apps_tracked">Erfasste Apps</string>
+    <string name="dashboard_in_top_apps">In deinen Top-Apps</string>
+    <string name="analytics_weekly_chart_title">Zeit pro Tag</string>
+    <string name="analytics_weekly_peak">Dein Höchstwert war am %1$s, vor allem in %2$s</string>
+    <string name="analytics_total_label">Gesamt</string>
+    <string name="analytics_pickups_label">Entsperrungen</string>
+    <string name="analytics_daily_average_label">Tagesdurchschnitt</string>
+    <string name="analytics_categories_label">Kategorien</string>
+    <string name="analytics_category_breakdown_title">Aufteilung nach Kategorie</string>
+    <string name="analytics_category_breakdown_subtitle">Wofür deine Bildschirmzeit draufgeht</string>
+    <string name="analytics_most_used_label">Top-App</string>
+    <string name="app_limits_daily_limit_value">Limit: %1$d Min./Tag</string>
+    <string name="app_limits_exceeded">Limit überschritten</string>
+    <string name="app_limits_remaining_value">%1$d Min. übrig</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="delete">Löschen</string>
+    <string name="subscription_best_value">Bestes Angebot</string>
+    <string name="subscription_per_year">/Jahr</string>
+    <string name="subscription_per_month">/Monat</string>
+    <string name="subscription_more_features">Und %1$d weitere Funktionen</string>
+    <string name="tutorial_widget_hint_momentum">Halte deinen Startbildschirm gedrückt → Widgets → Momentum</string>
+    <string name="tutorial_widget_hint_life">Halte deinen Startbildschirm gedrückt, wähle „Widgets“ und suche „Mein Leben in Wochen“</string>
+    <string name="tutorial_widget_add_later">Du kannst es auch später über Einstellungen → Mein Leben in Wochen hinzufügen</string>
+    <string name="gam_restored">Fortschritt wiederhergestellt: Level %1$d, %2$d XP</string>
+    <string name="gam_nothing_stored">Noch kein Fortschritt in der Cloud gespeichert</string>
+    <string name="gam_login_restore">Melde dich an, um deinen Fortschritt wiederherzustellen</string>
+    <string name="gam_restore_error">Wiederherstellung fehlgeschlagen: %1$s</string>
+    <string name="gam_synced">Fortschritt synchronisiert</string>
+    <string name="gam_login_sync">Melde dich an, um deinen Fortschritt zu synchronisieren</string>
+    <string name="motiv_message_of_day">💫 Nachricht des Tages</string>
+    <string name="settings_smart_title">Intelligente Sperre</string>
+    <string name="settings_smart_subtitle">Schwebender Timer, Nuklearmodus, Schlaf, digitales Fasten</string>
+    <string name="gam_ev_session_done">Sitzung abgeschlossen! +%1$d XP</string>
+    <string name="gam_ev_streak_started">🔥 Serie gestartet!</string>
+    <string name="gam_ev_streak_current">🔥 Serie: %1$d Tage</string>
+    <string name="gam_ev_streak_days">🔥 %1$d-Tage-Serie!</string>
+    <string name="gam_ev_streak_lost">💔 %1$d-Tage-Serie verloren. -%2$d XP</string>
+    <string name="gam_ev_grace_day_used">Du hast einen Gnadentag genutzt: deine %1$d-Tage-Serie bleibt erhalten. Diese Woche hast du noch %2$d.</string>
+    <string name="gam_ev_streak_restart">Starte morgen eine neue Serie</string>
+    <string name="gam_ev_perfect_day">⭐ Perfekter Tag! +%1$d XP</string>
+    <string name="gam_ev_level_up">🎉 Du hast Level %1$d erreicht!</string>
+    <string name="date_day">Tag</string>
+    <string name="date_month">Monat</string>
+    <string name="date_year">Jahr</string>
+    <string name="community_err_load">Fehler beim Laden der Daten: %1$s</string>
+    <string name="community_err_ranking">Fehler beim Aktualisieren der Rangliste: %1$s</string>
+    <string name="community_err_friends">Fehler beim Aktualisieren der Freunde: %1$s</string>
+    <string name="community_err_achievements">Fehler beim Laden der Erfolge: %1$s</string>
+    <string name="community_request_sent">✅ Anfrage an %1$s gesendet</string>
+    <string name="community_request_failed">❌ %1$s</string>
+    <string name="billing_error">Abrechnungsfehler: %1$s</string>
+    <string name="life_weeks_load_error">Fehler beim Laden der Einstellungen</string>
+    <plurals name="emergency_unlock_streak_risk">
+        <item quantity="one">Deine %1$d-Tage-Serie ist in Gefahr</item>
+        <item quantity="other">Deine %1$d-Tage-Serie ist in Gefahr</item>
+    </plurals>
+    <plurals name="notification_streak_warning_title">
+        <item quantity="one">⚠️ Serie von %1$d Tag in Gefahr</item>
+        <item quantity="other">⚠️ Serie von %1$d Tagen in Gefahr</item>
+    </plurals>
+    <plurals name="notification_streak_continued_title">
+        <item quantity="one">🔥 Serie: %1$d Tag</item>
+        <item quantity="other">🔥 Serie: %1$d Tage</item>
+    </plurals>
+    <plurals name="notification_streak_milestone_message">
+        <item quantity="one">Du bist bei einer Serie von %1$d Tag. Halte die Kette am Laufen!</item>
+        <item quantity="other">Du bist bei einer Serie von %1$d Tagen. Halte die Kette am Laufen!</item>
+    </plurals>
+    <plurals name="notification_streak_record_message">
+        <item quantity="one">Neuer Rekord! %1$d Tag in Folge – deine beste Serie.</item>
+        <item quantity="other">Neuer Rekord! %1$d Tage in Folge – deine beste Serie.</item>
+    </plurals>
+    <plurals name="notification_streak_broken_message">
+        <item quantity="one">Deine Serie von %1$d Tag ist verloren. Starte neu!</item>
+        <item quantity="other">Deine Serie von %1$d Tagen ist verloren. Starte neu!</item>
+    </plurals>
+    <plurals name="analytics_summary_pickups_times">
+        <item quantity="one">%1$d Mal</item>
+        <item quantity="other">%1$d Mal</item>
+    </plurals>
+    <plurals name="in_app_block_rules_count">
+        <item quantity="one">%1$d Regel</item>
+        <item quantity="other">%1$d Regeln</item>
+    </plurals>
+    <plurals name="lock_screen_temporarily_locked">
+        <item quantity="one">Gesperrt für %1$d Minute</item>
+        <item quantity="other">Gesperrt für %1$d Minuten</item>
+    </plurals>
+    <plurals name="app_blocked_daily_limit_minutes">
+        <item quantity="one">%1$d Minute</item>
+        <item quantity="other">%1$d Minuten</item>
+    </plurals>
+    <plurals name="lock_screen_too_many_attempts">
+        <item quantity="one">Zu viele Fehlversuche. Versuche es in %1$d Minute erneut</item>
+        <item quantity="other">Zu viele Fehlversuche. Versuche es in %1$d Minuten erneut</item>
+    </plurals>
+    <plurals name="emergency_unlock_premium_subtitle">
+        <item quantity="one">Sofortzugriff für %1$d Minute</item>
+        <item quantity="other">Sofortzugriff für %1$d Minuten</item>
+    </plurals>
+    <string-array name="auth_signup_benefits">
+        <item>Synchronisiere deine Daten geräteübergreifend</item>
+        <item>Sichere deine Informationen zuverlässig</item>
+        <item>Nutze Premium-Funktionen</item>
+        <item>Erhalte erweiterte Statistiken</item>
+    </string-array>
 </resources>

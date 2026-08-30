@@ -42,6 +42,13 @@ data class UserSettings(
 
         // XP ganado por minuto de foco
         const val XP_PER_FOCUS_MINUTE = 5
+
+        // XP y monedas por mantener la racha un día más. Es lo que hace que la
+        // barra de progreso avance con el uso diario real: antes solo el foco y
+        // los días perfectos daban XP, así que un usuario con racha pero sin
+        // sesiones se quedaba en XP 0 y la barra nunca se movía.
+        const val XP_PER_STREAK_DAY = 40
+        const val COINS_PER_STREAK_DAY = 8
         
         // TimeCoins por minuto de foco
         const val COINS_PER_FOCUS_MINUTE = 1

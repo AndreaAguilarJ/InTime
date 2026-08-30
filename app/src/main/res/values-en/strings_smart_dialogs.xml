@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_sleep_config_title">Set sleep schedule</string>
+    <string name="smart_sleep_config_desc">App usage during these hours won\'t be counted</string>
+    <string name="smart_start">Start</string>
+    <string name="smart_end">End</string>
+
+    <string name="smart_fasting_config_title">Set digital fasting</string>
+    <string name="smart_fasting_config_desc">While fasting you\'ll have a strict limit for every app</string>
+    <string name="smart_fasting_limit_value">Limit while fasting: %1$d min</string>
+    <string name="smart_fasting_days">Fasting days</string>
+
+    <string name="smart_nuclear_duration">Duration: %1$d days</string>
+    <string name="smart_nuclear_wait">Wait time before unlocking: %1$d min</string>
+
+    <string name="smart_pos_top_left">Top left</string>
+    <string name="smart_pos_top_right">Top right</string>
+    <string name="smart_pos_bottom_left">Bottom left</string>
+    <string name="smart_pos_bottom_right">Bottom right</string>
+    <string name="smart_size_small">Small</string>
+    <string name="smart_size_medium">Medium</string>
+    <string name="smart_size_large">Large</string>
+    <string name="smart_timer_config_title">Set floating timer</string>
+    <string name="smart_position_on_screen">Position on screen:</string>
+    <string name="smart_size">Size:</string>
+
+    <string name="smart_new_context_rule">New context rule</string>
+    <string name="smart_rule_name_hint">Name (e.g. Work, School)</string>
+    <string name="smart_rule_schedule">Schedule: %1$s - %2$s</string>
+    <string name="smart_rule_limit_value">Limit: %1$d min</string>
+    <string name="smart_days_label">Days:</string>
+    <string name="smart_create">Create</string>
+
+    <string name="smart_days_weekdays">Mon-Fri</string>
+    <string name="smart_days_everyday">Every day</string>
+
+    <string name="smart_help_title">How does smart blocking work?</string>
+    <string name="smart_help_timer">Shows a counter always visible over every app so you can see how long you\'ve been using it.</string>
+    <string name="smart_help_sleep">Time spent on your phone during your sleeping hours isn\'t counted against your limits.</string>
+    <string name="smart_help_fasting">Set specific hours with very strict limits — ideal for work or study.</string>
+    <string name="smart_help_nuclear">The most extreme block. Once enabled you CANNOT turn it off until the period ends.</string>
+    <string name="smart_help_streak">Use grace days to protect your streak when you occasionally go over your limits.</string>
+    <string name="smart_help_context">Create custom rules by time of day and day of the week.</string>
+    <string name="smart_help_communication_title">Communication only</string>
+    <string name="smart_help_communication">Allows direct messages but blocks feeds, reels and stories.</string>
+    <string name="smart_understood">Got it!</string>
+</resources>

@@ -34,6 +34,7 @@ import com.momentummm.app.ui.overlay.AppBlockOverlayService
 import com.momentummm.app.util.BlockingCapabilities
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import com.momentummm.app.R
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -54,6 +55,9 @@ class AppMonitoringService : Service() {
     @Inject lateinit var appWhitelistRepository: AppWhitelistRepository
     @Inject lateinit var appCategoryRepository: AppCategoryRepository
     @Inject lateinit var goalsRepository: GoalsRepository
+    // La racha que protegen los días de gracia es la diaria de user_settings,
+    // no la de los objetivos.
+    @Inject lateinit var userDao: com.momentummm.app.data.dao.UserDao
     @Inject lateinit var smartNotificationManager: SmartNotificationManager
     @Inject lateinit var smartBlockingManager: SmartBlockingManager
     @Inject lateinit var patternEngine: UsagePatternEngine
@@ -92,6 +96,16 @@ class AppMonitoringService : Service() {
     // Para tracking de notificaciones de advertencia
     private val warningNotifiedApps = mutableSetOf<String>()
     private val lastWarningTime = mutableMapOf<String, Long>()
+
+    /**
+     * Cooldown propio del aviso de racha.
+     *
+     * Necesita ser independiente del aviso del 80 %: ahora se evalúan en
+     * momentos distintos y compartir el mapa haría que uno silenciara al otro.
+     * ConcurrentHashMap porque se lee desde el bucle del monitor y se escribe
+     * desde la coroutine que consulta la racha.
+     */
+    private val lastStreakWarningTime = java.util.concurrent.ConcurrentHashMap<String, Long>()
     private val WARNING_COOLDOWN = 300000L // 5 minutos entre advertencias de la misma app
 
     // Para el Timer Flotante
@@ -296,13 +310,22 @@ class AppMonitoringService : Service() {
             // Timeout de 3 segundos para esta operación
             withTimeoutOrNull(3000L) {
                 if (currentApp.isEmpty() || currentApp == packageName) {
-                    // Si estamos en InTime, ocultar el timer flotante
-                    if (floatingTimerActive) {
-                        FloatingTimerService.stop(this@AppMonitoringService)
-                        floatingTimerActive = false
-                        currentFloatingApp = ""
-                    }
+                    // Si estamos en Momentum, ocultar el timer flotante
+                    stopFloatingTimerIfActive()
                     return@withTimeoutOrNull
+                }
+
+                // El overlay pertenece a UNA app concreta. En cuanto el usuario
+                // sale de ella hay que retirarlo, y esto tiene que ocurrir antes
+                // de cualquier `return` posterior.
+                //
+                // BUG CORREGIDO: sólo se retiraba al volver a InTime o al
+                // alcanzar el límite. Ir al launcher, a una app sin límite o a
+                // una de la whitelist salía de la función por otra rama y el
+                // contador se quedaba flotando encima, indicando un tiempo
+                // restante que ya no correspondía a nada visible.
+                if (floatingTimerActive && currentFloatingApp != currentApp) {
+                    stopFloatingTimerIfActive()
                 }
 
                 // Nada de infraestructura del sistema ni vías de emergencia.
@@ -313,19 +336,31 @@ class AppMonitoringService : Service() {
                     return@withTimeoutOrNull
                 }
 
-                // VERIFICACIÓN 0: Ventana de Sueño - ignorar tracking si está configurado
+                // VERIFICACIÓN 0: Ventana de Sueño
+                //
+                // Ya NO se abandona el ciclo aquí. "No contar el uso" se aplica
+                // donde se suman los minutos (DailyUsageCalculator excluye la
+                // ventana), así que el uso nocturno no puede empujar a una app
+                // sobre su límite. Este `return` anticipado, además de no
+                // excluir nada, desactivaba de paso el Modo nuclear, Solo
+                // comunicación y el bloqueo por contexto durante toda la noche.
                 if (smartBlockingManager.shouldIgnoreUsageTracking()) {
-                    Log.d(TAG, "Ventana de sueño activa - ignorando tracking para $currentApp")
-                    return@withTimeoutOrNull
+                    Log.d(TAG, "Ventana de sueño: el uso de $currentApp no se contará")
                 }
 
                 // VERIFICACIÓN 1: Modo Solo Comunicación
                 val isCommunicationOnlyMode = smartBlockingManager.isCommunicationOnlyModeActive()
                 if (isCommunicationOnlyMode) {
                     val allowedApps = smartBlockingManager.getCommunicationOnlyAllowedApps()
-                    if (!allowedApps.contains(currentApp)) {
+                    // Una lista vacía significa «no he elegido apps todavía», no
+                    // «bloquea todo». Sin esta guarda, activar el modo sin
+                    // seleccionar nada dejaba el teléfono inutilizable: TODA app
+                    // de usuario quedaba bloqueada.
+                    if (allowedApps.isEmpty()) {
+                        Log.w(TAG, "Solo Comunicación activo sin apps permitidas: no se bloquea nada")
+                    } else if (!allowedApps.contains(currentApp)) {
                         Log.d(TAG, "Modo Solo Comunicación activo - bloqueando $currentApp")
-                        blockApp(currentApp, "Solo están permitidas apps de comunicación")
+                        blockApp(currentApp, getString(R.string.svc_block_comm_only))
                         return@withTimeoutOrNull
                     }
                 }
@@ -334,19 +369,24 @@ class AppMonitoringService : Service() {
                 if (smartBlockingManager.isAppInNuclearMode(currentApp)) {
                     val remainingDays = smartBlockingManager.getNuclearModeRemainingDays()
                     Log.d(TAG, "Modo Nuclear activo - bloqueando $currentApp (faltan $remainingDays días)")
-                    blockApp(currentApp, "Modo Nuclear: Bloqueado por $remainingDays días más")
+                    blockApp(currentApp, getString(R.string.svc_block_nuclear, remainingDays))
                     return@withTimeoutOrNull
                 }
 
-                // VERIFICACIÓN 3: Ventana de Sueño (bloqueo, no solo ignorar tracking)
-                if (smartBlockingManager.isInSleepMode.value) {
+                // VERIFICACIÓN 3: Ventana de Sueño (bloqueo de apps no esenciales)
+                //
+                // Sólo si el usuario activó "bloquear apps durante el sueño".
+                // Antes bastaba con que `sleepModeIgnoreTracking` estuviera en
+                // false, así que una función anunciada como "no contar el uso"
+                // acababa bloqueando el teléfono entero por la noche.
+                if (smartBlockingManager.shouldBlockAppsDuringSleep()) {
                     // En modo sueño, bloquear todas las apps que no sean esenciales
                     val isWhitelisted = withContext(Dispatchers.IO) {
                         appWhitelistRepository.isAppWhitelisted(currentApp)
                     }
                     if (!isWhitelisted) {
                         Log.d(TAG, "Ventana de Sueño activa - bloqueando $currentApp")
-                        blockApp(currentApp, "Es hora de descansar. Las apps estarán disponibles mañana.")
+                        blockApp(currentApp, getString(R.string.svc_block_sleep))
                         return@withTimeoutOrNull
                     }
                 }
@@ -355,7 +395,7 @@ class AppMonitoringService : Service() {
                 if (smartBlockingManager.isAppBlockedByContext(currentApp)) {
                     val activeRule = smartBlockingManager.activeContextRules.value.firstOrNull()
                     Log.d(TAG, "Bloqueo por contexto activo - bloqueando $currentApp")
-                    blockApp(currentApp, "Bloqueado por regla: ${activeRule?.ruleName ?: "Contexto"}")
+                    blockApp(currentApp, getString(R.string.svc_block_rule, activeRule?.ruleName ?: getString(R.string.svc_block_rule_fallback)))
                     return@withTimeoutOrNull
                 }
 
@@ -411,7 +451,7 @@ class AppMonitoringService : Service() {
                         val dailyLimit = activeLimit.dailyLimitMinutes
                         Log.d(TAG, "App $currentApp está bloqueada hoy - FORZANDO pantalla de bloqueo")
                         smartBlockingManager.registerBlockScreenShown(currentApp)
-                        blockApp(currentApp, "Ya alcanzaste tu límite de $dailyLimit minutos hoy")
+                        blockApp(currentApp, getString(R.string.svc_block_daily_limit, dailyLimit))
                     } else {
                         // Incluso si no podemos mostrar pantalla (cooldown),
                         // volver a tapar la app para sacar al usuario de ella
@@ -450,7 +490,7 @@ class AppMonitoringService : Service() {
                     // Feature solicitada: "block certain apps... at a certain time"
                     if (appLimit != null && appLimit.isEnabled && appLimit.isWithinScheduleBlock()) {
                         Log.d(TAG, "App $currentApp bloqueada por horario: ${appLimit.getScheduleFormatted()}")
-                        blockApp(currentApp, "Bloqueada por horario: ${appLimit.getScheduleFormatted()}")
+                        blockApp(currentApp, getString(R.string.svc_block_schedule, appLimit.getScheduleFormatted()))
                         return@withTimeoutOrNull
                     }
                     
@@ -462,12 +502,34 @@ class AppMonitoringService : Service() {
                     if (categoryBlockReason != null) {
                         val message = when (categoryBlockReason) {
                             is com.momentummm.app.data.repository.CategoryBlockReason.LimitExceeded -> 
-                                "Límite de categoría '${categoryBlockReason.categoryName}' excedido (${categoryBlockReason.limitMinutes}m)"
+                                getString(R.string.svc_block_category_limit, categoryBlockReason.categoryName, categoryBlockReason.limitMinutes)
                             is com.momentummm.app.data.repository.CategoryBlockReason.ScheduleBlock ->
-                                "Categoría '${categoryBlockReason.categoryName}' bloqueada: ${categoryBlockReason.startTime} - ${categoryBlockReason.endTime}"
+                                getString(R.string.svc_block_category_schedule, categoryBlockReason.categoryName, categoryBlockReason.startTime, categoryBlockReason.endTime)
                         }
                         Log.d(TAG, "App $currentApp bloqueada por categoría: $message")
                         blockApp(currentApp, message)
+                        return@withTimeoutOrNull
+                    }
+
+                    // VERIFICACIÓN 7.5: Ayuno digital
+                    //
+                    // Va fuera del bloque `appLimit != null`: con
+                    // `fastingApplyToAllApps` activo el ayuno alcanza a toda app
+                    // bloqueable, no solo a las que ya tienen límite propio.
+                    //
+                    // Este bloqueo NO se marca como «bloqueada hoy» a propósito:
+                    // así la app vuelve a abrirse en cuanto termina la franja,
+                    // que es lo que promete la pantalla. Antes el ayuno reducía
+                    // el límite diario y la marca resultante sobrevivía a la
+                    // franja, bloqueando también por la noche.
+                    val fastingLimit = smartBlockingManager.fastingBlockLimitMinutes(
+                        packageName = currentApp,
+                        hasOwnLimit = appLimit != null && appLimit.isEnabled
+                    )
+                    if (fastingLimit != null) {
+                        Log.d(TAG, "Ayuno digital activo - bloqueando $currentApp (límite ${fastingLimit}m en la franja)")
+                        stopFloatingTimerIfActive()
+                        blockApp(currentApp, getString(R.string.svc_block_fasting, fastingLimit))
                         return@withTimeoutOrNull
                     }
 
@@ -572,9 +634,11 @@ class AppMonitoringService : Service() {
                                 val currentTime = System.currentTimeMillis()
                                 if (currentApp != lastCheckedApp || (currentTime - lastBlockedTime) > BLOCK_COOLDOWN) {
                                     val blockReason = if (effectiveLimit < originalLimit) {
+                                        // El ayuno ya no reduce el límite diario
+                                        // (se comprueba aparte), así que aquí solo
+                                        // quedan contexto y límite inteligente.
                                         when {
-                                            smartBlockingManager.isInFastingMode.value -> "Ayuno Digital: Límite reducido a ${effectiveLimit}m"
-                                            smartBlockingManager.activeContextRules.value.isNotEmpty() -> "Bloqueo por Contexto activo"
+                                            smartBlockingManager.activeContextRules.value.isNotEmpty() -> getString(R.string.svc_block_context_active)
                                             else -> null
                                         }
                                     } else null
@@ -603,11 +667,7 @@ class AppMonitoringService : Service() {
                                     }
                                     
                                     // Ocultar timer flotante al bloquear
-                                    if (floatingTimerActive) {
-                                        FloatingTimerService.stop(this@AppMonitoringService)
-                                        floatingTimerActive = false
-                                        currentFloatingApp = ""
-                                    }
+                                    stopFloatingTimerIfActive()
                                     
                                     blockApp(currentApp, blockReason)
                                 }
@@ -624,27 +684,50 @@ class AppMonitoringService : Service() {
                                     lastWarningTime[currentApp] = currentTime
                                     // Usar el sistema de notificaciones inteligentes
                                     smartNotificationManager.checkAppLimitsAndNotify()
-                                    
-                                    // === ADVERTENCIA DE RACHA ===
-                                    // Si la protección de racha está habilitada, advertir antes del límite
-                                    if (smartBlockingManager.shouldWarnAboutStreakBreak(usageMinutes, effectiveLimit)) {
-                                        // Obtener racha actual de goals
-                                        serviceScope.launch(Dispatchers.IO) {
-                                            try {
-                                                val goals = goalsRepository.getAllGoals().first()
-                                                val bestStreak = goals.maxOfOrNull { it.currentStreak } ?: 0
-                                                if (bestStreak > 0) {
-                                                    smartNotificationManager.showStreakWarningNotification(
-                                                        packageName = currentApp,
-                                                        appName = getAppName(currentApp),
-                                                        remainingMinutes = effectiveLimit - usageMinutes,
-                                                        currentStreak = bestStreak
-                                                    )
-                                                }
-                                            } catch (e: Exception) {
-                                                Log.e(TAG, "Error obteniendo racha para advertencia", e)
+                                }
+                            }
+                        }
+
+                        // === ADVERTENCIA DE RACHA ===
+                        //
+                        // Va FUERA del `when` a propósito. Antes vivía dentro de
+                        // la rama del 80-99 %, así que un aviso configurado a 10
+                        // minutos no llegaba hasta que el uso pasaba el 80 %: con
+                        // un límite de 20 minutos eso son 16, y el usuario recibía
+                        // el aviso 6 minutos tarde. Ahora depende sólo de los
+                        // minutos restantes que el usuario eligió.
+                        if (smartBlockingManager.shouldWarnAboutStreakBreak(usageMinutes, effectiveLimit)) {
+                            val currentTime = System.currentTimeMillis()
+                            val lastStreakWarning = lastStreakWarningTime[currentApp] ?: 0L
+                            if (currentTime - lastStreakWarning > WARNING_COOLDOWN) {
+                                lastStreakWarningTime[currentApp] = currentTime
+                                serviceScope.launch(Dispatchers.IO) {
+                                    try {
+                                        // Es la racha DIARIA del usuario la que se
+                                        // rompe y la que los días de gracia
+                                        // protegen. Antes se usaba la mayor racha
+                                        // de los objetivos, que es otra cosa: un
+                                        // usuario con racha diaria pero sin
+                                        // objetivos no recibía ningún aviso.
+                                        val streak = userDao.getUserSettingsSync()?.currentStreak ?: 0
+                                        if (streak > 0) {
+                                            smartNotificationManager.showStreakWarningNotification(
+                                                packageName = currentApp,
+                                                appName = getAppName(currentApp),
+                                                remainingMinutes = effectiveLimit - usageMinutes,
+                                                currentStreak = streak
+                                            )
+
+                                            // Aviso de cupo bajo: da sentido a una
+                                            // notificación que estaba escrita y sin
+                                            // ningún llamador.
+                                            val graceLeft = smartBlockingManager.getGraceDaysRemaining()
+                                            if (graceLeft <= 1) {
+                                                smartNotificationManager.showGraceDaysLowNotification(graceLeft)
                                             }
                                         }
+                                    } catch (e: Exception) {
+                                        Log.e(TAG, "Error obteniendo racha para advertencia", e)
                                     }
                                 }
                             }
@@ -675,6 +758,20 @@ class AppMonitoringService : Service() {
      */
     private fun getCurrentAppUsageStats(packageName: String): Long =
         DailyUsageCalculator.foregroundMillisToday(this, packageName)
+
+    /**
+     * Retira el timer flotante y limpia su estado local.
+     *
+     * Existe como función única porque el overlay debe desaparecer desde varios
+     * puntos de salida (volver a InTime, cambiar de app, alcanzar el límite) y
+     * repetir las tres líneas era justo lo que provocaba que alguno se olvidara.
+     */
+    private fun stopFloatingTimerIfActive() {
+        if (!floatingTimerActive) return
+        FloatingTimerService.stop(this)
+        floatingTimerActive = false
+        currentFloatingApp = ""
+    }
 
     private fun getCurrentForegroundApp(): String = ForegroundAppTracker.current(this)
 

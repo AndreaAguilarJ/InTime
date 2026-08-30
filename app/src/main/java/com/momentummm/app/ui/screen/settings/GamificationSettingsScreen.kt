@@ -189,13 +189,13 @@ fun GamificationSettingsScreen(
                                 isSyncing = false
                                 val text = when (result) {
                                     is GamificationManager.RestoreResult.Restored ->
-                                        "Progreso restaurado: nivel ${result.level}, ${result.totalXp} XP"
+                                        context.getString(R.string.gam_restored, result.level, result.totalXp)
                                     GamificationManager.RestoreResult.NothingStored ->
-                                        "No hay progreso guardado en la nube todavía"
+                                        context.getString(R.string.gam_nothing_stored)
                                     GamificationManager.RestoreResult.NotLoggedIn ->
-                                        "Inicia sesión para restaurar tu progreso"
+                                        context.getString(R.string.gam_login_restore)
                                     is GamificationManager.RestoreResult.Error ->
-                                        "No se pudo restaurar: ${result.message ?: "error desconocido"}"
+                                        context.getString(R.string.gam_restore_error, result.message ?: "?")
                                 }
                                 Toast.makeText(context, text, Toast.LENGTH_LONG).show()
                             }
@@ -289,9 +289,9 @@ fun GamificationSettingsScreen(
                             Toast.makeText(
                                 context,
                                 if (synced) {
-                                    "Progreso sincronizado"
+                                    context.getString(R.string.gam_synced)
                                 } else {
-                                    "Inicia sesión para sincronizar tu progreso"
+                                    context.getString(R.string.gam_login_sync)
                                 },
                                 Toast.LENGTH_LONG
                             ).show()

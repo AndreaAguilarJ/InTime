@@ -6,6 +6,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +20,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.MomentumApplication
@@ -92,13 +98,22 @@ fun PreferenceSubCategory(
     content: @Composable ColumnScope.() -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(initiallyExpanded) }
+    val expansionState = stringResource(
+        if (isExpanded) R.string.a11y_state_expanded else R.string.a11y_state_collapsed
+    )
     
     Column(modifier = modifier.fillMaxWidth()) {
         // Header de la subcategoría
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { isExpanded = !isExpanded }
+                .semantics {
+                    contentDescription = title
+                    role = Role.Button
+                    stateDescription = expansionState
+                }
+                .minimumInteractiveComponentSize()
+                .clickable(role = Role.Button) { isExpanded = !isExpanded }
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -158,7 +173,11 @@ fun PreferenceItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(enabled = enabled, onClick = onClick)
+                .semantics {
+                    contentDescription = title
+                    role = Role.Button
+                }
+                .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
                 .padding(
                     horizontal = com.momentummm.app.ui.system.MomentumDesign.Spacing.medium,
                     vertical = com.momentummm.app.ui.system.MomentumDesign.Spacing.compact
@@ -468,8 +487,8 @@ fun SettingsScreen(
                         onClick = { onNavigateToScreen("app_categories") }
                     )
                     PreferenceItem(
-                        title = "Bloqueo Inteligente",
-                        subtitle = "Timer flotante, modo nuclear, sueño, ayuno digital",
+                        title = stringResource(R.string.settings_smart_title),
+                        subtitle = stringResource(R.string.settings_smart_subtitle),
                         icon = Icons.Default.AutoAwesome,
                         onClick = { onNavigateToScreen("smart_blocking") },
                         showDivider = false

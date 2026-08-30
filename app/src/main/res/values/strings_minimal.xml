@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de la pantalla de Modo Telefono Minimo.
+  Estaban escritos directamente en MinimalPhoneScreen.kt, asi que salian siempre en
+  espanol aunque el usuario tuviera la app en otro idioma: se verifico en el
+  emulador con la app en ingles y esta pantalla aparecia en espanol mientras el
+  resto de la app estaba traducida.
+  Archivo aparte de strings.xml a proposito, para no mezclar con las 1097 claves
+  existentes y poder seguir extrayendo por tandas.
+-->
+<resources>
+    <string name="minimal_setup_title">Modo Teléfono Mínimo</string>
+    <string name="minimal_setup_subtitle">Limita tu teléfono a las funciones esenciales: llamadas, mensajes y contactos.</string>
+    <string name="minimal_setup_features_title">Características:</string>
+    <string name="minimal_setup_feature_apps">• Solo apps esenciales disponibles</string>
+    <string name="minimal_setup_feature_ui">• Interfaz simplificada</string>
+    <string name="minimal_setup_feature_distractions">• Menos distracciones</string>
+    <string name="minimal_setup_feature_comms">• Enfoque en comunicación</string>
+    <string name="minimal_setup_enable">Activar modo mínimo</string>
+    <string name="minimal_exit_message">Se restaurará la experiencia completa de Momentum con todas las funciones.</string>
+    <string name="minimal_exit_confirm">Sí, salir</string>
+    <string name="minimal_exit_cancel">Continuar aquí</string>
+
+    <!-- Segunda tanda: dialogos de gestion de apps permitidas. -->
+    <string name="minimal_manage_title">Gestionar apps permitidas</string>
+    <string name="minimal_manage_subtitle">Selecciona qué apps estarán disponibles en modo mínimo:</string>
+    <string name="minimal_change">Cambiar</string>
+    <string name="minimal_add_app">Agregar app</string>
+    <string name="minimal_pick_extra_title">Seleccionar aplicación adicional</string>
+    <string name="minimal_pick_extra_subtitle">Elige una app para agregar al teléfono mínimo (solo una):</string>
+    <string name="minimal_search_app">Buscar app</string>
+    <string name="minimal_remove_current">Quitar app actual</string>
+    <string name="minimal_remove">Quitar</string>
+    <string name="minimal_select">Seleccionar</string>
+    <string name="minimal_close">Cerrar</string>
+    <string name="minimal_all_apps">Todas las apps</string>
+    <string name="minimal_exit_title">¿Salir del modo mínimo?</string>
+</resources>

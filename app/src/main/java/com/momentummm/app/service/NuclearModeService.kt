@@ -27,7 +27,7 @@ import javax.inject.Inject
  * Servicio para el Modo Nuclear.
  * 
  * CARACTERÍSTICAS CRÍTICAS:
- * - El timer de desbloqueo SOLO avanza cuando InTime está en primer plano
+ * - El timer de desbloqueo SOLO avanza cuando Momentum está en primer plano
  * - El usuario DEBE tener la app visible para que el timer progrese
  * - Bloqueo de 1-90 días, no se puede cancelar fácilmente
  * - Muestra el progreso en tiempo real
@@ -212,10 +212,10 @@ class NuclearModeService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Modo Nuclear",
+                getString(R.string.svc_nuclear_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Notificaciones del Modo Nuclear"
+                description = getString(R.string.svc_nuclear_channel_desc)
                 setShowBadge(true)
             }
             val manager = getSystemService(NotificationManager::class.java)
@@ -250,8 +250,8 @@ class NuclearModeService : Service() {
         } else 0
         
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("☢️ Modo Nuclear Activo")
-            .setContentText("$remainingDays días restantes | Timer: $remainingMinutes min para desbloqueo")
+            .setContentTitle(getString(R.string.svc_nuclear_title))
+            .setContentText(getString(R.string.svc_nuclear_text, remainingDays, remainingMinutes))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -259,7 +259,7 @@ class NuclearModeService : Service() {
             .setProgress(100, progress, false)
             .addAction(
                 R.drawable.ic_launcher_foreground,
-                if (isAppInForeground) "Timer Activo ⏱️" else "Abre InTime para continuar",
+                if (isAppInForeground) getString(R.string.svc_nuclear_action_running) else getString(R.string.svc_nuclear_action_open),
                 pendingIntent
             )
             .build()
@@ -281,8 +281,8 @@ class NuclearModeService : Service() {
         )
         
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("🎉 ¡Desbloqueo Nuclear Disponible!")
-            .setContentText("Has completado el tiempo de espera. Puedes desactivar el Modo Nuclear.")
+            .setContentTitle(getString(R.string.svc_nuclear_unlock_title))
+            .setContentText(getString(R.string.svc_nuclear_unlock_text))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

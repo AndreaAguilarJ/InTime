@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="limit_dialog_add_title">Adicionar limite de app</string>
+    <string name="limit_dialog_search_app">Pesquisar aplicação</string>
+    <string name="limit_dialog_select_app">Selecione uma aplicação:</string>
+    <string name="limit_dialog_no_apps_found">Nenhuma aplicação encontrada</string>
+    <string name="limit_dialog_daily_minutes">Limite diário (minutos)</string>
+    <string name="limit_dialog_minutes_example">Exemplo: 60 minutos = 1 hora</string>
+    <string name="limit_dialog_cancel">Cancelar</string>
+    <string name="limit_dialog_add_button">Adicionar limite</string>
+    <string name="limit_dialog_edit_title">Editar limite</string>
+    <string name="limit_dialog_app_label">Aplicação: %1$s</string>
+    <string name="limit_dialog_daily_time_limit">Limite de tempo diário</string>
+    <string name="limit_dialog_current_limit">Limite atual: %1$d minutos</string>
+    <string name="limit_dialog_presets">Limites predefinidos:</string>
+    <string name="limit_dialog_schedule_block">Bloqueio por horário</string>
+    <string name="limit_dialog_schedule_block_desc">Bloquear esta aplicação em horários específicos, independentemente do limite de tempo</string>
+    <string name="limit_dialog_start_time">Hora de início:</string>
+    <string name="limit_dialog_end_time">Hora de fim:</string>
+    <string name="limit_dialog_active_days">Dias ativos:</string>
+    <string name="limit_dialog_save">Guardar</string>
+    <string name="limit_dialog_start_time_title">Hora de início</string>
+    <string name="limit_dialog_end_time_title">Hora de fim</string>
+    <string name="limit_dialog_confirm">Confirmar</string>
+</resources>

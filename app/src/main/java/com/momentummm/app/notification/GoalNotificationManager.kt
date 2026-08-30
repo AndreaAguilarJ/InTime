@@ -45,26 +45,26 @@ class GoalNotificationManager @Inject constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val goalsChannel = NotificationChannel(
                 CHANNEL_ID_GOALS,
-                "Recordatorios de Metas",
+                context.getString(R.string.goal_ch_goals_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Notificaciones para recordar el progreso de tus metas"
+                description = context.getString(R.string.goal_ch_goals_desc)
             }
 
             val challengesChannel = NotificationChannel(
                 CHANNEL_ID_CHALLENGES,
-                "Recordatorios de Desafíos",
+                context.getString(R.string.goal_ch_challenges_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Notificaciones sobre tus desafíos activos"
+                description = context.getString(R.string.goal_ch_challenges_desc)
             }
 
             val achievementsChannel = NotificationChannel(
                 CHANNEL_ID_ACHIEVEMENTS,
-                "Logros y Recompensas",
+                context.getString(R.string.goal_ch_achievements_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Notificaciones cuando completas logros"
+                description = context.getString(R.string.goal_ch_achievements_desc)
             }
 
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
@@ -140,18 +140,18 @@ class GoalNotificationManager @Inject constructor(
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_CHALLENGES)
             .setSmallIcon(R.drawable.ic_challenge) // Asegúrate de que exista este recurso
-            .setContentTitle("Desafío en Progreso")
-            .setContentText("${challenge.title} - $progressPercentage% completado")
+            .setContentTitle(context.getString(R.string.goal_challenge_title))
+            .setContentText(context.getString(R.string.goal_challenge_text, challenge.title, progressPercentage))
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText("${challenge.description}\nQuedan $daysRemaining días para completar")
+                    .bigText(context.getString(R.string.goal_challenge_bigtext, challenge.description, daysRemaining))
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .addAction(
                 android.R.drawable.ic_media_play,
-                "Continuar Desafío",
+                context.getString(R.string.goal_action_continue),
                 pendingIntent
             )
             .build()
@@ -177,7 +177,7 @@ class GoalNotificationManager @Inject constructor(
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_ACHIEVEMENTS)
             .setSmallIcon(android.R.drawable.star_big_on)
-            .setContentTitle("¡Nuevo Logro Desbloqueado!")
+            .setContentTitle(context.getString(R.string.goal_achievement_title))
             .setContentText(achievementTitle)
             .setStyle(
                 NotificationCompat.BigTextStyle()
@@ -205,11 +205,11 @@ class GoalNotificationManager @Inject constructor(
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_GOALS)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("¡Racha Increíble! 🔥")
-            .setContentText("$streakDays días consecutivos en $goalTitle")
+            .setContentTitle(context.getString(R.string.goal_streak_title))
+            .setContentText(context.getString(R.string.goal_streak_text, streakDays, goalTitle))
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText("🔥 ¡Llevas $streakDays días consecutivos cumpliendo tu meta!\n¡Sigue así y no rompas la racha!")
+                    .bigText(context.getString(R.string.goal_streak_bigtext, streakDays))
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)

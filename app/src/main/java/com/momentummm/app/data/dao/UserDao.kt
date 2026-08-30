@@ -69,6 +69,17 @@ interface UserDao {
     suspend fun resetStreak(date: Date)
 
     /**
+     * Conserva la racha actual y adelanta la última fecha activa.
+     *
+     * Es lo que hace un día de gracia: el usuario faltó, así que la racha NO
+     * sube, pero tampoco se pierde. Sin esta consulta no existía forma de
+     * expresar «mantener» —sólo incrementar o resetear— y por eso la
+     * protección de rachas no podía implementarse.
+     */
+    @Query("UPDATE user_settings SET lastActiveDate = :date WHERE id = 1")
+    suspend fun preserveStreak(date: Date)
+
+    /**
      * Incrementa minutos de foco totales
      */
     @Query("UPDATE user_settings SET totalFocusMinutes = totalFocusMinutes + :minutes WHERE id = 1")

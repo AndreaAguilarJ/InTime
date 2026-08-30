@@ -328,6 +328,7 @@ fun AdvancedAnalyticsScreen(
             // Productivity insights
             if (usageData.isNotEmpty()) {
                 ProductivityInsightsCard(
+                    weeklyData = weeklyData,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -708,22 +709,15 @@ private fun AppUsageCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // App icon placeholder
-            Surface(
-                modifier = Modifier.size(48.dp),
-                color = app.category.color,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                // In real app, load actual app icon
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = app.appName.firstOrNull()?.toString() ?: "?",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            // Icono REAL de la app (se carga del sistema por packageName);
+            // cae al mosaico de color + inicial si la app no está instalada.
+            com.momentummm.app.ui.component.AppIconImage(
+                packageName = app.packageName,
+                appName = app.appName,
+                fallbackColor = app.category.color,
+                size = 48.dp,
+                cornerRadius = 12.dp
+            )
             
             Spacer(modifier = Modifier.width(12.dp))
             
@@ -798,8 +792,15 @@ private fun AppUsageCard(
 
 @Composable
 private fun ProductivityInsightsCard(
+    weeklyData: List<WeeklyData>,
     modifier: Modifier = Modifier
 ) {
+    // Antes esta tarjeta mostraba una frase fija: "tu productividad aumenta un 23% los
+    // martes". Ese 23% y ese martes no salian de ningun dato: estaban escritos a mano, e
+    // iguales para todos los usuarios, incluido quien acababa de instalar la app. Ahora
+    // el dato se deriva del tiempo de pantalla real por dia, y si no hay historial
+    // suficiente se dice, en lugar de inventarlo.
+    val insight = remember(weeklyData) { calcularDiaConMenosPantalla(weeklyData) }
     MomentumGradientCard(
         modifier = modifier,
         gradient = Brush.verticalGradient(
@@ -832,7 +833,15 @@ private fun ProductivityInsightsCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.analytics_productivity_insight_message),
+                    text = if (insight != null) {
+                        stringResource(
+                            R.string.analytics_productivity_insight_message_day,
+                            insight.dia,
+                            insight.porcentajeBajoLaMedia
+                        )
+                    } else {
+                        stringResource(R.string.analytics_productivity_insight_message_pending)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

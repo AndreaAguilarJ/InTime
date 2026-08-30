@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_sleep_config_title">Définir les horaires de sommeil</string>
+    <string name="smart_sleep_config_desc">L\'usage pendant ces heures ne sera pas compté</string>
+    <string name="smart_start">Début</string>
+    <string name="smart_end">Fin</string>
+
+    <string name="smart_fasting_config_title">Configurer le jeûne numérique</string>
+    <string name="smart_fasting_config_desc">Pendant le jeûne, une limite stricte s\'applique à toutes les applications</string>
+    <string name="smart_fasting_limit_value">Limite pendant le jeûne : %1$d min</string>
+    <string name="smart_fasting_days">Jours de jeûne</string>
+
+    <string name="smart_nuclear_duration">Durée : %1$d jours</string>
+    <string name="smart_nuclear_wait">Délai avant déverrouillage : %1$d min</string>
+
+    <string name="smart_pos_top_left">En haut à gauche</string>
+    <string name="smart_pos_top_right">En haut à droite</string>
+    <string name="smart_pos_bottom_left">En bas à gauche</string>
+    <string name="smart_pos_bottom_right">En bas à droite</string>
+    <string name="smart_size_small">Petit</string>
+    <string name="smart_size_medium">Moyen</string>
+    <string name="smart_size_large">Grand</string>
+    <string name="smart_timer_config_title">Configurer le minuteur flottant</string>
+    <string name="smart_position_on_screen">Position à l\'écran :</string>
+    <string name="smart_size">Taille :</string>
+
+    <string name="smart_new_context_rule">Nouvelle règle contextuelle</string>
+    <string name="smart_rule_name_hint">Nom (ex. : Travail, École)</string>
+    <string name="smart_rule_schedule">Horaire : %1$s - %2$s</string>
+    <string name="smart_rule_limit_value">Limite : %1$d min</string>
+    <string name="smart_days_label">Jours :</string>
+    <string name="smart_create">Créer</string>
+
+    <string name="smart_days_weekdays">Lun-Ven</string>
+    <string name="smart_days_everyday">Tous les jours</string>
+
+    <string name="smart_help_title">Comment fonctionne le blocage intelligent ?</string>
+    <string name="smart_help_timer">Affiche un compteur toujours visible au-dessus des applications pour voir depuis combien de temps vous y êtes.</string>
+    <string name="smart_help_sleep">Le temps passé sur le téléphone pendant vos heures de sommeil n\'est pas compté dans vos limites.</string>
+    <string name="smart_help_fasting">Définissez des plages horaires avec des limites très strictes — idéal pour le travail ou les études.</string>
+    <string name="smart_help_nuclear">Le blocage le plus extrême. Une fois activé, vous NE POUVEZ PAS le désactiver avant la fin de la période.</string>
+    <string name="smart_help_streak">Utilisez des jours de grâce pour protéger votre série quand vous dépassez parfois vos limites.</string>
+    <string name="smart_help_context">Créez des règles personnalisées par heure et par jour de la semaine.</string>
+    <string name="smart_help_communication_title">Communication seule</string>
+    <string name="smart_help_communication">Autorise les messages privés mais bloque les fils, les reels et les stories.</string>
+    <string name="smart_understood">Compris !</string>
+</resources>

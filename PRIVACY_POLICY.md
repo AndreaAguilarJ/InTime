@@ -21,19 +21,14 @@ Bienvenido a Momentum (InTime). Esta Política de Privacidad explica cómo recop
 - **Datos recopilados:** Nombres de apps, tiempo de uso diario
 - **Almacenamiento:** Local en tu dispositivo, opcionalmente sincronizado con tu cuenta Appwrite
 
-### 2.3 Contactos y Comunicaciones
-- **Permiso:** READ_CONTACTS, CALL_PHONE, READ_SMS, SEND_SMS
-- **Propósito:** Funcionalidad de "Modo Teléfono Minimalista" para acceder a contactos esenciales
-- **Almacenamiento:** No almacenamos tus contactos ni mensajes
+### 2.3 Llamadas telefónicas
+- **Permiso:** CALL_PHONE
+- **Propósito:** En el "Modo Teléfono Minimalista", permite iniciar una llamada directamente desde la app
+- **Alcance:** Es el único permiso sensible de teléfono que solicitamos. **No** leemos tus contactos ni tus mensajes, y **no** solicitamos permisos de SMS ni de registro de llamadas
+- **Apps nativas del sistema:** Para marcar, enviar un correo o abrir la cámara, la app usa las aplicaciones nativas del dispositivo mediante acciones del sistema (marcador, correo, cámara). En esos casos no accedemos a tus datos: solo abrimos la app correspondiente
+- **Almacenamiento:** No almacenamos contactos, llamadas ni mensajes
 
-### 2.4 Cámara
-- **Permiso:** CAMERA
-- **Propósito:** Permite acceso rápido a la cámara del dispositivo desde el "Modo Teléfono Minimalista" para capturar fotos cuando sea necesario
-- **Uso:** El permiso de cámara es completamente opcional y solo se utiliza cuando el usuario activa explícitamente la función de cámara desde el modo minimalista
-- **Almacenamiento:** No capturamos, almacenamos ni procesamos ninguna foto o video. La funcionalidad simplemente abre la aplicación de cámara nativa del dispositivo
-- **Sin acceso remoto:** Las imágenes permanecen únicamente en tu dispositivo, nuestra app no las sube ni las transmite a ningún servidor
-
-### 2.5 Datos de la Aplicación
+### 2.4 Datos de la Aplicación
 - Configuraciones personales (colores, preferencias)
 - Metas y desafíos personales
 - Sesiones de enfoque

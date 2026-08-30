@@ -80,7 +80,7 @@ fun AppCategoriesScreen(
                 actions = {
                     // Botón para inicializar categorías del sistema
                     IconButton(onClick = { viewModel.initializeSystemCategories() }) {
-                        Icon(Icons.Filled.AutoAwesome, contentDescription = "Auto-detectar categorías")
+                        Icon(Icons.Filled.AutoAwesome, contentDescription = stringResource(R.string.a11y_auto_detect_categories))
                     }
                 }
             )
@@ -392,7 +392,7 @@ private fun CategoryCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = category.name,
+                            text = SystemCategoryLabels.name(context, category),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -403,7 +403,7 @@ private fun CategoryCard(
                                 color = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 Text(
-                                    text = "Auto",
+                                    text = stringResource(R.string.categories_auto_badge),
                                     style = MaterialTheme.typography.labelSmall,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
@@ -429,7 +429,7 @@ private fun CategoryCard(
             if (category.description.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = category.description,
+                    text = SystemCategoryLabels.description(context, category),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -444,11 +444,11 @@ private fun CategoryCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Usado: ${usageMinutes} min",
+                        text = stringResource(R.string.categories_used_minutes, usageMinutes),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "Límite: ${category.dailyLimitMinutes} min",
+                        text = stringResource(R.string.categories_limit_minutes, category.dailyLimitMinutes),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -505,7 +505,7 @@ private fun CategoryCard(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Bloqueo: ${category.getScheduleFormatted()} (${category.getDaysAsText()})",
+                            text = stringResource(R.string.categories_schedule, category.getScheduleFormatted(), category.getDaysAsText()),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -524,7 +524,7 @@ private fun CategoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (expanded) "Ocultar apps" else "Ver apps (${apps.size})",
+                    text = if (expanded) "Ocultar apps" else stringResource(R.string.categories_view_apps, apps.size),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -542,7 +542,7 @@ private fun CategoryCard(
                     
                     if (apps.isEmpty()) {
                         Text(
-                            text = "No hay apps en esta categoría",
+                            text = stringResource(R.string.categories_no_apps),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 8.dp)
@@ -565,7 +565,7 @@ private fun CategoryCard(
                     ) {
                         Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Añadir apps")
+                        Text(stringResource(R.string.categories_add_apps))
                     }
                 }
             }
@@ -582,7 +582,7 @@ private fun CategoryCard(
                 TextButton(onClick = onEditCategory) {
                     Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Editar")
+                    Text(stringResource(R.string.categories_edit))
                 }
                 
                 if (!category.isSystemCategory) {
@@ -594,7 +594,7 @@ private fun CategoryCard(
                     ) {
                         Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Eliminar")
+                        Text(stringResource(R.string.categories_delete))
                     }
                 }
             }
@@ -606,8 +606,12 @@ private fun CategoryCard(
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             icon = { Icon(Icons.Filled.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("Eliminar categoría") },
-            text = { Text("¿Estás seguro de que quieres eliminar la categoría '${category.name}'? Esta acción no se puede deshacer.") },
+            title = { Text(stringResource(R.string.categories_delete_title)) },
+            text = {
+                Text(
+                    stringResource(R.string.categories_delete_message, SystemCategoryLabels.name(context, category))
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -616,12 +620,12 @@ private fun CategoryCard(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Eliminar")
+                    Text(stringResource(R.string.categories_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.limit_dialog_cancel))
                 }
             }
         )
@@ -690,11 +694,13 @@ private fun CategoryAppItem(
         
         IconButton(
             onClick = onRemove,
-            modifier = Modifier.size(32.dp)
+            // Objetivo táctil de 48 dp (mínimo WCAG 2.5.5 / Material). El icono se
+            // mantiene a 16 dp, así que se ve igual; solo crece el área pulsable.
+            modifier = Modifier.size(48.dp)
         ) {
             Icon(
                 Icons.Filled.Close,
-                contentDescription = "Quitar",
+                contentDescription = stringResource(R.string.a11y_remove_app),
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.error
             )
@@ -941,12 +947,12 @@ private fun EditCategoryDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Editar Categoría",
+                        text = stringResource(R.string.categories_edit_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Filled.Close, contentDescription = "Cerrar")
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.a11y_close))
                     }
                 }
                 
@@ -956,7 +962,7 @@ private fun EditCategoryDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.categories_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     enabled = !category.isSystemCategory
@@ -968,7 +974,7 @@ private fun EditCategoryDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripción") },
+                    label = { Text(stringResource(R.string.categories_description)) },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 2
                 )
@@ -989,7 +995,7 @@ private fun EditCategoryDialog(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Límite de Tiempo",
+                        text = stringResource(R.string.limit_dialog_daily_time_limit),
                         style = MaterialTheme.typography.titleSmall
                     )
                 }
@@ -1003,7 +1009,7 @@ private fun EditCategoryDialog(
                             limitMinutes = it
                         }
                     },
-                    label = { Text("Límite diario (minutos)") },
+                    label = { Text(stringResource(R.string.limit_dialog_daily_minutes)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -1026,7 +1032,7 @@ private fun EditCategoryDialog(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Bloqueo por Horario",
+                        text = stringResource(R.string.limit_dialog_schedule_block),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f)
@@ -1055,7 +1061,7 @@ private fun EditCategoryDialog(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Hora de inicio:")
+                                    Text(stringResource(R.string.limit_dialog_start_time))
                                     TextButton(onClick = { showStartTimePicker = true }) {
                                         Text(
                                             text = String.format("%02d:%02d", scheduleStartHour, scheduleStartMinute),
@@ -1071,7 +1077,7 @@ private fun EditCategoryDialog(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Hora de fin:")
+                                    Text(stringResource(R.string.limit_dialog_end_time))
                                     TextButton(onClick = { showEndTimePicker = true }) {
                                         Text(
                                             text = String.format("%02d:%02d", scheduleEndHour, scheduleEndMinute),
@@ -1085,7 +1091,7 @@ private fun EditCategoryDialog(
                         
                         Spacer(modifier = Modifier.height(12.dp))
                         
-                        Text("Días activos:", style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(R.string.limit_dialog_active_days), style = MaterialTheme.typography.labelLarge)
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         DayOfWeekSelector(
@@ -1106,7 +1112,7 @@ private fun EditCategoryDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.limit_dialog_cancel))
                     }
                     
                     MomentumButton(
@@ -1130,7 +1136,7 @@ private fun EditCategoryDialog(
                         style = ButtonStyle.Primary,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Guardar")
+                        Text(stringResource(R.string.limit_dialog_save))
                     }
                 }
             }
@@ -1140,7 +1146,7 @@ private fun EditCategoryDialog(
     // Time pickers
     if (showStartTimePicker) {
         ScheduleTimePickerDialog(
-            title = "Hora de Inicio",
+            title = stringResource(R.string.limit_dialog_start_time_title),
             initialHour = scheduleStartHour,
             initialMinute = scheduleStartMinute,
             onConfirm = { hour, minute ->
@@ -1154,7 +1160,7 @@ private fun EditCategoryDialog(
     
     if (showEndTimePicker) {
         ScheduleTimePickerDialog(
-            title = "Hora de Fin",
+            title = stringResource(R.string.limit_dialog_end_time_title),
             initialHour = scheduleEndHour,
             initialMinute = scheduleEndMinute,
             onConfirm = { hour, minute ->
@@ -1232,11 +1238,11 @@ private fun ScheduleTimePickerDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(timePickerState.hour, timePickerState.minute) }) {
-                Text("Confirmar")
+                Text(stringResource(R.string.limit_dialog_confirm))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.limit_dialog_cancel)) }
         }
     )
 }
@@ -1277,7 +1283,7 @@ private fun AddAppsToCategoryDialog(
                 ) {
                     Column {
                         Text(
-                            text = "Añadir Apps",
+                            text = stringResource(R.string.categories_add_apps_title),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
@@ -1288,7 +1294,7 @@ private fun AddAppsToCategoryDialog(
                         )
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Filled.Close, contentDescription = "Cerrar")
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.a11y_close))
                     }
                 }
                 
@@ -1298,7 +1304,7 @@ private fun AddAppsToCategoryDialog(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    label = { Text("Buscar app") },
+                    label = { Text(stringResource(R.string.limit_dialog_search_app)) },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -1349,7 +1355,7 @@ private fun AddAppsToCategoryDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.limit_dialog_cancel))
                     }
                     
                     MomentumButton(
@@ -1358,7 +1364,7 @@ private fun AddAppsToCategoryDialog(
                         style = ButtonStyle.Primary,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Añadir (${selectedApps.size})")
+                        Text(stringResource(R.string.categories_add_count, selectedApps.size))
                     }
                 }
             }

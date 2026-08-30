@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de la pantalla de bloqueo inteligente (SmartBlockingScreen.kt), primera mitad:
+  la pantalla principal y sus secciones. Los diálogos de configuración se extraen aparte.
+
+  "Volver", "Cerrar", "Guardar" y "Cancelar" reutilizan claves ya existentes.
+-->
+<resources>
+    <string name="smart_title">Bloqueo inteligente</string>
+    <string name="smart_help">Ayuda</string>
+    <string name="smart_advanced_control">Control avanzado</string>
+    <string name="smart_advanced_control_desc">Configura bloqueos inteligentes para mejorar tu productividad</string>
+
+    <string name="smart_tab_timer">Timer</string>
+    <string name="smart_tab_sleep">Sueño</string>
+    <string name="smart_tab_fasting">Ayuno</string>
+    <string name="smart_tab_nuclear">Nuclear</string>
+
+    <string name="smart_floating_timer">Timer flotante</string>
+    <string name="smart_floating_timer_desc">Siempre visible sobre todas las apps</string>
+    <string name="smart_overlay_permission_needed">Requiere permiso de superposición</string>
+    <string name="smart_grant">Conceder</string>
+    <string name="smart_perm_missing_title">Faltan permisos para que esto funcione</string>
+    <string name="smart_perm_usage">Acceso a datos de uso: sin esto no se detecta ninguna app</string>
+    <string name="smart_perm_overlay">Mostrar sobre otras apps: necesario para tapar la app bloqueada</string>
+    <string name="smart_perm_accessibility">Accesibilidad: necesaria para bloquear feeds y reels dentro de las apps</string>
+    <string name="smart_perm_location">Ubicación: necesaria para las reglas por lugar y por Wi-Fi</string>
+    <string name="smart_opacity">Opacidad: %1$d %%</string>
+    <string name="smart_configure">Configurar</string>
+    <string name="smart_test_app">App de prueba</string>
+    <string name="smart_timer_started">Timer flotante iniciado: mira en la esquina superior derecha</string>
+    <string name="smart_timer_needs_permission">Necesitas el permiso de superposición: pulsa «Conceder» primero</string>
+    <string name="smart_test_floating_timer">Probar timer flotante</string>
+    <string name="smart_stop_timer">Detener timer</string>
+
+    <string name="smart_sleep_window">Ventana de sueño</string>
+    <string name="smart_sleep_window_desc">No contar uso durante horas de sueño</string>
+    <string name="smart_sleep_schedule">Horario de sueño</string>
+    <string name="smart_sleep_ignore_tracking">Ignorar seguimiento durante el sueño</string>
+    <string name="smart_sleep_block_apps">Bloquear apps durante el sueño</string>
+    <string name="smart_sleep_block_apps_desc">Solo tus apps esenciales seguirán abriéndose</string>
+    <string name="smart_sleep_pick_time">Elegir hora</string>
+    <string name="smart_sleep_hours_label">Hora</string>
+    <string name="smart_sleep_minutes_label">Minutos</string>
+    <string name="smart_sleep_decrease">Reducir %1$s</string>
+    <string name="smart_sleep_increase">Aumentar %1$s</string>
+    <string name="smart_sleep_invalid_window">El inicio y el fin no pueden ser la misma hora</string>
+
+    <string name="smart_digital_fasting">Ayuno digital</string>
+    <string name="smart_digital_fasting_desc">Límites estrictos en horario laboral</string>
+    <string name="smart_fasting_schedule">Horario de ayuno</string>
+    <string name="smart_fasting_limit">Límite durante ayuno</string>
+    <string name="smart_days">Días: %1$s</string>
+
+    <string name="smart_nuclear_mode">Modo nuclear</string>
+    <string name="smart_nuclear_mode_desc">Bloqueo extremo de 1 a 3 meses</string>
+    <string name="smart_nuclear_pick_apps">Apps que se bloquearán (%1$d elegidas)</string>
+    <string name="smart_nuclear_apps_loading">Cargando tus apps…</string>
+    <string name="smart_nuclear_unlock_title">Desactivar el modo nuclear</string>
+    <string name="smart_nuclear_unlock_explain">Para desactivarlo tendrás que mantener InTime abierto durante %1$d minutos seguidos. Si sales de la app, la espera se pausa.</string>
+    <string name="smart_nuclear_unlock_start_wait">Empezar la espera</string>
+    <string name="smart_nuclear_unlock_progress">Llevas %1$d de %2$d minutos de espera.</string>
+    <string name="smart_nuclear_unlock_keep_open">Mantén esta pantalla abierta: la espera solo avanza con la app visible.</string>
+    <string name="smart_nuclear_unlock_cancel_request">Cancelar la solicitud</string>
+    <string name="smart_nuclear_unlock_ready_title">Ya puedes desactivarlo</string>
+    <string name="smart_nuclear_unlock_ready_desc">Completaste la espera. Puedes desactivar el modo nuclear ahora.</string>
+    <string name="smart_nuclear_unlock_deactivate">Desactivar ahora</string>
+    <string name="smart_nuclear_active">MODO NUCLEAR ACTIVO</string>
+
+    <string name="smart_streak_protection">Protección de rachas</string>
+    <string name="smart_streak_protection_desc">Días de gracia para no perder tu racha</string>
+    <string name="smart_grace_days_per_week">Días de gracia por semana</string>
+    <string name="smart_grace_days_value">Días de gracia: %1$d por semana</string>
+    <string name="smart_warn_before_break">Avisar antes de romper la racha</string>
+    <string name="smart_warn_minutes">Avisar %1$d min antes del límite</string>
+
+    <string name="smart_context_blocking">Bloqueo por contexto</string>
+    <string name="smart_context_blocking_desc">Reglas por horario, ubicación o WiFi</string>
+    <string name="smart_location_permission_needed">Concede el permiso de ubicación para usar el bloqueo por contexto</string>
+    <string name="smart_add_context_rule">Agregar regla de contexto</string>
+    <string name="smart_rule_type">Tipo de regla</string>
+    <string name="smart_rule_type_schedule">Horario</string>
+    <string name="smart_rule_type_location">Lugar</string>
+    <string name="smart_rule_type_wifi">Wi-Fi</string>
+    <string name="smart_rule_location_current">La regla se anclará a tu ubicación actual y se activará cuando vuelvas a ella.</string>
+    <string name="smart_rule_radius">Radio: %1$d metros</string>
+    <string name="smart_rule_wifi_current">La regla se activará cuando estés conectado a la red %1$s.</string>
+    <string name="smart_rule_block_completely">Bloquear por completo, sin tiempo permitido</string>
+    <string name="smart_comm_no_apps">Elige al menos una app abajo. Sin apps elegidas, este modo no bloquea nada.</string>
+
+    <string name="smart_communication_only">Modo solo comunicación</string>
+    <string name="smart_communication_only_desc">Permite mensajes, bloquea feeds y reels</string>
+    <string name="smart_communication_apps">Apps en modo comunicación:</string>
+    <string name="smart_blocking_config">Configuración de bloqueo:</string>
+    <string name="smart_rule_limit">Límite: %1$d min</string>
+    <string name="smart_context_service_started">📍 Servicio de contexto iniciado</string>
+    <string name="smart_b_floating_on">⏱️ Timer flotante activado</string>
+    <string name="smart_b_floating_info">ℹ️ El timer aparecerá automáticamente al usar apps con límite</string>
+    <string name="smart_b_sleep_on">😴 Modo sueño activado</string>
+    <string name="smart_b_fasting_on">🥗 Ayuno digital activado</string>
+    <string name="smart_b_nuclear_warn_foreground">⚠️ El timer de desbloqueo solo avanza con Momentum abierto</string>
+    <string name="smart_b_streak_on">🔥 Protección de rachas activada</string>
+    <string name="smart_b_grace_used">%1$d/%2$d usados</string>
+    <string name="smart_b_grace_info">ℹ️ Un día de gracia significa que tu racha no se rompe aunque superes el límite ese día</string>
+    <string name="smart_b_comm_on">💬 Modo comunicación activado</string>
+    <string name="smart_b_allow_dms">✉️ Permitir DMs/Mensajes</string>
+    <string name="smart_b_block_feed">📰 Bloquear Feed</string>
+    <string name="smart_b_block_stories">📖 Bloquear Stories</string>
+    <string name="smart_b_block_reels">🎬 Bloquear Reels/Shorts</string>
+    <string name="smart_b_comm_info">ℹ️ Las apps de mensajería (WhatsApp, Telegram) ya permiten comunicación por defecto</string>
+    <string name="smart_b_nuclear_warn_title">⚠️ ADVERTENCIA: Este modo es EXTREMO</string>
+    <string name="smart_b_nuclear_rule1">• No podrás desactivarlo hasta que termine
+</string>
+    <string name="smart_b_nuclear_rule2">• El timer de desbloqueo SOLO avanza con Momentum abierto
+</string>
+    <string name="smart_b_nuclear_activate">⚠️ ACTIVAR MODO NUCLEAR</string>
+    <string name="smart_b_every_day">Todos los días</string>
+    <plurals name="smart_b_days_remaining">
+        <item quantity="one">%1$d día restante</item>
+        <item quantity="other">%1$d días restantes</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_on">
+        <item quantity="one">☢️ Modo Nuclear activado por %1$d día</item>
+        <item quantity="other">☢️ Modo Nuclear activado por %1$d días</item>
+    </plurals>
+    <plurals name="smart_b_nuclear_rule3">
+        <item quantity="one">• Deberás esperar %1$d minuto con la app visible</item>
+        <item quantity="other">• Deberás esperar %1$d minutos con la app visible</item>
+    </plurals>
+</resources>

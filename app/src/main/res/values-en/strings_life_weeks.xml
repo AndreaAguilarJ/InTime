@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="life_not_set">Not set</string>
+    <string name="life_title">My life in weeks</string>
+    <string name="life_error">Error: %1$s</string>
+
+    <string name="life_your_numbers">Your life in numbers</string>
+    <string name="life_weeks_lived">Weeks lived</string>
+    <string name="life_weeks_remaining">Weeks remaining</string>
+    <string name="life_age">Age: %1$d</string>
+    <string name="life_tap_to_change">Tap to change</string>
+    <string name="life_expectancy_hint">Adjust it to your health and personal expectations</string>
+
+    <string name="life_color_lived">Weeks lived</string>
+    <string name="life_color_future">Weeks ahead</string>
+    <string name="life_color_wallpaper">Wallpaper background</string>
+
+    <string name="life_widget_hint">Add the widget to your home screen to see your life in weeks with the colours you picked.</string>
+    <string name="life_widget_manual_generic">Your launcher can\'t add widgets automatically. Long-press the home screen and choose “Widgets”.</string>
+    <string name="life_widget_manual_search">Long-press the home screen, choose “Widgets” and look for “My life in weeks”.</string>
+    <string name="life_widget_manual_path">To add the widget: long-press the home screen → Widgets → My life in weeks.</string>
+    <string name="life_widget_add">Add widget to home screen</string>
+    <string name="life_widget_update_error">Couldn\'t update: %1$s</string>
+    <string name="life_widget_update">Update existing widgets</string>
+
+    <string name="life_set_birth_date_first">Set your date of birth first</string>
+    <string name="life_save_image">Save as image</string>
+    <string name="life_set_wallpaper">Set as wallpaper</string>
+    <string name="life_saved">✅ Settings saved</string>
+    <string name="life_percent_of_life">%1$s%% of your life</string>
+    <string name="life_birthdate_title">📅 Date of birth</string>
+    <string name="life_expectancy_title">⏳ Life expectancy</string>
+    <string name="life_preview_title">👁️ Preview</string>
+    <string name="life_home_widget_title">📱 Home screen widget</string>
+    <string name="life_widget_updated">✅ Widget updated</string>
+    <string name="life_wallpaper_set">✅ Wallpaper set</string>
+    <string name="life_drag_widget">📌 Drag the widget onto your screen</string>
+    <string name="life_weeks_need_birthdate">To see your life in weeks, set your birth date in your account settings.</string>
+    <string name="life_weeks_go_settings">Go to settings</string>
+    <string name="life_weeks_legend">Each square is one week of life. Weeks lived are in colour; future ones are grey.</string>
+    <string name="life_weeks_years_value">%1$d years</string>
+    <string name="life_weeks_color_customization">🎨 Colour customization</string>
+    <string name="life_weeks_saved_gallery">✅ Saved to gallery</string>
+    <string name="life_weeks_current_age">Current age: %1$d years</string>
+    <string name="life_weeks_progress">Life progress: %1$s%%</string>
+</resources>

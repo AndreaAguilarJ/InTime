@@ -1,5 +1,8 @@
 package com.momentummm.app.ui.screen.websiteblock
 
+import com.momentummm.app.R
+import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.momentummm.app.data.entity.WebsiteBlock
@@ -27,7 +30,8 @@ data class WebsiteBlockStats(
 
 @HiltViewModel
 class WebsiteBlockViewModel @Inject constructor(
-    private val websiteBlockRepository: WebsiteBlockRepository
+    private val websiteBlockRepository: WebsiteBlockRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WebsiteBlockUiState())
@@ -118,7 +122,7 @@ class WebsiteBlockViewModel @Inject constructor(
                 websiteBlockRepository.deleteBlocksByCategory(category)
             } catch (e: Exception) {
                 _uiState.update { it.copy(
-                    error = "Error al eliminar categoría: ${e.message}"
+                    error = context.getString(R.string.web_delete_category_error, e.message ?: "?")
                 ) }
             }
         }

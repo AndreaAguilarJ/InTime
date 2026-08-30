@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_nuclear_channel_name">Modo nuclear</string>
+    <string name="svc_nuclear_channel_desc">Notificações do Modo nuclear</string>
+    <string name="svc_nuclear_title">☢️ Modo nuclear ativo</string>
+    <string name="svc_nuclear_text">%1$d dias restantes | Temporizador: %2$d min para desbloquear</string>
+    <string name="svc_nuclear_action_running">Temporizador ativo ⏱️</string>
+    <string name="svc_nuclear_action_open">Abra o Momentum para continuar</string>
+    <string name="svc_nuclear_unlock_title">🎉 Desbloqueio nuclear disponível!</string>
+    <string name="svc_nuclear_unlock_text">Concluiu o tempo de espera. Já pode desativar o Modo nuclear.</string>
+    <string name="svc_context_channel_name">Bloqueio por contexto</string>
+    <string name="svc_context_channel_desc">Deteta a sua localização e o wi-fi para aplicar regras de bloqueio</string>
+    <string name="svc_context_title">📍 Bloqueio por contexto</string>
+    <string name="svc_context_monitoring">A vigiar o contexto…</string>
+    <plurals name="svc_context_rules_active">
+        <item quantity="one">%1$d regra ativa</item>
+        <item quantity="other">%1$d regras ativas</item>
+    </plurals>
+    <string name="svc_block_comm_only">Só são permitidas apps de comunicação</string>
+    <string name="svc_block_nuclear">Modo nuclear: bloqueado por mais %1$d dias</string>
+    <string name="svc_block_sleep">Hora de descansar. As apps voltam a estar disponíveis amanhã.</string>
+    <string name="svc_block_rule">Bloqueado pela regra: %1$s</string>
+    <string name="svc_block_rule_fallback">Contexto</string>
+    <string name="svc_block_daily_limit">Já atingiu o seu limite de %1$d minutos hoje</string>
+    <string name="svc_block_schedule">Bloqueada por horário: %1$s</string>
+    <string name="svc_block_category_limit">Limite da categoria «%1$s» excedido (%2$d min)</string>
+    <string name="svc_block_category_schedule">Categoria «%1$s» bloqueada: %2$s - %3$s</string>
+    <string name="svc_block_fasting">Jejum digital: limite reduzido a %1$d min</string>
+    <string name="svc_block_context_active">Bloqueio por contexto ativo</string>
+    <string name="goal_challenge_title">Desafio em curso</string>
+    <string name="goal_challenge_text">%1$s - %2$d%% concluído</string>
+    <string name="goal_achievement_title">Nova conquista desbloqueada!</string>
+    <string name="goal_streak_title">Sequência incrível! 🔥</string>
+    <string name="goal_streak_text">%1$d dias seguidos em %2$s</string>
+    <string name="fav_saved">❤️ Guardado nos favoritos!</string>
+    <string name="motiv_notif_disabled">As notificações do Momentum estão desativadas nas definições do sistema</string>
+    <string name="motiv_notif_error">Não foi possível enviar a notificação: %1$s</string>
+    <string name="web_delete_category_error">Erro ao eliminar a categoria: %1$s</string>
+    <string name="goal_ch_goals_name">Lembretes de metas</string>
+    <string name="goal_ch_goals_desc">Notificações para lembrar o progresso das suas metas</string>
+    <string name="goal_ch_challenges_name">Lembretes de desafios</string>
+    <string name="goal_ch_challenges_desc">Notificações sobre os seus desafios ativos</string>
+    <string name="goal_ch_achievements_name">Conquistas e recompensas</string>
+    <string name="goal_ch_achievements_desc">Notificações quando concluis conquistas</string>
+    <string name="goal_challenge_bigtext">%1$s
+Faltam %2$d dias para concluir</string>
+    <string name="goal_action_continue">Continuar desafio</string>
+    <string name="goal_streak_bigtext">🔥 Tens uma sequência de %1$d dias rumo à tua meta!
+Continua e não quebres a sequência!</string>
+    <string name="svc_focus_channel_name">Temporizador de foco</string>
+    <string name="svc_focus_channel_desc">Notificações do temporizador de foco</string>
+    <string name="svc_focus_title_running">Sessão de foco ativa</string>
+    <string name="svc_focus_title_paused">Sessão em pausa</string>
+    <string name="svc_focus_title_break">Pausa</string>
+    <string name="svc_focus_title_completed">Sessão concluída</string>
+    <string name="svc_focus_title_default">Modo foco</string>
+    <string name="svc_focus_text_running">Faltam %1$s</string>
+    <string name="svc_focus_text_paused">Pausado em %1$s</string>
+    <string name="svc_focus_text_break">Pausa: %1$s</string>
+    <string name="svc_focus_text_completed">Concluído!</string>
+    <string name="svc_focus_action_stop">Parar</string>
+    <string name="svc_floating_channel_name">Temporizador flutuante</string>
+    <string name="svc_floating_channel_desc">Mostra o temporizador de uso das apps</string>
+    <string name="svc_floating_title">Temporizador ativo</string>
+    <string name="svc_floating_text">%1$s: %2$d min restantes</string>
+    <string name="svc_focus_title_break_over">Pausa terminada</string>
+    <string name="svc_focus_text_break_over">Pronto para outra sessão de foco</string>
+</resources>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_title">Focus Sessions</string>
+    <string name="focus_subtitle">Get more out of your time</string>
+    <string name="focus_presets">Preset Sessions</string>
+    <string name="focus_my_sessions">My Sessions</string>
+    <string name="focus_recent_history">Recent History</string>
+    <string name="focus_history_empty_title">No session history yet</string>
+    <string name="focus_history_empty_message">Complete your first session to see your stats</string>
+    <string name="focus_delete_title">Delete session</string>
+    <string name="focus_delete_message">Are you sure you want to delete \'%1$s\'?</string>
+    <string name="focus_delete">Delete</string>
+    <string name="focus_cancel">Cancel</string>
+    <string name="focus_session_name_label">Session name</string>
+    <string name="focus_session_name_placeholder">E.g. Creative writing</string>
+    <string name="focus_duration">Duration</string>
+    <string name="focus_break">Break</string>
+    <string name="focus_create">Create</string>
+    <string name="focus_pause">Pause</string>
+    <string name="focus_resume">Resume</string>
+    <string name="focus_finish">End session</string>
+    <string name="focus_today_progress">Your Progress Today</string>
+    <string name="focus_preset_pomodoro">Classic Pomodoro</string>
+    <string name="focus_preset_deep_work">Deep work</string>
+    <string name="focus_preset_study">Study session</string>
+    <string name="focus_preset_creative">Creative work</string>
+    <string name="focus_preset_meeting">Meeting prep</string>
+    <string name="focus_preset_quick">Quick focus</string>
+    <string name="focus_screen_title">Focus session</string>
+    <string name="focus_create_custom">Create custom session</string>
+    <string name="focus_icon">Icon</string>
+    <string name="focus_custom_hint">Create sessions that fit the way you work</string>
+    <string name="focus_status_running">In progress</string>
+    <string name="focus_status_break">Break</string>
+    <string name="focus_status_paused">Paused</string>
+    <string name="focus_status_done">Completed</string>
+    <string name="focus_session_over">session over</string>
+    <string name="focus_paused_lower">paused</string>
+    <string name="focus_remaining">remaining</string>
+    <string name="focus_duration_label">Duration</string>
+    <string name="focus_completed_label">Completed</string>
+    <string name="focus_hold_to_stop">Hold to stop</string>
+    <string name="focus_sessions_done">Sessions
+completed</string>
+    <string name="focus_total_time">Total
+time</string>
+    <string name="focus_streak_days">Day
+streak</string>
+    <string name="focus_interrupted">Interrupted</string>
+    <plurals name="focus_distractions">
+        <item quantity="one">%1$d distraction</item>
+        <item quantity="other">%1$d distractions</item>
+    </plurals>
+    <string name="focus_holding">Holding…</string>
+    <string name="focus_card_meta">%1$d min · %2$d min break</string>
+    <string name="focus_block_title">Apps to block</string>
+    <string name="focus_block_none">None selected</string>
+    <string name="focus_block_picker_title">Block during focus</string>
+    <string name="focus_block_search">Search apps</string>
+    <string name="focus_block_done">Done</string>
+    <string name="focus_block_empty">No apps found</string>
+    <plurals name="focus_block_count">
+        <item quantity="one">%1$d app selected</item>
+        <item quantity="other">%1$d apps selected</item>
+    </plurals>
+    <string name="focus_start_break">%1$d min break</string>
+    <string name="focus_skip_break">Skip break</string>
+</resources>

@@ -15,15 +15,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import android.content.Context
 import com.momentummm.app.R
+import com.momentummm.app.data.notificationPrefs
 
-private val Context.notificationPrefs: DataStore<Preferences> by preferencesDataStore(name = "notification_preferences")
+// El delegado del DataStore ya NO se declara aquí. Antes existía una segunda
+// instancia `by preferencesDataStore(name = "notification_preferences")` que,
+// junto con la de NotificationManager, hacía que Android lanzara
+// IllegalStateException («multiple DataStores active for the same file») y
+// tumbara la app al abrir esta pantalla. Ahora se importa el delegado único.
 
 object NotificationPrefsKeys {
     val APP_LIMITS_ENABLED = booleanPreferencesKey("app_limits_notifications")
@@ -41,26 +45,23 @@ fun NotificationSettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Estados para cada configuración
-    val appLimitsEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.APP_LIMITS_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
+    // Estados para cada configuración.
+    // Antes habia CINCO bloques `.data.map { ... }.collectAsStateWithLifecycle(...)`:
+    // el operador .map se ejecutaba DENTRO de la composicion, asi que en cada
+    // recomposicion se creaba un Flow nuevo y se abria una suscripcion nueva al
+    // DataStore, cinco veces. Lint lo marcaba como error
+    // (FlowOperatorInvokedInComposition) y el efecto real es trabajo y suscripciones
+    // que se rehacen sin necesidad.
+    // Ahora se recoge UNA sola vez el objeto de preferencias, con el Flow memorizado
+    // para que no se recree, y los cinco valores se derivan por lectura directa.
+    val prefsFlow = remember(context) { context.notificationPrefs.data }
+    val prefs by prefsFlow.collectAsStateWithLifecycle(initialValue = null)
 
-    val dailyMotivationEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.DAILY_MOTIVATION_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
-
-    val weeklySummaryEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.WEEKLY_SUMMARY_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
-
-    val achievementsEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.ACHIEVEMENTS_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
-
-    val screenTimeRemindersEnabled by context.notificationPrefs.data
-        .map { it[NotificationPrefsKeys.SCREEN_TIME_REMINDERS_ENABLED] ?: true }
-        .collectAsStateWithLifecycle(initialValue = true)
+    val appLimitsEnabled = prefs?.get(NotificationPrefsKeys.APP_LIMITS_ENABLED) ?: true
+    val dailyMotivationEnabled = prefs?.get(NotificationPrefsKeys.DAILY_MOTIVATION_ENABLED) ?: true
+    val weeklySummaryEnabled = prefs?.get(NotificationPrefsKeys.WEEKLY_SUMMARY_ENABLED) ?: true
+    val achievementsEnabled = prefs?.get(NotificationPrefsKeys.ACHIEVEMENTS_ENABLED) ?: true
+    val screenTimeRemindersEnabled = prefs?.get(NotificationPrefsKeys.SCREEN_TIME_REMINDERS_ENABLED) ?: true
 
     Scaffold(
         topBar = {

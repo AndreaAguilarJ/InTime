@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_nuclear_channel_name">Nuklearmodus</string>
+    <string name="svc_nuclear_channel_desc">Benachrichtigungen des Nuklearmodus</string>
+    <string name="svc_nuclear_title">☢️ Nuklearmodus aktiv</string>
+    <string name="svc_nuclear_text">Noch %1$d Tage | Timer: %2$d Min bis zur Freigabe</string>
+    <string name="svc_nuclear_action_running">Timer läuft ⏱️</string>
+    <string name="svc_nuclear_action_open">Öffne Momentum, um fortzufahren</string>
+    <string name="svc_nuclear_unlock_title">🎉 Nukleare Freigabe verfügbar!</string>
+    <string name="svc_nuclear_unlock_text">Du hast die Wartezeit abgeschlossen. Du kannst den Nuklearmodus jetzt ausschalten.</string>
+    <string name="svc_context_channel_name">Kontextsperre</string>
+    <string name="svc_context_channel_desc">Erkennt deinen Standort und dein WLAN, um Sperrregeln anzuwenden</string>
+    <string name="svc_context_title">📍 Kontextsperre</string>
+    <string name="svc_context_monitoring">Kontext wird überwacht…</string>
+    <plurals name="svc_context_rules_active">
+        <item quantity="one">%1$d aktive Regel</item>
+        <item quantity="other">%1$d aktive Regeln</item>
+    </plurals>
+    <string name="svc_block_comm_only">Nur Kommunikations-Apps sind erlaubt</string>
+    <string name="svc_block_nuclear">Nuklearmodus: noch %1$d Tage gesperrt</string>
+    <string name="svc_block_sleep">Zeit zum Ausruhen. Die Apps sind morgen wieder verfügbar.</string>
+    <string name="svc_block_rule">Gesperrt durch Regel: %1$s</string>
+    <string name="svc_block_rule_fallback">Kontext</string>
+    <string name="svc_block_daily_limit">Du hast dein Limit von %1$d Minuten heute erreicht</string>
+    <string name="svc_block_schedule">Nach Zeitplan gesperrt: %1$s</string>
+    <string name="svc_block_category_limit">Limit der Kategorie „%1$s“ überschritten (%2$d Min)</string>
+    <string name="svc_block_category_schedule">Kategorie „%1$s“ gesperrt: %2$s - %3$s</string>
+    <string name="svc_block_fasting">Digitales Fasten: Limit auf %1$d Min reduziert</string>
+    <string name="svc_block_context_active">Kontextsperre aktiv</string>
+    <string name="goal_challenge_title">Herausforderung läuft</string>
+    <string name="goal_challenge_text">%1$s - %2$d%% abgeschlossen</string>
+    <string name="goal_achievement_title">Neuer Erfolg freigeschaltet!</string>
+    <string name="goal_streak_title">Unglaubliche Serie! 🔥</string>
+    <string name="goal_streak_text">%1$d Tage in Folge bei %2$s</string>
+    <string name="fav_saved">❤️ Zu Favoriten hinzugefügt!</string>
+    <string name="motiv_notif_disabled">Momentum-Benachrichtigungen sind in den Systemeinstellungen deaktiviert</string>
+    <string name="motiv_notif_error">Benachrichtigung konnte nicht gesendet werden: %1$s</string>
+    <string name="web_delete_category_error">Fehler beim Löschen der Kategorie: %1$s</string>
+    <string name="goal_ch_goals_name">Ziel-Erinnerungen</string>
+    <string name="goal_ch_goals_desc">Benachrichtigungen, die dich an deinen Zielfortschritt erinnern</string>
+    <string name="goal_ch_challenges_name">Herausforderungs-Erinnerungen</string>
+    <string name="goal_ch_challenges_desc">Benachrichtigungen zu deinen aktiven Herausforderungen</string>
+    <string name="goal_ch_achievements_name">Erfolge und Belohnungen</string>
+    <string name="goal_ch_achievements_desc">Benachrichtigungen, wenn du Erfolge abschließt</string>
+    <string name="goal_challenge_bigtext">%1$s
+Noch %2$d Tage bis zum Abschluss</string>
+    <string name="goal_action_continue">Herausforderung fortsetzen</string>
+    <string name="goal_streak_bigtext">🔥 Du hast eine %1$d-Tage-Serie bei deinem Ziel!
+Mach weiter und lass die Serie nicht reißen!</string>
+    <string name="svc_focus_channel_name">Fokus-Timer</string>
+    <string name="svc_focus_channel_desc">Benachrichtigungen des Fokus-Timers</string>
+    <string name="svc_focus_title_running">Fokus-Sitzung aktiv</string>
+    <string name="svc_focus_title_paused">Sitzung angehalten</string>
+    <string name="svc_focus_title_break">Pause</string>
+    <string name="svc_focus_title_completed">Sitzung abgeschlossen</string>
+    <string name="svc_focus_title_default">Fokusmodus</string>
+    <string name="svc_focus_text_running">Noch %1$s</string>
+    <string name="svc_focus_text_paused">Angehalten bei %1$s</string>
+    <string name="svc_focus_text_break">Pause: %1$s</string>
+    <string name="svc_focus_text_completed">Abgeschlossen!</string>
+    <string name="svc_focus_action_stop">Stopp</string>
+    <string name="svc_floating_channel_name">Schwebender Timer</string>
+    <string name="svc_floating_channel_desc">Zeigt den Timer für die App-Nutzung an</string>
+    <string name="svc_floating_title">Timer aktiv</string>
+    <string name="svc_floating_text">%1$s: %2$d Min verbleibend</string>
+    <string name="svc_focus_title_break_over">Pause beendet</string>
+    <string name="svc_focus_text_break_over">Bereit für eine neue Fokus-Sitzung</string>
+</resources>

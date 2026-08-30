@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="svc_nuclear_channel_name">Nuclear mode</string>
+    <string name="svc_nuclear_channel_desc">Nuclear mode notifications</string>
+    <string name="svc_nuclear_title">☢️ Nuclear mode active</string>
+    <string name="svc_nuclear_text">%1$d days left | Timer: %2$d min to unlock</string>
+    <string name="svc_nuclear_action_running">Timer running ⏱️</string>
+    <string name="svc_nuclear_action_open">Open Momentum to continue</string>
+    <string name="svc_nuclear_unlock_title">🎉 Nuclear unlock available!</string>
+    <string name="svc_nuclear_unlock_text">You have completed the waiting time. You can now turn off Nuclear mode.</string>
+    <string name="svc_context_channel_name">Context blocking</string>
+    <string name="svc_context_channel_desc">Detects your location and Wi-Fi to apply blocking rules</string>
+    <string name="svc_context_title">📍 Context blocking</string>
+    <string name="svc_context_monitoring">Watching context…</string>
+    <plurals name="svc_context_rules_active">
+        <item quantity="one">%1$d active rule</item>
+        <item quantity="other">%1$d active rules</item>
+    </plurals>
+    <string name="svc_block_comm_only">Only communication apps are allowed</string>
+    <string name="svc_block_nuclear">Nuclear mode: blocked for %1$d more days</string>
+    <string name="svc_block_sleep">Time to rest. Apps will be available again tomorrow.</string>
+    <string name="svc_block_rule">Blocked by rule: %1$s</string>
+    <string name="svc_block_rule_fallback">Context</string>
+    <string name="svc_block_daily_limit">You have reached your limit of %1$d minutes today</string>
+    <string name="svc_block_schedule">Blocked by schedule: %1$s</string>
+    <string name="svc_block_category_limit">Category “%1$s” limit exceeded (%2$d min)</string>
+    <string name="svc_block_category_schedule">Category “%1$s” blocked: %2$s - %3$s</string>
+    <string name="svc_block_fasting">Digital fasting: limit reduced to %1$d min</string>
+    <string name="svc_block_context_active">Context blocking active</string>
+    <string name="goal_challenge_title">Challenge in progress</string>
+    <string name="goal_challenge_text">%1$s - %2$d%% complete</string>
+    <string name="goal_achievement_title">New achievement unlocked!</string>
+    <string name="goal_streak_title">Amazing streak! 🔥</string>
+    <string name="goal_streak_text">%1$d days in a row on %2$s</string>
+    <string name="fav_saved">❤️ Saved to favorites!</string>
+    <string name="motiv_notif_disabled">Momentum notifications are turned off in system settings</string>
+    <string name="motiv_notif_error">Could not send the notification: %1$s</string>
+    <string name="web_delete_category_error">Error deleting category: %1$s</string>
+    <string name="goal_ch_goals_name">Goal reminders</string>
+    <string name="goal_ch_goals_desc">Notifications to remind you of your goal progress</string>
+    <string name="goal_ch_challenges_name">Challenge reminders</string>
+    <string name="goal_ch_challenges_desc">Notifications about your active challenges</string>
+    <string name="goal_ch_achievements_name">Achievements and rewards</string>
+    <string name="goal_ch_achievements_desc">Notifications when you complete achievements</string>
+    <string name="goal_challenge_bigtext">%1$s
+%2$d days left to complete</string>
+    <string name="goal_action_continue">Continue challenge</string>
+    <string name="goal_streak_bigtext">🔥 You are on a %1$d-day streak toward your goal!
+Keep it up and do not break the streak!</string>
+    <string name="svc_focus_channel_name">Focus timer</string>
+    <string name="svc_focus_channel_desc">Focus timer notifications</string>
+    <string name="svc_focus_title_running">Focus session active</string>
+    <string name="svc_focus_title_paused">Session paused</string>
+    <string name="svc_focus_title_break">Break</string>
+    <string name="svc_focus_title_completed">Session completed</string>
+    <string name="svc_focus_title_default">Focus mode</string>
+    <string name="svc_focus_text_running">%1$s left</string>
+    <string name="svc_focus_text_paused">Paused at %1$s</string>
+    <string name="svc_focus_text_break">Break: %1$s</string>
+    <string name="svc_focus_text_completed">Completed!</string>
+    <string name="svc_focus_action_stop">Stop</string>
+    <string name="svc_floating_channel_name">Floating timer</string>
+    <string name="svc_floating_channel_desc">Shows the app usage timer</string>
+    <string name="svc_floating_title">Timer active</string>
+    <string name="svc_floating_text">%1$s: %2$d min left</string>
+    <string name="svc_focus_title_break_over">Break over</string>
+    <string name="svc_focus_text_break_over">Ready for another focus session</string>
+</resources>

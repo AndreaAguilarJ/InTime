@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="motiv_title">Motivational messages</string>
+    <string name="motiv_default_message">Today is a great day!</string>
+
+    <string name="motiv_late_warning_title">Messages may arrive late</string>
+    <string name="motiv_late_warning_body">Android doesn\'t let Momentum use exact alarms, so a 9:00 message may show up later. Grant the permission so they arrive on time.</string>
+    <string name="motiv_allow_exact_alarms">Allow exact alarms</string>
+
+    <string name="motiv_personalization">Personalisation</string>
+    <string name="motiv_personalization_body">Messages will call you by name and use your streak and today\'s screen time.</string>
+    <string name="motiv_name_question">What should we call you?</string>
+    <string name="motiv_name_placeholder">Your name</string>
+
+    <string name="motiv_notifications_active">Notifications on</string>
+    <string name="motiv_notifications_active_desc">Receive motivational messages</string>
+    <string name="motiv_frequency">Frequency</string>
+    <string name="motiv_categories">Categories</string>
+
+    <string name="motiv_smart_features">Smart features</string>
+    <string name="motiv_smart_timing">Smart timing</string>
+    <string name="motiv_smart_timing_desc">Learns your best hours</string>
+    <string name="motiv_weekend_schedule">Weekend schedule</string>
+    <string name="motiv_weekend_schedule_desc">A different frequency at weekends</string>
+    <string name="motiv_ai_messages">AI messages</string>
+    <string name="motiv_ai_messages_desc">Generates personalised messages</string>
+
+    <string name="motiv_actions">Actions</string>
+    <string name="motiv_test">Test</string>
+    <string name="motiv_library">Library</string>
+
+    <string name="motiv_messages_per_day">Messages per day</string>
+    <string name="motiv_tone">Tone</string>
+    <string name="motiv_stat_shown">Shown</string>
+    <string name="motiv_stat_loved">Favorites</string>
+    <string name="motiv_stat_engagement">Engagement</string>
+    <string name="motiv_messages_count">%1$d messages</string>
+    <string name="motiv_notification_hours">Notification hours</string>
+    <string name="motiv_from">From</string>
+    <string name="motiv_to">To</string>
+    <string name="motiv_close">Close</string>
+    <string name="motiv_error_empty">The message cannot be empty</string>
+    <string name="motiv_test_sent">Notification sent. Check your status bar.</string>
+    <string name="motiv_goal_complete">🎉 Goal completed: %1$s!</string>
+    <string name="motiv_goal_75">🚀 75%% complete: %1$s!</string>
+    <string name="motiv_goal_50">💪 Halfway there: %1$s!</string>
+    <string name="motiv_goal_25">🌟 25%% complete: %1$s!</string>
+    <string name="motiv_goal_progress">📈 Progress on: %1$s</string>
+    <string name="motiv_streak_legendary">🔥🔥🔥 %1$d-day streak! Legendary!</string>
+    <string name="motiv_streak_amazing">🔥🔥 %1$d-day streak! Amazing!</string>
+    <string name="motiv_streak_keep">🔥 %1$d-day streak! Keep it up!</string>
+    <string name="motiv_streak_basic">🔥 %1$d-day streak!</string>
+    <string name="motiv_comeback_title">🔄 Welcome back!</string>
+    <string name="motiv_action_love">❤️ Loved it</string>
+    <string name="motiv_action_another">🔄 Another</string>
+</resources>

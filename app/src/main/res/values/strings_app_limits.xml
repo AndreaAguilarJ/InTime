@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de los diálogos de límites de aplicaciones (AppLimitDialogs.kt). Estaban
+  escritos en español directamente en el código, así que los usuarios de los otros
+  cuatro idiomas veían español al poner o editar un límite, que es la función central
+  de la app.
+
+  Los dos textos que muestran datos usan argumentos posicionales: antes el dato se
+  pegaba dentro de la frase española, lo que hacía imposible traducirla.
+-->
+<resources>
+    <string name="limit_dialog_add_title">Agregar límite de app</string>
+    <string name="limit_dialog_search_app">Buscar aplicación</string>
+    <string name="limit_dialog_select_app">Selecciona una aplicación:</string>
+    <string name="limit_dialog_no_apps_found">No se encontraron apps</string>
+    <string name="limit_dialog_daily_minutes">Límite diario (minutos)</string>
+    <string name="limit_dialog_minutes_example">Ejemplo: 60 minutos = 1 hora</string>
+    <string name="limit_dialog_cancel">Cancelar</string>
+    <string name="limit_dialog_add_button">Agregar límite</string>
+    <string name="limit_dialog_edit_title">Editar límite</string>
+    <string name="limit_dialog_app_label">Aplicación: %1$s</string>
+    <string name="limit_dialog_daily_time_limit">Límite de tiempo diario</string>
+    <string name="limit_dialog_current_limit">Límite actual: %1$d minutos</string>
+    <string name="limit_dialog_presets">Límites predefinidos:</string>
+    <string name="limit_dialog_schedule_block">Bloqueo por horario</string>
+    <string name="limit_dialog_schedule_block_desc">Bloquear esta app durante horarios específicos, independiente del límite de tiempo</string>
+    <string name="limit_dialog_start_time">Hora de inicio:</string>
+    <string name="limit_dialog_end_time">Hora de fin:</string>
+    <string name="limit_dialog_active_days">Días activos:</string>
+    <string name="limit_dialog_save">Guardar</string>
+    <string name="limit_dialog_start_time_title">Hora de inicio</string>
+    <string name="limit_dialog_end_time_title">Hora de fin</string>
+    <string name="limit_dialog_confirm">Confirmar</string>
+</resources>

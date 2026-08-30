@@ -29,6 +29,8 @@ import androidx.core.graphics.drawable.toBitmap
 import com.momentummm.app.data.repository.AppUsageInfo
 import com.momentummm.app.ui.system.*
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,13 +73,13 @@ fun AddAppLimitDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Agregar Límite de App",
+                        text = stringResource(R.string.limit_dialog_add_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
 
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Filled.Close, contentDescription = "Cerrar")
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.a11y_close))
                     }
                 }
 
@@ -87,7 +89,7 @@ fun AddAppLimitDialog(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    label = { Text("Buscar aplicación") },
+                    label = { Text(stringResource(R.string.limit_dialog_search_app)) },
                     leadingIcon = {
                         Icon(Icons.Filled.Search, contentDescription = null)
                     },
@@ -99,7 +101,7 @@ fun AddAppLimitDialog(
 
                 // App selection
                 Text(
-                    text = "Selecciona una aplicación:",
+                    text = stringResource(R.string.limit_dialog_select_app),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -148,7 +150,7 @@ fun AddAppLimitDialog(
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        "No se encontraron apps",
+                                        stringResource(R.string.limit_dialog_no_apps_found),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -168,12 +170,12 @@ fun AddAppLimitDialog(
                             limitMinutes = it
                         }
                     },
-                    label = { Text("Límite diario (minutos)") },
+                    label = { Text(stringResource(R.string.limit_dialog_daily_minutes)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     supportingText = {
-                        Text("Ejemplo: 60 minutos = 1 hora")
+                        Text(stringResource(R.string.limit_dialog_minutes_example))
                     }
                 )
 
@@ -188,7 +190,7 @@ fun AddAppLimitDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.limit_dialog_cancel))
                     }
 
                     MomentumButton(
@@ -204,7 +206,7 @@ fun AddAppLimitDialog(
                         style = ButtonStyle.Primary,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Agregar Límite")
+                        Text(stringResource(R.string.limit_dialog_add_button))
                     }
                 }
             }
@@ -377,13 +379,13 @@ fun EditAppLimitDialogExtended(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Editar Límite",
+                        text = stringResource(R.string.limit_dialog_edit_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
 
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Filled.Close, contentDescription = "Cerrar")
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.a11y_close))
                     }
                 }
 
@@ -391,7 +393,7 @@ fun EditAppLimitDialogExtended(
 
                 // App name
                 Text(
-                    text = "Aplicación: $appName",
+                    text = stringResource(R.string.limit_dialog_app_label, appName),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -413,7 +415,7 @@ fun EditAppLimitDialogExtended(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Límite de Tiempo Diario",
+                        text = stringResource(R.string.limit_dialog_daily_time_limit),
                         style = MaterialTheme.typography.titleSmall
                     )
                 }
@@ -428,12 +430,12 @@ fun EditAppLimitDialogExtended(
                             limitMinutes = it
                         }
                     },
-                    label = { Text("Límite diario (minutos)") },
+                    label = { Text(stringResource(R.string.limit_dialog_daily_minutes)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     supportingText = {
-                        Text("Límite actual: $currentLimit minutos")
+                        Text(stringResource(R.string.limit_dialog_current_limit, currentLimit))
                     }
                 )
 
@@ -441,7 +443,7 @@ fun EditAppLimitDialogExtended(
 
                 // Preset buttons
                 Text(
-                    text = "Límites predefinidos:",
+                    text = stringResource(R.string.limit_dialog_presets),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -484,7 +486,7 @@ fun EditAppLimitDialogExtended(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Bloqueo por Horario",
+                        text = stringResource(R.string.limit_dialog_schedule_block),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f)
@@ -499,7 +501,7 @@ fun EditAppLimitDialogExtended(
                 }
                 
                 Text(
-                    text = "Bloquear esta app durante horarios específicos, independiente del límite de tiempo",
+                    text = stringResource(R.string.limit_dialog_schedule_block_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -525,7 +527,7 @@ fun EditAppLimitDialogExtended(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Hora de inicio:",
+                                        text = stringResource(R.string.limit_dialog_start_time),
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                     TextButton(onClick = { showStartTimePicker = true }) {
@@ -548,7 +550,7 @@ fun EditAppLimitDialogExtended(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Hora de fin:",
+                                        text = stringResource(R.string.limit_dialog_end_time),
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                     TextButton(onClick = { showEndTimePicker = true }) {
@@ -568,7 +570,7 @@ fun EditAppLimitDialogExtended(
                         
                         // Días de la semana
                         Text(
-                            text = "Días activos:",
+                            text = stringResource(R.string.limit_dialog_active_days),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -593,7 +595,7 @@ fun EditAppLimitDialogExtended(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.limit_dialog_cancel))
                     }
 
                     MomentumButton(
@@ -618,7 +620,7 @@ fun EditAppLimitDialogExtended(
                         style = ButtonStyle.Primary,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Guardar")
+                        Text(stringResource(R.string.limit_dialog_save))
                     }
                 }
             }
@@ -628,7 +630,7 @@ fun EditAppLimitDialogExtended(
     // Time Pickers
     if (showStartTimePicker) {
         ScheduleTimePickerDialog(
-            title = "Hora de Inicio",
+            title = stringResource(R.string.limit_dialog_start_time_title),
             initialHour = scheduleStartHour,
             initialMinute = scheduleStartMinute,
             onConfirm = { hour, minute ->
@@ -642,7 +644,7 @@ fun EditAppLimitDialogExtended(
     
     if (showEndTimePicker) {
         ScheduleTimePickerDialog(
-            title = "Hora de Fin",
+            title = stringResource(R.string.limit_dialog_end_time_title),
             initialHour = scheduleEndHour,
             initialMinute = scheduleEndMinute,
             onConfirm = { hour, minute ->
@@ -738,12 +740,12 @@ private fun ScheduleTimePickerDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(timePickerState.hour, timePickerState.minute) }) {
-                Text("Confirmar")
+                Text(stringResource(R.string.limit_dialog_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.limit_dialog_cancel))
             }
         }
     )

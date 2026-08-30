@@ -39,6 +39,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import com.momentummm.app.ui.theme.*
 import androidx.compose.material.icons.filled.InsertChart
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 /**
  * Función helper para parsear colores de forma segura
@@ -69,8 +71,11 @@ fun LifeWeeksSettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     
     // Estados
+    // El texto por defecto se resuelve antes del remember: stringResource no puede
+    // usarse dentro del bloque, que solo se ejecuta en la primera composición.
+    val notSetText = stringResource(R.string.life_not_set)
     var birthDate by remember { mutableStateOf<Date?>(null) }
-    var birthDateText by remember { mutableStateOf("No configurada") }
+    var birthDateText by remember { mutableStateOf(notSetText) }
     var livedWeeksColor by remember { mutableStateOf("#6366F1") }
     var futureWeeksColor by remember { mutableStateOf("#E5E7EB") }
     var backgroundColor by remember { mutableStateOf("#1F2937") }
@@ -145,13 +150,13 @@ fun LifeWeeksSettingsScreen(
             CenterAlignedTopAppBar(
                 title = { 
                     Text(
-                        "Mi Vida en Semanas",
+                        stringResource(R.string.life_title),
                         fontWeight = FontWeight.Bold
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
+                        Icon(Icons.Default.ArrowBack, stringResource(R.string.action_back))
                     }
                 },
                 actions = {
@@ -198,9 +203,9 @@ fun LifeWeeksSettingsScreen(
                                     // Actualizar widgets con los nuevos colores
                                     LifeWeeksWidget.updateAllWidgets(context)
                                     
-                                    Toast.makeText(context, "✅ Configuración guardada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.life_saved), Toast.LENGTH_SHORT).show()
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.life_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
                                 } finally {
                                     isSaving = false
                                 }
@@ -214,7 +219,7 @@ fun LifeWeeksSettingsScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Icon(Icons.Default.Save, "Guardar")
+                            Icon(Icons.Default.Save, stringResource(R.string.action_save))
                         }
                     }
                 }
@@ -252,7 +257,7 @@ fun LifeWeeksSettingsScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = "Tu Vida en Números",
+                                    text = stringResource(R.string.life_your_numbers),
                                     style = MaterialTheme.typography.titleLarge
                                 )
                             }
@@ -277,12 +282,12 @@ fun LifeWeeksSettingsScreen(
                             ) {
                                 StatItem(
                                     value = "${data.weeksLived}",
-                                    label = "Semanas Vividas",
+                                    label = stringResource(R.string.life_weeks_lived),
                                     color = parsedLivedColor
                                 )
                                 StatItem(
                                     value = "${data.weeksRemaining}",
-                                    label = "Semanas Restantes",
+                                    label = stringResource(R.string.life_weeks_remaining),
                                     color = parsedFutureColor
                                 )
                             }
@@ -302,7 +307,7 @@ fun LifeWeeksSettingsScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             Text(
-                                text = "${String.format("%.1f", data.progressPercentage)}% de tu vida",
+                                text = stringResource(R.string.life_percent_of_life, String.format("%.1f", data.progressPercentage)),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                             )
@@ -310,7 +315,7 @@ fun LifeWeeksSettingsScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             Text(
-                                text = "Edad: ${data.currentAge} años",
+                                text = stringResource(R.string.life_age, data.currentAge),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Medium
                             )
@@ -322,7 +327,7 @@ fun LifeWeeksSettingsScreen(
             // === FECHA DE NACIMIENTO ===
             item {
                 SettingSectionCard(
-                    title = "📅 Fecha de Nacimiento",
+                    title = stringResource(R.string.life_birthdate_title),
                     icon = Icons.Default.Cake
                 ) {
                     OutlinedCard(
@@ -345,7 +350,7 @@ fun LifeWeeksSettingsScreen(
                                 )
                                 if (birthDate != null) {
                                     Text(
-                                        text = "Toca para cambiar",
+                                        text = stringResource(R.string.life_tap_to_change),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -364,12 +369,12 @@ fun LifeWeeksSettingsScreen(
             // === EXPECTATIVA DE VIDA ===
             item {
                 SettingSectionCard(
-                    title = "⏳ Expectativa de Vida",
+                    title = stringResource(R.string.life_expectancy_title),
                     icon = Icons.Default.Timeline
                 ) {
                     Column {
                         Text(
-                            text = "$lifeExpectancy años",
+                            text = stringResource(R.string.life_weeks_years_value, lifeExpectancy),
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -404,7 +409,7 @@ fun LifeWeeksSettingsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         Text(
-                            text = "Ajusta según tu salud y expectativas personales",
+                            text = stringResource(R.string.life_expectancy_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
@@ -417,13 +422,13 @@ fun LifeWeeksSettingsScreen(
             // === COLORES ===
             item {
                 SettingSectionCard(
-                    title = "🎨 Personalización de Colores",
+                    title = stringResource(R.string.life_weeks_color_customization),
                     icon = Icons.Default.Palette
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         // Color de semanas vividas
                         ColorPickerItem(
-                            label = "Semanas Vividas",
+                            label = stringResource(R.string.life_weeks_lived),
                             currentColor = livedWeeksColor,
                             onColorSelected = { livedWeeksColor = it }
                         )
@@ -432,7 +437,7 @@ fun LifeWeeksSettingsScreen(
                         
                         // Color de semanas futuras
                         ColorPickerItem(
-                            label = "Semanas Futuras",
+                            label = stringResource(R.string.life_color_future),
                             currentColor = futureWeeksColor,
                             onColorSelected = { futureWeeksColor = it }
                         )
@@ -441,7 +446,7 @@ fun LifeWeeksSettingsScreen(
                         
                         // Color de fondo (para wallpaper)
                         ColorPickerItem(
-                            label = "Fondo del Wallpaper",
+                            label = stringResource(R.string.life_color_wallpaper),
                             currentColor = backgroundColor,
                             onColorSelected = { backgroundColor = it }
                         )
@@ -452,7 +457,7 @@ fun LifeWeeksSettingsScreen(
             // === PREVISUALIZACIÓN ===
             item {
                 SettingSectionCard(
-                    title = "👁️ Vista Previa",
+                    title = stringResource(R.string.life_preview_title),
                     icon = Icons.Default.Preview
                 ) {
                     Card(
@@ -480,12 +485,12 @@ fun LifeWeeksSettingsScreen(
             // === WIDGET ===
             item {
                 SettingSectionCard(
-                    title = "📱 Widget para Pantalla de Inicio",
+                    title = stringResource(R.string.life_home_widget_title),
                     icon = Icons.Default.Widgets
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            text = "Añade el widget a tu pantalla de inicio para ver tu vida en semanas con los colores que configuraste.",
+                            text = stringResource(R.string.life_widget_hint),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -504,15 +509,15 @@ fun LifeWeeksSettingsScreen(
                                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                                             if (appWidgetManager.isRequestPinAppWidgetSupported) {
                                                 appWidgetManager.requestPinAppWidget(myProvider, null, null)
-                                                Toast.makeText(context, "📌 Arrastra el widget a tu pantalla", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(context, context.getString(R.string.life_drag_widget), Toast.LENGTH_LONG).show()
                                             } else {
-                                                Toast.makeText(context, "Tu launcher no soporta añadir widgets automáticamente. Mantén presionado en la pantalla de inicio y selecciona 'Widgets'", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(context, context.getString(R.string.life_widget_manual_generic), Toast.LENGTH_LONG).show()
                                             }
                                         } else {
-                                            Toast.makeText(context, "Mantén presionado en la pantalla de inicio, selecciona 'Widgets' y busca 'Mi Vida en Semanas'", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, context.getString(R.string.life_widget_manual_search), Toast.LENGTH_LONG).show()
                                         }
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Para añadir el widget: mantén presionado en la pantalla de inicio → Widgets → Mi Vida en Semanas", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, context.getString(R.string.life_widget_manual_path), Toast.LENGTH_LONG).show()
                                     }
                                 }
                             },
@@ -523,7 +528,7 @@ fun LifeWeeksSettingsScreen(
                         ) {
                             Icon(Icons.Default.AddCircle, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Añadir Widget a Pantalla de Inicio")
+                            Text(stringResource(R.string.life_widget_add))
                         }
                         
                         OutlinedButton(
@@ -533,9 +538,9 @@ fun LifeWeeksSettingsScreen(
                                         // Actualizar el widget con la configuración actual
                                         UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
                                         LifeWeeksWidget.updateAllWidgets(context)
-                                        Toast.makeText(context, "✅ Widget actualizado", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_widget_updated), Toast.LENGTH_SHORT).show()
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Error al actualizar: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_widget_update_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             },
@@ -543,7 +548,7 @@ fun LifeWeeksSettingsScreen(
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Actualizar Widgets Existentes")
+                            Text(stringResource(R.string.life_widget_update))
                         }
                     }
                 }
@@ -565,12 +570,12 @@ fun LifeWeeksSettingsScreen(
                                             backgroundColor = android.graphics.Color.parseColor(backgroundColor)
                                         )
                                         com.momentummm.app.util.WallpaperGenerator.saveToGallery(context, bitmap)
-                                        Toast.makeText(context, "✅ Guardado en galería", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_weeks_saved_gallery), Toast.LENGTH_SHORT).show()
                                     } ?: run {
-                                        Toast.makeText(context, "Configura tu fecha de nacimiento primero", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_set_birth_date_first), Toast.LENGTH_SHORT).show()
                                     }
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.life_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },
@@ -578,7 +583,7 @@ fun LifeWeeksSettingsScreen(
                     ) {
                         Icon(Icons.Default.Image, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Guardar como Imagen")
+                        Text(stringResource(R.string.life_save_image))
                     }
                     
                     OutlinedButton(
@@ -594,12 +599,12 @@ fun LifeWeeksSettingsScreen(
                                             backgroundColor = android.graphics.Color.parseColor(backgroundColor)
                                         )
                                         com.momentummm.app.util.WallpaperGenerator.setAsWallpaper(context, bitmap)
-                                        Toast.makeText(context, "✅ Fondo de pantalla establecido", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_wallpaper_set), Toast.LENGTH_SHORT).show()
                                     } ?: run {
-                                        Toast.makeText(context, "Configura tu fecha de nacimiento primero", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_set_birth_date_first), Toast.LENGTH_SHORT).show()
                                     }
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.life_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },
@@ -607,7 +612,7 @@ fun LifeWeeksSettingsScreen(
                     ) {
                         Icon(Icons.Default.Wallpaper, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Establecer como Fondo")
+                        Text(stringResource(R.string.life_set_wallpaper))
                     }
                 }
             }

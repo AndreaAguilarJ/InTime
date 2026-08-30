@@ -53,7 +53,7 @@ object SocialShareUtils {
         // Fondo con gradiente oscuro/dramático
         drawDramaticBackground(canvas)
 
-        // Logo/Brand de InTime en la parte superior
+        // Logo/Brand de Momentum en la parte superior
         drawBrandHeader(canvas)
 
         // Emoji grande central
@@ -304,7 +304,7 @@ object SocialShareUtils {
         
         textPaint.textSize = 36f
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("Descarga InTime y únete al reto 💪", IMAGE_WIDTH / 2f, 1555f, textPaint)
+        canvas.drawText("Descarga Momentum y únete al reto 💪", IMAGE_WIDTH / 2f, 1555f, textPaint)
     }
 
     private fun drawWatermark(canvas: Canvas) {
@@ -412,7 +412,7 @@ object SocialShareUtils {
 
     private fun buildShareText(shameType: ShameType, appName: String, streakDays: Int): String {
         val baseMessage = when (shameType) {
-            ShameType.DOPAMINE_FAIL -> "Fallé mi dieta de dopamina en InTime 🤡"
+            ShameType.DOPAMINE_FAIL -> "Fallé mi dieta de dopamina en Momentum 🤡"
             ShameType.WEAK_MOMENT -> "Tuve un momento de debilidad... 😔"
             ShameType.CRAVING_ATTACK -> "El craving me ganó esta vez 🫠"
             ShameType.FOCUS_BROKEN -> "Rompí mi enfoque 💀"
@@ -429,9 +429,9 @@ object SocialShareUtils {
             |La app que me venció: $appName 📱
             |
             |¿Tú también luchas contra las distracciones? 
-            |Descarga InTime y únete al reto 💪
+            |Descarga Momentum y únete al reto 💪
             |
-            |#InTime #DopamineDetox #FocusMode #Productividad
+            |#Momentum #DopamineDetox #FocusMode #Productividad
             |🔗 https://play.google.com/store/apps/details?id=com.momentummm.app
         """.trimMargin()
     }
@@ -522,7 +522,7 @@ object SocialShareUtils {
         val uri = saveBitmapAndGetUri(context, bitmap) ?: return false
 
         val shareText = """
-            |🏆 ¡Logro desbloqueado en InTime!
+            |🏆 ¡Logro desbloqueado en Momentum!
             |
             |$achievementTitle
             |
@@ -531,7 +531,7 @@ object SocialShareUtils {
             |
             |¡Únete al movimiento de productividad! 💪
             |
-            |#InTime #Productividad #FocusMode #DopamineDetox
+            |#Momentum #Productividad #FocusMode #DopamineDetox
             |🔗 https://play.google.com/store/apps/details?id=com.momentummm.app
         """.trimMargin()
 

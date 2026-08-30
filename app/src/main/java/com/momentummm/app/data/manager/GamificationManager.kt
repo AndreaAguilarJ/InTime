@@ -24,6 +24,9 @@ import javax.inject.Singleton
 @Singleton
 class GamificationManager @Inject constructor(
     private val userDao: UserDao,
+    // Depende del gestor de protección, no de SmartBlockingManager, para no
+    // crear un ciclo de inyección: aquél sólo necesita el DAO de configuración.
+    private val streakProtectionManager: StreakProtectionManager,
     @ApplicationContext private val context: Context
 ) {
     private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
@@ -97,6 +100,7 @@ class GamificationManager @Inject constructor(
                     currentXp = it.currentXp,
                     totalXp = it.totalXp,
                     xpForNextLevel = UserSettings.getXpForLevel(it.userLevel),
+                    xpToNextLevel = it.getXpToNextLevel().coerceAtLeast(0),
                     xpProgress = it.getLevelProgress(),
                     levelTitle = context.getString(it.getLevelTitleRes(), it.userLevel),
                     levelEmoji = it.getLevelEmoji(),
@@ -166,7 +170,7 @@ class GamificationManager @Inject constructor(
             type = EventType.SESSION_COMPLETED,
             xpGained = xpBonus,
             coinsGained = coinsBonus,
-            message = "¡Sesión completada! +$xpBonus XP"
+            message = context.getString(R.string.gam_ev_session_done, xpBonus)
         )
     }
 
@@ -187,11 +191,21 @@ class GamificationManager @Inject constructor(
         
         if (lastActive == null) {
             // Primera vez usando la app
-            userDao.incrementStreak(today)
+            val rows = userDao.incrementStreak(today)
+            if (rows > 0) {
+                // Racha real tras escribir (día 1). Se lee de la BD, no se asume.
+                notifyStreakMilestoneIfNeeded()
+                // XP por iniciar la racha → la barra de progreso deja de estar en 0.
+                userDao.addXp(UserSettings.XP_PER_STREAK_DAY)
+                userDao.addTimeCoins(UserSettings.COINS_PER_STREAK_DAY)
+                checkAndProcessLevelUp()?.let { return it }
+            }
             return GamificationEvent(
                 type = EventType.STREAK_CONTINUED,
+                xpGained = if (rows > 0) UserSettings.XP_PER_STREAK_DAY else 0,
+                coinsGained = if (rows > 0) UserSettings.COINS_PER_STREAK_DAY else 0,
                 streakDays = 1,
-                message = "🔥 ¡Racha iniciada!"
+                message = context.getString(R.string.gam_ev_streak_started)
             )
         }
         
@@ -218,17 +232,42 @@ class GamificationManager @Inject constructor(
                 GamificationEvent(
                     type = EventType.STREAK_CONTINUED,
                     streakDays = settings.currentStreak,
-                    message = "🔥 Racha: ${settings.currentStreak} días"
+                    message = context.getString(R.string.gam_ev_streak_current, settings.currentStreak)
                 )
             }
             daysDifference == 1 -> {
                 // Día consecutivo - incrementar racha
-                userDao.incrementStreak(today)
-                val newStreak = settings.currentStreak + 1
+                val rows = userDao.incrementStreak(today)
+                // Se relee de la BD en vez de asumir currentStreak+1, porque
+                // updateDailyStreak se llama desde dos sitios y el cálculo
+                // optimista podía desincronizarse.
+                val newStreak = userDao.getCurrentStreak() ?: (settings.currentStreak + 1)
+                if (rows > 0) {
+                    notifyStreakMilestoneIfNeeded()
+                    // XP por mantener la racha, escalado por el MISMO multiplicador
+                    // que la tarjeta muestra (x1.25, x1.5…). Así la barra avanza
+                    // con el uso diario real y el multiplicador visible sirve
+                    // para algo.
+                    val multiplier = UserSettings.getStreakMultiplier(newStreak)
+                    val xpGain = (UserSettings.XP_PER_STREAK_DAY * multiplier).toInt()
+                    val coinGain = (UserSettings.COINS_PER_STREAK_DAY * multiplier).toInt()
+                    userDao.addXp(xpGain)
+                    userDao.addTimeCoins(coinGain)
+                    // Ganar XP puede subir de nivel: se procesa y, si ocurre, se
+                    // devuelve ese evento (que también anima la barra al reiniciarse).
+                    checkAndProcessLevelUp()?.let { return it }
+                    return GamificationEvent(
+                        type = EventType.STREAK_CONTINUED,
+                        xpGained = xpGain,
+                        coinsGained = coinGain,
+                        streakDays = newStreak,
+                        message = context.getString(R.string.gam_ev_streak_days, newStreak)
+                    )
+                }
                 GamificationEvent(
                     type = EventType.STREAK_CONTINUED,
                     streakDays = newStreak,
-                    message = "🔥 ¡$newStreak días de racha!"
+                    message = context.getString(R.string.gam_ev_streak_days, newStreak)
                 )
             }
             else -> {
@@ -239,13 +278,72 @@ class GamificationManager @Inject constructor(
     }
 
     /**
+     * Emite la notificación de hito de racha con el número REAL de días, si el
+     * día alcanzado es un hito y no es spam.
+     *
+     * Lee la racha de la base DESPUÉS de incrementarla (no asume el valor) y
+     * usa `longestStreak` para saber si es un récord nuevo. El gate de "qué días
+     * notificar" evita avisar cada día.
+     */
+    private suspend fun notifyStreakMilestoneIfNeeded() {
+        val manager = notificationManager ?: return
+        val settings = userDao.getUserSettingsSync() ?: return
+        val streak = settings.currentStreak
+        if (streak < 1) return
+        if (!isStreakMilestone(streak)) return
+        // Récord: currentStreak == longestStreak solo cuando esta racha igualó o
+        // superó la mejor histórica (incrementStreak sube longestStreak a la par).
+        val isNewRecord = streak >= settings.longestStreak && streak > 1
+        manager.showStreakMilestoneNotification(streak, isNewRecord)
+    }
+
+    /**
+     * Qué días de racha merecen una notificación. Días 1, 3 y 7, luego cada
+     * semana cumplida. Notificar cada día sería spam.
+     *
+     * Delega en el companion para poder probar la lógica sin construir el
+     * manager (que necesita DAO, contexto, etc.).
+     */
+    fun isStreakMilestone(day: Int): Boolean = Companion.isStreakMilestone(day)
+
+    /**
      * Rompe la racha y aplica penalización (Loss Aversion)
+     *
+     * ANTES DE ROMPERLA se intenta consumir un día de gracia. Este es el punto
+     * que faltaba: la Protección de rachas guardaba un cupo semanal que nadie
+     * consultaba nunca, así que la promesa «días de gracia para que no pierdas
+     * tu racha» no correspondía a ningún flujo implementado.
      */
     suspend fun breakStreak(): GamificationEvent {
         val settings = userDao.getUserSettingsSync() ?: return GamificationEvent(EventType.STREAK_BROKEN)
         val previousStreak = settings.currentStreak
-        
+
         if (previousStreak > 0) {
+            // Rescate por día de gracia.
+            val outcome = try {
+                streakProtectionManager.tryConsumeGraceDay()
+            } catch (e: Exception) {
+                android.util.Log.e("GamificationManager", "Error al consumir día de gracia", e)
+                StreakProtectionManager.Outcome.NoGraceLeft
+            }
+
+            if (outcome is StreakProtectionManager.Outcome.GraceUsed) {
+                // La racha se conserva: no sube (el usuario faltó) pero tampoco
+                // se pierde, y no hay penalización de XP.
+                userDao.preserveStreak(Date())
+                notificationManager?.showGraceDayUsedNotification(outcome.remainingAfter)
+
+                return GamificationEvent(
+                    type = EventType.STREAK_CONTINUED,
+                    streakDays = previousStreak,
+                    message = context.getString(
+                        R.string.gam_ev_grace_day_used,
+                        previousStreak,
+                        outcome.remainingAfter
+                    )
+                )
+            }
+
             // Aplicar penalización de XP
             userDao.subtractXp(UserSettings.XP_STREAK_BREAK_PENALTY)
             userDao.resetStreak(Date())
@@ -257,7 +355,7 @@ class GamificationManager @Inject constructor(
                 type = EventType.STREAK_BROKEN,
                 xpGained = -UserSettings.XP_STREAK_BREAK_PENALTY,
                 streakDays = 0,
-                message = "💔 Racha de $previousStreak días perdida. -${UserSettings.XP_STREAK_BREAK_PENALTY} XP"
+                message = context.getString(R.string.gam_ev_streak_lost, previousStreak, UserSettings.XP_STREAK_BREAK_PENALTY)
             )
         }
 
@@ -271,7 +369,7 @@ class GamificationManager @Inject constructor(
         return GamificationEvent(
             type = EventType.STREAK_BROKEN,
             streakDays = 0,
-            message = "Inicia una nueva racha mañana"
+            message = context.getString(R.string.gam_ev_streak_restart)
         )
     }
 
@@ -289,8 +387,8 @@ class GamificationManager @Inject constructor(
         userDao.addTimeCoins(coinsBonus)
         userDao.incrementPerfectDays()
         
-        // Enviar notificación de día perfecto
-        notificationManager?.showPerfectDayNotification()
+        // Enviar notificación de día perfecto con el XP real otorgado
+        notificationManager?.showPerfectDayNotification(xpBonus)
         
         // Verificar si subió de nivel
         val levelUpEvent = checkAndProcessLevelUp()
@@ -299,7 +397,7 @@ class GamificationManager @Inject constructor(
             type = EventType.PERFECT_DAY,
             xpGained = xpBonus,
             coinsGained = coinsBonus,
-            message = "⭐ ¡Día perfecto! +$xpBonus XP"
+            message = context.getString(R.string.gam_ev_perfect_day, xpBonus)
         )
     }
 
@@ -331,7 +429,7 @@ class GamificationManager @Inject constructor(
                 type = EventType.LEVEL_UP,
                 newLevel = newLevel,
                 coinsGained = levelUpCoins,
-                message = "🎉 ¡Subiste a nivel $newLevel!"
+                message = context.getString(R.string.gam_ev_level_up, newLevel)
             )
         }
         
@@ -519,6 +617,15 @@ class GamificationManager @Inject constructor(
             showStreakReminders = settings.showStreakReminders
         )
     }
+
+    companion object {
+        /**
+         * Días de racha que merecen una notificación de hito: 1, 3, 7 y cada
+         * múltiplo de 7. Función pura, probable en la JVM sin Android.
+         */
+        fun isStreakMilestone(day: Int): Boolean =
+            day == 1 || day == 3 || (day >= 7 && day % 7 == 0)
+    }
 }
 
 /**
@@ -548,6 +655,7 @@ data class GamificationState(
     val currentXp: Int,
     val totalXp: Int,
     val xpForNextLevel: Int,
+    val xpToNextLevel: Int,
     val xpProgress: Float,
     val levelTitle: String,
     val levelEmoji: String,

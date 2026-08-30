@@ -13,7 +13,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
+import com.momentummm.app.data.notificationPrefs
 import com.momentummm.app.MainActivity
 import com.momentummm.app.R
 import com.momentummm.app.data.repository.*
@@ -29,7 +29,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import dagger.hilt.android.qualifiers.ApplicationContext
 
-private val Context.notificationPrefs by preferencesDataStore(name = "notification_preferences")
+// El delegado del DataStore vive ahora en un único sitio compartido
+// (com.momentummm.app.data.notificationPrefs) para no crear dos instancias sobre
+// el mismo fichero, que hacía crashear la pantalla de notificaciones.
 
 /**
  * Sistema de notificaciones inteligente y no intrusivo.
@@ -622,7 +624,7 @@ class SmartNotificationManager @Inject constructor(
                     return@launch
                 }
                 
-                val title = context.getString(R.string.notification_streak_warning_title, currentStreak)
+                val title = context.resources.getQuantityString(R.plurals.notification_streak_warning_title, currentStreak, currentStreak)
                 val message = context.getString(R.string.notification_streak_warning_message, remainingMinutes, appName)
                 
                 showNotification(
@@ -1020,15 +1022,73 @@ class SmartNotificationManager @Inject constructor(
     }
     
     /**
+     * Notificación de HITO DE RACHA alcanzado — con el número REAL de días.
+     *
+     * Este era el hueco que el usuario reportó: al llegar a N días de racha no
+     * salía ninguna notificación (updateDailyStreak devolvía el evento pero
+     * nadie lo convertía en notificación, y los strings de racha iniciada /
+     * continuada existían sin ningún llamador). Ahora se dispara desde
+     * GamificationManager con el valor leído de la base tras incrementar, así
+     * que el número mostrado es el real, no uno fijo.
+     *
+     * @param currentStreak días de racha REALES (>=1).
+     * @param isNewRecord true si esta racha supera la mejor histórica.
+     */
+    fun showStreakMilestoneNotification(currentStreak: Int, isNewRecord: Boolean) {
+        scope.launch {
+            try {
+                if (currentStreak < 1) return@launch
+                if (!isNotificationEnabled(STREAK_WARNINGS_ENABLED)) return@launch
+                // Una celebración no debe despertar al usuario de madrugada.
+                if (isQuietHours()) return@launch
+                // Evita duplicar el mismo hito el mismo día: updateDailyStreak se
+                // invoca desde dos sitios en cada arranque (Dashboard y fin de
+                // sesión de foco).
+                if (!canSendNotification("streak_milestone", "day_$currentStreak", COOLDOWN_GRACE_DAY_MINUTES)) {
+                    return@launch
+                }
+
+                val title = if (currentStreak == 1) {
+                    context.getString(R.string.notification_streak_started_title)
+                } else {
+                    context.resources.getQuantityString(
+                        R.plurals.notification_streak_continued_title, currentStreak, currentStreak
+                    )
+                }
+                val message = if (isNewRecord && currentStreak > 1) {
+                    context.resources.getQuantityString(
+                        R.plurals.notification_streak_record_message, currentStreak, currentStreak
+                    )
+                } else {
+                    context.resources.getQuantityString(
+                        R.plurals.notification_streak_milestone_message, currentStreak, currentStreak
+                    )
+                }
+
+                showNotification(
+                    channelId = CHANNEL_ID_GAMIFICATION,
+                    notificationId = NOTIFICATION_ID_GAMIFICATION,
+                    title = title,
+                    message = message,
+                    icon = R.drawable.ic_streak,
+                    priority = NotificationCompat.PRIORITY_DEFAULT
+                )
+                recordNotificationSent("streak_milestone", "day_$currentStreak")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
      * Notificación de racha rota
      */
-    fun showStreakBrokenNotification(previousStreak: Int) {
-        scope.launch {
+    fun showStreakBrokenNotification(previousStreak: Int) {        scope.launch {
             try {
                 if (!isNotificationEnabled(STREAK_WARNINGS_ENABLED)) return@launch
                 
                 val title = context.getString(R.string.notification_streak_broken_title)
-                val message = context.getString(R.string.notification_streak_broken_message, previousStreak)
+                val message = context.resources.getQuantityString(R.plurals.notification_streak_broken_message, previousStreak, previousStreak)
                 
                 showNotification(
                     channelId = CHANNEL_ID_GOALS,
@@ -1045,15 +1105,22 @@ class SmartNotificationManager @Inject constructor(
     }
     
     /**
-     * Notificación de día perfecto
+     * Notificación de día perfecto — con el XP REAL otorgado.
+     *
+     * Antes el texto llevaba "+500 XP" escrito a mano y la función no tenía
+     * ningún llamador (código muerto). Ahora recibe el bonus real (que depende
+     * del multiplicador de racha) y se dispara desde GamificationManager cuando
+     * el día anterior se cerró sin bloquear ninguna app.
      */
-    fun showPerfectDayNotification() {
+    fun showPerfectDayNotification(xpBonus: Int) {
         scope.launch {
             try {
                 if (!isNotificationEnabled(ACHIEVEMENTS_ENABLED)) return@launch
+                if (isQuietHours()) return@launch
+                if (!canSendNotification("perfect_day", "", COOLDOWN_GRACE_DAY_MINUTES)) return@launch
                 
                 val title = context.getString(R.string.notification_perfect_day_title)
-                val message = context.getString(R.string.notification_perfect_day_message)
+                val message = context.getString(R.string.gam_ev_perfect_day, xpBonus)
                 
                 showNotification(
                     channelId = CHANNEL_ID_GAMIFICATION,
@@ -1063,6 +1130,7 @@ class SmartNotificationManager @Inject constructor(
                     icon = R.drawable.ic_goal,
                     priority = NotificationCompat.PRIORITY_DEFAULT
                 )
+                recordNotificationSent("perfect_day", "")
             } catch (e: Exception) {
                 e.printStackTrace()
             }

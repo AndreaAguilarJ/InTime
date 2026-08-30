@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -72,10 +73,7 @@ fun LockScreen(
     val remainingLockoutTime by viewModel.remainingLockoutTime.collectAsStateWithLifecycle()
     val isBiometricAvailable = viewModel.isBiometricAvailable()
     val biometricFailedMessage = stringResource(R.string.lock_screen_biometric_failed)
-    val tooManyAttemptsMessage = stringResource(
-        R.string.lock_screen_too_many_attempts,
-        remainingLockoutTime / 1000 / 60
-    )
+    val tooManyAttemptsMessage = run { val m = (remainingLockoutTime / 1000 / 60).toInt(); pluralStringResource(R.plurals.lock_screen_too_many_attempts, m, m) }
     val incorrectPasswordMessage = stringResource(R.string.lock_screen_password_incorrect)
 
     // Observar resultados de biometría
@@ -216,10 +214,7 @@ fun LockScreen(
                         )
                     ) {
                         Text(
-                            text = stringResource(
-                                R.string.lock_screen_temporarily_locked,
-                                remainingLockoutTime / 1000 / 60
-                            ),
+                            text = run { val m = (remainingLockoutTime / 1000 / 60).toInt(); pluralStringResource(R.plurals.lock_screen_temporarily_locked, m, m) },
                             modifier = Modifier.padding(12.dp),
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             style = MaterialTheme.typography.bodyMedium,

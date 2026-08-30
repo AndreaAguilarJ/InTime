@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="err_no_internet">Sem ligação à internet. Verifique a ligação e tente novamente.</string>
+    <string name="err_invalid_credentials">Email ou palavra-passe incorretos</string>
+    <string name="err_user_not_found">Não existe uma conta com este email</string>
+    <string name="err_user_exists">Já existe uma conta com este email</string>
+    <string name="err_password_invalid">A palavra-passe está incorreta</string>
+    <string name="err_email_invalid">O formato do email não é válido</string>
+    <string name="err_rate_limit">Demasiadas tentativas. Aguarde uns minutos</string>
+    <string name="err_authentication">Erro de autenticação. Verifique as suas credenciais.</string>
+    <string name="err_network">Erro de rede. Verifique a sua ligação à internet.</string>
+    <string name="err_timeout">A operação demorou demasiado. Tente novamente.</string>
+    <string name="err_unexpected">Ocorreu um erro inesperado. Tente novamente.</string>
+    <string name="err_cannot_open_app">Não foi possível abrir esta aplicação</string>
+    <string name="err_permission_denied">Permissão negada</string>
+</resources>

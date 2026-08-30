@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="minimal_setup_title">Minimal Phone Mode</string>
+    <string name="minimal_setup_subtitle">Limit your phone to the essentials: calls, messages and contacts.</string>
+    <string name="minimal_setup_features_title">Features:</string>
+    <string name="minimal_setup_feature_apps">• Only essential apps available</string>
+    <string name="minimal_setup_feature_ui">• Simplified interface</string>
+    <string name="minimal_setup_feature_distractions">• Fewer distractions</string>
+    <string name="minimal_setup_feature_comms">• Focus on communication</string>
+    <string name="minimal_setup_enable">Turn on minimal mode</string>
+    <string name="minimal_exit_message">The full Momentum experience will be restored, with every feature.</string>
+    <string name="minimal_exit_confirm">Yes, exit</string>
+    <string name="minimal_exit_cancel">Stay here</string>
+
+    <string name="minimal_manage_title">Manage allowed apps</string>
+    <string name="minimal_manage_subtitle">Choose which apps are available in minimal mode:</string>
+    <string name="minimal_change">Change</string>
+    <string name="minimal_add_app">Add app</string>
+    <string name="minimal_pick_extra_title">Select an extra app</string>
+    <string name="minimal_pick_extra_subtitle">Choose one app to add to your minimal phone (just one):</string>
+    <string name="minimal_search_app">Search app</string>
+    <string name="minimal_remove_current">Remove current app</string>
+    <string name="minimal_remove">Remove</string>
+    <string name="minimal_select">Select</string>
+    <string name="minimal_close">Close</string>
+    <string name="minimal_all_apps">All apps</string>
+    <string name="minimal_exit_title">Exit minimal mode?</string>
+</resources>

@@ -74,7 +74,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="pasados"
+                    android:text="@string/widget_days_past"
                     android:textSize="10sp"
                     android:textColor="#888888" />
             </LinearLayout>
@@ -102,7 +102,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="restantes"
+                    android:text="@string/widget_weeks_remaining"
                     android:textSize="10sp"
                     android:textColor="#888888" />
             </LinearLayout>

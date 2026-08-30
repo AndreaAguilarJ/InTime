@@ -17,6 +17,18 @@ class BillingManager(
         const val PREMIUM_MONTHLY_SKU = "premium_monthly_subscription"
         const val PREMIUM_YEARLY_SKU = "premium_yearly_subscription"
         const val EMERGENCY_UNLOCK_SKU = "emergency_unlock_consumable"
+
+        /**
+         * Minutos de desbloqueo que compra EMERGENCY_UNLOCK_SKU.
+         *
+         * Única fuente de verdad: los textos de la interfaz reciben este número como
+         * argumento en lugar de escribirlo a mano. Antes no era así y el resultado fue
+         * que la tarjeta de pago anunciaba 15 minutos mientras el código concedía
+         * SocialShareHelper.UNLOCK_DURATION_MS, es decir los 5 minutos de la opción
+         * GRATUITA de compartir. El usuario pagaba y recibía lo mismo que sin pagar.
+         */
+        const val EMERGENCY_UNLOCK_MINUTES = 15
+        const val EMERGENCY_UNLOCK_DURATION_MS = EMERGENCY_UNLOCK_MINUTES * 60 * 1000L
     }
     
     private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
@@ -111,6 +123,25 @@ class BillingManager(
         }, 5000L) // Reintentar después de 5 segundos
     }
     
+    /**
+     * Precio formateado que devuelve Google Play para un producto de suscripción, ya
+     * en la moneda del país del usuario.
+     *
+     * Devuelve null mientras Play no haya respondido o si el producto no está
+     * publicado. Quien lo use debe tener un respaldo: sin esto la pantalla mostraba
+     * un precio en euros escrito en el código a todos los usuarios del mundo,
+     * mientras el cobro real ocurría en su moneda.
+     */
+    fun formattedPriceFor(sku: String): String? =
+        _availableProducts.value
+            .firstOrNull { it.productId == sku }
+            ?.subscriptionOfferDetails
+            ?.firstOrNull()
+            ?.pricingPhases
+            ?.pricingPhaseList
+            ?.firstOrNull()
+            ?.formattedPrice
+
     private fun queryAvailableProducts() {
         val productList = listOf(
             QueryProductDetailsParams.Product.newBuilder()

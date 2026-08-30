@@ -12,6 +12,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +43,7 @@ fun MinimalLauncherSetupScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Launcher Mínimo",
+            text = stringResource(R.string.launcher_setup_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -49,7 +51,7 @@ fun MinimalLauncherSetupScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Convierte tu teléfono en un dispositivo minimalista con solo las funciones esenciales.",
+            text = stringResource(R.string.launcher_setup_desc),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -59,20 +61,20 @@ fun MinimalLauncherSetupScreen(
 
         // Status Cards
         LauncherStatusCard(
-            title = "Estado del Launcher",
+            title = stringResource(R.string.launcher_status),
             isActive = isDefaultLauncher,
-            activeText = "Configurado como launcher predeterminado",
-            inactiveText = "No es el launcher predeterminado",
+            activeText = stringResource(R.string.launcher_status_configured),
+            inactiveText = stringResource(R.string.launcher_status_not_configured),
             icon = Icons.Default.Home
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         LauncherStatusCard(
-            title = "Modo Mínimo",
+            title = stringResource(R.string.launcher_minimal_mode),
             isActive = isMinimalModeEnabled,
-            activeText = "Modo mínimo activado",
-            inactiveText = "Modo mínimo desactivado",
+            activeText = stringResource(R.string.launcher_minimal_on),
+            inactiveText = stringResource(R.string.launcher_minimal_off),
             icon = Icons.Default.PhoneAndroid
         )
 
@@ -90,7 +92,7 @@ fun MinimalLauncherSetupScreen(
             ) {
                 Icon(Icons.Default.Home, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Configurar como Launcher")
+                Text(stringResource(R.string.launcher_configure_button))
             }
         } else {
             FilledTonalButton(
@@ -101,7 +103,7 @@ fun MinimalLauncherSetupScreen(
             ) {
                 Icon(Icons.Default.Settings, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Abrir configuración de Launcher")
+                Text(stringResource(R.string.launcher_open_settings_button))
             }
         }
 
@@ -119,7 +121,7 @@ fun MinimalLauncherSetupScreen(
                 ) {
                     Icon(Icons.Default.PhoneAndroid, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Activar Modo Mínimo")
+                    Text(stringResource(R.string.launcher_enable_minimal))
                 }
             } else {
                 OutlinedButton(
@@ -132,7 +134,7 @@ fun MinimalLauncherSetupScreen(
                 ) {
                     Icon(Icons.Default.Close, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Desactivar Modo Mínimo")
+                    Text(stringResource(R.string.launcher_disable_minimal))
                 }
             }
         }
@@ -156,7 +158,7 @@ fun MinimalLauncherSetupScreen(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Una vez configurado, presiona el botón Home para usar el launcher mínimo.",
+                    text = stringResource(R.string.launcher_home_hint),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )

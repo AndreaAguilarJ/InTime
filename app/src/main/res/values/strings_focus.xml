@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos de la pantalla de Sesiones de Enfoque.
+  Estaban escritos a mano en FocusSessionScreen.kt (20 literales, el mayor de las tres
+  pantallas del recorrido principal que salian siempre en espanol).
+  focus_delete_message lleva argumento posicional: el nombre de la sesion va entre
+  comillas simples y cada idioma lo coloca donde le corresponde.
+-->
+<resources>
+    <string name="focus_title">Sesiones de Enfoque</string>
+    <string name="focus_subtitle">Maximiza tu productividad</string>
+    <string name="focus_presets">Sesiones Predefinidas</string>
+    <string name="focus_my_sessions">Mis Sesiones</string>
+    <string name="focus_recent_history">Historial Reciente</string>
+    <string name="focus_history_empty_title">Sin historial de sesiones</string>
+    <string name="focus_history_empty_message">Completa tu primera sesión para ver las estadísticas</string>
+    <string name="focus_delete_title">Eliminar sesión</string>
+    <string name="focus_delete_message">¿Estás seguro de que deseas eliminar \'%1$s\'?</string>
+    <string name="focus_delete">Eliminar</string>
+    <string name="focus_cancel">Cancelar</string>
+    <string name="focus_session_name_label">Nombre de la sesión</string>
+    <string name="focus_session_name_placeholder">Ej.: Escritura creativa</string>
+    <string name="focus_duration">Duración</string>
+    <string name="focus_break">Descanso</string>
+    <string name="focus_create">Crear</string>
+    <string name="focus_pause">Pausar</string>
+    <string name="focus_resume">Continuar</string>
+    <string name="focus_finish">Finalizar sesión</string>
+    <string name="focus_start_break">Descansar %1$d min</string>
+    <string name="focus_skip_break">Saltar descanso</string>
+    <string name="focus_today_progress">Tu Progreso de Hoy</string>
+    <string name="focus_preset_pomodoro">Pomodoro clásico</string>
+    <string name="focus_preset_deep_work">Trabajo profundo</string>
+    <string name="focus_preset_study">Sesión de estudio</string>
+    <string name="focus_preset_creative">Trabajo creativo</string>
+    <string name="focus_preset_meeting">Preparación de reunión</string>
+    <string name="focus_preset_quick">Enfoque rápido</string>
+    <string name="focus_screen_title">Sesión de enfoque</string>
+    <string name="focus_create_custom">Crear sesión personalizada</string>
+    <string name="focus_icon">Ícono</string>
+    <string name="focus_custom_hint">Crea sesiones adaptadas a tu forma de trabajar</string>
+    <string name="focus_status_running">En progreso</string>
+    <string name="focus_status_break">Descanso</string>
+    <string name="focus_status_paused">En pausa</string>
+    <string name="focus_status_done">Completada</string>
+    <string name="focus_session_over">sesión terminada</string>
+    <string name="focus_paused_lower">en pausa</string>
+    <string name="focus_remaining">restantes</string>
+    <string name="focus_duration_label">Duración</string>
+    <string name="focus_completed_label">Completado</string>
+    <string name="focus_hold_to_stop">Mantén pulsado para detener</string>
+    <string name="focus_holding">Manteniendo…</string>
+    <string name="focus_card_meta">%1$d min · %2$d min descanso</string>
+    <string name="focus_sessions_done">Sesiones
+completadas</string>
+    <string name="focus_total_time">Tiempo
+total</string>
+    <string name="focus_streak_days">Días
+consecutivos</string>
+    <string name="focus_interrupted">Interrumpido</string>
+    <string name="focus_block_title">Apps a bloquear</string>
+    <string name="focus_block_none">Ninguna seleccionada</string>
+    <string name="focus_block_picker_title">Bloquear durante el enfoque</string>
+    <string name="focus_block_search">Buscar apps</string>
+    <string name="focus_block_done">Listo</string>
+    <string name="focus_block_empty">No se encontraron apps</string>
+    <plurals name="focus_block_count">
+        <item quantity="one">%1$d app seleccionada</item>
+        <item quantity="other">%1$d apps seleccionadas</item>
+    </plurals>
+    <plurals name="focus_distractions">
+        <item quantity="one">%1$d distracción</item>
+        <item quantity="other">%1$d distracciones</item>
+    </plurals>
+</resources>

@@ -19,10 +19,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -336,10 +340,17 @@ fun AppBlockSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                // Este chip es un contador, no una acción. Sin clearAndSetSemantics
+                // TalkBack lo anuncia como "botón" y al pulsarlo no ocurre nada.
+                // El texto se conserva para que siga leyéndose.
+                val rulesCountLabel = pluralStringResource(R.plurals.in_app_block_rules_count, rules.size, rules.size)
                 AssistChip(
                     onClick = { },
+                    modifier = Modifier.clearAndSetSemantics {
+                        text = AnnotatedString(rulesCountLabel)
+                    },
                     label = {
-                        Text(stringResource(R.string.in_app_block_rules_count, rules.size))
+                        Text(rulesCountLabel)
                     },
                     leadingIcon = {
                         Icon(
@@ -383,7 +394,7 @@ fun InAppBlockRuleItem(
         },
         headlineContent = {
             Text(
-                text = rule.featureName,
+                text = getBlockTypeName(rule.blockType, rule.featureName),
                 fontWeight = FontWeight.Medium,
                 color = if (rule.isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -486,5 +497,26 @@ fun getBlockTypeDescription(blockType: BlockType) = when (blockType) {
     BlockType.STORIES -> stringResource(R.string.block_type_stories_desc)
     BlockType.FEED -> stringResource(R.string.block_type_feed_desc)
     BlockType.CUSTOM -> stringResource(R.string.block_type_custom_desc)
+}
+
+/**
+ * Nombre localizado del tipo de bloqueo.
+ *
+ * Se usa en vez de `rule.featureName` porque ese campo se sembró con textos en
+ * español ("Explorar", "Búsqueda") guardados en la base, que aparecían tal cual
+ * en una interfaz por lo demás en inglés. Para el tipo CUSTOM, que no tiene
+ * nombre predefinido, se conserva el featureName que el usuario haya escrito.
+ */
+@Composable
+fun getBlockTypeName(blockType: BlockType, fallback: String) = when (blockType) {
+    BlockType.REELS -> stringResource(R.string.block_type_reels_name)
+    BlockType.SHORTS -> stringResource(R.string.block_type_shorts_name)
+    BlockType.EXPLORE -> stringResource(R.string.block_type_explore_name)
+    BlockType.SEARCH -> stringResource(R.string.block_type_search_name)
+    BlockType.FOR_YOU -> stringResource(R.string.block_type_for_you_name)
+    BlockType.DISCOVER -> stringResource(R.string.block_type_discover_name)
+    BlockType.STORIES -> stringResource(R.string.block_type_stories_name)
+    BlockType.FEED -> stringResource(R.string.block_type_feed_name)
+    BlockType.CUSTOM -> fallback
 }
 

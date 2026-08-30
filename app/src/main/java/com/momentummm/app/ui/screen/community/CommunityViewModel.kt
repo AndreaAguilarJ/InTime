@@ -14,10 +14,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.momentummm.app.R
 
 @HiltViewModel
 class CommunityViewModel @Inject constructor(
-    private val communityManager: CommunityManager
+    private val communityManager: CommunityManager,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
 
     val friends: StateFlow<List<Friend>> = communityManager.friends
@@ -84,7 +86,7 @@ class CommunityViewModel @Inject constructor(
                 communityManager.updateMyLeaderboardEntry()
                 loadAchievements()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al cargar datos: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_load, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -109,7 +111,7 @@ class CommunityViewModel @Inject constructor(
                 communityManager.loadFriendsLeaderboard()
                 communityManager.updateMyLeaderboardEntry()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al actualizar ranking: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_ranking, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -122,7 +124,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 communityManager.refreshFriends()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al actualizar amigos: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_friends, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -135,7 +137,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 loadAchievements()
             } catch (e: Exception) {
-                _errorMessage.value = "Error al cargar logros: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_err_achievements, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -150,9 +152,9 @@ class CommunityViewModel @Inject constructor(
         viewModelScope.launch {
             val result = communityManager.sendFriendRequest(email, name)
             result.onSuccess {
-                _errorMessage.value = "✅ Solicitud enviada a $name"
+                _errorMessage.value = context.getString(R.string.community_request_sent, name)
             }.onFailure { e ->
-                _errorMessage.value = "❌ ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_request_failed, e.message ?: "")
             }
         }
     }
@@ -161,9 +163,9 @@ class CommunityViewModel @Inject constructor(
         viewModelScope.launch {
             val result = communityManager.acceptFriendRequest(userId)
             result.onSuccess {
-                _errorMessage.value = "✅ Solicitud aceptada"
+                _errorMessage.value = context.getString(R.string.community_request_accepted)
             }.onFailure { e ->
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -173,7 +175,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 communityManager.rejectFriendRequest(userId)
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -183,12 +185,12 @@ class CommunityViewModel @Inject constructor(
             try {
                 val result = communityManager.removeFriend(userId)
                 result.onSuccess {
-                    _errorMessage.value = "Amigo eliminado"
+                    _errorMessage.value = context.getString(R.string.community_friend_removed)
                 }.onFailure { e ->
-                    _errorMessage.value = "❌ Error: ${e.message}"
+                    _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -206,14 +208,14 @@ class CommunityViewModel @Inject constructor(
                     type = "text/plain"
                 }
                 
-                val shareIntent = Intent.createChooser(sendIntent, "Compartir logro")
+                val shareIntent = Intent.createChooser(sendIntent, context.getString(R.string.community_share_chooser))
                 shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(shareIntent)
                 
                 // Recargar logros para actualizar UI
                 loadAchievements()
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error al compartir: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -225,7 +227,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 communityManager.setShowInGlobalLeaderboard(show)
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -237,7 +239,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(showStreakToFriends = show))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -249,7 +251,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(showFocusTimeToFriends = show))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -261,7 +263,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(notifyFriendRequests = notify))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -273,7 +275,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(notifyFriendAchievements = notify))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -285,7 +287,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(notifyLeaderboardChanges = notify))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="motiv_title">Mensagens motivacionais</string>
+    <string name="motiv_default_message">Hoje é um grande dia!</string>
+
+    <string name="motiv_late_warning_title">As mensagens podem chegar atrasadas</string>
+    <string name="motiv_late_warning_body">O Android não permite que o Momentum use alarmes exatos, por isso uma mensagem das 9:00 pode aparecer mais tarde. Conceda a permissão para que cheguem a horas.</string>
+    <string name="motiv_allow_exact_alarms">Permitir alarmes exatos</string>
+
+    <string name="motiv_personalization">Personalização</string>
+    <string name="motiv_personalization_body">As mensagens vão chamá-lo pelo nome e usar a sua sequência e o tempo de ecrã de hoje.</string>
+    <string name="motiv_name_question">Como o tratamos?</string>
+    <string name="motiv_name_placeholder">O seu nome</string>
+
+    <string name="motiv_notifications_active">Notificações ativas</string>
+    <string name="motiv_notifications_active_desc">Receber mensagens motivacionais</string>
+    <string name="motiv_frequency">Frequência</string>
+    <string name="motiv_categories">Categorias</string>
+
+    <string name="motiv_smart_features">Funções inteligentes</string>
+    <string name="motiv_smart_timing">Horário inteligente</string>
+    <string name="motiv_smart_timing_desc">Aprende as suas melhores horas</string>
+    <string name="motiv_weekend_schedule">Horário de fim de semana</string>
+    <string name="motiv_weekend_schedule_desc">Frequência diferente aos fins de semana</string>
+    <string name="motiv_ai_messages">Mensagens com IA</string>
+    <string name="motiv_ai_messages_desc">Gera mensagens personalizadas</string>
+
+    <string name="motiv_actions">Ações</string>
+    <string name="motiv_test">Testar</string>
+    <string name="motiv_library">Biblioteca</string>
+
+    <string name="motiv_messages_per_day">Mensagens por dia</string>
+    <string name="motiv_tone">Tom</string>
+    <string name="motiv_stat_shown">Mostradas</string>
+    <string name="motiv_stat_loved">Favoritas</string>
+    <string name="motiv_stat_engagement">Interação</string>
+    <string name="motiv_messages_count">%1$d mensagens</string>
+    <string name="motiv_notification_hours">Horário das notificações</string>
+    <string name="motiv_from">Desde</string>
+    <string name="motiv_to">Até</string>
+    <string name="motiv_close">Fechar</string>
+    <string name="motiv_error_empty">A mensagem não pode estar vazia</string>
+    <string name="motiv_test_sent">Notificação enviada. Veja na barra de estado.</string>
+    <string name="motiv_goal_complete">🎉 Meta concluída: %1$s!</string>
+    <string name="motiv_goal_75">🚀 75%% concluído: %1$s!</string>
+    <string name="motiv_goal_50">💪 A meio caminho: %1$s!</string>
+    <string name="motiv_goal_25">🌟 25%% concluído: %1$s!</string>
+    <string name="motiv_goal_progress">📈 Progresso em: %1$s</string>
+    <string name="motiv_streak_legendary">🔥🔥🔥 Sequência de %1$d dias! Lendário!</string>
+    <string name="motiv_streak_amazing">🔥🔥 Sequência de %1$d dias! Incrível!</string>
+    <string name="motiv_streak_keep">🔥 Sequência de %1$d dias! Continua assim!</string>
+    <string name="motiv_streak_basic">🔥 Sequência de %1$d dias!</string>
+    <string name="motiv_comeback_title">🔄 Bem-vindo de volta!</string>
+    <string name="motiv_action_love">❤️ Adorei</string>
+    <string name="motiv_action_another">🔄 Outra</string>
+</resources>

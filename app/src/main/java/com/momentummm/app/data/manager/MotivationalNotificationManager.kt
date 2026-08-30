@@ -166,7 +166,7 @@ class MotivationalNotificationManager @Inject constructor(
             if (!areSystemNotificationsEnabled()) {
                 return TestResult(
                     delivered = false,
-                    error = "Las notificaciones de Momentum están desactivadas en los ajustes del sistema"
+                    error = context.getString(R.string.motiv_notif_disabled)
                 )
             }
             val message = resolveMessage(null)
@@ -178,7 +178,7 @@ class MotivationalNotificationManager @Inject constructor(
             Log.e(TAG, "Error enviando el mensaje de prueba", e)
             TestResult(
                 delivered = false,
-                error = "No se pudo enviar la notificación: ${e.message ?: "error desconocido"}"
+                error = context.getString(R.string.motiv_notif_error, e.message ?: "?")
             )
         }
     }
@@ -269,11 +269,11 @@ class MotivationalNotificationManager @Inject constructor(
 
             // Customize title based on progress
             val title = when {
-                progressPercent >= 100 -> "🎉 ¡Meta completada: $goalTitle!"
-                progressPercent >= 75 -> "🚀 ¡75% completado: $goalTitle!"
-                progressPercent >= 50 -> "💪 ¡Mitad del camino: $goalTitle!"
-                progressPercent >= 25 -> "🌟 ¡25% completado: $goalTitle!"
-                else -> "📈 Progreso en: $goalTitle"
+                progressPercent >= 100 -> context.getString(R.string.motiv_goal_complete, goalTitle)
+                progressPercent >= 75 -> context.getString(R.string.motiv_goal_75, goalTitle)
+                progressPercent >= 50 -> context.getString(R.string.motiv_goal_50, goalTitle)
+                progressPercent >= 25 -> context.getString(R.string.motiv_goal_25, goalTitle)
+                else -> context.getString(R.string.motiv_goal_progress, goalTitle)
             }
 
             showNotificationInternal(
@@ -299,10 +299,10 @@ class MotivationalNotificationManager @Inject constructor(
             messagesRepository.markMessageAsShown(message.id, contextInfo)
 
             val title = when {
-                streakDays >= 100 -> "🔥🔥🔥 ¡$streakDays días de racha! ¡Legendario!"
-                streakDays >= 30 -> "🔥🔥 ¡$streakDays días de racha! ¡Increíble!"
-                streakDays >= 7 -> "🔥 ¡$streakDays días de racha! ¡Sigue así!"
-                else -> "🔥 ¡$streakDays días de racha!"
+                streakDays >= 100 -> context.getString(R.string.motiv_streak_legendary, streakDays)
+                streakDays >= 30 -> context.getString(R.string.motiv_streak_amazing, streakDays)
+                streakDays >= 7 -> context.getString(R.string.motiv_streak_keep, streakDays)
+                else -> context.getString(R.string.motiv_streak_basic, streakDays)
             }
 
             showNotificationInternal(
@@ -327,7 +327,7 @@ class MotivationalNotificationManager @Inject constructor(
             showNotificationInternal(
                 message = message,
                 notificationId = NOTIFICATION_ID_COMEBACK,
-                customTitle = "🔄 ¡Bienvenido de vuelta!"
+                customTitle = context.getString(R.string.motiv_comeback_title)
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error showing comeback notification", e)
@@ -495,8 +495,8 @@ class MotivationalNotificationManager @Inject constructor(
                 .setContentIntent(contentPendingIntent)
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .addAction(0, "❤️ Me encantó", lovePendingIntent)
-                .addAction(0, "🔄 Otro", anotherPendingIntent)
+                .addAction(0, context.getString(R.string.motiv_action_love), lovePendingIntent)
+                .addAction(0, context.getString(R.string.motiv_action_another), anotherPendingIntent)
                 .addAction(0, "⚙️", settingsPendingIntent)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .build()

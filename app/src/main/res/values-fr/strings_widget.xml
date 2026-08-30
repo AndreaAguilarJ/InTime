@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_years">ans</string>
+    <string name="widget_percent_of_life">%1$s%% de votre vie</string>
+    <string name="widget_tap_to_open">Touchez pour ouvrir</string>
+    <string name="widget_life_title">MA VIE EN SEMAINES</string>
+    <string name="widget_weeks_lived">vécues</string>
+    <string name="widget_weeks_remaining">restantes</string>
+    <string name="widget_days_past">passés</string>
+    <string name="widget_quote_of_day">Citation motivante du jour</string>
+    <string name="widget_motivation_label">✨ Motivation</string>
+</resources>

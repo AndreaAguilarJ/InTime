@@ -50,15 +50,26 @@ class InAppBlockRepository @Inject constructor(
     suspend fun getEnabledRulesCount(): Int = inAppBlockRuleDao.getEnabledRulesCount()
 
     /**
-     * Inicializa las reglas predeterminadas para apps populares
+     * Inicializa las reglas predeterminadas para apps populares.
+     *
+     * BUGS CORREGIDOS:
+     *
+     * 1. Antes bastaba con que existiera UNA fila para abortar la siembra
+     *    completa (`if (existingRules.isNotEmpty()) return`). Una base sembrada
+     *    a medias —por una versión anterior o una interrupción— se quedaba así
+     *    para siempre, y el Modo solo comunicación intentaba activar reglas
+     *    inexistentes con un `UPDATE ... WHERE ruleId = ?` que actualizaba cero
+     *    filas y no devolvía error.
+     *
+     * 2. `insertRules` usa `OnConflictStrategy.REPLACE`, así que resembrar todo
+     *    habría borrado las elecciones del usuario. Ahora se insertan sólo los
+     *    identificadores ausentes.
      */
     suspend fun initializeDefaultRules() {
         val existingRules = withTimeoutOrNull(5000L) { 
             inAppBlockRuleDao.getAllRules().first() 
         } ?: emptyList()
-        if (existingRules.isNotEmpty()) {
-            return // Ya hay reglas, no inicializar
-        }
+        val existingIds = existingRules.map { it.ruleId }.toSet()
 
         val defaultRules = listOf(
             // Instagram
@@ -163,7 +174,9 @@ class InAppBlockRepository @Inject constructor(
             )
         )
 
-        inAppBlockRuleDao.insertRules(defaultRules)
+        val missingRules = defaultRules.filter { it.ruleId !in existingIds }
+        if (missingRules.isEmpty()) return
+        inAppBlockRuleDao.insertRules(missingRules)
     }
 
     private fun createPatternJson(patterns: List<String>): String {

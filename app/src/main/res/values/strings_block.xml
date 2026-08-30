@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Textos de las pantallas de bloqueo (overlay a pantalla completa y actividad de
+     bloqueo dentro de apps). Antes estaban fijos en español. -->
+<resources>
+    <string name="block_close">Cerrar</string>
+    <string name="block_time_up">¡Tiempo agotado!</string>
+    <string name="block_daily_limit_reason">Has alcanzado tu límite diario de %1$d minutos para</string>
+    <string name="block_suggestions_header">💡 Sugerencias para ti:</string>
+    <string name="block_sugg_read">📚 Lee un libro o un artículo interesante</string>
+    <string name="block_sugg_walk">🚶 Sal a caminar al aire libre</string>
+    <string name="block_sugg_meditate">🧘 Medita durante 5 minutos</string>
+    <string name="block_sugg_stretch">💪 Haz unos estiramientos</string>
+    <string name="block_sugg_water">☕ Tómate un descanso y bebe agua</string>
+
+    <string name="inappblock_title">Función bloqueada</string>
+    <string name="inappblock_trying">Estás intentando ver</string>
+    <string name="inappblock_desc">Esta función está bloqueada para ayudarte a mantener el enfoque y reducir las distracciones.</string>
+    <string name="inappblock_disable_hint">💡 Puedes desactivar este bloqueo desde los ajustes de Momentum</string>
+
+    <string name="share_thanks">¡Gracias por compartir! Tienes %1$d minutos extra 🎉</string>
+</resources>

@@ -47,6 +47,7 @@ import com.momentummm.app.R
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.entity.SmartBlockingConfig
 import com.momentummm.app.ui.theme.MomentumTheme
+import com.momentummm.app.ui.theme.momentum
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.roundToInt
@@ -78,6 +79,18 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         const val EXTRA_REMAINING_MINUTES = "remaining_minutes"
         const val EXTRA_TOTAL_MINUTES = "total_minutes"
         const val EXTRA_PACKAGE_NAME = "package_name"
+
+        // Estado mínimo para reconstruir el overlay si el sistema mata el
+        // servicio y lo recrea con START_STICKY (intent nulo).
+        private const val STATE_PREFS = "floating_timer_state"
+        private const val KEY_APP_NAME = "app_name"
+        private const val KEY_PACKAGE_NAME = "package_name"
+        private const val KEY_REMAINING = "remaining_minutes"
+        private const val KEY_TOTAL = "total_minutes"
+
+        /** Margen del overlay respecto a la esquina elegida. */
+        private const val EDGE_MARGIN_X = 20
+        private const val EDGE_MARGIN_Y = 100
         
         fun start(
             context: Context,
@@ -118,6 +131,14 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
 
     private var windowManager: WindowManager? = null
     private var floatingView: ComposeView? = null
+
+    /**
+     * Se conservan los LayoutParams para poder mover la ventana con
+     * `updateViewLayout` cuando el usuario cambia la esquina. Antes la posición
+     * sólo se aplicaba al crear la vista, así que cambiarla no movía nada.
+     */
+    private var layoutParams: WindowManager.LayoutParams? = null
+
     private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
         Log.e(TAG, "Coroutine exception", throwable)
     }
@@ -130,6 +151,17 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
     private var totalMinutes = 0
     private var opacity = 0.8f
     private var position = "TOP_RIGHT"
+    private var sizeName = "MEDIUM"
+
+    /**
+     * `true` cuando ya se leyó la configuración al menos una vez.
+     *
+     * La carga desde Room es asíncrona y `onStartCommand` es síncrono, así que
+     * antes el overlay se dibujaba con los valores por defecto y la posición
+     * guardada llegaba demasiado tarde para aplicarse.
+     */
+    @Volatile
+    private var configLoaded = false
     
     // Lifecycle
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -176,32 +208,132 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 Log.d(TAG, "Starting floating timer for $currentAppName, remaining: $remainingMinutes/$totalMinutes")
                 
                 lifecycleRegistry.currentState = Lifecycle.State.STARTED
-                try {
-                    showFloatingTimer()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error showing floating timer", e)
-                }
+                saveState()
+                // Se espera a tener la configuración ANTES de dibujar, para que
+                // la primera aparición ya use la esquina y el tamaño elegidos.
+                showWhenConfigReady()
             }
             ACTION_UPDATE -> {
                 remainingMinutes = intent.getIntExtra(EXTRA_REMAINING_MINUTES, remainingMinutes)
                 Log.d(TAG, "Updating timer: $remainingMinutes min remaining")
-                updateFloatingTimer()
+                saveState()
+                if (floatingView == null) {
+                    // El sistema pudo matar el servicio y recrearlo por
+                    // START_STICKY sin overlay. Antes esta rama recomponía una
+                    // vista inexistente y el contador no volvía nunca.
+                    Log.d(TAG, "Overlay ausente en ACTION_UPDATE: se vuelve a dibujar")
+                    showWhenConfigReady()
+                } else {
+                    updateFloatingTimer()
+                }
             }
             ACTION_STOP -> {
                 Log.d(TAG, "Stopping floating timer")
+                clearState()
                 hideFloatingTimer()
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
             null -> {
-                // Service restarted by system, just keep running
-                Log.d(TAG, "Service restarted by system")
+                // Reinicio por START_STICKY: recuperar el estado guardado y
+                // volver a dibujar. Sin esto el servicio quedaba vivo pero
+                // vacío, con el usuario dentro de una app limitada y sin timer.
+                if (restoreState()) {
+                    Log.d(TAG, "Servicio recreado por el sistema: restaurando overlay")
+                    lifecycleRegistry.currentState = Lifecycle.State.STARTED
+                    showWhenConfigReady()
+                } else {
+                    Log.d(TAG, "Servicio recreado sin estado guardado: se detiene")
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                }
             }
             else -> {
                 Log.w(TAG, "Unknown action: ${intent.action}")
             }
         }
         return START_STICKY
+    }
+
+    /**
+     * Dibuja el overlay en cuanto la configuración esté disponible.
+     * Si ya se cargó antes, se dibuja de inmediato sin esperar a Room.
+     */
+    private fun showWhenConfigReady() {
+        serviceScope.launch {
+            try {
+                ensureConfigLoaded()
+                showFloatingTimer()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error showing floating timer", e)
+            }
+        }
+    }
+
+    private suspend fun ensureConfigLoaded() {
+        if (configLoaded) return
+        try {
+            val config = withContext(Dispatchers.IO) {
+                AppDatabase.getDatabase(applicationContext).smartBlockingConfigDao().getConfigSync()
+            }
+            config?.let { applyConfig(it) }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error leyendo configuración inicial del timer", e)
+        }
+        configLoaded = true
+    }
+
+    private fun applyConfig(config: SmartBlockingConfig) {
+        opacity = config.floatingTimerOpacity
+        position = config.floatingTimerPosition
+        sizeName = config.floatingTimerSize
+    }
+
+    // ── Estado persistido ─────────────────────────────────────────────────
+    // Los cuatro datos del overlay vivían sólo en memoria, así que un reinicio
+    // del servicio los perdía. Se guardan en SharedPreferences para poder
+    // reconstruir la vista tal como estaba.
+
+    private val statePrefs by lazy {
+        applicationContext.getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE)
+    }
+
+    private fun saveState() {
+        try {
+            statePrefs.edit()
+                .putString(KEY_APP_NAME, currentAppName)
+                .putString(KEY_PACKAGE_NAME, currentPackageName)
+                .putInt(KEY_REMAINING, remainingMinutes)
+                .putInt(KEY_TOTAL, totalMinutes)
+                .apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error guardando estado del timer", e)
+        }
+    }
+
+    /** Devuelve `true` si había un estado utilizable que restaurar. */
+    private fun restoreState(): Boolean {
+        return try {
+            val pkg = statePrefs.getString(KEY_PACKAGE_NAME, "") ?: ""
+            if (pkg.isEmpty()) return false
+            currentAppName = statePrefs.getString(KEY_APP_NAME, "") ?: ""
+            currentPackageName = pkg
+            remainingMinutes = statePrefs.getInt(KEY_REMAINING, 0)
+            totalMinutes = statePrefs.getInt(KEY_TOTAL, 0)
+            // Sin minutos restantes no hay nada que mostrar: el límite ya cayó.
+            remainingMinutes > 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Error restaurando estado del timer", e)
+            false
+        }
+    }
+
+    private fun clearState() {
+        try {
+            statePrefs.edit().clear().apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error limpiando estado del timer", e)
+        }
     }
     
     private var isDestroyed = false
@@ -234,10 +366,14 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 val database = AppDatabase.getDatabase(applicationContext)
                 database.smartBlockingConfigDao().getConfig().collectLatest { config ->
                     config?.let {
-                        opacity = it.floatingTimerOpacity
-                        position = it.floatingTimerPosition
-                        // Actualizar UI si está visible
+                        val positionChanged = it.floatingTimerPosition != position
+                        applyConfig(it)
+                        configLoaded = true
                         if (floatingView != null) {
+                            // Mover la ventana requiere updateViewLayout: volver
+                            // a componer Compose no cambia la gravedad del
+                            // WindowManager, que es lo que decide la esquina.
+                            if (positionChanged) applyPositionToWindow()
                             updateFloatingTimer()
                         }
                     }
@@ -245,6 +381,23 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading config", e)
             }
+        }
+    }
+
+    private fun applyPositionToWindow() {
+        val view = floatingView ?: return
+        val params = layoutParams ?: return
+        params.gravity = getGravityFromPosition(position)
+        // Se reinician los desplazamientos: si el usuario había arrastrado el
+        // overlay, conservar el offset anterior lo dejaría fuera de la esquina
+        // que acaba de elegir.
+        params.x = EDGE_MARGIN_X
+        params.y = EDGE_MARGIN_Y
+        try {
+            windowManager?.updateViewLayout(view, params)
+            Log.d(TAG, "Timer flotante movido a $position")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error moviendo el timer flotante", e)
         }
     }
 
@@ -265,7 +418,7 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             return
         }
         
-        val layoutParams = WindowManager.LayoutParams(
+        val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -278,9 +431,10 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = getGravityFromPosition(position)
-            x = 20
-            y = 100
+            x = EDGE_MARGIN_X
+            y = EDGE_MARGIN_Y
         }
+        layoutParams = params
 
         floatingView = ComposeView(this).apply {
             // Configurar todos los ViewTree owners necesarios para Compose
@@ -295,6 +449,7 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                         remainingMinutes = remainingMinutes,
                         totalMinutes = totalMinutes,
                         opacity = opacity,
+                        scale = scaleForSize(sizeName),
                         onClose = {
                             stop(this@FloatingTimerService)
                         }
@@ -304,7 +459,7 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         }
 
         try {
-            windowManager?.addView(floatingView, layoutParams)
+            windowManager?.addView(floatingView, params)
             lifecycleRegistry.currentState = Lifecycle.State.RESUMED
             Log.d(TAG, "Floating timer shown for $currentAppName")
         } catch (e: Exception) {
@@ -321,6 +476,7 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                         remainingMinutes = remainingMinutes,
                         totalMinutes = totalMinutes,
                         opacity = opacity,
+                        scale = scaleForSize(sizeName),
                         onClose = {
                             stop(this@FloatingTimerService)
                         }
@@ -328,6 +484,18 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
                 }
             }
         }
+    }
+
+    /**
+     * Factor de escala del overlay.
+     *
+     * `floatingTimerSize` se guardaba pero nadie lo leía: elegir Pequeño,
+     * Mediano o Grande no cambiaba nada en pantalla.
+     */
+    private fun scaleForSize(size: String): Float = when (size) {
+        "SMALL" -> 0.8f
+        "LARGE" -> 1.3f
+        else -> 1f
     }
 
     private fun hideFloatingTimer() {
@@ -348,6 +516,7 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
             }
         }
         floatingView = null
+        layoutParams = null
     }
 
     private fun getGravityFromPosition(pos: String): Int {
@@ -364,10 +533,10 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Timer Flotante",
+                getString(R.string.svc_floating_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Muestra el timer de uso de apps"
+                description = getString(R.string.svc_floating_channel_desc)
                 setShowBadge(false)
             }
             val manager = getSystemService(NotificationManager::class.java)
@@ -383,8 +552,8 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Timer activo")
-            .setContentText("$currentAppName: $remainingMinutes min restantes")
+            .setContentTitle(getString(R.string.svc_floating_title))
+            .setContentText(getString(R.string.svc_floating_text, currentAppName, remainingMinutes))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -399,65 +568,55 @@ private fun FloatingTimerContent(
     remainingMinutes: Int,
     totalMinutes: Int,
     opacity: Float,
+    scale: Float,
     onClose: () -> Unit
 ) {
-    val progress = if (totalMinutes > 0) {
-        remainingMinutes.toFloat() / totalMinutes.toFloat()
-    } else 0f
-    
     val timerColor = when {
-        remainingMinutes <= 5 -> Color(0xFFEF4444)  // Rojo - ¡Urgente!
-        remainingMinutes <= 15 -> Color(0xFFF59E0B) // Naranja - Advertencia
-        else -> Color(0xFF10B981)                    // Verde - OK
+        remainingMinutes <= 5 -> MaterialTheme.momentum.danger   // Urgente
+        remainingMinutes <= 15 -> MaterialTheme.momentum.warning // Advertencia
+        else -> MaterialTheme.momentum.success                   // OK
     }
-    
-    val backgroundColor = Color.Black.copy(alpha = opacity * 0.9f)
-    
+
+    // La opacidad se aplica una sola vez, en el Surface, para evitar el efecto
+    // cuadrático que dejaba el overlay casi invisible. El color de superficie
+    // sigue el tema en vez de un negro fijo.
+    val backgroundColor = MaterialTheme.momentum.surfaceElevated
+
     Surface(
         modifier = Modifier
-            .padding(8.dp)
+            .padding((8 * scale).dp)
             .alpha(opacity),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape((16 * scale).dp),
         color = backgroundColor,
         shadowElevation = 8.dp
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = (12 * scale).dp, vertical = (8 * scale).dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy((8 * scale).dp)
         ) {
-            // Indicador de color
+            // Punto de estado: el color comunica la urgencia, sin emoji.
             Box(
                 modifier = Modifier
-                    .size(8.dp)
-                    .background(timerColor, RoundedCornerShape(4.dp))
+                    .size((8 * scale).dp)
+                    .background(timerColor, RoundedCornerShape((4 * scale).dp))
             )
-            
+
             // Tiempo restante
             Column {
                 Text(
                     text = formatTime(remainingMinutes),
                     color = timerColor,
-                    fontSize = 18.sp,
+                    fontSize = (18 * scale).sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = appName.take(12) + if (appName.length > 12) "..." else "",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 10.sp
+                    color = MaterialTheme.momentum.textSecondary,
+                    fontSize = (10 * scale).sp
                 )
             }
-            
-            // Emoji de estado
-            Text(
-                text = when {
-                    remainingMinutes <= 5 -> "🔥"
-                    remainingMinutes <= 15 -> "⚠️"
-                    else -> "⏱️"
-                },
-                fontSize = 16.sp
-            )
         }
     }
 }

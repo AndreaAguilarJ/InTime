@@ -322,7 +322,7 @@ class SocialShareHelper @Inject constructor() {
         
         textPaint.textSize = 34f
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("Descarga InTime y únete al reto 💪", IMAGE_WIDTH / 2f, 1490f, textPaint)
+        canvas.drawText("Descarga Momentum y únete al reto 💪", IMAGE_WIDTH / 2f, 1490f, textPaint)
     }
 
     private fun drawWatermark(canvas: Canvas) {
@@ -478,15 +478,15 @@ class SocialShareHelper @Inject constructor() {
         
         return when (shameType) {
             ShameType.DOPAMINE_FAIL -> 
-                "🤡 Fallé mi dieta de dopamina con $appName.$streakText\n\n¿Tú puedes hacerlo mejor? Descarga InTime 📱\n#DopamineDetox #FocusMode #InTimeApp"
+                "🤡 Fallé mi dieta de dopamina con $appName.$streakText\n\n¿Tú puedes hacerlo mejor? Descarga Momentum 📱\n#DopamineDetox #FocusMode #MomentumApp"
             ShameType.WEAK_MOMENT -> 
-                "😔 Tuve un momento de debilidad con $appName.$streakText\n\nMañana será otro día... con InTime 💪\n#DigitalWellbeing #InTimeApp"
+                "😔 Tuve un momento de debilidad con $appName.$streakText\n\nMañana será otro día... con Momentum 💪\n#DigitalWellbeing #MomentumApp"
             ShameType.FOCUS_BROKEN -> 
-                "💀 Rompí mi enfoque scrolleando $appName.$streakText\n\n¿Quién más está luchando? 🙋‍♂️ #FocusMode #InTimeApp"
+                "💀 Rompí mi enfoque scrolleando $appName.$streakText\n\n¿Quién más está luchando? 🙋‍♂️ #FocusMode #MomentumApp"
             ShameType.CRAVING_ATTACK -> 
-                "🫠 El craving de $appName me ganó.$streakText\n\nLa lucha continúa... 💪 #DigitalMinimalism #InTimeApp"
+                "🫠 El craving de $appName me ganó.$streakText\n\nLa lucha continúa... 💪 #DigitalMinimalism #MomentumApp"
             ShameType.STREAK_LOST ->
-                "💔 Perdí mi racha de $streakDays días por $appName.\n\nA empezar de nuevo... 🔄 #StreakBroken #InTimeApp"
+                "💔 Perdí mi racha de $streakDays días por $appName.\n\nA empezar de nuevo... 🔄 #StreakBroken #MomentumApp"
         }
     }
 

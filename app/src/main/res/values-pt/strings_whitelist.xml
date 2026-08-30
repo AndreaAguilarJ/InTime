@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whitelist_emergency_apps">Apps de emergência</string>
+    <string name="whitelist_title">Lista de apps permitidas</string>
+    <string name="whitelist_desc">As apps desta lista nunca são bloqueadas, mesmo que tenham limites definidos.</string>
+    <string name="whitelist_add_defaults">Adicionar as apps de emergência predefinidas</string>
+    <string name="whitelist_empty">Sem apps permitidas</string>
+    <string name="whitelist_empty_desc">Adicione apps que nunca devem ser bloqueadas</string>
+    <string name="whitelist_error">Erro</string>
+
+    <string name="whitelist_reason_emergency">Emergências</string>
+    <string name="whitelist_reason_work">Trabalho</string>
+    <string name="whitelist_reason_education">Educação</string>
+    <string name="whitelist_reason_health">Saúde</string>
+    <string name="whitelist_reason_family">Contacto familiar</string>
+    <string name="whitelist_reason_other">Outro</string>
+
+    <string name="whitelist_add_title">Adicionar à lista de permitidas</string>
+    <string name="whitelist_add_desc">Escolha uma app que nunca deva ser bloqueada:</string>
+    <string name="whitelist_select_app">Selecionar app</string>
+    <string name="whitelist_reason_label">Motivo:</string>
+    <string name="whitelist_add">Adicionar</string>
+    <string name="whitelist_cancel">Cancelar</string>
+    <string name="whitelist_picker_title">Selecionar aplicação</string>
+    <string name="whitelist_search">Pesquisar app</string>
+    <string name="whitelist_no_apps_found">Nenhuma app encontrada</string>
+    <string name="whitelist_close">Fechar</string>
+</resources>

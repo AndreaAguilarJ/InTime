@@ -13,6 +13,7 @@ import com.momentummm.app.data.manager.ThemeManager
 import com.momentummm.app.data.manager.AutoSyncManager
 import com.momentummm.app.data.repository.AppLimitRepository
 import com.momentummm.app.service.AppMonitoringService
+import com.momentummm.app.service.NuclearModeService
 import com.momentummm.app.ui.screen.MomentumApp
 import com.momentummm.app.ui.theme.MomentumTheme
 import com.momentummm.app.minimal.LauncherManager
@@ -41,6 +42,11 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var appLimitRepository: AppLimitRepository
 
+    // Para saber si alguna función de Bloqueo inteligente exige el monitor,
+    // aunque el usuario no haya configurado ningún límite de app.
+    @Inject
+    lateinit var smartBlockingManager: com.momentummm.app.data.manager.SmartBlockingManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen
         installSplashScreen()
@@ -50,7 +56,12 @@ class MainActivity : AppCompatActivity() {
         
         // Initialize managers
         launcherManager = LauncherManager(this)
-        minimalPhoneManager = MinimalPhoneManager(this)
+        // Usa el MinimalPhoneManager compartido de la Application. Antes se creaba
+        // aquí una segunda instancia con `MinimalPhoneManager(this)`: escribía en el
+        // mismo DataStore, pero su StateFlow en memoria era distinto del que observa
+        // la UI (que lee el de la Application), así que activar el modo mínimo por el
+        // intent del lanzador no se reflejaba en la interfaz hasta reiniciar.
+        minimalPhoneManager = (application as MomentumApplication).minimalPhoneManager
 
         val themeManager = ThemeManager(this)
         
@@ -82,6 +93,34 @@ class MainActivity : AppCompatActivity() {
         launcherManager.checkIfDefaultLauncher()
 
         ensureMonitoringServiceRunning()
+        notifyNuclearForegroundState(inForeground = true)
+    }
+
+    /**
+     * Informa al Modo nuclear de si la app está visible.
+     *
+     * BUG CORREGIDO: `NuclearModeService` sólo hacía avanzar la espera de
+     * desbloqueo mientras `isAppInForeground` fuera `true`, pero NADIE llamaba
+     * nunca a `notifyAppForeground()`. La bandera arrancaba en `false` y se
+     * quedaba así, de modo que la espera no progresaba ni un segundo y el
+     * desbloqueo del modo nuclear era inalcanzable por diseño accidental.
+     *
+     * Se envía siempre, sin comprobar antes si el modo está activo: el propio
+     * servicio se detiene si no lo está, y consultar la base desde onResume
+     * añadiría una lectura de disco en el arranque de cada pantalla.
+     */
+    private fun notifyNuclearForegroundState(inForeground: Boolean) {
+        try {
+            if (inForeground) {
+                NuclearModeService.notifyAppForeground(this)
+            } else {
+                NuclearModeService.notifyAppBackground(this)
+            }
+        } catch (e: Exception) {
+            // startService puede fallar si el servicio no está corriendo porque
+            // el modo nuclear no está activo. No es un error para el usuario.
+            Log.d("MainActivity", "Modo nuclear no activo: ${e.message}")
+        }
     }
 
     /**
@@ -104,7 +143,17 @@ class MainActivity : AppCompatActivity() {
             try {
                 val hasLimits = appLimitRepository.getAllLimits().firstOrNull()
                     ?.any { it.isEnabled } == true
-                if (!hasLimits) return@launch
+
+                // Las siete funciones de Bloqueo inteligente se aplican DENTRO
+                // de este monitor. Antes sólo se miraban los límites de app, así
+                // que activar el Modo nuclear o Solo comunicación sin ningún
+                // límite configurado dejaba los interruptores encendidos y sin
+                // ningún efecto.
+                val smartBlockingNeedsIt = runCatching {
+                    smartBlockingManager.requiresMonitoringNow()
+                }.getOrDefault(false)
+
+                if (!hasLimits && !smartBlockingNeedsIt) return@launch
 
                 withContext(Dispatchers.Main) {
                     AppMonitoringService.startService(this@MainActivity)
@@ -117,6 +166,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        notifyNuclearForegroundState(inForeground = false)
         // Guardar datos cuando la app pasa a background (no bloqueante)
         if (isActivityActive && ::autoSyncManager.isInitialized) {
             lifecycleScope.launch(Dispatchers.IO) {

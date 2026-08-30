@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.momentummm.app.R
 
 /**
  * ViewModel para manejar la pantalla de app bloqueada y el sistema "Shame or Pay".
@@ -68,7 +69,7 @@ class BlockingViewModel @Inject constructor(
                 .catch { e -> 
                     _uiState.update { it.copy(
                         showError = true,
-                        errorMessage = "Error en facturación: ${e.message}",
+                        errorMessage = context.getString(R.string.billing_error, e.message ?: ""),
                         isProcessing = false
                     ) }
                 }

@@ -102,7 +102,11 @@ fun AboutScreen(
                             text = stringResource(
                                 R.string.about_version_format,
                                 it.versionName ?: "",
-                                it.longVersionCode
+                                // longVersionCode exige API 28 y el minimo de la app es 26:
+                                // en Android 8.0 y 8.1 esto lanzaba NoSuchMethodError al abrir
+                                // esta pantalla. PackageInfoCompat elige la API correcta segun
+                                // la version del dispositivo.
+                                androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(it)
                             ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -201,7 +205,9 @@ fun AboutScreen(
                     InfoCard(
                         icon = Icons.Default.Build,
                         title = stringResource(R.string.about_info_build_title),
-                        value = "${packageInfo?.longVersionCode ?: 1}",
+                        value = packageInfo
+                            ?.let { androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(it) }
+                            ?.toString() ?: "1",
                         modifier = Modifier.weight(1f)
                     )
                 }

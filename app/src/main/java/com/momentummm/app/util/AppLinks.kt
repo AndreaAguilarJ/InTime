@@ -6,46 +6,49 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 
-/**
- * Enlaces externos de la app, en un solo sitio.
- *
- * ─── POR QUÉ EXISTE ──────────────────────────────────────────────────────
- * Los botones "Política de privacidad" y "Términos del servicio" de la pantalla
- * "Acerca de" tenían `onClick = { /* TODO */ }`: se podían pulsar, mostraban
- * flecha de navegación y no hacían nada. Además Google Play **exige** un enlace
- * accesible a la política de privacidad para cualquier app que recoja datos
- * personales, y esta recoge estadísticas de uso y datos de cuenta.
- *
- * ⚠️ [PRIVACY_POLICY_URL] y [TERMS_URL] apuntan al repositorio del proyecto
- * como destino provisional. Antes de publicar hay que sustituirlos por las URL
- * de los documentos reales.
- */
+/** Enlaces legales externos verificados de la app. */
 object AppLinks {
 
     private const val TAG = "AppLinks"
 
     const val REPOSITORY_URL = "https://github.com/AndreaAguilarJ/InTime"
 
-    /** TODO(producto): sustituir por la URL de la política de privacidad real. */
-    const val PRIVACY_POLICY_URL = "$REPOSITORY_URL/blob/main/PRIVACY.md"
+    /** Documento público verificado el 24/08/2026. */
+    const val PRIVACY_POLICY_URL = "$REPOSITORY_URL/blob/main/PRIVACY_POLICY.md"
 
-    /** TODO(producto): sustituir por la URL de los términos reales. */
-    const val TERMS_URL = "$REPOSITORY_URL/blob/main/TERMS.md"
+    /** Documento de términos de servicio publicado en el repositorio público. */
+    const val TERMS_URL = "$REPOSITORY_URL/blob/main/TERMS_OF_SERVICE.md"
+
+    /** Permite a la UI deshabilitar un enlace que aún no está publicado. */
+    fun isConfigured(url: String): Boolean {
+        if (url.isBlank()) return false
+        val parsed = Uri.parse(url)
+        return parsed.scheme == "https" && !parsed.host.isNullOrBlank()
+    }
 
     /**
-     * Abre [url] en el navegador.
+     * Abre [url] y devuelve si Android pudo entregar el intent.
      *
-     * Si no hay ninguna app capaz de abrirla se avisa al usuario en lugar de
-     * fallar en silencio, que es lo que hacía la pantalla anterior.
+     * La firma sigue siendo compatible con quienes ignoran el resultado, pero
+     * una UI puede usar el Boolean para mostrar un estado de error real.
      */
-    fun open(context: Context, url: String, errorMessage: String) {
+    fun open(context: Context, url: String, errorMessage: String): Boolean {
+        if (!isConfigured(url)) {
+            Log.w(TAG, "Enlace legal no configurado")
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            return false
+        }
+
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        val opened = runCatching { context.startActivity(intent) }.isSuccess
-        if (!opened) {
-            Log.w(TAG, "No se pudo abrir $url")
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (error: Exception) {
+            Log.e(TAG, "No se pudo abrir el enlace legal: $url", error)
             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            false
         }
     }
 }

@@ -159,3 +159,95 @@
 # kept. Suspend functions are wrapped in continuations where the type argument
 # is used.
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+
+# -----------------------------------------------------------------------------
+# Endurecimiento de producción: reflexión, serialización y componentes Android
+# -----------------------------------------------------------------------------
+
+# Room inspecciona anotaciones y genera implementaciones cuyos contratos no deben
+# perder miembros. Las entidades ya se conservan arriba; faltaban DAOs, converters
+# y la implementación generada de la base de datos.
+-keep @androidx.room.Dao interface com.momentummm.app.** { *; }
+-keepclassmembers class com.momentummm.app.** {
+    @androidx.room.TypeConverter <methods>;
+}
+-keep class com.momentummm.app.data.AppDatabase_Impl { *; }
+
+# kotlinx.serialization necesita anotaciones, clases internas y serializers
+# generados. Se conservan globalmente porque también los SDK pueden generarlos.
+-keepattributes RuntimeInvisibleAnnotations,AnnotationDefault,EnclosingMethod
+-keep,includedescriptorclasses class **$$serializer { *; }
+
+# MotivationalMessageGenerator obtiene este campo con getField("GEMINI_API_KEY").
+# Sin esta regla R8 puede renombrarlo o eliminarlo aunque compile correctamente.
+-keep class com.momentummm.app.BuildConfig {
+    public static final java.lang.String GEMINI_API_KEY;
+}
+
+# AppValidator carga estas clases mediante Class.forName con nombres literales.
+-keep class com.momentummm.app.MomentumApplication { *; }
+-keep class com.momentummm.app.data.AppDatabase { *; }
+-keep class com.momentummm.app.data.appwrite.AppwriteService { *; }
+
+# Los widgets construyen intents con el nombre literal de MainActivity; Glance y
+# AppWidgetManager instancian los receivers desde el manifiesto.
+-keepnames class com.momentummm.app.MainActivity
+-keep class com.momentummm.app.widget.** { *; }
+
+# Los modelos internos de Gemini se serializan dentro del SDK. Appwrite ya se
+# conserva arriba; Billing usa clases Parcelable/Binder que cruzan el límite IPC.
+-keep,allowoptimization class com.google.ai.client.generativeai.** { *; }
+-keep,allowoptimization class com.android.billingclient.api.** { *; }
+
+# iText registra fábricas y proveedores por nombre en distintas configuraciones.
+# Se permite optimización, pero no eliminación ni renombrado de esas clases.
+-keep,allowoptimization class com.itextpdf.** { *; }
+
+# ============================================================================
+# iText7: clases referenciadas que NO EXISTEN en Android
+# ----------------------------------------------------------------------------
+# Sin este bloque, `:app:minifyReleaseWithR8` FALLA con "Missing classes
+# detected while running R8" y no se puede generar ningun artefacto de release.
+# Verificado: la compilacion de release fallaba antes de anadirlo.
+#
+# Por que es seguro silenciarlas y no un parche que oculta un problema:
+#
+#  1) java.awt.* y javax.imageio.* son Java de escritorio y no forman parte del
+#     SDK de Android; nunca van a existir en el dispositivo. iText las referencia
+#     solo en rutas de generacion de imagenes AWT y codigos de barras
+#     (Barcode128.createAwtImage, AwtImageDataFactory, PdfImageXObject
+#     .getBufferedImage) que esta app no invoca: aqui iText se usa para exportar
+#     PDF, no para producir imagenes AWT. Si algun dia se llamara a esas rutas,
+#     fallarian en tiempo de ejecucion en cualquier caso, con o sin esta regla.
+#
+#  2) com.fasterxml.jackson.* lo usa el modulo commons de iText en utilidades
+#     JSON OPCIONALES (JsonUtil). Jackson no es dependencia de este proyecto, asi
+#     que ese codigo es inalcanzable.
+#
+# La lista es exactamente la que genero R8 en
+# app/build/outputs/mapping/release/missing_rules.txt: deliberadamente NO se usa
+# un comodin del tipo -dontwarn java.** para no enmascarar futuras clases que si
+# importen.
+-dontwarn com.fasterxml.jackson.annotation.JsonInclude$Include
+-dontwarn com.fasterxml.jackson.core.JsonGenerator$Feature
+-dontwarn com.fasterxml.jackson.core.JsonProcessingException
+-dontwarn com.fasterxml.jackson.core.PrettyPrinter
+-dontwarn com.fasterxml.jackson.core.type.TypeReference
+-dontwarn com.fasterxml.jackson.core.util.DefaultIndenter
+-dontwarn com.fasterxml.jackson.core.util.DefaultPrettyPrinter$Indenter
+-dontwarn com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+-dontwarn com.fasterxml.jackson.databind.DeserializationFeature
+-dontwarn com.fasterxml.jackson.databind.JavaType
+-dontwarn com.fasterxml.jackson.databind.JsonNode
+-dontwarn com.fasterxml.jackson.databind.ObjectMapper
+-dontwarn com.fasterxml.jackson.databind.ObjectWriter
+-dontwarn com.fasterxml.jackson.databind.SerializationFeature
+-dontwarn java.awt.Canvas
+-dontwarn java.awt.Color
+-dontwarn java.awt.Image
+-dontwarn java.awt.image.BufferedImage
+-dontwarn java.awt.image.ColorModel
+-dontwarn java.awt.image.ImageProducer
+-dontwarn java.awt.image.MemoryImageSource
+-dontwarn java.awt.image.PixelGrabber
+-dontwarn javax.imageio.ImageIO

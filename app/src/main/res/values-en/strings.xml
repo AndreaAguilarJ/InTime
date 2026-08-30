@@ -83,6 +83,7 @@
     <string name="onboarding_overlay_desc">Recommended so the blocking screen can appear over other apps. This is what lets Momentum protect you effectively.</string>
     <string name="onboarding_overlay_optional">Optional: you can turn it on later from Settings.</string>
     <string name="onboarding_enable">Enable</string>
+    <string name="onboarding_setup_complete">Setup complete!</string>
     <string name="onboarding_all_set_title">All set!</string>
     <string name="onboarding_all_set_desc">Momentum is ready to help you take back control of your time. Next we will set up your profile.</string>
     <string name="onboarding_saving">Saving…</string>
@@ -238,7 +239,6 @@
         <string name="app_blocked_default_app_name">App</string>
         <string name="app_blocked_time_up_title">⏰ Time’s Up</string>
         <string name="app_blocked_daily_limit_subtitle">You’ve reached your daily limit</string>
-        <string name="app_blocked_daily_limit_minutes">%1$d minutes</string>
         <string name="app_blocked_daily_limit_reached">Daily limit reached</string>
         <string name="app_blocked_stat_achievement_value">Achievement!</string>
         <string name="app_blocked_stat_achievement_label">Goal reached</string>
@@ -256,7 +256,7 @@
         <string name="app_blocked_suggestion_creative_title">Creative hobby</string>
         <string name="app_blocked_suggestion_creative_desc">Explore your creativity</string>
         <string name="app_blocked_open_momentum">Open Momentum</string>
-        <string name="app_blocked_close_in">Closing in %1$d...</string>
+        <string name="app_blocked_close_in">Closing in %1$d…</string>
         <string name="app_blocked_close">Close</string>
         <string name="app_blocked_emergency_unlock">🚨 Emergency unlock</string>
 
@@ -267,13 +267,11 @@
         <string name="lock_screen_subtitle">Enter your password to continue</string>
         <string name="lock_screen_password_label">Password</string>
         <string name="lock_screen_password_placeholder">Enter your password</string>
-        <string name="lock_screen_too_many_attempts">Too many failed attempts. Try again in %1$d minutes</string>
         <string name="lock_screen_password_incorrect">Incorrect password</string>
         <string name="lock_screen_hide_password">Hide password</string>
         <string name="lock_screen_show_password">Show password</string>
-        <string name="lock_screen_temporarily_locked">Locked for %1$d minute(s)</string>
         <string name="lock_screen_unlock">Unlock</string>
-        <string name="lock_screen_biometric_title">Unlock InTime</string>
+        <string name="lock_screen_biometric_title">Unlock Momentum</string>
         <string name="lock_screen_biometric_subtitle">Use your fingerprint or Face ID</string>
         <string name="lock_screen_biometric_description">Verify your identity to continue</string>
         <string name="lock_screen_use_biometric">Use biometrics</string>
@@ -294,8 +292,15 @@
         <string name="in_app_block_no_results_title">No results</string>
         <string name="in_app_block_no_results_subtitle">We couldn’t find matches for your search.</string>
         <string name="in_app_block_enabled_count">%1$d of %2$d enabled</string>
-        <string name="in_app_block_rules_count">%1$d rules</string>
         <string name="block_type_reels_desc">Short vertical videos</string>
+    <string name="block_type_reels_name">Reels</string>
+    <string name="block_type_shorts_name">Shorts</string>
+    <string name="block_type_explore_name">Explore</string>
+    <string name="block_type_search_name">Search</string>
+    <string name="block_type_for_you_name">For You</string>
+    <string name="block_type_discover_name">Discover</string>
+    <string name="block_type_stories_name">Stories</string>
+    <string name="block_type_feed_name">Feed</string>
         <string name="block_type_shorts_desc">YouTube short videos</string>
         <string name="block_type_explore_desc">Discover new content</string>
         <string name="block_type_search_desc">Search within the app</string>
@@ -389,7 +394,7 @@
     <string name="backup_settings_cloud_title">Cloud Backup</string>
     <string name="backup_settings_last_backup">Last backup: %1$s</string>
     <string name="backup_settings_no_backups">No backups</string>
-    <string name="backup_settings_syncing">Backing up... %1$d%%</string>
+    <string name="backup_settings_syncing">Backing up… %1$d%%</string>
     <string name="backup_settings_backup_button">Back up</string>
     <string name="backup_settings_restore_button">Restore</string>
     <string name="backup_settings_export_title">Export Data</string>
@@ -413,7 +418,7 @@
     <string name="sync_settings_status_success_cd">Synced</string>
     <string name="sync_settings_status_failed_cd">Error</string>
     <string name="sync_settings_status_idle">Not synced</string>
-    <string name="sync_settings_status_syncing">Syncing...</string>
+    <string name="sync_settings_status_syncing">Syncing…</string>
     <string name="sync_settings_status_success">Sync successful</string>
     <string name="sync_settings_status_failed">Sync failed. Your data is saved locally.</string>
     <string name="sync_settings_last_sync_label">Last sync:</string>
@@ -603,6 +608,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_change">Change</string>
     <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
     <string name="action_selected">Selected</string>
     <string name="dialog_logout_message">Are you sure you want to sign out? Your local data will remain synced.</string>
 
@@ -643,16 +649,14 @@
     <string name="emergency_unlock_title">⚠️ Emergency Unlock</string>
     <string name="emergency_unlock_question_line1">Do you really need to access</string>
     <string name="emergency_unlock_question_line2">right now?</string>
-    <string name="emergency_unlock_streak_risk">Your %1$d-day streak is at risk</string>
     <string name="emergency_unlock_streak_warning">Think twice before giving up</string>
     <string name="emergency_unlock_premium_title">Premium Unlock</string>
-    <string name="emergency_unlock_premium_subtitle">Instant access for 15 minutes</string>
     <string name="emergency_unlock_premium_price">$0.99 USD</string>
     <string name="emergency_unlock_shame_title">Shame Unlock</string>
     <string name="emergency_unlock_shame_subtitle">Share your slip on social media</string>
     <string name="emergency_unlock_shame_price">FREE</string>
     <string name="emergency_unlock_shame_badge">🤡 VIRAL</string>
-    <string name="emergency_unlock_shame_preparing">Preparing your moment of shame...</string>
+    <string name="emergency_unlock_shame_preparing">Preparing your moment of shame…</string>
     <string name="emergency_unlock_shame_share_ready">The share picker will open</string>
     <string name="emergency_unlock_cancel_button">No thanks, I’ll stay strong 💪</string>
     <string name="emergency_unlock_motivation_quote">“The pain of discipline weighs grams,&#10;regret weighs tons”</string>
@@ -668,7 +672,7 @@
     <!-- Error Components -->
     <string name="offline_indicator_message">No internet connection&#10;Limited features available</string>
     <string name="offline_indicator_retry_cd">Retry</string>
-    <string name="loading_indicator_message">Loading...</string>
+    <string name="loading_indicator_message">Loading…</string>
 
     <!-- Website Blocked Screen -->
     <string name="website_blocked_unknown_site">Unknown site</string>
@@ -875,7 +879,7 @@
     <string name="goals_title_label">Goal title</string>
     <string name="goals_title_placeholder">E.g., Reduce screen time</string>
     <string name="goals_description_label">Description</string>
-    <string name="goals_description_placeholder">Describe your goal...</string>
+    <string name="goals_description_placeholder">Describe your goal…</string>
     <string name="goals_target_time_label">Target time</string>
     <string name="goals_hours_label">Hours</string>
     <string name="goals_minutes_label">Minutes</string>
@@ -986,12 +990,12 @@
     <string name="analytics_app_usage_time_sessions">%1$dh %2$dm • %3$d sessions</string>
     <string name="analytics_app_usage_last_used">Last used: %1$s</string>
     <string name="analytics_productivity_insight_title">Productivity insight</string>
-    <string name="analytics_productivity_insight_message">Your productivity increases by 23% on Tuesdays. Consider scheduling important tasks that day.</string>
+    <string name="analytics_productivity_insight_message_day">%1$s is your lowest screen time day: %2$d %% below your average. Consider scheduling important tasks then.</string>
+    <string name="analytics_productivity_insight_message_pending">Not enough history yet to point out your best day. Keep using the app for a few more days.</string>
     <string name="analytics_summary_title">Statistical Summary</string>
     <string name="analytics_summary_total_screen_time">Total Screen Time</string>
     <string name="analytics_summary_daily_average">Daily Average</string>
     <string name="analytics_summary_total_pickups">Total Pickups</string>
-    <string name="analytics_summary_pickups_times">%1$d times</string>
     <string name="analytics_summary_top_app">Top App</string>
 
     <plurals name="analytics_last_used_minutes">
@@ -1045,7 +1049,7 @@
     
     <!-- Test Notification -->
     <string name="notification_test_title_sent">🔔 Notifications Active!</string>
-    <string name="notification_test_message">InTime notifications are working correctly. You\'ll receive alerts about your goals and limits.</string>
+    <string name="notification_test_message">Momentum notifications are working correctly. You\'ll receive alerts about your goals and limits.</string>
     
     <!-- Achievement Notifications -->
     <string name="notification_goal_achieved_title">🎉 Goal Achieved!</string>
@@ -1061,7 +1065,6 @@
     <string name="notification_balanced_day_message">Healthy usage today: %1$s</string>
     
     <!-- Streak Protection Notifications -->
-    <string name="notification_streak_warning_title">⚠️ %1$d-day streak at risk</string>
     <string name="notification_streak_warning_message">%1$d min left on %2$s. Protect your streak!</string>
     <string name="notification_grace_day_used_title">🛡️ Grace Day Used</string>
     <string name="notification_grace_day_used_message">Your streak is protected. %1$d grace days remaining.</string>
@@ -1079,9 +1082,7 @@
     <string name="notification_level_up_title">🎊 Level Up to %1$d!</string>
     <string name="notification_level_up_message">%1$s - You earned %2$d TimeCoins bonus</string>
     <string name="notification_streak_started_title">🔥 Streak Started!</string>
-    <string name="notification_streak_continued_title">🔥 Streak: %1$d days</string>
     <string name="notification_streak_broken_title">💔 Streak Lost</string>
-    <string name="notification_streak_broken_message">Your %1$d-day streak has been lost. Start again!</string>
     <string name="notification_perfect_day_title">🌟 Perfect Day!</string>
     <string name="notification_perfect_day_message">You completed all your daily goals. +500 XP bonus</string>
     <string name="notification_xp_gained_title">✨ +%1$d XP</string>
@@ -1132,7 +1133,7 @@
     <string name="notification_sync_completed_title">☁️ Sync Complete</string>
     <string name="notification_sync_completed_message">Your data is backed up to the cloud</string>
     <string name="notification_sync_failed_title">⚠️ Sync Error</string>
-    <string name="notification_sync_failed_message">Could not sync your data. Retrying...</string>
+    <string name="notification_sync_failed_message">Could not sync your data. Retrying…</string>
 
     <!-- Additional Translations -->
     <string name="tutorial_step_widget_title">Widget for your screen</string>
@@ -1144,14 +1145,14 @@
     <string name="notification_channel_motivational_name">Motivational Messages</string>
     <string name="notification_channel_motivational_desc">Positive and motivational messages to inspire you every day</string>
     <string name="motivational_widget_description">Shows a different motivational message each day to inspire you</string>
-    <string name="device_admin_label">InTime - Anti-Uninstall Protection</string>
-    <string name="device_admin_description">Enable this to prevent accidental uninstall of InTime while you have active blocks. You can disable it anytime from Settings.</string>
-    <string name="device_admin_explanation">InTime needs device admin permission to prevent uninstallation while you have active app blocks.\n\nThis is optional but recommended for users who want to make sure they can’t uninstall the app in moments of weakness.\n\nYou can disable this anytime from Settings &gt; Security.</string>
+    <string name="device_admin_label">Momentum - Anti-Uninstall Protection</string>
+    <string name="device_admin_description">Enable this to prevent accidental uninstall of Momentum while you have active blocks. You can disable it anytime from Settings.</string>
+    <string name="device_admin_explanation">Momentum needs device admin permission to prevent uninstallation while you have active app blocks.\n\nThis is optional but recommended for users who want to make sure they can’t uninstall the app in moments of weakness.\n\nYou can disable this anytime from Settings &gt; Security.</string>
     <string name="device_admin_enabled_toast">✅ Anti-uninstall protection enabled</string>
     <string name="device_admin_disabled_toast">Anti-uninstall protection disabled</string>
-    <string name="device_admin_disable_warning">⚠️ WARNING: If you disable this, you will be able to uninstall InTime and lose control of your screen time. Are you sure?</string>
+    <string name="device_admin_disable_warning">⚠️ WARNING: If you disable this, you will be able to uninstall Momentum and lose control of your screen time. Are you sure?</string>
     <string name="settings_uninstall_protection_title">Anti-Uninstall Protection</string>
-    <string name="settings_uninstall_protection_subtitle">Prevents uninstalling InTime while blocks are active</string>
+    <string name="settings_uninstall_protection_subtitle">Prevents uninstalling Momentum while blocks are active</string>
     <string name="settings_uninstall_protection_active">Protection active</string>
     <string name="settings_uninstall_protection_inactive">Protection inactive</string>
     <string name="settings_day_start_title">Day Start</string>
@@ -1187,16 +1188,16 @@
     <string name="day_start_picker_title">Select Time</string>
     <string name="day_start_picker_description">Choose the time your day starts for usage stats</string>
     <string name="device_admin_settings_title">Anti-Uninstall Protection</string>
-    <string name="device_admin_settings_subtitle">Prevents you from uninstalling InTime in moments of weakness</string>
+    <string name="device_admin_settings_subtitle">Prevents you from uninstalling Momentum in moments of weakness</string>
     <string name="device_admin_info_title">How does it work?</string>
-    <string name="device_admin_info_description">Uses device admin permissions to prevent uninstalling InTime while you have active blocks.</string>
+    <string name="device_admin_info_description">Uses device admin permissions to prevent uninstalling Momentum while you have active blocks.</string>
     <string name="device_admin_benefit_1">Prevents impulsive uninstall</string>
     <string name="device_admin_benefit_2">You can disable it anytime</string>
     <string name="device_admin_benefit_3">Does not affect other device functions</string>
     <string name="device_admin_status_active">Protection Active</string>
-    <string name="device_admin_status_active_desc">You won’t be able to uninstall InTime until you disable protection</string>
+    <string name="device_admin_status_active_desc">You won’t be able to uninstall Momentum until you disable protection</string>
     <string name="device_admin_status_inactive">Protection Inactive</string>
-    <string name="device_admin_status_inactive_desc">You can uninstall InTime freely</string>
+    <string name="device_admin_status_inactive_desc">You can uninstall Momentum freely</string>
     <string name="device_admin_activate">Enable Protection</string>
     <string name="device_admin_deactivate">Disable Protection</string>
     <string name="uninstall_protection_toggle">Enable when blocking apps</string>
@@ -1228,7 +1229,7 @@
     <string name="account_settings_password_change_error">Could not change the password</string>
     <string name="about_link_error">Could not open the link</string>
     <string name="app_blocked_payment_failed">The payment could not be completed</string>
-    <string name="app_blocked_payment_unlocked">Unlocked for 5 minutes</string>
+    <string name="app_blocked_payment_unlocked">Unlocked for %1$d minutes</string>
 
     <!-- Rediseno UI: dashboard -->
     <string name="greeting_morning">Good morning</string>
@@ -1260,4 +1261,84 @@
     <string name="subscription_per_year">/year</string>
     <string name="subscription_per_month">/month</string>
     <string name="subscription_more_features">And %1$d more features</string>
+    <string name="tutorial_widget_hint_momentum">Press and hold on your home screen → Widgets → Momentum</string>
+    <string name="tutorial_widget_hint_life">Press and hold on your home screen, pick “Widgets” and find “My Life in Weeks”</string>
+    <string name="tutorial_widget_add_later">You can also add it later from Settings → My Life in Weeks</string>
+    <string name="gam_restored">Progress restored: level %1$d, %2$d XP</string>
+    <string name="gam_nothing_stored">No progress saved in the cloud yet</string>
+    <string name="gam_login_restore">Sign in to restore your progress</string>
+    <string name="gam_restore_error">Could not restore: %1$s</string>
+    <string name="gam_synced">Progress synced</string>
+    <string name="gam_login_sync">Sign in to sync your progress</string>
+    <string name="motiv_message_of_day">💫 Message of the day</string>
+    <string name="settings_smart_title">Smart blocking</string>
+    <string name="settings_smart_subtitle">Floating timer, nuclear mode, sleep, digital fasting</string>
+    <string name="gam_ev_session_done">Session complete! +%1$d XP</string>
+    <string name="gam_ev_streak_started">🔥 Streak started!</string>
+    <string name="gam_ev_streak_current">🔥 Streak: %1$d days</string>
+    <string name="gam_ev_streak_days">🔥 %1$d-day streak!</string>
+    <string name="gam_ev_streak_lost">💔 %1$d-day streak lost. -%2$d XP</string>
+    <string name="gam_ev_grace_day_used">You used a grace day: your %1$d-day streak is safe. %2$d left this week.</string>
+    <string name="gam_ev_streak_restart">Start a new streak tomorrow</string>
+    <string name="gam_ev_perfect_day">⭐ Perfect day! +%1$d XP</string>
+    <string name="gam_ev_level_up">🎉 You reached level %1$d!</string>
+    <string name="date_day">Day</string>
+    <string name="date_month">Month</string>
+    <string name="date_year">Year</string>
+    <string name="community_err_load">Error loading data: %1$s</string>
+    <string name="community_err_ranking">Error updating the ranking: %1$s</string>
+    <string name="community_err_friends">Error updating friends: %1$s</string>
+    <string name="community_err_achievements">Error loading achievements: %1$s</string>
+    <string name="community_request_sent">✅ Request sent to %1$s</string>
+    <string name="community_request_failed">❌ %1$s</string>
+    <string name="billing_error">Billing error: %1$s</string>
+    <string name="life_weeks_load_error">Error loading settings</string>
+    <plurals name="emergency_unlock_streak_risk">
+        <item quantity="one">Your %1$d-day streak is at risk</item>
+        <item quantity="other">Your %1$d-day streak is at risk</item>
+    </plurals>
+    <plurals name="notification_streak_warning_title">
+        <item quantity="one">⚠️ %1$d-day streak at risk</item>
+        <item quantity="other">⚠️ %1$d-day streak at risk</item>
+    </plurals>
+    <plurals name="notification_streak_continued_title">
+        <item quantity="one">🔥 Streak: %1$d day</item>
+        <item quantity="other">🔥 Streak: %1$d days</item>
+    </plurals>
+    <plurals name="notification_streak_milestone_message">
+        <item quantity="one">You are on a %1$d-day streak. Keep the chain going!</item>
+        <item quantity="other">You are on a %1$d-day streak. Keep the chain going!</item>
+    </plurals>
+    <plurals name="notification_streak_record_message">
+        <item quantity="one">New record! %1$d day in a row — your best streak yet.</item>
+        <item quantity="other">New record! %1$d days in a row — your best streak yet.</item>
+    </plurals>
+    <plurals name="notification_streak_broken_message">
+        <item quantity="one">Your %1$d-day streak has been lost. Start again!</item>
+        <item quantity="other">Your %1$d-day streak has been lost. Start again!</item>
+    </plurals>
+    <plurals name="analytics_summary_pickups_times">
+        <item quantity="one">%1$d time</item>
+        <item quantity="other">%1$d times</item>
+    </plurals>
+    <plurals name="in_app_block_rules_count">
+        <item quantity="one">%1$d rule</item>
+        <item quantity="other">%1$d rules</item>
+    </plurals>
+    <plurals name="lock_screen_temporarily_locked">
+        <item quantity="one">Locked for %1$d minute</item>
+        <item quantity="other">Locked for %1$d minutes</item>
+    </plurals>
+    <plurals name="app_blocked_daily_limit_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="lock_screen_too_many_attempts">
+        <item quantity="one">Too many failed attempts. Try again in %1$d minute</item>
+        <item quantity="other">Too many failed attempts. Try again in %1$d minutes</item>
+    </plurals>
+    <plurals name="emergency_unlock_premium_subtitle">
+        <item quantity="one">Instant access for %1$d minute</item>
+        <item quantity="other">Instant access for %1$d minutes</item>
+    </plurals>
 </resources>

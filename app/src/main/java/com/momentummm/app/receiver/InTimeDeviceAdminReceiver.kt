@@ -9,7 +9,7 @@ import android.widget.Toast
 import com.momentummm.app.R
 
 /**
- * DeviceAdminReceiver para prevenir la desinstalación de InTime
+ * DeviceAdminReceiver para prevenir la desinstalación de Momentum
  * mientras hay bloqueos activos.
  * 
  * Esta característica es solicitada por usuarios: 

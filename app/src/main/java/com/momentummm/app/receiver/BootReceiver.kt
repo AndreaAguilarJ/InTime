@@ -60,10 +60,16 @@ class BootReceiver : BroadcastReceiver() {
                         }
                     }
                     
-                    // Reiniciar Context Blocking si hay reglas habilitadas
+                    // Reiniciar Context Blocking si el usuario lo tiene activado
+                    // Y hay reglas habilitadas.
+                    //
+                    // BUG CORREGIDO: antes bastaba con que existiera una regla
+                    // habilitada. Un usuario que había apagado la sección se
+                    // encontraba el servicio de ubicación corriendo otra vez tras
+                    // cada reinicio, gastando batería por una función desactivada.
                     val contextRuleDao = database.contextBlockRuleDao()
                     val enabledRules = contextRuleDao.getEnabledRulesSync()
-                    if (enabledRules.isNotEmpty()) {
+                    if (config?.contextBlockingEnabled == true && enabledRules.isNotEmpty()) {
                         // startIfPossible comprueba el permiso de ubicación: el
                         // servicio es un foreground service de tipo "location" y
                         // sin el permiso concedido Android 14+ lo mata al

@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,10 +55,10 @@ fun MinimalLauncherSettingsScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextButton(onClick = onBackClick) {
-                Text("← Volver")
+                Text(stringResource(R.string.launcher_back))
             }
             Text(
-                text = "Configuración del Launcher",
+                text = stringResource(R.string.launcher_settings_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -148,15 +150,15 @@ private fun LauncherSettingsContent(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (isDefaultLauncher) "Launcher por Defecto" else "No es Launcher por Defecto",
+                            text = if (isDefaultLauncher) "Launcher por Defecto" else stringResource(R.string.launcher_not_default),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = if (isDefaultLauncher) {
-                                "Momentum es tu launcher principal"
+                                stringResource(R.string.launcher_is_default)
                             } else {
-                                "Configura Momentum como launcher predeterminado"
+                                stringResource(R.string.launcher_set_default_desc)
                             },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -184,7 +186,7 @@ private fun LauncherSettingsContent(
                 ) {
                     Icon(Icons.Default.Home, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Establecer como Launcher por Defecto")
+                    Text(stringResource(R.string.launcher_set_default_button))
                 }
             }
         }
@@ -194,7 +196,7 @@ private fun LauncherSettingsContent(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Configuración del Modo Mínimo",
+                        text = stringResource(R.string.launcher_minimal_config),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -209,11 +211,11 @@ private fun LauncherSettingsContent(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Modo Mínimo Activo",
+                                text = stringResource(R.string.launcher_minimal_active),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
-                                text = "Activar/desactivar el modo mínimo",
+                                text = stringResource(R.string.launcher_minimal_toggle_a11y),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -234,11 +236,11 @@ private fun LauncherSettingsContent(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Auto-activar Modo Mínimo",
+                                text = stringResource(R.string.launcher_auto_enable),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
-                                text = "Activar automáticamente al abrir el launcher",
+                                text = stringResource(R.string.launcher_auto_enable_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -257,7 +259,7 @@ private fun LauncherSettingsContent(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Gestión de Launchers",
+                        text = stringResource(R.string.launcher_management),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -270,7 +272,7 @@ private fun LauncherSettingsContent(
                     ) {
                         Icon(Icons.Default.Phone, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Ver Launchers Instalados")
+                        Text(stringResource(R.string.launcher_view_installed))
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -281,7 +283,7 @@ private fun LauncherSettingsContent(
                     ) {
                         Icon(Icons.Default.Settings, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Abrir Configuración del Sistema")
+                        Text(stringResource(R.string.launcher_open_system_settings))
                     }
                 }
             }
@@ -297,7 +299,7 @@ private fun LauncherSettingsContent(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "📱 Instrucciones",
+                        text = stringResource(R.string.launcher_instructions_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -305,10 +307,13 @@ private fun LauncherSettingsContent(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "1. Presiona 'Establecer como Launcher por Defecto'\n" +
-                                "2. Selecciona 'Momentum' en la lista\n" +
-                                "3. Marca 'Usar siempre' si quieres que sea permanente\n" +
-                                "4. Activa el modo mínimo para una experiencia simplificada",
+                        text = stringResource(
+                            R.string.launcher_step1,
+                            stringResource(R.string.launcher_set_default_button)
+                        ) +
+                                stringResource(R.string.launcher_step2, "Momentum") +
+                                stringResource(R.string.launcher_step3) +
+                                stringResource(R.string.launcher_step4),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -332,10 +337,10 @@ private fun LauncherSelectionList(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextButton(onClick = onBackClick) {
-                Text("← Volver")
+                Text(stringResource(R.string.launcher_back))
             }
             Text(
-                text = "Launchers Instalados",
+                text = stringResource(R.string.launcher_installed_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -395,7 +400,7 @@ private fun LauncherItem(
                 )
                 if (launcher.isCurrentApp) {
                     Text(
-                        text = "Esta aplicación",
+                        text = stringResource(R.string.launcher_this_app),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium
@@ -406,7 +411,7 @@ private fun LauncherItem(
             if (launcher.isDefault) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "Por defecto",
+                    contentDescription = stringResource(R.string.a11y_default),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
