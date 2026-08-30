@@ -47,4 +47,22 @@ Il reste %2$d jours pour terminer</string>
     <string name="goal_action_continue">Continuer le défi</string>
     <string name="goal_streak_bigtext">🔥 Vous êtes sur une série de %1$d jours vers votre objectif !
 Continuez et ne brisez pas la série !</string>
+    <string name="svc_focus_channel_name">Minuteur de concentration</string>
+    <string name="svc_focus_channel_desc">Notifications du minuteur de concentration</string>
+    <string name="svc_focus_title_running">Séance de concentration active</string>
+    <string name="svc_focus_title_paused">Séance en pause</string>
+    <string name="svc_focus_title_break">Pause</string>
+    <string name="svc_focus_title_completed">Séance terminée</string>
+    <string name="svc_focus_title_default">Mode concentration</string>
+    <string name="svc_focus_text_running">%1$s restant</string>
+    <string name="svc_focus_text_paused">En pause à %1$s</string>
+    <string name="svc_focus_text_break">Pause : %1$s</string>
+    <string name="svc_focus_text_completed">Terminée !</string>
+    <string name="svc_focus_action_stop">Arrêter</string>
+    <string name="svc_floating_channel_name">Minuteur flottant</string>
+    <string name="svc_floating_channel_desc">Affiche le minuteur d\'utilisation des applis</string>
+    <string name="svc_floating_title">Minuteur actif</string>
+    <string name="svc_floating_text">%1$s : %2$d min restantes</string>
+    <string name="svc_focus_title_break_over">Pause terminée</string>
+    <string name="svc_focus_text_break_over">Prêt pour une nouvelle session</string>
 </resources>

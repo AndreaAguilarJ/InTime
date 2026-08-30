@@ -20,12 +20,12 @@
     <string name="focus_resume">Resume</string>
     <string name="focus_finish">End session</string>
     <string name="focus_today_progress">Your Progress Today</string>
-    <string name="focus_preset_pomodoro">🍅 Classic Pomodoro</string>
-    <string name="focus_preset_deep_work">🎯 Deep work</string>
-    <string name="focus_preset_study">📚 Study session</string>
-    <string name="focus_preset_creative">🎨 Creative work</string>
-    <string name="focus_preset_meeting">💼 Meeting prep</string>
-    <string name="focus_preset_quick">⚡ Quick focus</string>
+    <string name="focus_preset_pomodoro">Classic Pomodoro</string>
+    <string name="focus_preset_deep_work">Deep work</string>
+    <string name="focus_preset_study">Study session</string>
+    <string name="focus_preset_creative">Creative work</string>
+    <string name="focus_preset_meeting">Meeting prep</string>
+    <string name="focus_preset_quick">Quick focus</string>
     <string name="focus_screen_title">Focus session</string>
     <string name="focus_create_custom">Create custom session</string>
     <string name="focus_icon">Icon</string>
@@ -51,4 +51,18 @@ streak</string>
         <item quantity="one">%1$d distraction</item>
         <item quantity="other">%1$d distractions</item>
     </plurals>
+    <string name="focus_holding">Holding…</string>
+    <string name="focus_card_meta">%1$d min · %2$d min break</string>
+    <string name="focus_block_title">Apps to block</string>
+    <string name="focus_block_none">None selected</string>
+    <string name="focus_block_picker_title">Block during focus</string>
+    <string name="focus_block_search">Search apps</string>
+    <string name="focus_block_done">Done</string>
+    <string name="focus_block_empty">No apps found</string>
+    <plurals name="focus_block_count">
+        <item quantity="one">%1$d app selected</item>
+        <item quantity="other">%1$d apps selected</item>
+    </plurals>
+    <string name="focus_start_break">%1$d min break</string>
+    <string name="focus_skip_break">Skip break</string>
 </resources>

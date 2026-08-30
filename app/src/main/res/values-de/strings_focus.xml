@@ -20,12 +20,12 @@
     <string name="focus_resume">Fortsetzen</string>
     <string name="focus_finish">Sitzung beenden</string>
     <string name="focus_today_progress">Dein Fortschritt heute</string>
-    <string name="focus_preset_pomodoro">🍅 Klassisches Pomodoro</string>
-    <string name="focus_preset_deep_work">🎯 Tiefe Arbeit</string>
-    <string name="focus_preset_study">📚 Lernsitzung</string>
-    <string name="focus_preset_creative">🎨 Kreativarbeit</string>
-    <string name="focus_preset_meeting">💼 Meeting-Vorbereitung</string>
-    <string name="focus_preset_quick">⚡ Schneller Fokus</string>
+    <string name="focus_preset_pomodoro">Klassisches Pomodoro</string>
+    <string name="focus_preset_deep_work">Tiefe Arbeit</string>
+    <string name="focus_preset_study">Lernsitzung</string>
+    <string name="focus_preset_creative">Kreativarbeit</string>
+    <string name="focus_preset_meeting">Meeting-Vorbereitung</string>
+    <string name="focus_preset_quick">Schneller Fokus</string>
     <string name="focus_screen_title">Fokus-Sitzung</string>
     <string name="focus_create_custom">Eigene Sitzung erstellen</string>
     <string name="focus_icon">Symbol</string>
@@ -51,4 +51,18 @@ in Folge</string>
         <item quantity="one">%1$d Ablenkung</item>
         <item quantity="other">%1$d Ablenkungen</item>
     </plurals>
+    <string name="focus_holding">Halten…</string>
+    <string name="focus_card_meta">%1$d Min · %2$d Min Pause</string>
+    <string name="focus_block_title">Zu blockierende Apps</string>
+    <string name="focus_block_none">Keine ausgewählt</string>
+    <string name="focus_block_picker_title">Während des Fokus blockieren</string>
+    <string name="focus_block_search">Apps suchen</string>
+    <string name="focus_block_done">Fertig</string>
+    <string name="focus_block_empty">Keine Apps gefunden</string>
+    <plurals name="focus_block_count">
+        <item quantity="one">%1$d App ausgewählt</item>
+        <item quantity="other">%1$d Apps ausgewählt</item>
+    </plurals>
+    <string name="focus_start_break">%1$d Min Pause</string>
+    <string name="focus_skip_break">Pause überspringen</string>
 </resources>

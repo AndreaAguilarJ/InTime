@@ -50,6 +50,12 @@ object UserPreferencesKeys {
     val AUTO_SYNC_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("auto_sync_enabled")
     val FOCUS_MODE_ENABLED: Preferences.Key<Boolean> = booleanPreferencesKey("focus_mode_enabled")
     val FOCUS_MODE_BLOCKED_APPS: Preferences.Key<Set<String>> = stringSetPreferencesKey("focus_mode_blocked_apps")
+
+    // Sesiones de enfoque personalizadas del usuario (JSON) y su lista de apps a
+    // bloquear durante CUALQUIER sesión de enfoque. Antes las sesiones vivían solo
+    // en memoria (se perdían al salir) y ninguna sesión bloqueaba apps.
+    val FOCUS_CUSTOM_SESSIONS: Preferences.Key<String> = stringPreferencesKey("focus_custom_sessions")
+    val FOCUS_BLOCK_LIST: Preferences.Key<Set<String>> = stringSetPreferencesKey("focus_block_list")
     
     // Temporary unlocks for Shame or Pay feature
     val TEMPORARY_UNLOCKS: Preferences.Key<Set<String>> = stringSetPreferencesKey("temporary_unlocks")
@@ -257,6 +263,34 @@ object UserPreferencesRepository {
     suspend fun getFocusModeBlockedApps(context: Context): List<String> {
         val prefs = context.safeReadPreferences()
         return prefs[UserPreferencesKeys.FOCUS_MODE_BLOCKED_APPS]?.toList() ?: emptyList()
+    }
+
+    // === Sesiones de enfoque personalizadas (persistencia local) ===
+
+    /** Guarda las sesiones personalizadas serializadas como JSON. */
+    suspend fun setFocusCustomSessions(context: Context, json: String) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.FOCUS_CUSTOM_SESSIONS] = json
+        }
+    }
+
+    /** JSON de las sesiones personalizadas, o cadena vacía si no hay ninguna. */
+    suspend fun getFocusCustomSessions(context: Context): String {
+        val prefs = context.safeReadPreferences()
+        return prefs[UserPreferencesKeys.FOCUS_CUSTOM_SESSIONS] ?: ""
+    }
+
+    // === Lista de apps a bloquear durante las sesiones de enfoque ===
+
+    suspend fun setFocusBlockList(context: Context, apps: Set<String>) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.FOCUS_BLOCK_LIST] = apps
+        }
+    }
+
+    suspend fun getFocusBlockList(context: Context): Set<String> {
+        val prefs = context.safeReadPreferences()
+        return prefs[UserPreferencesKeys.FOCUS_BLOCK_LIST] ?: emptySet()
     }
 
     // === SHAME OR PAY: Temporary Unlocks ===

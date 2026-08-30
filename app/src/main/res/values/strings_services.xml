@@ -53,4 +53,26 @@ Quedan %2$d días para completar</string>
     <string name="goal_action_continue">Continuar desafío</string>
     <string name="goal_streak_bigtext">🔥 ¡Llevas %1$d días seguidos cumpliendo tu meta!
 ¡Sigue así y no rompas la racha!</string>
+
+    <!-- Temporizador de Enfoque (FocusTimerService) -->
+    <string name="svc_focus_channel_name">Temporizador de Enfoque</string>
+    <string name="svc_focus_channel_desc">Notificaciones del temporizador de enfoque</string>
+    <string name="svc_focus_title_running">Sesión de enfoque activa</string>
+    <string name="svc_focus_title_paused">Sesión pausada</string>
+    <string name="svc_focus_title_break">Descanso</string>
+    <string name="svc_focus_title_completed">Sesión completada</string>
+    <string name="svc_focus_title_default">Modo enfoque</string>
+    <string name="svc_focus_text_running">Quedan %1$s</string>
+    <string name="svc_focus_text_paused">Pausado en %1$s</string>
+    <string name="svc_focus_text_break">Descanso: %1$s</string>
+    <string name="svc_focus_text_completed">¡Completado!</string>
+    <string name="svc_focus_action_stop">Detener</string>
+    <string name="svc_focus_title_break_over">Descanso terminado</string>
+    <string name="svc_focus_text_break_over">Listo para otra sesión de enfoque</string>
+
+    <!-- Timer flotante del límite de apps (FloatingTimerService) -->
+    <string name="svc_floating_channel_name">Timer flotante</string>
+    <string name="svc_floating_channel_desc">Muestra el timer de uso de apps</string>
+    <string name="svc_floating_title">Timer activo</string>
+    <string name="svc_floating_text">%1$s: %2$d min restantes</string>
 </resources>

@@ -47,4 +47,22 @@ Faltam %2$d dias para concluir</string>
     <string name="goal_action_continue">Continuar desafio</string>
     <string name="goal_streak_bigtext">🔥 Tens uma sequência de %1$d dias rumo à tua meta!
 Continua e não quebres a sequência!</string>
+    <string name="svc_focus_channel_name">Temporizador de foco</string>
+    <string name="svc_focus_channel_desc">Notificações do temporizador de foco</string>
+    <string name="svc_focus_title_running">Sessão de foco ativa</string>
+    <string name="svc_focus_title_paused">Sessão em pausa</string>
+    <string name="svc_focus_title_break">Pausa</string>
+    <string name="svc_focus_title_completed">Sessão concluída</string>
+    <string name="svc_focus_title_default">Modo foco</string>
+    <string name="svc_focus_text_running">Faltam %1$s</string>
+    <string name="svc_focus_text_paused">Pausado em %1$s</string>
+    <string name="svc_focus_text_break">Pausa: %1$s</string>
+    <string name="svc_focus_text_completed">Concluído!</string>
+    <string name="svc_focus_action_stop">Parar</string>
+    <string name="svc_floating_channel_name">Temporizador flutuante</string>
+    <string name="svc_floating_channel_desc">Mostra o temporizador de uso das apps</string>
+    <string name="svc_floating_title">Temporizador ativo</string>
+    <string name="svc_floating_text">%1$s: %2$d min restantes</string>
+    <string name="svc_focus_title_break_over">Pausa terminada</string>
+    <string name="svc_focus_text_break_over">Pronto para outra sessão de foco</string>
 </resources>

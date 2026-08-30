@@ -20,12 +20,12 @@
     <string name="focus_resume">Reprendre</string>
     <string name="focus_finish">Terminer la session</string>
     <string name="focus_today_progress">Ta progression du jour</string>
-    <string name="focus_preset_pomodoro">🍅 Pomodoro classique</string>
-    <string name="focus_preset_deep_work">🎯 Travail profond</string>
-    <string name="focus_preset_study">📚 Séance d\'étude</string>
-    <string name="focus_preset_creative">🎨 Travail créatif</string>
-    <string name="focus_preset_meeting">💼 Préparation de réunion</string>
-    <string name="focus_preset_quick">⚡ Concentration rapide</string>
+    <string name="focus_preset_pomodoro">Pomodoro classique</string>
+    <string name="focus_preset_deep_work">Travail profond</string>
+    <string name="focus_preset_study">Séance d\'étude</string>
+    <string name="focus_preset_creative">Travail créatif</string>
+    <string name="focus_preset_meeting">Préparation de réunion</string>
+    <string name="focus_preset_quick">Concentration rapide</string>
     <string name="focus_screen_title">Séance de concentration</string>
     <string name="focus_create_custom">Créer une séance personnalisée</string>
     <string name="focus_icon">Icône</string>
@@ -51,4 +51,18 @@ de suite</string>
         <item quantity="one">%1$d distraction</item>
         <item quantity="other">%1$d distractions</item>
     </plurals>
+    <string name="focus_holding">Maintien...</string>
+    <string name="focus_card_meta">%1$d min · %2$d min pause</string>
+    <string name="focus_block_title">Applis à bloquer</string>
+    <string name="focus_block_none">Aucune sélectionnée</string>
+    <string name="focus_block_picker_title">Bloquer pendant la concentration</string>
+    <string name="focus_block_search">Rechercher des applis</string>
+    <string name="focus_block_done">Terminé</string>
+    <string name="focus_block_empty">Aucune appli trouvée</string>
+    <plurals name="focus_block_count">
+        <item quantity="one">%1$d appli sélectionnée</item>
+        <item quantity="other">%1$d applis sélectionnées</item>
+    </plurals>
+    <string name="focus_start_break">Pause de %1$d min</string>
+    <string name="focus_skip_break">Passer la pause</string>
 </resources>

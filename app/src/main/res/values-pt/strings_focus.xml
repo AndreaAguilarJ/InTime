@@ -20,12 +20,12 @@
     <string name="focus_resume">Continuar</string>
     <string name="focus_finish">Encerrar sessão</string>
     <string name="focus_today_progress">Seu progresso de hoje</string>
-    <string name="focus_preset_pomodoro">🍅 Pomodoro clássico</string>
-    <string name="focus_preset_deep_work">🎯 Trabalho profundo</string>
-    <string name="focus_preset_study">📚 Sessão de estudo</string>
-    <string name="focus_preset_creative">🎨 Trabalho criativo</string>
-    <string name="focus_preset_meeting">💼 Preparação de reunião</string>
-    <string name="focus_preset_quick">⚡ Foco rápido</string>
+    <string name="focus_preset_pomodoro">Pomodoro clássico</string>
+    <string name="focus_preset_deep_work">Trabalho profundo</string>
+    <string name="focus_preset_study">Sessão de estudo</string>
+    <string name="focus_preset_creative">Trabalho criativo</string>
+    <string name="focus_preset_meeting">Preparação de reunião</string>
+    <string name="focus_preset_quick">Foco rápido</string>
     <string name="focus_screen_title">Sessão de foco</string>
     <string name="focus_create_custom">Criar sessão personalizada</string>
     <string name="focus_icon">Ícone</string>
@@ -51,4 +51,18 @@ seguidos</string>
         <item quantity="one">%1$d distração</item>
         <item quantity="other">%1$d distrações</item>
     </plurals>
+    <string name="focus_holding">A manter…</string>
+    <string name="focus_card_meta">%1$d min · %2$d min de pausa</string>
+    <string name="focus_block_title">Apps a bloquear</string>
+    <string name="focus_block_none">Nenhuma selecionada</string>
+    <string name="focus_block_picker_title">Bloquear durante o foco</string>
+    <string name="focus_block_search">Buscar apps</string>
+    <string name="focus_block_done">Concluído</string>
+    <string name="focus_block_empty">Nenhuma app encontrada</string>
+    <plurals name="focus_block_count">
+        <item quantity="one">%1$d app selecionada</item>
+        <item quantity="other">%1$d apps selecionadas</item>
+    </plurals>
+    <string name="focus_start_break">Pausa de %1$d min</string>
+    <string name="focus_skip_break">Pular pausa</string>
 </resources>

@@ -47,4 +47,22 @@ Noch %2$d Tage bis zum Abschluss</string>
     <string name="goal_action_continue">Herausforderung fortsetzen</string>
     <string name="goal_streak_bigtext">🔥 Du hast eine %1$d-Tage-Serie bei deinem Ziel!
 Mach weiter und lass die Serie nicht reißen!</string>
+    <string name="svc_focus_channel_name">Fokus-Timer</string>
+    <string name="svc_focus_channel_desc">Benachrichtigungen des Fokus-Timers</string>
+    <string name="svc_focus_title_running">Fokus-Sitzung aktiv</string>
+    <string name="svc_focus_title_paused">Sitzung angehalten</string>
+    <string name="svc_focus_title_break">Pause</string>
+    <string name="svc_focus_title_completed">Sitzung abgeschlossen</string>
+    <string name="svc_focus_title_default">Fokusmodus</string>
+    <string name="svc_focus_text_running">Noch %1$s</string>
+    <string name="svc_focus_text_paused">Angehalten bei %1$s</string>
+    <string name="svc_focus_text_break">Pause: %1$s</string>
+    <string name="svc_focus_text_completed">Abgeschlossen!</string>
+    <string name="svc_focus_action_stop">Stopp</string>
+    <string name="svc_floating_channel_name">Schwebender Timer</string>
+    <string name="svc_floating_channel_desc">Zeigt den Timer für die App-Nutzung an</string>
+    <string name="svc_floating_title">Timer aktiv</string>
+    <string name="svc_floating_text">%1$s: %2$d Min verbleibend</string>
+    <string name="svc_focus_title_break_over">Pause beendet</string>
+    <string name="svc_focus_text_break_over">Bereit für eine neue Fokus-Sitzung</string>
 </resources>

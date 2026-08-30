@@ -82,6 +82,14 @@ class FocusSessionViewModel(application: Application) : AndroidViewModel(applica
         appContext.startService(intent)
     }
 
+    /** Arranca el descanso de la sesión que acaba de completarse. */
+    fun startBreak() {
+        val intent = Intent(appContext, FocusTimerService::class.java).apply {
+            action = FocusTimerService.ACTION_START_BREAK
+        }
+        appContext.startService(intent)
+    }
+
     private fun bindService() {
         val intent = Intent(appContext, FocusTimerService::class.java)
         appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)

@@ -26,13 +26,15 @@
     <string name="focus_pause">Pausar</string>
     <string name="focus_resume">Continuar</string>
     <string name="focus_finish">Finalizar sesión</string>
+    <string name="focus_start_break">Descansar %1$d min</string>
+    <string name="focus_skip_break">Saltar descanso</string>
     <string name="focus_today_progress">Tu Progreso de Hoy</string>
-    <string name="focus_preset_pomodoro">🍅 Pomodoro clásico</string>
-    <string name="focus_preset_deep_work">🎯 Trabajo profundo</string>
-    <string name="focus_preset_study">📚 Sesión de estudio</string>
-    <string name="focus_preset_creative">🎨 Trabajo creativo</string>
-    <string name="focus_preset_meeting">💼 Preparación de reunión</string>
-    <string name="focus_preset_quick">⚡ Enfoque rápido</string>
+    <string name="focus_preset_pomodoro">Pomodoro clásico</string>
+    <string name="focus_preset_deep_work">Trabajo profundo</string>
+    <string name="focus_preset_study">Sesión de estudio</string>
+    <string name="focus_preset_creative">Trabajo creativo</string>
+    <string name="focus_preset_meeting">Preparación de reunión</string>
+    <string name="focus_preset_quick">Enfoque rápido</string>
     <string name="focus_screen_title">Sesión de enfoque</string>
     <string name="focus_create_custom">Crear sesión personalizada</string>
     <string name="focus_icon">Ícono</string>
@@ -47,6 +49,8 @@
     <string name="focus_duration_label">Duración</string>
     <string name="focus_completed_label">Completado</string>
     <string name="focus_hold_to_stop">Mantén pulsado para detener</string>
+    <string name="focus_holding">Manteniendo…</string>
+    <string name="focus_card_meta">%1$d min · %2$d min descanso</string>
     <string name="focus_sessions_done">Sesiones
 completadas</string>
     <string name="focus_total_time">Tiempo
@@ -54,6 +58,16 @@ total</string>
     <string name="focus_streak_days">Días
 consecutivos</string>
     <string name="focus_interrupted">Interrumpido</string>
+    <string name="focus_block_title">Apps a bloquear</string>
+    <string name="focus_block_none">Ninguna seleccionada</string>
+    <string name="focus_block_picker_title">Bloquear durante el enfoque</string>
+    <string name="focus_block_search">Buscar apps</string>
+    <string name="focus_block_done">Listo</string>
+    <string name="focus_block_empty">No se encontraron apps</string>
+    <plurals name="focus_block_count">
+        <item quantity="one">%1$d app seleccionada</item>
+        <item quantity="other">%1$d apps seleccionadas</item>
+    </plurals>
     <plurals name="focus_distractions">
         <item quantity="one">%1$d distracción</item>
         <item quantity="other">%1$d distracciones</item>
