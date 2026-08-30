@@ -58,4 +58,33 @@
         <item quantity="one">Partagé %1$d fois</item>
         <item quantity="other">Partagé %1$d fois</item>
     </plurals>
+
+    <!-- Refonte Communauté : libellés auparavant codés en dur dans l'écran -->
+    <string name="community_tab_leaderboard">Classement</string>
+    <string name="community_tab_achievements">Succès</string>
+    <string name="community_min_per_week">min/sem</string>
+    <string name="community_min_this_week">%1$d min cette semaine</string>
+    <string name="community_rank_positions">%1$d positions</string>
+    <string name="community_no_friends_ranking">Aucun ami classé</string>
+    <string name="community_no_friends_ranking_desc">Ajoute des amis pour voir leur progression</string>
+    <string name="community_unlockable_title">Succès à débloquer</string>
+    <string name="community_settings_privacy">Confidentialité</string>
+    <string name="community_settings_notifications">Notifications sociales</string>
+    <string name="community_possible_streak">Série de 7 jours</string>
+    <string name="community_possible_perfect">Semaine parfaite</string>
+    <string name="community_possible_podium">Top 3 hebdomadaire</string>
+    <string name="community_possible_nuclear">Mode nucléaire</string>
+    <string name="community_request_accepted">Demande acceptée</string>
+    <string name="community_friend_removed">Ami supprimé</string>
+    <string name="community_share_chooser">Partager le succès</string>
+    <string name="community_generic_error">Erreur : %1$s</string>
+    <string name="community_close">Fermer</string>
+    <string name="community_stat_level">Niveau</string>
+    <string name="community_stat_streak">Série</string>
+    <string name="community_stat_weekly">Cette semaine</string>
+    <string name="community_stat_total">Focus total</string>
+    <plurals name="community_achievements_unlocked_count">
+        <item quantity="one">%1$d succès débloqué</item>
+        <item quantity="other">%1$d succès débloqués</item>
+    </plurals>
 </resources>

@@ -126,6 +126,13 @@ class ContextBlockingService : Service() {
     val activeWifiRules: StateFlow<List<ContextBlockRule>> = _activeWifiRules.asStateFlow()
     
     private lateinit var contextBlockRuleDao: ContextBlockRuleDao
+
+    /**
+     * Destino de las coincidencias. Se inyecta en vez de exponer un binder
+     * porque el consumidor real es el motor de bloqueo, no una pantalla.
+     */
+    @javax.inject.Inject
+    lateinit var smartBlockingManager: com.momentummm.app.data.manager.SmartBlockingManager
     
     override fun onBind(intent: Intent?): IBinder? = null
     
@@ -179,6 +186,14 @@ class ContextBlockingService : Service() {
         super.onDestroy()
         stopLocationUpdates()
         wifiCheckJob?.cancel()
+        // Sin servicio no hay forma de saber dónde está el usuario, así que las
+        // coincidencias caducan. Dejarlas puestas mantendría un bloqueo por
+        // ubicación activo indefinidamente después de apagar la función.
+        _activeLocationRules.value = emptyList()
+        _activeWifiRules.value = emptyList()
+        if (::smartBlockingManager.isInitialized) {
+            smartBlockingManager.publishContextMatches(emptySet())
+        }
         serviceScope.cancel()
     }
     
@@ -268,6 +283,9 @@ class ContextBlockingService : Service() {
             } else {
                 _currentWifiSsid.value = null
                 _activeWifiRules.value = emptyList()
+                // Sin Wi-Fi la regla deja de coincidir: hay que decirlo, o el
+                // bloqueo se quedaría aplicado al salir de la red.
+                publishMatchesToBlocker()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking WiFi", e)
@@ -335,6 +353,7 @@ class ContextBlockingService : Service() {
                 }
                 
                 _activeLocationRules.value = matchingRules
+                publishMatchesToBlocker()
                 
                 if (matchingRules.isNotEmpty()) {
                     Log.d(TAG, "Active location rules: ${matchingRules.map { it.ruleName }}")
@@ -360,6 +379,7 @@ class ContextBlockingService : Service() {
                 }
                 
                 _activeWifiRules.value = matchingRules
+                publishMatchesToBlocker()
                 
                 if (matchingRules.isNotEmpty()) {
                     Log.d(TAG, "Active WiFi rules: ${matchingRules.map { it.ruleName }}")
@@ -368,6 +388,22 @@ class ContextBlockingService : Service() {
                 Log.e(TAG, "Error checking WiFi rules", e)
             }
         }
+    }
+
+    /**
+     * Entrega al motor de bloqueo qué reglas coinciden ahora mismo.
+     *
+     * Es la pieza que faltaba. Este servicio ya sabía comparar GPS y SSID, pero
+     * dejaba el resultado en StateFlow internos de una instancia con
+     * `onBind = null`: nadie podía observarlos, así que ninguna coincidencia
+     * llegaba nunca a bloquear una app.
+     */
+    private fun publishMatchesToBlocker() {
+        if (!::smartBlockingManager.isInitialized) return
+        val matched = (_activeLocationRules.value + _activeWifiRules.value)
+            .map { it.id }
+            .toSet()
+        smartBlockingManager.publishContextMatches(matched)
     }
     
     private fun isWithinRadius(

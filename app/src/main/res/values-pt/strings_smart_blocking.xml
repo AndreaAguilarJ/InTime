@@ -14,6 +14,11 @@
     <string name="smart_floating_timer_desc">Sempre visível sobre todas as apps</string>
     <string name="smart_overlay_permission_needed">Requer permissão de sobreposição</string>
     <string name="smart_grant">Permitir</string>
+    <string name="smart_perm_missing_title">Faltam permissões para isto funcionar</string>
+    <string name="smart_perm_usage">Acesso aos dados de uso: sem isto nenhum app é detetado</string>
+    <string name="smart_perm_overlay">Mostrar sobre outros apps: necessário para tapar o app bloqueado</string>
+    <string name="smart_perm_accessibility">Acessibilidade: necessária para bloquear feeds e reels dentro dos apps</string>
+    <string name="smart_perm_location">Localização: necessária para as regras por local e por Wi-Fi</string>
     <string name="smart_opacity">Opacidade: %1$d %%</string>
     <string name="smart_configure">Configurar</string>
     <string name="smart_test_app">App de teste</string>
@@ -26,6 +31,14 @@
     <string name="smart_sleep_window_desc">Não contar uso durante as horas de sono</string>
     <string name="smart_sleep_schedule">Horário de sono</string>
     <string name="smart_sleep_ignore_tracking">Ignorar registo durante o sono</string>
+    <string name="smart_sleep_block_apps">Bloquear apps durante o sono</string>
+    <string name="smart_sleep_block_apps_desc">Só os seus apps essenciais continuarão a abrir</string>
+    <string name="smart_sleep_pick_time">Escolher hora</string>
+    <string name="smart_sleep_hours_label">Hora</string>
+    <string name="smart_sleep_minutes_label">Minutos</string>
+    <string name="smart_sleep_decrease">Diminuir %1$s</string>
+    <string name="smart_sleep_increase">Aumentar %1$s</string>
+    <string name="smart_sleep_invalid_window">O início e o fim não podem ser a mesma hora</string>
 
     <string name="smart_digital_fasting">Jejum digital</string>
     <string name="smart_digital_fasting_desc">Limites rígidos no horário de trabalho</string>
@@ -35,6 +48,17 @@
 
     <string name="smart_nuclear_mode">Modo nuclear</string>
     <string name="smart_nuclear_mode_desc">Bloqueio extremo de 1 a 3 meses</string>
+    <string name="smart_nuclear_pick_apps">Apps que serão bloqueados (%1$d escolhidos)</string>
+    <string name="smart_nuclear_apps_loading">A carregar os seus apps…</string>
+    <string name="smart_nuclear_unlock_title">Desativar o modo nuclear</string>
+    <string name="smart_nuclear_unlock_explain">Para desativar, mantenha o InTime aberto durante %1$d minutos seguidos. Sair do app pausa a espera.</string>
+    <string name="smart_nuclear_unlock_start_wait">Começar a espera</string>
+    <string name="smart_nuclear_unlock_progress">Está em %1$d de %2$d minutos de espera.</string>
+    <string name="smart_nuclear_unlock_keep_open">Mantenha este ecrã aberto: a espera só avança com o app visível.</string>
+    <string name="smart_nuclear_unlock_cancel_request">Cancelar o pedido</string>
+    <string name="smart_nuclear_unlock_ready_title">Já pode desativar</string>
+    <string name="smart_nuclear_unlock_ready_desc">Concluiu a espera. Pode desativar o modo nuclear agora.</string>
+    <string name="smart_nuclear_unlock_deactivate">Desativar agora</string>
     <string name="smart_nuclear_active">MODO NUCLEAR ATIVO</string>
 
     <string name="smart_streak_protection">Proteção de sequências</string>
@@ -48,6 +72,15 @@
     <string name="smart_context_blocking_desc">Regras por horário, localização ou Wi-Fi</string>
     <string name="smart_location_permission_needed">Conceda a permissão de localização para usar o bloqueio por contexto</string>
     <string name="smart_add_context_rule">Adicionar regra de contexto</string>
+    <string name="smart_rule_type">Tipo de regra</string>
+    <string name="smart_rule_type_schedule">Horário</string>
+    <string name="smart_rule_type_location">Local</string>
+    <string name="smart_rule_type_wifi">Wi-Fi</string>
+    <string name="smart_rule_location_current">A regra ficará ancorada na sua localização atual e ativa-se quando voltar.</string>
+    <string name="smart_rule_radius">Raio: %1$d metros</string>
+    <string name="smart_rule_wifi_current">A regra ativa-se enquanto estiver ligado à rede %1$s.</string>
+    <string name="smart_rule_block_completely">Bloquear por completo, sem tempo permitido</string>
+    <string name="smart_comm_no_apps">Escolha pelo menos um app abaixo. Sem apps escolhidos, este modo não bloqueia nada.</string>
 
     <string name="smart_communication_only">Modo só comunicação</string>
     <string name="smart_communication_only_desc">Permite mensagens, bloqueia feeds e reels</string>

@@ -76,7 +76,7 @@ import kotlinx.coroutines.launch
         FocusProfile::class,
         BlockingEvent::class
     ],
-    version = 17,
+    version = 19,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -655,6 +655,43 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * MIGRATION 17 -> 18: `sleepModeBlockApps`.
+         *
+         * El bloqueo de apps durante la ventana de sueño pasa a ser una opción
+         * explícita. Antes se deducía de `sleepModeIgnoreTracking = false`, así
+         * que quien desactivaba el recuento nocturno se encontraba con el
+         * teléfono bloqueado sin haberlo pedido.
+         *
+         * El valor por defecto es 0 (no bloquear) a propósito: mantiene el
+         * acceso de quienes ya tenían la ventana activada y no habían aceptado
+         * ningún bloqueo.
+         */
+        private val MIGRATION_17_18 = object : androidx.room.migration.Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `smart_blocking_config` " +
+                        "ADD COLUMN `sleepModeBlockApps` INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
+        /**
+         * MIGRATION 18 -> 19: `nuclearModeUnlockRequested`.
+         *
+         * El Modo nuclear prometía ser irreversible y su interruptor lo apagaba
+         * al instante. La desactivación pasa ahora por una solicitud explícita
+         * que debe cumplir la espera, y este campo la registra.
+         */
+        private val MIGRATION_18_19 = object : androidx.room.migration.Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `smart_blocking_config` " +
+                        "ADD COLUMN `nuclearModeUnlockRequested` INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -662,7 +699,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "momentum_database"
                 ).addCallback(AppDatabaseCallback(CoroutineScope(Dispatchers.IO + SupervisorJob())))
-                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
+                    .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
                     // CRITICAL FIX: Removido fallbackToDestructiveMigration() que borraba
                     // TODOS los datos del usuario silenciosamente si una migración fallaba.
                     // Solo mantener el downgrade para permitir rollback de versiones.

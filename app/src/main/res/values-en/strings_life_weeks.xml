@@ -27,6 +27,13 @@
     <string name="life_save_image">Save as image</string>
     <string name="life_set_wallpaper">Set as wallpaper</string>
     <string name="life_saved">✅ Settings saved</string>
+    <string name="life_percent_of_life">%1$s%% of your life</string>
+    <string name="life_birthdate_title">📅 Date of birth</string>
+    <string name="life_expectancy_title">⏳ Life expectancy</string>
+    <string name="life_preview_title">👁️ Preview</string>
+    <string name="life_home_widget_title">📱 Home screen widget</string>
+    <string name="life_widget_updated">✅ Widget updated</string>
+    <string name="life_wallpaper_set">✅ Wallpaper set</string>
     <string name="life_drag_widget">📌 Drag the widget onto your screen</string>
     <string name="life_weeks_need_birthdate">To see your life in weeks, set your birth date in your account settings.</string>
     <string name="life_weeks_go_settings">Go to settings</string>

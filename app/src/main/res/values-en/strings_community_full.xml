@@ -58,4 +58,33 @@
         <item quantity="one">Shared %1$d time</item>
         <item quantity="other">Shared %1$d times</item>
     </plurals>
+
+    <!-- Community redesign: labels previously hardcoded in the screen -->
+    <string name="community_tab_leaderboard">Ranking</string>
+    <string name="community_tab_achievements">Achievements</string>
+    <string name="community_min_per_week">min/week</string>
+    <string name="community_min_this_week">%1$d min this week</string>
+    <string name="community_rank_positions">%1$d positions</string>
+    <string name="community_no_friends_ranking">No friends ranked yet</string>
+    <string name="community_no_friends_ranking_desc">Add friends to see their progress</string>
+    <string name="community_unlockable_title">Achievements you can unlock</string>
+    <string name="community_settings_privacy">Privacy</string>
+    <string name="community_settings_notifications">Social notifications</string>
+    <string name="community_possible_streak">7-day streak</string>
+    <string name="community_possible_perfect">Perfect week</string>
+    <string name="community_possible_podium">Weekly top 3</string>
+    <string name="community_possible_nuclear">Nuclear mode</string>
+    <string name="community_request_accepted">Request accepted</string>
+    <string name="community_friend_removed">Friend removed</string>
+    <string name="community_share_chooser">Share achievement</string>
+    <string name="community_generic_error">Error: %1$s</string>
+    <string name="community_close">Close</string>
+    <string name="community_stat_level">Level</string>
+    <string name="community_stat_streak">Streak</string>
+    <string name="community_stat_weekly">This week</string>
+    <string name="community_stat_total">Total focus</string>
+    <plurals name="community_achievements_unlocked_count">
+        <item quantity="one">%1$d achievement unlocked</item>
+        <item quantity="other">%1$d achievements unlocked</item>
+    </plurals>
 </resources>

@@ -311,10 +311,19 @@ class MomentumAccessibilityService : AccessibilityService() {
                     }
 
                     // Caso 3: el uso de hoy alcanzó el límite efectivo.
+                    //
+                    // Si la Ventana de sueño excluye el recuento, el uso
+                    // nocturno ya no aparece en DailyUsageCalculator, así que
+                    // esta vía tampoco puede bloquear por él. Antes esta ruta
+                    // ignoraba por completo la ventana de sueño y podía
+                    // bloquear de madrugada con minutos que el usuario creía
+                    // excluidos.
+                    //
                     // queryEvents es una llamada IPC bloqueante, así que va en
                     // Dispatchers.IO: serviceScope usa Dispatchers.Default, un
                     // pool limitado por número de núcleos que se saturaría con
                     // varias apps disparando comprobaciones a la vez.
+
                     val usedMinutes = withContext(Dispatchers.IO) {
                         DailyUsageCalculator.foregroundMinutesToday(
                             this@MomentumAccessibilityService,

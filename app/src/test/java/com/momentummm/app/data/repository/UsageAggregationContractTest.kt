@@ -37,8 +37,23 @@ class UsageAggregationContractTest {
     fun `el calculador diario usa la mayor de eventos y estadisticas agregadas`() {
         val source = source("com/momentummm/app/data/usage/DailyUsageCalculator.kt")
 
-        assertTrue(source.contains("return maxOf(fromEvents, fromStats)"))
+        assertTrue(source.contains("return maxOf(netFromEvents, netFromStats)"))
         assertTrue(source.contains("?.sumOf { it.totalTimeInForeground }"))
+    }
+
+    @Test
+    fun `la ventana excluida se resta de las dos fuentes antes de comparar`() {
+        // Restarla sólo de los eventos no serviría de nada: `maxOf` volvería a
+        // elegir el agregado, que sigue incluyendo el uso nocturno, y la
+        // Ventana de sueño quedaría anulada en silencio.
+        val source = source("com/momentummm/app/data/usage/DailyUsageCalculator.kt")
+
+        assertTrue(
+            source.contains("val netFromEvents = (events.totalMillis - events.excludedMillis)")
+        )
+        assertTrue(
+            source.contains("val netFromStats = (fromStats - events.excludedMillis)")
+        )
     }
 
     private fun source(relativePath: String): String {

@@ -100,7 +100,16 @@ class DashboardViewModel(
 
                 // Update daily streak
                 val streakEvent = gamificationManager.updateDailyStreak()
-                if (streakEvent.xpGained != 0 || streakEvent.type == GamificationManager.EventType.STREAK_BROKEN) {
+                // Mostrar el aviso in-app también cuando la racha continúa y toca
+                // un hito. Antes solo pasaba con xpGained!=0 o racha rota, así que
+                // llegar a N días no mostraba nada aunque el mensaje ya traía el N
+                // real. La notificación del sistema la emite GamificationManager.
+                val isMilestone = streakEvent.type == GamificationManager.EventType.STREAK_CONTINUED &&
+                    streakEvent.streakDays > 0 &&
+                    gamificationManager.isStreakMilestone(streakEvent.streakDays)
+                if (streakEvent.xpGained != 0 ||
+                    streakEvent.type == GamificationManager.EventType.STREAK_BROKEN ||
+                    isMilestone) {
                     showGamificationEvent(
                         message = streakEvent.message,
                         xp = streakEvent.xpGained,

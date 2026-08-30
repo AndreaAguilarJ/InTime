@@ -6,9 +6,13 @@ import com.momentummm.app.data.dao.SmartBlockingConfigDao
 import com.momentummm.app.data.entity.ContextBlockRule
 import com.momentummm.app.data.entity.SmartBlockingConfig
 import com.momentummm.app.data.manager.SmartBlockingManager
+import com.momentummm.app.data.repository.AppLimitRepository
+import com.momentummm.app.util.ContextSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,7 +20,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SmartBlockingViewModel @Inject constructor(
     private val smartBlockingManager: SmartBlockingManager,
-    private val configDao: SmartBlockingConfigDao
+    private val configDao: SmartBlockingConfigDao,
+    private val appLimitRepository: AppLimitRepository,
+    @ApplicationContext private val appContext: android.content.Context
 ) : ViewModel() {
 
     val config: StateFlow<SmartBlockingConfig> = smartBlockingManager.config
@@ -75,12 +81,16 @@ class SmartBlockingViewModel @Inject constructor(
     
     fun setSleepIgnoreTracking(ignore: Boolean) {
         viewModelScope.launch {
-            val currentConfig = config.value
-            val updatedConfig = currentConfig.copy(
-                sleepModeIgnoreTracking = ignore,
-                updatedAt = System.currentTimeMillis()
-            )
-            configDao.updateConfig(updatedConfig)
+            // Se delega en el manager, que relee la fila vigente antes de
+            // escribirla. Copiar `config.value` aquí podía revertir un cambio
+            // concurrente que el StateFlow aún no reflejaba.
+            smartBlockingManager.setSleepIgnoreTracking(ignore)
+        }
+    }
+
+    fun setSleepBlockApps(block: Boolean) {
+        viewModelScope.launch {
+            smartBlockingManager.setSleepBlockApps(block)
         }
     }
 
@@ -114,7 +124,27 @@ class SmartBlockingViewModel @Inject constructor(
             smartBlockingManager.activateNuclearMode(durationDays, targetApps, waitMinutes)
         }
     }
-    
+
+    /**
+     * Pide desactivar el modo nuclear. NO lo desactiva: abre la espera.
+     *
+     * El interruptor llamaba antes directamente a `deactivateNuclearMode()`, lo
+     * que hacía falsa la promesa de irreversibilidad de la pantalla.
+     */
+    fun requestNuclearUnlock() {
+        viewModelScope.launch {
+            smartBlockingManager.requestNuclearUnlock()
+        }
+    }
+
+    fun cancelNuclearUnlockRequest() {
+        viewModelScope.launch {
+            smartBlockingManager.cancelNuclearUnlockRequest()
+        }
+    }
+
+    fun isNuclearUnlockAvailable(): Boolean = smartBlockingManager.isNuclearUnlockAvailable()
+
     fun deactivateNuclearMode() {
         viewModelScope.launch {
             smartBlockingManager.deactivateNuclearMode()
@@ -124,6 +154,23 @@ class SmartBlockingViewModel @Inject constructor(
     fun getNuclearModeRemainingDays(): Int {
         return smartBlockingManager.getNuclearModeRemainingDays()
     }
+
+    /**
+     * Apps instaladas que el usuario puede elegir para el Modo nuclear.
+     *
+     * El diálogo confirmaba con `emptyList()`, así que el modo se activaba sin
+     * ninguna app objetivo y no bloqueaba absolutamente nada.
+     */
+    val selectableApps: StateFlow<List<Pair<String, String>>> = flow {
+        val apps = runCatching { appLimitRepository.getInstallableApps() }
+            .getOrElse { emptyList() }
+            .map { it.packageName to it.appName }
+        emit(apps)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     // ================== PROTECCIÓN DE RACHAS ==================
     
@@ -179,6 +226,18 @@ class SmartBlockingViewModel @Inject constructor(
             smartBlockingManager.addContextRule(rule)
         }
     }
+
+    /**
+     * Red Wi-Fi y ubicación actuales, para poder crear reglas de contexto.
+     *
+     * Se leen al abrir el diálogo y no de forma continua: mantener una
+     * suscripción a la ubicación desde una pantalla de ajustes gastaría batería
+     * para un dato que sólo se usa en el instante de crear la regla.
+     */
+    fun readContextSnapshot(): Pair<String?, Pair<Double, Double>?> =
+        ContextSnapshot.currentSsid(appContext) to ContextSnapshot.lastKnownLocation(appContext)
+
+    fun hasLocationPermission(): Boolean = ContextSnapshot.hasLocationPermission(appContext)
     
     fun toggleContextRule(ruleId: Int, enabled: Boolean) {
         viewModelScope.launch {

@@ -293,6 +293,14 @@
         <string name="in_app_block_no_results_subtitle">We couldn’t find matches for your search.</string>
         <string name="in_app_block_enabled_count">%1$d of %2$d enabled</string>
         <string name="block_type_reels_desc">Short vertical videos</string>
+    <string name="block_type_reels_name">Reels</string>
+    <string name="block_type_shorts_name">Shorts</string>
+    <string name="block_type_explore_name">Explore</string>
+    <string name="block_type_search_name">Search</string>
+    <string name="block_type_for_you_name">For You</string>
+    <string name="block_type_discover_name">Discover</string>
+    <string name="block_type_stories_name">Stories</string>
+    <string name="block_type_feed_name">Feed</string>
         <string name="block_type_shorts_desc">YouTube short videos</string>
         <string name="block_type_explore_desc">Discover new content</string>
         <string name="block_type_search_desc">Search within the app</string>
@@ -600,6 +608,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_change">Change</string>
     <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
     <string name="action_selected">Selected</string>
     <string name="dialog_logout_message">Are you sure you want to sign out? Your local data will remain synced.</string>
 
@@ -1269,6 +1278,7 @@
     <string name="gam_ev_streak_current">🔥 Streak: %1$d days</string>
     <string name="gam_ev_streak_days">🔥 %1$d-day streak!</string>
     <string name="gam_ev_streak_lost">💔 %1$d-day streak lost. -%2$d XP</string>
+    <string name="gam_ev_grace_day_used">You used a grace day: your %1$d-day streak is safe. %2$d left this week.</string>
     <string name="gam_ev_streak_restart">Start a new streak tomorrow</string>
     <string name="gam_ev_perfect_day">⭐ Perfect day! +%1$d XP</string>
     <string name="gam_ev_level_up">🎉 You reached level %1$d!</string>
@@ -1294,6 +1304,14 @@
     <plurals name="notification_streak_continued_title">
         <item quantity="one">🔥 Streak: %1$d day</item>
         <item quantity="other">🔥 Streak: %1$d days</item>
+    </plurals>
+    <plurals name="notification_streak_milestone_message">
+        <item quantity="one">You are on a %1$d-day streak. Keep the chain going!</item>
+        <item quantity="other">You are on a %1$d-day streak. Keep the chain going!</item>
+    </plurals>
+    <plurals name="notification_streak_record_message">
+        <item quantity="one">New record! %1$d day in a row — your best streak yet.</item>
+        <item quantity="other">New record! %1$d days in a row — your best streak yet.</item>
     </plurals>
     <plurals name="notification_streak_broken_message">
         <item quantity="one">Your %1$d-day streak has been lost. Start again!</item>

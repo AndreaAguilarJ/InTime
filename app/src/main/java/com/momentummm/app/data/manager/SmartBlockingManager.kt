@@ -59,6 +59,14 @@ class SmartBlockingManager @Inject constructor(
     private val configDao: SmartBlockingConfigDao,
     private val contextRuleDao: ContextBlockRuleDao,
     private val inAppBlockRuleDao: InAppBlockRuleDao,
+    // Necesario para garantizar que las filas de reglas in-app existan antes de
+    // intentar activarlas; sin ellas el UPDATE afecta a cero filas en silencio.
+    private val inAppBlockRepository: com.momentummm.app.data.repository.InAppBlockRepository,
+    private val streakProtectionManager: StreakProtectionManager,
+    // Para otorgar el "día perfecto" cuando el día anterior se cerró sin
+    // bloquear ninguna app teniendo límites activos.
+    private val gamificationManager: GamificationManager,
+    private val appLimitRepository: com.momentummm.app.data.repository.AppLimitRepository,
     private val patternEngine: UsagePatternEngine,
     private val adaptiveBlockingManager: AdaptiveBlockingManager,
     private val analyticsEngine: UsageAnalyticsEngine
@@ -87,6 +95,27 @@ class SmartBlockingManager @Inject constructor(
     
     private val _activeContextRules = MutableStateFlow<List<ContextBlockRule>>(emptyList())
     val activeContextRules: StateFlow<List<ContextBlockRule>> = _activeContextRules.asStateFlow()
+
+    /**
+     * Identificadores de reglas de ubicación o Wi-Fi que coinciden ahora mismo.
+     *
+     * Los publica [com.momentummm.app.service.ContextBlockingService], que es
+     * quien tiene el GPS y el SSID. Antes ese servicio guardaba sus
+     * coincidencias en StateFlow internos de una instancia no enlazable
+     * (`onBind = null`), así que nadie las leía nunca: el permiso de ubicación y
+     * el consumo de batería producían monitorización inerte.
+     */
+    private val _contextMatchedRuleIds = MutableStateFlow<Set<Int>>(emptySet())
+
+    /** Llamado por el servicio de contexto cada vez que recalcula coincidencias. */
+    fun publishContextMatches(matchedRuleIds: Set<Int>) {
+        if (_contextMatchedRuleIds.value == matchedRuleIds) return
+        _contextMatchedRuleIds.value = matchedRuleIds
+        Log.d(TAG, "Reglas de contexto coincidentes: $matchedRuleIds")
+        // El monitor consulta activeContextRules en cada ciclo; recalcular aquí
+        // evita esperar hasta el siguiente tick para aplicar el cambio.
+        refreshModeStates()
+    }
     
     // Context rules flow
     val contextRules: Flow<List<ContextBlockRule>> = contextRuleDao.getAllRules()
@@ -235,7 +264,22 @@ class SmartBlockingManager @Inject constructor(
         _isInSleepMode.value = config.isInSleepHours()
         _isInFastingMode.value = config.isInFastingHours()
         _isNuclearModeActive.value = config.isNuclearModeActive()
-        
+
+        // La exclusión del uso nocturno vive en el calculador, que es quien
+        // suma los minutos. Antes `sleepModeIgnoreTracking` solo hacía que el
+        // monitor abandonara una comprobación, así que el uso seguía sumándose
+        // y reaparecía en el total al terminar la ventana.
+        DailyUsageCalculator.setExcludedWindow(
+            if (config.sleepModeEnabled && config.sleepModeIgnoreTracking) {
+                DailyUsageCalculator.ExcludedWindow(
+                    startMinuteOfDay = config.sleepStartHour * 60 + config.sleepStartMinute,
+                    endMinuteOfDay = config.sleepEndHour * 60 + config.sleepEndMinute
+                )
+            } else {
+                null
+            }
+        )
+
         if (config.isNuclearModeActive()) {
             val totalSeconds = config.nuclearModeUnlockWaitMinutes * 60
             val currentSeconds = config.nuclearModeCurrentWaitSeconds
@@ -267,9 +311,27 @@ class SmartBlockingManager @Inject constructor(
                 // cargó (y depuró) desde disco en el init.
                 currentBlockDayStart = today
             } else if (today != currentBlockDayStart) {
+                // El día anterior fue "perfecto" si NINGUNA app llegó a
+                // bloquearse. Se captura ANTES de resetear el conjunto.
+                val dayWasPerfect = _blockedAppsToday.value.isEmpty()
                 resetBlockedAppsForNewDay()
                 currentBlockDayStart = today
                 DailyUsageCalculator.invalidate()
+
+                // Día perfecto: sin bloqueos ayer Y con al menos un límite
+                // activo (si no hay límites, "perfecto" no significa nada).
+                scope.launch {
+                    try {
+                        val hadEnabledLimit = appLimitRepository.getAllLimits().first()
+                            .any { it.isEnabled }
+                        if (dayWasPerfect && hadEnabledLimit) {
+                            gamificationManager.awardPerfectDayBonus()
+                            Log.d(TAG, "🌟 Día perfecto otorgado: sin bloqueos el día anterior")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error evaluando día perfecto", e)
+                    }
+                }
                 
                 // === NUEVO V2: Análisis diario de patrones ===
                 scope.launch {
@@ -284,11 +346,26 @@ class SmartBlockingManager @Inject constructor(
             }
             
             // Actualizar reglas de contexto activas
-            val rules = contextRuleDao.getEnabledRulesSync()
-            _activeContextRules.value = rules.filter { 
-                when (it.contextType) {
-                    "SCHEDULE" -> it.isActiveBySchedule()
-                    else -> false
+            //
+            // El interruptor maestro ahora manda de verdad. Antes este filtro no
+            // consultaba `contextBlockingEnabled`, así que apagar la sección
+            // ocultaba las reglas en pantalla pero seguía aplicándolas.
+            if (!currentConfig.contextBlockingEnabled) {
+                _activeContextRules.value = emptyList()
+            } else {
+                val rules = contextRuleDao.getEnabledRulesSync()
+                val matchedByService = _contextMatchedRuleIds.value
+                _activeContextRules.value = rules.filter {
+                    when (it.contextType) {
+                        "SCHEDULE" -> it.isActiveBySchedule()
+                        // BUG CORREGIDO: `else -> false` descartaba ubicación y
+                        // Wi-Fi, así que ContextBlockingService gastaba GPS cada
+                        // minuto y sus coincidencias no llegaban a ningún
+                        // bloqueo. Ahora el servicio publica qué reglas coinciden
+                        // y aquí se respetan.
+                        "LOCATION", "WIFI" -> it.id in matchedByService
+                        else -> false
+                    }
                 }
             }
             
@@ -440,20 +517,11 @@ class SmartBlockingManager @Inject constructor(
     }
     
     private suspend fun checkAndResetGraceDays(config: SmartBlockingConfig) {
-        val lastReset = config.lastGraceDayResetDate
-        val now = Calendar.getInstance()
-        
-        if (lastReset == null || shouldResetGraceDays(lastReset, now)) {
-            configDao.updateGraceDaysUsed(0, now.time)
-            Log.d(TAG, "Reset grace days for new week")
-        }
-    }
-    
-    private fun shouldResetGraceDays(lastReset: Date, now: Calendar): Boolean {
-        val lastResetCal = Calendar.getInstance().apply { time = lastReset }
-        val currentWeek = now.get(Calendar.WEEK_OF_YEAR)
-        val lastResetWeek = lastResetCal.get(Calendar.WEEK_OF_YEAR)
-        return currentWeek != lastResetWeek || now.get(Calendar.YEAR) != lastResetCal.get(Calendar.YEAR)
+        // Delegado en StreakProtectionManager, que compara el INICIO de semana
+        // normalizado. La versión anterior comparaba WEEK_OF_YEAR y YEAR por
+        // separado: una semana a caballo entre diciembre y enero disparaba dos
+        // reinicios y regalaba días de gracia extra.
+        streakProtectionManager.resetWeeklyGraceDaysIfNeeded()
     }
     
     // ================== VENTANA DE SUEÑO ==================
@@ -464,8 +532,19 @@ class SmartBlockingManager @Inject constructor(
     }
     
     suspend fun setSleepSchedule(startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
-        configDao.setSleepStartTime(startHour, startMinute)
-        configDao.setSleepEndTime(endHour, endMinute)
+        // Una sola escritura en vez de dos. Con dos UPDATE separados el Flow
+        // publicaba un estado intermedio (inicio nuevo + fin viejo) que el
+        // monitor podía leer como una ventana absurda durante ese instante.
+        val currentConfig = configDao.getConfigSync() ?: SmartBlockingConfig.DEFAULT
+        configDao.updateConfig(
+            currentConfig.copy(
+                sleepStartHour = startHour.coerceIn(0, 23),
+                sleepStartMinute = startMinute.coerceIn(0, 59),
+                sleepEndHour = endHour.coerceIn(0, 23),
+                sleepEndMinute = endMinute.coerceIn(0, 59),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
         Log.d(TAG, "Sleep schedule set: $startHour:$startMinute - $endHour:$endMinute")
     }
     
@@ -474,6 +553,45 @@ class SmartBlockingManager @Inject constructor(
         return currentConfig.sleepModeEnabled && 
                currentConfig.sleepModeIgnoreTracking && 
                currentConfig.isInSleepHours()
+    }
+
+    /**
+     * ¿Hay que bloquear las apps no esenciales ahora mismo por la ventana de
+     * sueño?
+     *
+     * Requiere que el usuario lo haya pedido explícitamente. Antes el monitor
+     * decidía esto mirando `!sleepModeIgnoreTracking`, de modo que desactivar
+     * el recuento nocturno bloqueaba el teléfono entero sin avisar.
+     */
+    fun shouldBlockAppsDuringSleep(): Boolean {
+        val currentConfig = _config.value
+        return currentConfig.sleepModeEnabled &&
+               currentConfig.sleepModeBlockApps &&
+               currentConfig.isInSleepHours()
+    }
+
+    suspend fun setSleepBlockApps(block: Boolean) {
+        val currentConfig = configDao.getConfigSync() ?: SmartBlockingConfig.DEFAULT
+        configDao.updateConfig(
+            currentConfig.copy(sleepModeBlockApps = block, updatedAt = System.currentTimeMillis())
+        )
+        Log.d(TAG, "Sleep mode block apps: $block")
+    }
+
+    /**
+     * Guarda «no contar el uso» leyendo la fila vigente de la base, no la copia
+     * cacheada en memoria: una copia obsoleta revertiría cualquier cambio
+     * concurrente al escribir la fila completa.
+     */
+    suspend fun setSleepIgnoreTracking(ignore: Boolean) {
+        val currentConfig = configDao.getConfigSync() ?: SmartBlockingConfig.DEFAULT
+        configDao.updateConfig(
+            currentConfig.copy(
+                sleepModeIgnoreTracking = ignore,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+        Log.d(TAG, "Sleep mode ignore tracking: $ignore")
     }
     
     // ================== AYUNO INTERMITENTE DIGITAL ==================
@@ -491,10 +609,23 @@ class SmartBlockingManager @Inject constructor(
         dailyLimitMinutes: Int,
         daysOfWeek: List<Int>
     ) {
-        configDao.setFastingStartTime(startHour, startMinute)
-        configDao.setFastingEndTime(endHour, endMinute)
-        configDao.setFastingDailyLimit(dailyLimitMinutes)
-        configDao.setFastingDays(daysOfWeek.joinToString(","))
+        // Una sola escritura en vez de cuatro. Con cuatro UPDATE separados el
+        // Flow publicaba combinaciones transitorias de horario viejo y nuevo que
+        // el monitor podía leer como una franja inexistente.
+        val currentConfig = configDao.getConfigSync() ?: SmartBlockingConfig.DEFAULT
+        configDao.updateConfig(
+            currentConfig.copy(
+                fastingStartHour = startHour.coerceIn(0, 23),
+                fastingStartMinute = startMinute.coerceIn(0, 59),
+                fastingEndHour = endHour.coerceIn(0, 23),
+                fastingEndMinute = endMinute.coerceIn(0, 59),
+                // La DAO no validaba: un 0 llegado por otra vía bloquearía la
+                // app en el primer segundo de cada franja.
+                fastingDailyLimitMinutes = dailyLimitMinutes.coerceIn(1, 24 * 60),
+                fastingDaysOfWeek = daysOfWeek.filter { it in 1..7 }.sorted().joinToString(","),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
         Log.d(TAG, "Fasting schedule updated")
     }
     
@@ -522,11 +653,14 @@ class SmartBlockingManager @Inject constructor(
             }
         }
         
-        // Aplicar límite de ayuno si está activo
-        if (currentConfig.isInFastingHours()) {
-            effectiveLimit = minOf(effectiveLimit, currentConfig.fastingDailyLimitMinutes)
-        }
-        
+        // El Ayuno digital ya NO entra aquí.
+        //
+        // Antes reducía el límite diario y, al alcanzarlo, el monitor marcaba la
+        // app como «bloqueada hoy». Esa marca sobrevive a la franja, así que un
+        // límite prometido «durante el ayuno» seguía bloqueando por la noche.
+        // Ahora el ayuno se evalúa aparte, contra el uso dentro de su propia
+        // franja, y deja de aplicar en cuanto la franja termina.
+
         // Aplicar reglas de contexto activas
         for (rule in _activeContextRules.value) {
             if (rule.blockCompletely) {
@@ -540,6 +674,40 @@ class SmartBlockingManager @Inject constructor(
         }
         
         return effectiveLimit
+    }
+
+    /**
+     * ¿Hay que bloquear esta app AHORA por el Ayuno digital?
+     *
+     * Devuelve los minutos de límite de la franja si toca bloquear, o `null` si
+     * no. El bloqueo es deliberadamente efímero: no se persiste como
+     * «bloqueada hoy», así que la app vuelve a abrirse sola cuando la franja
+     * termina, que es lo que promete la pantalla.
+     *
+     * @param hasOwnLimit si la app tiene un límite propio configurado. Cuando
+     *   `fastingApplyToAllApps` es `false`, el ayuno solo afecta a esas apps.
+     */
+    fun fastingBlockLimitMinutes(packageName: String, hasOwnLimit: Boolean): Int? {
+        val currentConfig = _config.value
+        if (!currentConfig.digitalFastingEnabled) return null
+
+        // `fastingApplyToAllApps` se guardaba y nadie lo leía: ponerlo en false
+        // no cambiaba nada.
+        if (!currentConfig.fastingApplyToAllApps && !hasOwnLimit) return null
+
+        val windowStart = currentConfig.fastingWindowStartMillis() ?: return null
+        val limit = currentConfig.fastingDailyLimitMinutes
+        if (limit <= 0) {
+            // Un límite de 0 significa bloqueo total durante la franja.
+            return 0
+        }
+
+        val usedInWindow = DailyUsageCalculator.foregroundMinutesSince(
+            context,
+            packageName,
+            windowStart
+        )
+        return if (usedInWindow >= limit) limit else null
     }
     
     // ================== MODO NUCLEAR ==================
@@ -564,6 +732,7 @@ class SmartBlockingManager @Inject constructor(
             nuclearModeApps = targetApps.joinToString(","),
             nuclearModeUnlockWaitMinutes = unlockWaitMinutes,
             nuclearModeCurrentWaitSeconds = 0,
+            nuclearModeUnlockRequested = false,
             updatedAt = System.currentTimeMillis()
         )
         configDao.updateConfig(updatedConfig)
@@ -573,7 +742,70 @@ class SmartBlockingManager @Inject constructor(
     
     suspend fun deactivateNuclearMode() {
         configDao.setNuclearMode(false, null, null, 0, "")
+        clearNuclearUnlockRequest()
         Log.d(TAG, "Nuclear mode deactivated")
+    }
+
+    /**
+     * Abre una solicitud de desbloqueo: el usuario ha pedido apagar el modo y
+     * empieza a cumplir la espera.
+     *
+     * Antes el interruptor llamaba directamente a [deactivateNuclearMode], así
+     * que la promesa «no podrás desactivarlo hasta que termine» era falsa y la
+     * espera configurada no servía para nada.
+     */
+    suspend fun requestNuclearUnlock() {
+        val currentConfig = configDao.getConfigSync() ?: return
+        if (!currentConfig.isNuclearModeActive()) return
+        if (currentConfig.nuclearModeUnlockRequested) return
+
+        configDao.updateConfig(
+            currentConfig.copy(
+                nuclearModeUnlockRequested = true,
+                // La espera se cumple desde cero: contarla desde la activación
+                // permitiría desbloquear al instante días después.
+                nuclearModeCurrentWaitSeconds = 0,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+        Log.d(TAG, "Nuclear unlock requested; wait reset")
+    }
+
+    /** Cancela la solicitud y devuelve la espera a cero. */
+    suspend fun cancelNuclearUnlockRequest() {
+        val currentConfig = configDao.getConfigSync() ?: return
+        if (!currentConfig.nuclearModeUnlockRequested) return
+        configDao.updateConfig(
+            currentConfig.copy(
+                nuclearModeUnlockRequested = false,
+                nuclearModeCurrentWaitSeconds = 0,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+        Log.d(TAG, "Nuclear unlock request cancelled")
+    }
+
+    private suspend fun clearNuclearUnlockRequest() {
+        val currentConfig = configDao.getConfigSync() ?: return
+        if (!currentConfig.nuclearModeUnlockRequested &&
+            currentConfig.nuclearModeCurrentWaitSeconds == 0
+        ) return
+        configDao.updateConfig(
+            currentConfig.copy(
+                nuclearModeUnlockRequested = false,
+                nuclearModeCurrentWaitSeconds = 0,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    /** ¿Se completó ya la espera y el usuario puede desactivar el modo? */
+    fun isNuclearUnlockAvailable(): Boolean {
+        val currentConfig = _config.value
+        if (!currentConfig.isNuclearModeActive()) return false
+        if (!currentConfig.nuclearModeUnlockRequested) return false
+        val required = currentConfig.nuclearModeUnlockWaitMinutes * 60
+        return required > 0 && currentConfig.nuclearModeCurrentWaitSeconds >= required
     }
     
     /**
@@ -584,6 +816,9 @@ class SmartBlockingManager @Inject constructor(
         val currentConfig = configDao.getConfigSync() ?: return false
         
         if (!currentConfig.isNuclearModeActive()) return false
+        // La espera solo avanza si hay una solicitud abierta. Antes corría
+        // siempre, así que al llegar al umbral no había nada que desbloquear.
+        if (!currentConfig.nuclearModeUnlockRequested) return false
         if (!currentConfig.nuclearModeRequiresAppOpen) return false
         
         val newSeconds = currentConfig.nuclearModeCurrentWaitSeconds + secondsToAdd
@@ -611,7 +846,13 @@ class SmartBlockingManager @Inject constructor(
         val endDate = currentConfig.nuclearModeEndDate ?: return 0
         val now = Date()
         val diff = endDate.time - now.time
-        return (diff / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+        if (diff <= 0) return 0
+        // BUG CORREGIDO: la división entera truncaba hacia abajo, así que un
+        // modo de 30 días mostraba «29 días» un milisegundo después de
+        // activarlo, y el último día entero se anunciaba como 0. Se redondea
+        // hacia arriba: mientras quede algo de tiempo, queda al menos un día.
+        val dayMillis = 1000L * 60 * 60 * 24
+        return ((diff + dayMillis - 1) / dayMillis).toInt()
     }
     
     // ================== PROTECCIÓN DE RACHAS ==================
@@ -625,22 +866,16 @@ class SmartBlockingManager @Inject constructor(
     }
     
     suspend fun useGraceDay(): Boolean {
-        val currentConfig = configDao.getConfigSync() ?: return false
-        
-        if (!currentConfig.streakProtectionEnabled) return false
-        if (!currentConfig.hasGraceDaysAvailable()) return false
-        
-        configDao.updateGraceDaysUsed(
-            currentConfig.graceDaysUsedThisWeek + 1,
-            currentConfig.lastGraceDayResetDate ?: Date()
-        )
-        
-        Log.d(TAG, "Grace day used. Remaining: ${currentConfig.graceDaysPerWeek - currentConfig.graceDaysUsedThisWeek - 1}")
-        return true
+        // Delegado en StreakProtectionManager, que es quien lo consume de
+        // verdad desde GamificationManager al romperse la racha. Antes esta
+        // función existía sin un solo llamador en todo el proyecto.
+        return streakProtectionManager.tryConsumeGraceDay() is
+            StreakProtectionManager.Outcome.GraceUsed
     }
     
     fun getGraceDaysRemaining(): Int {
         val currentConfig = _config.value
+        if (!currentConfig.streakProtectionEnabled) return 0
         return (currentConfig.graceDaysPerWeek - currentConfig.graceDaysUsedThisWeek).coerceAtLeast(0)
     }
     
@@ -648,11 +883,10 @@ class SmartBlockingManager @Inject constructor(
      * Verifica si el usuario está cerca de romper su racha
      */
     fun shouldWarnAboutStreakBreak(currentUsageMinutes: Int, limitMinutes: Int): Boolean {
-        val currentConfig = _config.value
-        if (!currentConfig.warningBeforeStreakBreak) return false
-        
-        val remainingMinutes = limitMinutes - currentUsageMinutes
-        return remainingMinutes in 1..currentConfig.warningMinutesBeforeLimit
+        // Delegado para que exista un solo predicado. La versión anterior no
+        // consultaba `streakProtectionEnabled`, así que avisaba incluso con la
+        // Protección de rachas apagada.
+        return streakProtectionManager.shouldWarn(_config.value, currentUsageMinutes, limitMinutes)
     }
     
     // ================== TIMER FLOTANTE ==================
@@ -674,6 +908,29 @@ class SmartBlockingManager @Inject constructor(
     }
     
     fun isFloatingTimerEnabled(): Boolean = _config.value.floatingTimerEnabled
+
+    /**
+     * ¿Alguna función de Bloqueo inteligente necesita el monitor corriendo?
+     *
+     * BUG QUE ESTO CORRIGE: `AppMonitoringService` sólo se arrancaba si existía
+     * algún límite de app habilitado. Todas las funciones de esta pantalla se
+     * aplican DENTRO de ese monitor, así que un usuario que activaba el Modo
+     * nuclear, Solo comunicación o el Ayuno digital sin haber configurado ningún
+     * límite se quedaba con los interruptores encendidos y ningún efecto, sin
+     * ninguna señal de que faltaba algo.
+     *
+     * Se lee de la base y no de `_config`, porque en el arranque de la app el
+     * colector puede no haber emitido todavía.
+     */
+    suspend fun requiresMonitoringNow(): Boolean {
+        val config = configDao.getConfigSync() ?: return false
+        return config.floatingTimerEnabled ||
+            config.sleepModeBlockApps ||
+            config.digitalFastingEnabled ||
+            config.isNuclearModeActive() ||
+            config.contextBlockingEnabled ||
+            config.communicationOnlyModeEnabled
+    }
     
     // ================== MODO SOLO COMUNICACIÓN ==================
     
@@ -687,10 +944,28 @@ class SmartBlockingManager @Inject constructor(
     
     /**
      * Sincroniza las reglas de bloqueo in-app según la configuración de modo solo comunicación
+     *
+     * BUGS CORREGIDOS:
+     *
+     * 1. Sólo se escribía `true`. Si el usuario desmarcaba «bloquear reels» con
+     *    la app aún seleccionada, la rama del `if` no se ejecutaba y la regla
+     *    seguía encendida: desmarcar no desbloqueaba nada.
+     * 2. Las filas podían no existir. Se siembra antes, de forma idempotente, o
+     *    el `UPDATE` actualizaría cero filas en silencio.
+     * 3. `communicationOnlyBlockStories` no tenía ningún lector; ahora participa
+     *    en el mapeo igual que feed y reels.
+     * 4. `communicationOnlyAllowDMs` tampoco. Se usa para decidir si las reglas
+     *    de búsqueda/DM quedan fuera del bloqueo.
      */
     private suspend fun syncCommunicationOnlyRules(enabled: Boolean, apps: List<String>) {
-        val currentConfig = _config.value
-        
+        // La configuración se relee de la base: `_config` puede ir un paso por
+        // detrás de la escritura que acaba de hacer el llamador.
+        val currentConfig = configDao.getConfigSync() ?: _config.value
+
+        // Garantiza que las filas objetivo existan antes de intentar activarlas.
+        runCatching { inAppBlockRepository.initializeDefaultRules() }
+            .onFailure { Log.e(TAG, "No se pudieron sembrar las reglas in-app", it) }
+
         // Mapeo de paquetes a sus ruleIds para bloqueo de funciones
         val appRulesMapping = mapOf(
             "com.instagram.android" to listOf("instagram_reels", "instagram_explore"),
@@ -704,30 +979,39 @@ class SmartBlockingManager @Inject constructor(
         )
         
         for ((packageName, ruleIds) in appRulesMapping) {
-            val shouldBlock = enabled && apps.contains(packageName)
+            val appSelected = enabled && apps.contains(packageName)
             
             for (ruleId in ruleIds) {
-                // Habilitar o deshabilitar las reglas según la configuración
-                if (shouldBlock) {
-                    // Aplicar configuración de qué bloquear
-                    val shouldEnableRule = when {
-                        ruleId.contains("reels") || ruleId.contains("shorts") -> currentConfig.communicationOnlyBlockReels
-                        ruleId.contains("explore") || ruleId.contains("discover") || ruleId.contains("foryou") -> currentConfig.communicationOnlyBlockFeed
-                        ruleId.contains("search") -> currentConfig.communicationOnlyBlockFeed
-                        else -> true
-                    }
-                    
-                    if (shouldEnableRule) {
-                        inAppBlockRuleDao.updateRuleEnabled(ruleId, true)
-                        Log.d(TAG, "Enabled in-app block rule: $ruleId")
-                    }
-                } else {
-                    // Deshabilitar reglas cuando el modo está desactivado
-                    inAppBlockRuleDao.updateRuleEnabled(ruleId, false)
-                    Log.d(TAG, "Disabled in-app block rule: $ruleId")
-                }
+                // Se calcula SIEMPRE el estado deseado y se escribe, en vez de
+                // escribir sólo cuando toca activar.
+                val shouldEnableRule = appSelected && shouldBlockRule(ruleId, currentConfig)
+                inAppBlockRuleDao.updateRuleEnabled(ruleId, shouldEnableRule)
+                Log.d(TAG, "Regla in-app $ruleId -> $shouldEnableRule")
             }
         }
+    }
+
+    /**
+     * Decide si una regla concreta debe estar activa según las casillas de
+     * contenido que eligió el usuario.
+     */
+    private fun shouldBlockRule(ruleId: String, config: SmartBlockingConfig): Boolean = when {
+        ruleId.contains("reels") || ruleId.contains("shorts") ->
+            config.communicationOnlyBlockReels
+
+        ruleId.contains("stories") ->
+            config.communicationOnlyBlockStories
+
+        ruleId.contains("explore") || ruleId.contains("discover") || ruleId.contains("foryou") ->
+            config.communicationOnlyBlockFeed
+
+        // La búsqueda es la puerta habitual para encontrar una conversación. Si
+        // el usuario pidió permitir mensajes, bloquearla contradiría esa
+        // elección: es el único lector que tiene `communicationOnlyAllowDMs`.
+        ruleId.contains("search") ->
+            config.communicationOnlyBlockFeed && !config.communicationOnlyAllowDMs
+
+        else -> true
     }
     
     /**
@@ -739,26 +1023,23 @@ class SmartBlockingManager @Inject constructor(
         blockReels: Boolean? = null,
         allowDMs: Boolean? = null
     ) {
-        val currentConfig = _config.value
-        val apps = currentConfig.getCommunicationOnlyAppsList()
-        
-        // Actualizar opciones en la base de datos
-        blockFeed?.let {
-            configDao.updateConfig(currentConfig.copy(communicationOnlyBlockFeed = it))
-        }
-        blockStories?.let {
-            configDao.updateConfig(currentConfig.copy(communicationOnlyBlockStories = it))
-        }
-        blockReels?.let {
-            configDao.updateConfig(currentConfig.copy(communicationOnlyBlockReels = it))
-        }
-        allowDMs?.let {
-            configDao.updateConfig(currentConfig.copy(communicationOnlyAllowDMs = it))
-        }
-        
+        // Una sola lectura y una sola escritura. Antes se hacía un
+        // `updateConfig(copy(...))` por opción partiendo siempre de `_config`,
+        // una copia que aún no reflejaba la escritura anterior: cambiar dos
+        // casillas seguidas podía revertir la primera.
+        val currentConfig = configDao.getConfigSync() ?: return
+        val updated = currentConfig.copy(
+            communicationOnlyBlockFeed = blockFeed ?: currentConfig.communicationOnlyBlockFeed,
+            communicationOnlyBlockStories = blockStories ?: currentConfig.communicationOnlyBlockStories,
+            communicationOnlyBlockReels = blockReels ?: currentConfig.communicationOnlyBlockReels,
+            communicationOnlyAllowDMs = allowDMs ?: currentConfig.communicationOnlyAllowDMs,
+            updatedAt = System.currentTimeMillis()
+        )
+        configDao.updateConfig(updated)
+
         // Re-sincronizar reglas si el modo está activo
-        if (currentConfig.communicationOnlyModeEnabled) {
-            syncCommunicationOnlyRules(true, apps)
+        if (updated.communicationOnlyModeEnabled) {
+            syncCommunicationOnlyRules(true, updated.getCommunicationOnlyAppsList())
         }
     }
     

@@ -30,6 +30,11 @@
     <string name="motiv_library">Bibliothèque</string>
 
     <string name="motiv_messages_per_day">Messages par jour</string>
+    <string name="motiv_tone">Ton</string>
+    <string name="motiv_stat_shown">Affichés</string>
+    <string name="motiv_stat_loved">Favoris</string>
+    <string name="motiv_stat_engagement">Engagement</string>
+    <string name="motiv_messages_count">%1$d messages</string>
     <string name="motiv_notification_hours">Plage horaire des notifications</string>
     <string name="motiv_from">De</string>
     <string name="motiv_to">À</string>

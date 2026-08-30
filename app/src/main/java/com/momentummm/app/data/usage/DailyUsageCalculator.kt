@@ -50,6 +50,42 @@ object DailyUsageCalculator {
     private val cache = java.util.concurrent.ConcurrentHashMap<String, CacheEntry>()
 
     /**
+     * Ventana diaria cuyo uso NO debe contarse.
+     *
+     * Se expresa en minutos desde medianoche y admite cruce de medianoche
+     * (23:00–07:00 se guarda como 1380 → 420).
+     */
+    data class ExcludedWindow(val startMinuteOfDay: Int, val endMinuteOfDay: Int)
+
+    /**
+     * Ventana de sueño activa, si el usuario pidió no contar su uso.
+     *
+     * BUG QUE ESTO CORRIGE: la Ventana de sueño prometía «no contar el uso
+     * durante las horas de sueño», pero lo único que hacía era abandonar una
+     * comprobación del monitor. Este calculador seguía sumando TODOS los
+     * eventos del día, así que al terminar la ventana el uso nocturno
+     * reaparecía íntegro en el total y podía bloquear apps por la mañana.
+     *
+     * La fija [com.momentummm.app.data.manager.SmartBlockingManager] cada vez
+     * que la configuración cambia, y es `null` cuando la función está apagada.
+     */
+    @Volatile
+    private var excludedWindow: ExcludedWindow? = null
+
+    /** Ventana excluida vigente. Expuesta para pruebas y diagnóstico. */
+    fun excludedWindow(): ExcludedWindow? = excludedWindow
+
+    /**
+     * Define (o retira, con `null`) la ventana cuyo uso no se cuenta.
+     * Invalida la cache porque el total de cada app cambia al hacerlo.
+     */
+    fun setExcludedWindow(window: ExcludedWindow?) {
+        if (window == excludedWindow) return
+        excludedWindow = window
+        invalidate()
+    }
+
+    /**
      * Inicio del "día" actual respetando la preferencia de `dayStartHour`
      * del usuario (por defecto medianoche).
      *
@@ -158,6 +194,36 @@ object DailyUsageCalculator {
         }
     }
 
+    /**
+     * Minutos en primer plano desde [sinceMillis] hasta ahora, sin cache.
+     *
+     * Lo usa el Ayuno digital: su límite se refiere a lo consumido DENTRO de la
+     * franja, no al total del día. Medirlo contra el día completo hacía que un
+     * usuario que ya había gastado su cuota por la mañana viera la app
+     * bloqueada en el primer segundo del ayuno.
+     *
+     * No se cachea porque `sinceMillis` varía con la franja y una entrada por
+     * paquete no podría distinguir dos ventanas distintas.
+     */
+    fun foregroundMinutesSince(
+        context: Context,
+        packageName: String,
+        sinceMillis: Long
+    ): Int {
+        if (packageName.isEmpty()) return 0
+        val now = System.currentTimeMillis()
+        if (sinceMillis >= now) return 0
+
+        val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return 0
+
+        // Sólo la vía de eventos sirve aquí: `queryUsageStats` agrega por
+        // buckets diarios y no permite acotar una franja arbitraria.
+        val breakdown = foregroundFromEvents(manager, packageName, sinceMillis, now)
+        val net = (breakdown.totalMillis - breakdown.excludedMillis).coerceAtLeast(0L)
+        return (net / 60_000L).toInt()
+    }
+
     private fun computeForegroundMillis(
         context: Context,
         packageName: String,
@@ -172,27 +238,45 @@ object DailyUsageCalculator {
         // límite del día una de las dos puede no tener datos todavía, y
         // subestimar el uso significa no bloquear. Nunca `find`: hay varios
         // buckets por paquete y hay que sumarlos todos.
-        val fromEvents = millisFromEvents(manager, packageName, dayStart, now)
+        val events = foregroundFromEvents(manager, packageName, dayStart, now)
         val fromStats = millisFromAggregatedStats(manager, packageName, dayStart, now)
-        return maxOf(fromEvents, fromStats)
+
+        // La ventana excluida se descuenta de LAS DOS fuentes. Restarla solo de
+        // los eventos no serviría: `maxOf` volvería a elegir el agregado, que
+        // sigue incluyendo el uso nocturno, y la exclusión quedaría anulada.
+        val netFromEvents = (events.totalMillis - events.excludedMillis).coerceAtLeast(0L)
+        val netFromStats = (fromStats - events.excludedMillis).coerceAtLeast(0L)
+        return maxOf(netFromEvents, netFromStats)
     }
+
+    /** Uso total y porción caída dentro de la ventana excluida. */
+    private data class ForegroundBreakdown(val totalMillis: Long, val excludedMillis: Long)
 
     /**
      * Suma los intervalos RESUMED → PAUSED/STOPPED del paquete.
      * Si la app sigue en primer plano, cuenta hasta [now].
      */
-    private fun millisFromEvents(
+    private fun foregroundFromEvents(
         manager: UsageStatsManager,
         packageName: String,
         dayStart: Long,
         now: Long
-    ): Long {
+    ): ForegroundBreakdown {
+        val window = excludedWindow
         return try {
-            val events = manager.queryEvents(dayStart, now) ?: return 0L
+            val events = manager.queryEvents(dayStart, now)
+                ?: return ForegroundBreakdown(0L, 0L)
             val event = UsageEvents.Event()
 
             var total = 0L
+            var excluded = 0L
             var resumedAt = 0L
+
+            fun closeInterval(from: Long, to: Long) {
+                if (to <= from) return
+                total += to - from
+                if (window != null) excluded += excludedOverlapMillis(from, to, window)
+            }
 
             while (events.hasNextEvent()) {
                 events.getNextEvent(event)
@@ -206,8 +290,8 @@ object DailyUsageCalculator {
 
                     UsageEvents.Event.ACTIVITY_PAUSED,
                     UsageEvents.Event.ACTIVITY_STOPPED -> {
-                        if (resumedAt != 0L && event.timeStamp > resumedAt) {
-                            total += event.timeStamp - resumedAt
+                        if (resumedAt != 0L) {
+                            closeInterval(resumedAt, event.timeStamp)
                         }
                         resumedAt = 0L
                     }
@@ -215,15 +299,65 @@ object DailyUsageCalculator {
             }
 
             // Intervalo abierto: la app está en primer plano ahora mismo.
-            if (resumedAt != 0L && now > resumedAt) {
-                total += now - resumedAt
+            if (resumedAt != 0L) {
+                closeInterval(resumedAt, now)
             }
 
-            total
+            ForegroundBreakdown(total, excluded)
         } catch (e: Exception) {
             Log.e(TAG, "queryEvents falló para $packageName", e)
-            0L
+            ForegroundBreakdown(0L, 0L)
         }
+    }
+
+    /**
+     * Milisegundos de `[from, to)` que caen dentro de la ventana diaria dada.
+     *
+     * La ventana se repite cada día y puede cruzar medianoche, así que se
+     * comprueban las apariciones del día anterior, el actual y el siguiente:
+     * un intervalo de uso puede empezar antes de la ventana y terminar dentro.
+     *
+     * El desplazamiento dentro del día se calcula con minutos de 60 s. El
+     * inicio de cada día sí usa [Calendar], por lo que solo el día concreto de
+     * un cambio de horario de verano puede desviarse una hora; el resto es
+     * exacto.
+     *
+     * `internal` en lugar de `private` para poder probar la aritmética sin
+     * necesidad de un `UsageStatsManager` real.
+     */
+    internal fun excludedOverlapMillis(from: Long, to: Long, window: ExcludedWindow): Long {
+        if (to <= from) return 0L
+        // Inicio y fin iguales describen una ventana vacía, no un día completo.
+        if (window.startMinuteOfDay == window.endMinuteOfDay) return 0L
+
+        val midnight = Calendar.getInstance().apply {
+            timeInMillis = from
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        var overlap = 0L
+        for (dayOffset in -1..1) {
+            val dayMillis = (midnight.clone() as Calendar)
+                .apply { add(Calendar.DAY_OF_YEAR, dayOffset) }
+                .timeInMillis
+
+            val windowStart = dayMillis + window.startMinuteOfDay * 60_000L
+            val endMinute = if (window.endMinuteOfDay > window.startMinuteOfDay) {
+                window.endMinuteOfDay
+            } else {
+                // Cruza medianoche: termina al día siguiente.
+                window.endMinuteOfDay + 24 * 60
+            }
+            val windowEnd = dayMillis + endMinute * 60_000L
+
+            val start = maxOf(from, windowStart)
+            val end = minOf(to, windowEnd)
+            if (end > start) overlap += end - start
+        }
+        return overlap
     }
 
     private fun millisFromAggregatedStats(

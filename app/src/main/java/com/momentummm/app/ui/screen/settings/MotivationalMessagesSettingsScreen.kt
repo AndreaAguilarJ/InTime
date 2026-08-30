@@ -276,7 +276,7 @@ fun MotivationalMessagesSettingsScreen(
                     ) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Tono", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.motiv_tone), style = MaterialTheme.typography.titleMedium)
                                 Spacer(modifier = Modifier.height(12.dp))
                                 ToneSelector(
                                     enabledTones = uiState.preferences.getEnabledTonesList(),
@@ -427,9 +427,9 @@ private fun MotivationalStatsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem("$totalShown", "Mostrados", "📬")
-                StatItem("$totalLoved", "Favoritos", "❤️")
-                StatItem("${(openRate * 100).toInt()}%", "Interacción", "📊")
+                StatItem("$totalShown", stringResource(R.string.motiv_stat_shown), "📬")
+                StatItem("$totalLoved", stringResource(R.string.motiv_stat_loved), "❤️")
+                StatItem("${(openRate * 100).toInt()}%", stringResource(R.string.motiv_stat_engagement), "📊")
             }
         }
     }
@@ -462,7 +462,7 @@ private fun FrequencySlider(value: Int, onValueChange: (Int) -> Unit) {
         ) {
             Text(stringResource(R.string.motiv_messages_per_day), style = MaterialTheme.typography.bodyMedium)
             Text(
-                "$value mensajes",
+                stringResource(R.string.motiv_messages_count, value),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

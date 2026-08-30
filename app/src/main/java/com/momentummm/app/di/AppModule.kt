@@ -123,9 +123,12 @@ object AppModule {
     @Singleton
     fun provideGamificationManager(
         database: AppDatabase,
+        // Hilt lo construye solo (tiene @Inject constructor y depende sólo del
+        // DAO de configuración), así que basta pedirlo aquí.
+        streakProtectionManager: com.momentummm.app.data.manager.StreakProtectionManager,
         @ApplicationContext context: Context
     ): GamificationManager {
-        return GamificationManager(database.userDao(), context)
+        return GamificationManager(database.userDao(), streakProtectionManager, context)
     }
 
     @Provides

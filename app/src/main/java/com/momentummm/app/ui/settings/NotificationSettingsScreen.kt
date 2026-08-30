@@ -15,15 +15,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import android.content.Context
 import com.momentummm.app.R
+import com.momentummm.app.data.notificationPrefs
 
-private val Context.notificationPrefs: DataStore<Preferences> by preferencesDataStore(name = "notification_preferences")
+// El delegado del DataStore ya NO se declara aquí. Antes existía una segunda
+// instancia `by preferencesDataStore(name = "notification_preferences")` que,
+// junto con la de NotificationManager, hacía que Android lanzara
+// IllegalStateException («multiple DataStores active for the same file») y
+// tumbara la app al abrir esta pantalla. Ahora se importa el delegado único.
 
 object NotificationPrefsKeys {
     val APP_LIMITS_ENABLED = booleanPreferencesKey("app_limits_notifications")

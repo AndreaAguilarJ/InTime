@@ -27,6 +27,13 @@
     <string name="life_save_image">Als Bild speichern</string>
     <string name="life_set_wallpaper">Als Hintergrund festlegen</string>
     <string name="life_saved">✅ Einstellungen gespeichert</string>
+    <string name="life_percent_of_life">%1$s%% deines Lebens</string>
+    <string name="life_birthdate_title">📅 Geburtsdatum</string>
+    <string name="life_expectancy_title">⏳ Lebenserwartung</string>
+    <string name="life_preview_title">👁️ Vorschau</string>
+    <string name="life_home_widget_title">📱 Startbildschirm-Widget</string>
+    <string name="life_widget_updated">✅ Widget aktualisiert</string>
+    <string name="life_wallpaper_set">✅ Hintergrund festgelegt</string>
     <string name="life_drag_widget">📌 Zieh das Widget auf deinen Bildschirm</string>
     <string name="life_weeks_need_birthdate">Um dein Leben in Wochen zu sehen, lege dein Geburtsdatum in den Kontoeinstellungen fest.</string>
     <string name="life_weeks_go_settings">Zu den Einstellungen</string>

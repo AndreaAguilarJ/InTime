@@ -163,9 +163,9 @@ class CommunityViewModel @Inject constructor(
         viewModelScope.launch {
             val result = communityManager.acceptFriendRequest(userId)
             result.onSuccess {
-                _errorMessage.value = "✅ Solicitud aceptada"
+                _errorMessage.value = context.getString(R.string.community_request_accepted)
             }.onFailure { e ->
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -175,7 +175,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 communityManager.rejectFriendRequest(userId)
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -185,12 +185,12 @@ class CommunityViewModel @Inject constructor(
             try {
                 val result = communityManager.removeFriend(userId)
                 result.onSuccess {
-                    _errorMessage.value = "Amigo eliminado"
+                    _errorMessage.value = context.getString(R.string.community_friend_removed)
                 }.onFailure { e ->
-                    _errorMessage.value = "❌ Error: ${e.message}"
+                    _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -208,14 +208,14 @@ class CommunityViewModel @Inject constructor(
                     type = "text/plain"
                 }
                 
-                val shareIntent = Intent.createChooser(sendIntent, "Compartir logro")
+                val shareIntent = Intent.createChooser(sendIntent, context.getString(R.string.community_share_chooser))
                 shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(shareIntent)
                 
                 // Recargar logros para actualizar UI
                 loadAchievements()
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error al compartir: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -227,7 +227,7 @@ class CommunityViewModel @Inject constructor(
             try {
                 communityManager.setShowInGlobalLeaderboard(show)
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -239,7 +239,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(showStreakToFriends = show))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -251,7 +251,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(showFocusTimeToFriends = show))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -263,7 +263,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(notifyFriendRequests = notify))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -275,7 +275,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(notifyFriendAchievements = notify))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }
@@ -287,7 +287,7 @@ class CommunityViewModel @Inject constructor(
                     communityManager.updateSettings(it.copy(notifyLeaderboardChanges = notify))
                 }
             } catch (e: Exception) {
-                _errorMessage.value = "❌ Error: ${e.message}"
+                _errorMessage.value = context.getString(R.string.community_generic_error, e.message ?: "")
             }
         }
     }

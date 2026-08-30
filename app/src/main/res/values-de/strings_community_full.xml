@@ -58,4 +58,33 @@
         <item quantity="one">%1$d Mal geteilt</item>
         <item quantity="other">%1$d Mal geteilt</item>
     </plurals>
+
+    <!-- Community-Redesign: Beschriftungen, die zuvor im Bildschirm hartkodiert waren -->
+    <string name="community_tab_leaderboard">Rangliste</string>
+    <string name="community_tab_achievements">Erfolge</string>
+    <string name="community_min_per_week">Min./Wo.</string>
+    <string name="community_min_this_week">%1$d Min. diese Woche</string>
+    <string name="community_rank_positions">%1$d Plätze</string>
+    <string name="community_no_friends_ranking">Noch keine Freunde im Ranking</string>
+    <string name="community_no_friends_ranking_desc">Füge Freunde hinzu, um ihren Fortschritt zu sehen</string>
+    <string name="community_unlockable_title">Erfolge zum Freischalten</string>
+    <string name="community_settings_privacy">Datenschutz</string>
+    <string name="community_settings_notifications">Soziale Benachrichtigungen</string>
+    <string name="community_possible_streak">7-Tage-Serie</string>
+    <string name="community_possible_perfect">Perfekte Woche</string>
+    <string name="community_possible_podium">Wöchentliche Top 3</string>
+    <string name="community_possible_nuclear">Nuklearmodus</string>
+    <string name="community_request_accepted">Anfrage angenommen</string>
+    <string name="community_friend_removed">Freund entfernt</string>
+    <string name="community_share_chooser">Erfolg teilen</string>
+    <string name="community_generic_error">Fehler: %1$s</string>
+    <string name="community_close">Schließen</string>
+    <string name="community_stat_level">Level</string>
+    <string name="community_stat_streak">Serie</string>
+    <string name="community_stat_weekly">Diese Woche</string>
+    <string name="community_stat_total">Fokus gesamt</string>
+    <plurals name="community_achievements_unlocked_count">
+        <item quantity="one">%1$d Erfolg freigeschaltet</item>
+        <item quantity="other">%1$d Erfolge freigeschaltet</item>
+    </plurals>
 </resources>

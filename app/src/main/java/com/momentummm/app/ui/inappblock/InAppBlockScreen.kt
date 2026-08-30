@@ -394,7 +394,7 @@ fun InAppBlockRuleItem(
         },
         headlineContent = {
             Text(
-                text = rule.featureName,
+                text = getBlockTypeName(rule.blockType, rule.featureName),
                 fontWeight = FontWeight.Medium,
                 color = if (rule.isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -497,5 +497,26 @@ fun getBlockTypeDescription(blockType: BlockType) = when (blockType) {
     BlockType.STORIES -> stringResource(R.string.block_type_stories_desc)
     BlockType.FEED -> stringResource(R.string.block_type_feed_desc)
     BlockType.CUSTOM -> stringResource(R.string.block_type_custom_desc)
+}
+
+/**
+ * Nombre localizado del tipo de bloqueo.
+ *
+ * Se usa en vez de `rule.featureName` porque ese campo se sembró con textos en
+ * español ("Explorar", "Búsqueda") guardados en la base, que aparecían tal cual
+ * en una interfaz por lo demás en inglés. Para el tipo CUSTOM, que no tiene
+ * nombre predefinido, se conserva el featureName que el usuario haya escrito.
+ */
+@Composable
+fun getBlockTypeName(blockType: BlockType, fallback: String) = when (blockType) {
+    BlockType.REELS -> stringResource(R.string.block_type_reels_name)
+    BlockType.SHORTS -> stringResource(R.string.block_type_shorts_name)
+    BlockType.EXPLORE -> stringResource(R.string.block_type_explore_name)
+    BlockType.SEARCH -> stringResource(R.string.block_type_search_name)
+    BlockType.FOR_YOU -> stringResource(R.string.block_type_for_you_name)
+    BlockType.DISCOVER -> stringResource(R.string.block_type_discover_name)
+    BlockType.STORIES -> stringResource(R.string.block_type_stories_name)
+    BlockType.FEED -> stringResource(R.string.block_type_feed_name)
+    BlockType.CUSTOM -> fallback
 }
 

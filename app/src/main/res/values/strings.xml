@@ -446,6 +446,7 @@
     <string name="action_cancel">Cancelar</string>
     <string name="action_change">Cambiar</string>
     <string name="action_back">Volver</string>
+    <string name="action_save">Guardar</string>
     <string name="action_selected">Seleccionado</string>
     <string name="dialog_logout_message">¿Estás seguro de que quieres cerrar sesión? Tus datos locales se mantendrán sincronizados.</string>
     
@@ -593,6 +594,14 @@
     <string name="in_app_block_no_results_subtitle">No encontramos coincidencias para tu búsqueda.</string>
     <string name="in_app_block_enabled_count">%1$d de %2$d activas</string>
     <string name="block_type_reels_desc">Videos cortos en formato vertical</string>
+    <string name="block_type_reels_name">Reels</string>
+    <string name="block_type_shorts_name">Shorts</string>
+    <string name="block_type_explore_name">Explorar</string>
+    <string name="block_type_search_name">Búsqueda</string>
+    <string name="block_type_for_you_name">Para ti</string>
+    <string name="block_type_discover_name">Descubrir</string>
+    <string name="block_type_stories_name">Historias</string>
+    <string name="block_type_feed_name">Feed</string>
     <string name="block_type_shorts_desc">Videos cortos de YouTube</string>
     <string name="block_type_explore_desc">Descubre contenido nuevo</string>
     <string name="block_type_search_desc">Búsqueda dentro de la app</string>
@@ -1290,6 +1299,7 @@
     <string name="gam_ev_streak_current">🔥 Racha: %1$d días</string>
     <string name="gam_ev_streak_days">🔥 ¡%1$d días de racha!</string>
     <string name="gam_ev_streak_lost">💔 Racha de %1$d días perdida. -%2$d XP</string>
+    <string name="gam_ev_grace_day_used">Usaste un día de gracia: tu racha de %1$d días sigue en pie. Te quedan %2$d esta semana.</string>
     <string name="gam_ev_streak_restart">Inicia una nueva racha mañana</string>
     <string name="gam_ev_perfect_day">⭐ ¡Día perfecto! +%1$d XP</string>
     <string name="gam_ev_level_up">🎉 ¡Subiste a nivel %1$d!</string>
@@ -1315,6 +1325,14 @@
     <plurals name="notification_streak_continued_title">
         <item quantity="one">🔥 Racha: %1$d día</item>
         <item quantity="other">🔥 Racha: %1$d días</item>
+    </plurals>
+    <plurals name="notification_streak_milestone_message">
+        <item quantity="one">Llevas %1$d día seguido cuidando tu tiempo. ¡No rompas la cadena!</item>
+        <item quantity="other">Llevas %1$d días seguidos cuidando tu tiempo. ¡No rompas la cadena!</item>
+    </plurals>
+    <plurals name="notification_streak_record_message">
+        <item quantity="one">¡Nuevo récord! %1$d día seguido, tu mejor racha hasta ahora.</item>
+        <item quantity="other">¡Nuevo récord! %1$d días seguidos, tu mejor racha hasta ahora.</item>
     </plurals>
     <plurals name="notification_streak_broken_message">
         <item quantity="one">Tu racha de %1$d día se ha perdido. ¡Empieza de nuevo!</item>

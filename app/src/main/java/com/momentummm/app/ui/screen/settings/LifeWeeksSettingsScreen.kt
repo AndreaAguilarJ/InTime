@@ -156,7 +156,7 @@ fun LifeWeeksSettingsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
+                        Icon(Icons.Default.ArrowBack, stringResource(R.string.action_back))
                     }
                 },
                 actions = {
@@ -219,7 +219,7 @@ fun LifeWeeksSettingsScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Icon(Icons.Default.Save, "Guardar")
+                            Icon(Icons.Default.Save, stringResource(R.string.action_save))
                         }
                     }
                 }
@@ -307,7 +307,7 @@ fun LifeWeeksSettingsScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             Text(
-                                text = "${String.format("%.1f", data.progressPercentage)}% de tu vida",
+                                text = stringResource(R.string.life_percent_of_life, String.format("%.1f", data.progressPercentage)),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                             )
@@ -327,7 +327,7 @@ fun LifeWeeksSettingsScreen(
             // === FECHA DE NACIMIENTO ===
             item {
                 SettingSectionCard(
-                    title = "📅 Fecha de Nacimiento",
+                    title = stringResource(R.string.life_birthdate_title),
                     icon = Icons.Default.Cake
                 ) {
                     OutlinedCard(
@@ -369,7 +369,7 @@ fun LifeWeeksSettingsScreen(
             // === EXPECTATIVA DE VIDA ===
             item {
                 SettingSectionCard(
-                    title = "⏳ Expectativa de Vida",
+                    title = stringResource(R.string.life_expectancy_title),
                     icon = Icons.Default.Timeline
                 ) {
                     Column {
@@ -457,7 +457,7 @@ fun LifeWeeksSettingsScreen(
             // === PREVISUALIZACIÓN ===
             item {
                 SettingSectionCard(
-                    title = "👁️ Vista Previa",
+                    title = stringResource(R.string.life_preview_title),
                     icon = Icons.Default.Preview
                 ) {
                     Card(
@@ -485,7 +485,7 @@ fun LifeWeeksSettingsScreen(
             // === WIDGET ===
             item {
                 SettingSectionCard(
-                    title = "📱 Widget para Pantalla de Inicio",
+                    title = stringResource(R.string.life_home_widget_title),
                     icon = Icons.Default.Widgets
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -538,7 +538,7 @@ fun LifeWeeksSettingsScreen(
                                         // Actualizar el widget con la configuración actual
                                         UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
                                         LifeWeeksWidget.updateAllWidgets(context)
-                                        Toast.makeText(context, "✅ Widget actualizado", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_widget_updated), Toast.LENGTH_SHORT).show()
                                     } catch (e: Exception) {
                                         Toast.makeText(context, context.getString(R.string.life_widget_update_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
                                     }
@@ -599,7 +599,7 @@ fun LifeWeeksSettingsScreen(
                                             backgroundColor = android.graphics.Color.parseColor(backgroundColor)
                                         )
                                         com.momentummm.app.util.WallpaperGenerator.setAsWallpaper(context, bitmap)
-                                        Toast.makeText(context, "✅ Fondo de pantalla establecido", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.life_wallpaper_set), Toast.LENGTH_SHORT).show()
                                     } ?: run {
                                         Toast.makeText(context, context.getString(R.string.life_set_birth_date_first), Toast.LENGTH_SHORT).show()
                                     }

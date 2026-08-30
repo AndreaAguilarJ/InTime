@@ -58,4 +58,33 @@
         <item quantity="one">Partilhado %1$d vez</item>
         <item quantity="other">Partilhado %1$d vezes</item>
     </plurals>
+
+    <!-- Redesign da Comunidade: rótulos antes fixos no código da tela -->
+    <string name="community_tab_leaderboard">Ranking</string>
+    <string name="community_tab_achievements">Conquistas</string>
+    <string name="community_min_per_week">min/sem</string>
+    <string name="community_min_this_week">%1$d min esta semana</string>
+    <string name="community_rank_positions">%1$d posições</string>
+    <string name="community_no_friends_ranking">Nenhum amigo no ranking</string>
+    <string name="community_no_friends_ranking_desc">Adicione amigos para ver o progresso</string>
+    <string name="community_unlockable_title">Conquistas para desbloquear</string>
+    <string name="community_settings_privacy">Privacidade</string>
+    <string name="community_settings_notifications">Notificações sociais</string>
+    <string name="community_possible_streak">Sequência de 7 dias</string>
+    <string name="community_possible_perfect">Semana perfeita</string>
+    <string name="community_possible_podium">Top 3 semanal</string>
+    <string name="community_possible_nuclear">Modo nuclear</string>
+    <string name="community_request_accepted">Solicitação aceita</string>
+    <string name="community_friend_removed">Amigo removido</string>
+    <string name="community_share_chooser">Compartilhar conquista</string>
+    <string name="community_generic_error">Erro: %1$s</string>
+    <string name="community_close">Fechar</string>
+    <string name="community_stat_level">Nível</string>
+    <string name="community_stat_streak">Sequência</string>
+    <string name="community_stat_weekly">Esta semana</string>
+    <string name="community_stat_total">Foco total</string>
+    <plurals name="community_achievements_unlocked_count">
+        <item quantity="one">%1$d conquista desbloqueada</item>
+        <item quantity="other">%1$d conquistas desbloqueadas</item>
+    </plurals>
 </resources>

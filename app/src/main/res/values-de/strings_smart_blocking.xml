@@ -14,6 +14,11 @@
     <string name="smart_floating_timer_desc">Immer über allen Apps sichtbar</string>
     <string name="smart_overlay_permission_needed">Overlay-Berechtigung erforderlich</string>
     <string name="smart_grant">Erlauben</string>
+    <string name="smart_perm_missing_title">Es fehlen Berechtigungen, damit das funktioniert</string>
+    <string name="smart_perm_usage">Nutzungszugriff: ohne ihn wird keine App erkannt</string>
+    <string name="smart_perm_overlay">Über anderen Apps anzeigen: nötig, um die gesperrte App zu verdecken</string>
+    <string name="smart_perm_accessibility">Bedienungshilfen: nötig, um Feeds und Reels in Apps zu sperren</string>
+    <string name="smart_perm_location">Standort: nötig für Regeln nach Ort und WLAN</string>
     <string name="smart_opacity">Deckkraft: %1$d %%</string>
     <string name="smart_configure">Einrichten</string>
     <string name="smart_test_app">Test-App</string>
@@ -26,6 +31,14 @@
     <string name="smart_sleep_window_desc">Nutzung während der Schlafzeit nicht zählen</string>
     <string name="smart_sleep_schedule">Schlafzeiten</string>
     <string name="smart_sleep_ignore_tracking">Erfassung im Schlaf ignorieren</string>
+    <string name="smart_sleep_block_apps">Apps während des Schlafs sperren</string>
+    <string name="smart_sleep_block_apps_desc">Nur deine wichtigen Apps lassen sich weiter öffnen</string>
+    <string name="smart_sleep_pick_time">Uhrzeit wählen</string>
+    <string name="smart_sleep_hours_label">Stunde</string>
+    <string name="smart_sleep_minutes_label">Minuten</string>
+    <string name="smart_sleep_decrease">%1$s verringern</string>
+    <string name="smart_sleep_increase">%1$s erhöhen</string>
+    <string name="smart_sleep_invalid_window">Beginn und Ende dürfen nicht gleich sein</string>
 
     <string name="smart_digital_fasting">Digitales Fasten</string>
     <string name="smart_digital_fasting_desc">Strenge Limits während der Arbeitszeit</string>
@@ -35,6 +48,17 @@
 
     <string name="smart_nuclear_mode">Nuklear-Modus</string>
     <string name="smart_nuclear_mode_desc">Extreme Sperre von 1 bis 3 Monaten</string>
+    <string name="smart_nuclear_pick_apps">Apps, die gesperrt werden (%1$d ausgewählt)</string>
+    <string name="smart_nuclear_apps_loading">Deine Apps werden geladen…</string>
+    <string name="smart_nuclear_unlock_title">Nuklearmodus deaktivieren</string>
+    <string name="smart_nuclear_unlock_explain">Zum Deaktivieren musst du InTime %1$d Minuten lang offen halten. Verlässt du die App, pausiert die Wartezeit.</string>
+    <string name="smart_nuclear_unlock_start_wait">Wartezeit starten</string>
+    <string name="smart_nuclear_unlock_progress">Du bist bei %1$d von %2$d Minuten.</string>
+    <string name="smart_nuclear_unlock_keep_open">Lass diesen Bildschirm offen: die Wartezeit läuft nur, wenn die App sichtbar ist.</string>
+    <string name="smart_nuclear_unlock_cancel_request">Anfrage abbrechen</string>
+    <string name="smart_nuclear_unlock_ready_title">Du kannst ihn jetzt deaktivieren</string>
+    <string name="smart_nuclear_unlock_ready_desc">Du hast die Wartezeit erfüllt. Du kannst den Nuklearmodus jetzt deaktivieren.</string>
+    <string name="smart_nuclear_unlock_deactivate">Jetzt deaktivieren</string>
     <string name="smart_nuclear_active">NUKLEAR-MODUS AKTIV</string>
 
     <string name="smart_streak_protection">Serienschutz</string>
@@ -48,6 +72,15 @@
     <string name="smart_context_blocking_desc">Regeln nach Zeit, Ort oder WLAN</string>
     <string name="smart_location_permission_needed">Erteile die Standortberechtigung, um die Kontextsperre zu nutzen</string>
     <string name="smart_add_context_rule">Kontextregel hinzufügen</string>
+    <string name="smart_rule_type">Regeltyp</string>
+    <string name="smart_rule_type_schedule">Zeitplan</string>
+    <string name="smart_rule_type_location">Ort</string>
+    <string name="smart_rule_type_wifi">WLAN</string>
+    <string name="smart_rule_location_current">Die Regel wird an deinen aktuellen Standort gebunden und greift, wenn du zurückkehrst.</string>
+    <string name="smart_rule_radius">Radius: %1$d Meter</string>
+    <string name="smart_rule_wifi_current">Die Regel greift, solange du mit %1$s verbunden bist.</string>
+    <string name="smart_rule_block_completely">Vollständig sperren, ohne Restzeit</string>
+    <string name="smart_comm_no_apps">Wähle unten mindestens eine App. Ohne Auswahl sperrt dieser Modus nichts.</string>
 
     <string name="smart_communication_only">Nur-Kommunikation-Modus</string>
     <string name="smart_communication_only_desc">Erlaubt Nachrichten, sperrt Feeds und Reels</string>

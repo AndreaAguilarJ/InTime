@@ -430,6 +430,7 @@
     <string name="action_cancel">Annuler</string>
     <string name="action_change">Changer</string>
     <string name="action_back">Retour</string>
+    <string name="action_save">Enregistrer</string>
     <string name="action_selected">Sélectionné</string>
     <string name="dialog_logout_message">Êtes-vous sûr de vouloir vous déconnecter ? Vos données locales resteront synchronisées.</string>
 
@@ -491,6 +492,14 @@
     <string name="in_app_block_no_results_subtitle">Aucune correspondance trouvée pour votre recherche.</string>
     <string name="in_app_block_enabled_count">%1$d sur %2$d actives</string>
     <string name="block_type_reels_desc">Vidéos courtes en format vertical</string>
+    <string name="block_type_reels_name">Reels</string>
+    <string name="block_type_shorts_name">Shorts</string>
+    <string name="block_type_explore_name">Explorer</string>
+    <string name="block_type_search_name">Recherche</string>
+    <string name="block_type_for_you_name">Pour toi</string>
+    <string name="block_type_discover_name">Découvrir</string>
+    <string name="block_type_stories_name">Stories</string>
+    <string name="block_type_feed_name">Fil</string>
     <string name="block_type_shorts_desc">Vidéos courtes de YouTube</string>
     <string name="block_type_explore_desc">Découvrez du nouveau contenu</string>
     <string name="block_type_search_desc">Recherche dans l’application</string>
@@ -1216,6 +1225,7 @@
     <string name="gam_ev_streak_current">🔥 Série : %1$d jours</string>
     <string name="gam_ev_streak_days">🔥 Série de %1$d jours !</string>
     <string name="gam_ev_streak_lost">💔 Série de %1$d jours perdue. -%2$d XP</string>
+    <string name="gam_ev_grace_day_used">Vous avez utilisé un jour de grâce : votre série de %1$d jours est préservée. Il en reste %2$d cette semaine.</string>
     <string name="gam_ev_streak_restart">Lancez une nouvelle série demain</string>
     <string name="gam_ev_perfect_day">⭐ Journée parfaite ! +%1$d XP</string>
     <string name="gam_ev_level_up">🎉 Vous avez atteint le niveau %1$d !</string>
@@ -1241,6 +1251,14 @@
     <plurals name="notification_streak_continued_title">
         <item quantity="one">🔥 Série : %1$d jour</item>
         <item quantity="other">🔥 Série : %1$d jours</item>
+    </plurals>
+    <plurals name="notification_streak_milestone_message">
+        <item quantity="one">Vous êtes sur une série de %1$d jour. Ne cassez pas la chaîne !</item>
+        <item quantity="other">Vous êtes sur une série de %1$d jours. Ne cassez pas la chaîne !</item>
+    </plurals>
+    <plurals name="notification_streak_record_message">
+        <item quantity="one">Nouveau record ! %1$d jour de suite, votre meilleure série.</item>
+        <item quantity="other">Nouveau record ! %1$d jours de suite, votre meilleure série.</item>
     </plurals>
     <plurals name="notification_streak_broken_message">
         <item quantity="one">Votre série de %1$d jour est perdue. Recommencez !</item>

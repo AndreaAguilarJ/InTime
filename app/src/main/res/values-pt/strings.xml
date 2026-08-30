@@ -190,6 +190,14 @@
     <string name="in_app_block_no_results_subtitle">Não encontramos correspondências para sua busca.</string>
     <string name="in_app_block_enabled_count">%1$d de %2$d ativas</string>
     <string name="block_type_reels_desc">Vídeos curtos em formato vertical</string>
+    <string name="block_type_reels_name">Reels</string>
+    <string name="block_type_shorts_name">Shorts</string>
+    <string name="block_type_explore_name">Explorar</string>
+    <string name="block_type_search_name">Pesquisa</string>
+    <string name="block_type_for_you_name">Para ti</string>
+    <string name="block_type_discover_name">Descobrir</string>
+    <string name="block_type_stories_name">Histórias</string>
+    <string name="block_type_feed_name">Feed</string>
     <string name="block_type_shorts_desc">Vídeos curtos do YouTube</string>
     <string name="block_type_explore_desc">Descubra conteúdo novo</string>
     <string name="block_type_search_desc">Busca dentro do app</string>
@@ -497,6 +505,7 @@
     <string name="action_cancel">Cancelar</string>
     <string name="action_change">Alterar</string>
     <string name="action_back">Voltar</string>
+    <string name="action_save">Guardar</string>
     <string name="action_selected">Selecionado</string>
     <string name="dialog_logout_message">Tem certeza de que deseja sair? Seus dados locais permanecerão sincronizados.</string>
 
@@ -1216,6 +1225,7 @@
     <string name="gam_ev_streak_current">🔥 Sequência: %1$d dias</string>
     <string name="gam_ev_streak_days">🔥 Sequência de %1$d dias!</string>
     <string name="gam_ev_streak_lost">💔 Sequência de %1$d dias perdida. -%2$d XP</string>
+    <string name="gam_ev_grace_day_used">Usou um dia de graça: a sua sequência de %1$d dias continua. Faltam %2$d esta semana.</string>
     <string name="gam_ev_streak_restart">Comece uma nova sequência amanhã</string>
     <string name="gam_ev_perfect_day">⭐ Dia perfeito! +%1$d XP</string>
     <string name="gam_ev_level_up">🎉 Subiste ao nível %1$d!</string>
@@ -1241,6 +1251,14 @@
     <plurals name="notification_streak_continued_title">
         <item quantity="one">🔥 Sequência: %1$d dia</item>
         <item quantity="other">🔥 Sequência: %1$d dias</item>
+    </plurals>
+    <plurals name="notification_streak_milestone_message">
+        <item quantity="one">Estás numa sequência de %1$d dia. Não quebres a corrente!</item>
+        <item quantity="other">Estás numa sequência de %1$d dias. Não quebres a corrente!</item>
+    </plurals>
+    <plurals name="notification_streak_record_message">
+        <item quantity="one">Novo recorde! %1$d dia seguido, a tua melhor sequência.</item>
+        <item quantity="other">Novo recorde! %1$d dias seguidos, a tua melhor sequência.</item>
     </plurals>
     <plurals name="notification_streak_broken_message">
         <item quantity="one">Sua sequência de %1$d dia foi perdida. Comece novamente!</item>

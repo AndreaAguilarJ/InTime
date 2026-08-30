@@ -14,6 +14,11 @@
     <string name="smart_floating_timer_desc">Always visible over all apps</string>
     <string name="smart_overlay_permission_needed">Requires overlay permission</string>
     <string name="smart_grant">Grant</string>
+    <string name="smart_perm_missing_title">Permissions are missing for this to work</string>
+    <string name="smart_perm_usage">Usage access: without it no app can be detected</string>
+    <string name="smart_perm_overlay">Display over other apps: needed to cover the blocked app</string>
+    <string name="smart_perm_accessibility">Accessibility: needed to block feeds and reels inside apps</string>
+    <string name="smart_perm_location">Location: needed for place and Wi-Fi rules</string>
     <string name="smart_opacity">Opacity: %1$d %%</string>
     <string name="smart_configure">Configure</string>
     <string name="smart_test_app">Test app</string>
@@ -26,6 +31,14 @@
     <string name="smart_sleep_window_desc">Don\'t count usage during sleeping hours</string>
     <string name="smart_sleep_schedule">Sleep schedule</string>
     <string name="smart_sleep_ignore_tracking">Ignore tracking while asleep</string>
+    <string name="smart_sleep_block_apps">Block apps while sleeping</string>
+    <string name="smart_sleep_block_apps_desc">Only your essential apps will still open</string>
+    <string name="smart_sleep_pick_time">Pick a time</string>
+    <string name="smart_sleep_hours_label">Hour</string>
+    <string name="smart_sleep_minutes_label">Minutes</string>
+    <string name="smart_sleep_decrease">Decrease %1$s</string>
+    <string name="smart_sleep_increase">Increase %1$s</string>
+    <string name="smart_sleep_invalid_window">Start and end cannot be the same time</string>
 
     <string name="smart_digital_fasting">Digital fasting</string>
     <string name="smart_digital_fasting_desc">Strict limits during working hours</string>
@@ -35,6 +48,17 @@
 
     <string name="smart_nuclear_mode">Nuclear mode</string>
     <string name="smart_nuclear_mode_desc">Extreme block from 1 to 3 months</string>
+    <string name="smart_nuclear_pick_apps">Apps that will be blocked (%1$d selected)</string>
+    <string name="smart_nuclear_apps_loading">Loading your apps…</string>
+    <string name="smart_nuclear_unlock_title">Turn off nuclear mode</string>
+    <string name="smart_nuclear_unlock_explain">To turn it off you must keep InTime open for %1$d minutes straight. Leaving the app pauses the wait.</string>
+    <string name="smart_nuclear_unlock_start_wait">Start the wait</string>
+    <string name="smart_nuclear_unlock_progress">You are %1$d of %2$d minutes into the wait.</string>
+    <string name="smart_nuclear_unlock_keep_open">Keep this screen open: the wait only advances while the app is visible.</string>
+    <string name="smart_nuclear_unlock_cancel_request">Cancel the request</string>
+    <string name="smart_nuclear_unlock_ready_title">You can turn it off now</string>
+    <string name="smart_nuclear_unlock_ready_desc">You completed the wait. You can turn nuclear mode off now.</string>
+    <string name="smart_nuclear_unlock_deactivate">Turn off now</string>
     <string name="smart_nuclear_active">NUCLEAR MODE ACTIVE</string>
 
     <string name="smart_streak_protection">Streak protection</string>
@@ -48,6 +72,15 @@
     <string name="smart_context_blocking_desc">Rules by schedule, location or Wi-Fi</string>
     <string name="smart_location_permission_needed">Grant the location permission to use context blocking</string>
     <string name="smart_add_context_rule">Add context rule</string>
+    <string name="smart_rule_type">Rule type</string>
+    <string name="smart_rule_type_schedule">Schedule</string>
+    <string name="smart_rule_type_location">Place</string>
+    <string name="smart_rule_type_wifi">Wi-Fi</string>
+    <string name="smart_rule_location_current">The rule will be anchored to your current location and trigger when you return to it.</string>
+    <string name="smart_rule_radius">Radius: %1$d metres</string>
+    <string name="smart_rule_wifi_current">The rule will trigger while you are connected to %1$s.</string>
+    <string name="smart_rule_block_completely">Block completely, with no allowance</string>
+    <string name="smart_comm_no_apps">Pick at least one app below. With none selected, this mode blocks nothing.</string>
 
     <string name="smart_communication_only">Communication-only mode</string>
     <string name="smart_communication_only_desc">Allows messages, blocks feeds and reels</string>

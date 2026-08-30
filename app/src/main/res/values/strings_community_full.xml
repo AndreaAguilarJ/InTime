@@ -66,4 +66,33 @@
         <item quantity="one">Compartido %1$d vez</item>
         <item quantity="other">Compartido %1$d veces</item>
     </plurals>
+
+    <!-- Rediseño Comunidad: etiquetas que antes estaban escritas a mano en el código -->
+    <string name="community_tab_leaderboard">Ranking</string>
+    <string name="community_tab_achievements">Logros</string>
+    <string name="community_min_per_week">min/semana</string>
+    <string name="community_min_this_week">%1$d min esta semana</string>
+    <string name="community_rank_positions">%1$d posiciones</string>
+    <string name="community_no_friends_ranking">Sin amigos en el ranking</string>
+    <string name="community_no_friends_ranking_desc">Agrega amigos para ver su progreso</string>
+    <string name="community_unlockable_title">Logros que puedes desbloquear</string>
+    <string name="community_settings_privacy">Privacidad</string>
+    <string name="community_settings_notifications">Notificaciones sociales</string>
+    <string name="community_possible_streak">Racha de 7 días</string>
+    <string name="community_possible_perfect">Semana perfecta</string>
+    <string name="community_possible_podium">Top 3 semanal</string>
+    <string name="community_possible_nuclear">Modo Nuclear</string>
+    <string name="community_request_accepted">Solicitud aceptada</string>
+    <string name="community_friend_removed">Amigo eliminado</string>
+    <string name="community_share_chooser">Compartir logro</string>
+    <string name="community_generic_error">Error: %1$s</string>
+    <string name="community_close">Cerrar</string>
+    <string name="community_stat_level">Nivel</string>
+    <string name="community_stat_streak">Racha</string>
+    <string name="community_stat_weekly">Esta semana</string>
+    <string name="community_stat_total">Foco total</string>
+    <plurals name="community_achievements_unlocked_count">
+        <item quantity="one">%1$d logro desbloqueado</item>
+        <item quantity="other">%1$d logros desbloqueados</item>
+    </plurals>
 </resources>

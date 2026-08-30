@@ -709,22 +709,15 @@ private fun AppUsageCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // App icon placeholder
-            Surface(
-                modifier = Modifier.size(48.dp),
-                color = app.category.color,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                // In real app, load actual app icon
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = app.appName.firstOrNull()?.toString() ?: "?",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            // Icono REAL de la app (se carga del sistema por packageName);
+            // cae al mosaico de color + inicial si la app no está instalada.
+            com.momentummm.app.ui.component.AppIconImage(
+                packageName = app.packageName,
+                appName = app.appName,
+                fallbackColor = app.category.color,
+                size = 48.dp,
+                cornerRadius = 12.dp
+            )
             
             Spacer(modifier = Modifier.width(12.dp))
             

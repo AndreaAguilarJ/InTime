@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,6 +40,8 @@ import com.momentummm.app.service.FloatingTimerService
 import com.momentummm.app.service.NuclearModeService
 import com.momentummm.app.service.ContextBlockingService
 import com.momentummm.app.ui.system.*
+import com.momentummm.app.util.BlockingCapabilities
+import com.momentummm.app.util.ContextSnapshot
 import java.util.*
 import com.momentummm.app.ui.theme.*
 import androidx.compose.material.icons.filled.Psychology
@@ -57,7 +61,82 @@ fun SmartBlockingScreen(
     val context = LocalContext.current
     val config by viewModel.config.collectAsStateWithLifecycle()
     val contextRules by viewModel.contextRules.collectAsStateWithLifecycle()
+    val selectableApps by viewModel.selectableApps.collectAsStateWithLifecycle()
     val hasOverlayPermission = remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+
+    // Estado de los permisos que las funciones activas necesitan de verdad.
+    // Se recomprueban en ON_RESUME, junto con el de superposición, porque el
+    // usuario los concede fuera de la app.
+    val hasUsageAccess = remember {
+        mutableStateOf(BlockingCapabilities.hasUsageStatsPermission(context))
+    }
+    val hasAccessibility = remember {
+        mutableStateOf(BlockingCapabilities.isAccessibilityEnabled(context))
+    }
+    val hasLocation = remember {
+        mutableStateOf(ContextSnapshot.hasLocationPermission(context))
+    }
+
+    val locationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { granted ->
+        hasLocation.value = granted.values.any { it }
+        // Si acaba de concederlo con el bloqueo por contexto ya encendido, el
+        // servicio puede arrancar ahora: antes no se podía conceder desde
+        // ningún punto de la app y la función quedaba muerta para siempre.
+        if (hasLocation.value && config.contextBlockingEnabled) {
+            ContextBlockingService.startIfPossible(context)
+        }
+    }
+
+    /** Un permiso que falta, con su texto y su forma de concederlo. */
+    data class MissingPermission(val labelRes: Int, val grant: () -> Unit)
+
+    val missingPermissions = buildList {
+        // El acceso al uso es la base de todo: sin él el monitor no puede
+        // detectar qué app está delante y ninguna de las siete funciona.
+        if (!hasUsageAccess.value) {
+            add(
+                MissingPermission(R.string.smart_perm_usage) {
+                    runCatching {
+                        context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                    }
+                }
+            )
+        }
+        if (!hasOverlayPermission.value) {
+            add(
+                MissingPermission(R.string.smart_perm_overlay) {
+                    runCatching {
+                        context.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+                    }
+                }
+            )
+        }
+        // La accesibilidad sólo hace falta para bloquear contenido DENTRO de las
+        // apps permitidas; se pide únicamente si esa función está encendida.
+        if (config.communicationOnlyModeEnabled && !hasAccessibility.value) {
+            add(
+                MissingPermission(R.string.smart_perm_accessibility) {
+                    runCatching {
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    }
+                }
+            )
+        }
+        if (config.contextBlockingEnabled && !hasLocation.value) {
+            add(
+                MissingPermission(R.string.smart_perm_location) {
+                    locationLauncher.launch(
+                        arrayOf(
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
+                }
+            )
+        }
+    }
     
     // Lifecycle observer para verificar permiso cuando la app vuelve a primer plano
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -65,6 +144,9 @@ fun SmartBlockingScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 hasOverlayPermission.value = Settings.canDrawOverlays(context)
+                hasUsageAccess.value = BlockingCapabilities.hasUsageStatsPermission(context)
+                hasAccessibility.value = BlockingCapabilities.isAccessibilityEnabled(context)
+                hasLocation.value = ContextSnapshot.hasLocationPermission(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -77,6 +159,7 @@ fun SmartBlockingScreen(
     var showSleepTimeDialog by remember { mutableStateOf(false) }
     var showFastingDialog by remember { mutableStateOf(false) }
     var showNuclearModeDialog by remember { mutableStateOf(false) }
+    var showNuclearUnlockDialog by remember { mutableStateOf(false) }
     var showContextRuleDialog by remember { mutableStateOf(false) }
     var showFloatingTimerSettings by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
@@ -192,6 +275,61 @@ fun SmartBlockingScreen(
                 }
             }
             
+            // === AVISO DE PERMISOS QUE FALTAN ===
+            //
+            // La pantalla sólo comprobaba el permiso de superposición, y sólo
+            // dentro del Timer flotante. Todas las funciones se aplican en el
+            // monitor, que sin acceso al uso no puede detectar nada, y el
+            // bloqueo dentro de apps necesita accesibilidad. Sin este aviso los
+            // interruptores quedaban encendidos sin efecto y sin explicación.
+            if (missingPermissions.isNotEmpty()) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    stringResource(R.string.smart_perm_missing_title),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            missingPermissions.forEach { permission ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        stringResource(permission.labelRes),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    TextButton(onClick = { permission.grant() }) {
+                                        Text(stringResource(R.string.smart_grant))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // === TIMER FLOTANTE ===
             item {
                 SmartBlockingSection(
@@ -357,6 +495,34 @@ fun SmartBlockingScreen(
                                     onCheckedChange = { viewModel.setSleepIgnoreTracking(it) }
                                 )
                             }
+
+                            // El bloqueo nocturno es ahora una decisión propia.
+                            // Antes se activaba solo, como efecto colateral de
+                            // desactivar el recuento, y dejaba el teléfono
+                            // bloqueado sin que nadie lo hubiera pedido.
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        stringResource(R.string.smart_sleep_block_apps),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Text(
+                                        stringResource(R.string.smart_sleep_block_apps_desc),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Switch(
+                                    checked = config.sleepModeBlockApps,
+                                    onCheckedChange = { viewModel.setSleepBlockApps(it) }
+                                )
+                            }
                         }
                     } else null
                 )
@@ -452,8 +618,11 @@ fun SmartBlockingScreen(
                         if (enabled) {
                             showNuclearModeDialog = true
                         } else {
-                            viewModel.deactivateNuclearMode()
-                            NuclearModeService.stop(context)
+                            // NO se desactiva aquí. El texto promete que no se
+                            // puede apagar hasta que termine, y antes el
+                            // interruptor lo apagaba al instante, dejando la
+                            // función entera en un adorno.
+                            showNuclearUnlockDialog = true
                         }
                     },
                     accentColor = Rose500,
@@ -681,6 +850,26 @@ fun SmartBlockingScreen(
                     extraContent = if (config.communicationOnlyModeEnabled) {
                         {
                             Column {
+                                // Sin apps elegidas el modo no puede hacer nada
+                                // útil, y antes el monitor lo interpretaba como
+                                // «bloquea todo». Se dice en pantalla.
+                                if (config.communicationOnlyApps.isBlank()) {
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.errorContainer
+                                        )
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.smart_comm_no_apps),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            modifier = Modifier.padding(12.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+
                                 Text(
                                     stringResource(R.string.smart_communication_apps),
                                     style = MaterialTheme.typography.bodySmall,
@@ -784,6 +973,7 @@ fun SmartBlockingScreen(
     
     if (showNuclearModeDialog) {
         NuclearModeDialog(
+            selectableApps = selectableApps,
             onDismiss = { showNuclearModeDialog = false },
             onConfirm = { days, apps, waitMinutes ->
                 viewModel.activateNuclearMode(days, apps, waitMinutes)
@@ -794,9 +984,36 @@ fun SmartBlockingScreen(
             }
         )
     }
+
+    if (showNuclearUnlockDialog) {
+        NuclearUnlockDialog(
+            config = config,
+            unlockAvailable = viewModel.isNuclearUnlockAvailable(),
+            onDismiss = { showNuclearUnlockDialog = false },
+            onRequestWait = {
+                viewModel.requestNuclearUnlock()
+                // El servicio es quien cuenta la espera con la app abierta.
+                NuclearModeService.start(context)
+                showNuclearUnlockDialog = false
+            },
+            onCancelRequest = {
+                viewModel.cancelNuclearUnlockRequest()
+                showNuclearUnlockDialog = false
+            },
+            onDeactivate = {
+                viewModel.deactivateNuclearMode()
+                NuclearModeService.stop(context)
+                showNuclearUnlockDialog = false
+            }
+        )
+    }
     
     if (showContextRuleDialog) {
+        // Se lee al abrir el diálogo, no en cada recomposición.
+        val snapshot = remember { viewModel.readContextSnapshot() }
         ContextRuleDialog(
+            currentSsid = snapshot.first,
+            currentLocation = snapshot.second,
             onDismiss = { showContextRuleDialog = false },
             onConfirm = { rule ->
                 viewModel.addContextRule(rule)
@@ -1033,6 +1250,8 @@ private fun SleepTimeDialog(
     var endHour by remember { mutableStateOf(currentEndHour) }
     var endMinute by remember { mutableStateOf(currentEndMinute) }
     var editingStart by remember { mutableStateOf(true) }
+
+    val isEmptyWindow = (startHour * 60 + startMinute) == (endHour * 60 + endMinute)
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1061,6 +1280,27 @@ private fun SleepTimeDialog(
                         onClick = { editingStart = false }
                     )
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Selector libre de hora. Antes sólo existían tres presets, así
+                // que quien dormía de 00:30 a 06:45 no podía expresarlo y el
+                // botón Guardar devolvía los mismos valores que ya tenía.
+                Text(
+                    stringResource(R.string.smart_sleep_pick_time),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                TimeStepperRow(
+                    hour = if (editingStart) startHour else endHour,
+                    minute = if (editingStart) startMinute else endMinute,
+                    onHourChange = { newHour ->
+                        if (editingStart) startHour = newHour else endHour = newHour
+                    },
+                    onMinuteChange = { newMinute ->
+                        if (editingStart) startMinute = newMinute else endMinute = newMinute
+                    }
+                )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
@@ -1086,10 +1326,25 @@ private fun SleepTimeDialog(
                         Text(label)
                     }
                 }
+
+                // Inicio y fin iguales describen una ventana vacía: la función
+                // quedaría encendida sin hacer nada. Se dice, en vez de
+                // guardarlo en silencio.
+                if (isEmptyWindow) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.smart_sleep_invalid_window),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(startHour, startMinute, endHour, endMinute) }) {
+            TextButton(
+                onClick = { onConfirm(startHour, startMinute, endHour, endMinute) },
+                enabled = !isEmptyWindow
+            ) {
                 Text(stringResource(R.string.limit_dialog_save))
             }
         },
@@ -1099,6 +1354,85 @@ private fun SleepTimeDialog(
             }
         }
     )
+}
+
+/**
+ * Ajuste de hora y minuto con botones.
+ *
+ * Se evita a propósito el TimePicker de Material3: aquí basta un control
+ * compacto que quepa dentro del AlertDialog junto a los presets, y los minutos
+ * avanzan de cinco en cinco porque nadie define su horario de sueño al minuto.
+ */
+@Composable
+private fun TimeStepperRow(
+    hour: Int,
+    minute: Int,
+    onHourChange: (Int) -> Unit,
+    onMinuteChange: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TimeStepper(
+            label = stringResource(R.string.smart_sleep_hours_label),
+            value = hour,
+            // Las horas dan la vuelta: subir desde 23 lleva a 00.
+            onDecrease = { onHourChange((hour + 23) % 24) },
+            onIncrease = { onHourChange((hour + 1) % 24) }
+        )
+        TimeStepper(
+            label = stringResource(R.string.smart_sleep_minutes_label),
+            value = minute,
+            onDecrease = { onMinuteChange((minute + 55) % 60) },
+            onIncrease = { onMinuteChange((minute + 5) % 60) }
+        )
+    }
+}
+
+@Composable
+private fun TimeStepper(
+    label: String,
+    value: Int,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, style = MaterialTheme.typography.labelSmall)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick = onDecrease,
+                // 48 dp es el mínimo táctil accesible; el tamaño por defecto de
+                // IconButton ya lo cumple, pero se fija para que no dependa del
+                // tema.
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    Icons.Default.Remove,
+                    contentDescription = stringResource(R.string.smart_sleep_decrease, label)
+                )
+            }
+            Text(
+                text = String.format("%02d", value),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.width(44.dp),
+                textAlign = TextAlign.Center
+            )
+            IconButton(
+                onClick = onIncrease,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = stringResource(R.string.smart_sleep_increase, label)
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -1180,6 +1514,21 @@ private fun FastingScheduleDialog(
                     Text(" → ", modifier = Modifier.align(Alignment.CenterVertically))
                     TimePickerButton(stringResource(R.string.smart_end), endHour, endMinute, !editingStart) { editingStart = false }
                 }
+
+                // BUG CORREGIDO: los dos botones de arriba sólo cambiaban cuál
+                // estaba "seleccionado"; no existía ningún control que alterara
+                // la hora, así que Guardar devolvía siempre los mismos valores
+                // y el horario de ayuno era imposible de cambiar.
+                TimeStepperRow(
+                    hour = if (editingStart) startHour else endHour,
+                    minute = if (editingStart) startMinute else endMinute,
+                    onHourChange = { newHour ->
+                        if (editingStart) startHour = newHour else endHour = newHour
+                    },
+                    onMinuteChange = { newMinute ->
+                        if (editingStart) startMinute = newMinute else endMinute = newMinute
+                    }
+                )
                 
                 // Límite durante ayuno
                 Text(stringResource(R.string.smart_fasting_limit_value, limitMinutes), fontWeight = FontWeight.Medium)
@@ -1216,7 +1565,12 @@ private fun FastingScheduleDialog(
             TextButton(
                 onClick = { 
                     onConfirm(startHour, startMinute, endHour, endMinute, limitMinutes, selectedDays.toList())
-                }
+                },
+                // Sin días no hay ayuno posible, e inicio igual a fin describe
+                // una franja vacía: guardarlo dejaría la función encendida sin
+                // hacer nada.
+                enabled = selectedDays.isNotEmpty() &&
+                    (startHour * 60 + startMinute) != (endHour * 60 + endMinute)
             ) {
                 Text(stringResource(R.string.limit_dialog_save))
             }
@@ -1229,11 +1583,15 @@ private fun FastingScheduleDialog(
 
 @Composable
 private fun NuclearModeDialog(
+    selectableApps: List<Pair<String, String>>,
     onDismiss: () -> Unit,
     onConfirm: (Int, List<String>, Int) -> Unit
 ) {
     var durationDays by remember { mutableStateOf(30) }
     var waitMinutes by remember { mutableStateOf(30) }
+    // El diálogo confirmaba con emptyList() y el modo se activaba sin bloquear
+    // nada. Ahora hay que elegir al menos una app y el botón lo exige.
+    var selectedApps by remember { mutableStateOf(setOf<String>()) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1246,50 +1604,202 @@ private fun NuclearModeDialog(
             )
         },
         text = {
-            Column {
-                Text(
-                    stringResource(R.string.smart_b_nuclear_warn_title),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Rose500
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    stringResource(R.string.smart_b_nuclear_rule1) +
-                    stringResource(R.string.smart_b_nuclear_rule2) +
-                    pluralStringResource(R.plurals.smart_b_nuclear_rule3, waitMinutes, waitMinutes),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Text(stringResource(R.string.smart_nuclear_duration, durationDays), fontWeight = FontWeight.Medium)
-                Slider(
-                    value = durationDays.toFloat(),
-                    onValueChange = { durationDays = it.toInt() },
-                    valueRange = 7f..90f,
-                    steps = 11
-                )
-                
-                Text(stringResource(R.string.smart_nuclear_wait, waitMinutes), fontWeight = FontWeight.Medium)
-                Slider(
-                    value = waitMinutes.toFloat(),
-                    onValueChange = { waitMinutes = it.toInt() },
-                    valueRange = 15f..60f,
-                    steps = 8
-                )
+            LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
+                item {
+                    Text(
+                        stringResource(R.string.smart_b_nuclear_warn_title),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Rose500
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        stringResource(R.string.smart_b_nuclear_rule1) +
+                        stringResource(R.string.smart_b_nuclear_rule2) +
+                        pluralStringResource(R.plurals.smart_b_nuclear_rule3, waitMinutes, waitMinutes),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(stringResource(R.string.smart_nuclear_duration, durationDays), fontWeight = FontWeight.Medium)
+                    Slider(
+                        value = durationDays.toFloat(),
+                        onValueChange = { durationDays = it.toInt() },
+                        valueRange = 7f..90f,
+                        steps = 11
+                    )
+
+                    Text(stringResource(R.string.smart_nuclear_wait, waitMinutes), fontWeight = FontWeight.Medium)
+                    Slider(
+                        value = waitMinutes.toFloat(),
+                        onValueChange = { waitMinutes = it.toInt() },
+                        valueRange = 15f..60f,
+                        steps = 8
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        stringResource(R.string.smart_nuclear_pick_apps, selectedApps.size),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+
+                if (selectableApps.isEmpty()) {
+                    item {
+                        Text(
+                            stringResource(R.string.smart_nuclear_apps_loading),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                items(selectableApps, key = { it.first }) { (packageName, appName) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selectedApps = if (packageName in selectedApps) {
+                                    selectedApps - packageName
+                                } else {
+                                    selectedApps + packageName
+                                }
+                            }
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            appName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Checkbox(
+                            checked = packageName in selectedApps,
+                            onCheckedChange = { checked ->
+                                selectedApps = if (checked) {
+                                    selectedApps + packageName
+                                } else {
+                                    selectedApps - packageName
+                                }
+                            }
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
             Button(
-                onClick = { onConfirm(durationDays, emptyList(), waitMinutes) },
+                onClick = { onConfirm(durationDays, selectedApps.toList(), waitMinutes) },
+                enabled = selectedApps.isNotEmpty(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Rose500
                 )
             ) {
                 Text(stringResource(R.string.smart_b_nuclear_activate))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.limit_dialog_cancel)) }
+        }
+    )
+}
+
+/**
+ * Diálogo de desbloqueo del Modo nuclear.
+ *
+ * Es lo que sustituye al apagado instantáneo. Explica la espera, la inicia y
+ * —solo cuando se ha cumplido— ofrece desactivar de verdad.
+ */
+@Composable
+private fun NuclearUnlockDialog(
+    config: SmartBlockingConfig,
+    unlockAvailable: Boolean,
+    onDismiss: () -> Unit,
+    onRequestWait: () -> Unit,
+    onCancelRequest: () -> Unit,
+    onDeactivate: () -> Unit
+) {
+    val requiredSeconds = config.nuclearModeUnlockWaitMinutes * 60
+    val currentSeconds = config.nuclearModeCurrentWaitSeconds
+    val requested = config.nuclearModeUnlockRequested
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Text("☢️", fontSize = 40.sp) },
+        title = {
+            Text(
+                stringResource(
+                    if (unlockAvailable) R.string.smart_nuclear_unlock_ready_title
+                    else R.string.smart_nuclear_unlock_title
+                ),
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                when {
+                    unlockAvailable -> Text(
+                        stringResource(R.string.smart_nuclear_unlock_ready_desc),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    requested -> {
+                        Text(
+                            stringResource(
+                                R.string.smart_nuclear_unlock_progress,
+                                currentSeconds / 60,
+                                config.nuclearModeUnlockWaitMinutes
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LinearProgressIndicator(
+                            progress = if (requiredSeconds > 0) {
+                                (currentSeconds.toFloat() / requiredSeconds).coerceIn(0f, 1f)
+                            } else 0f,
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Rose500
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            stringResource(R.string.smart_nuclear_unlock_keep_open),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    else -> Text(
+                        stringResource(
+                            R.string.smart_nuclear_unlock_explain,
+                            config.nuclearModeUnlockWaitMinutes
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            when {
+                unlockAvailable -> Button(
+                    onClick = onDeactivate,
+                    colors = ButtonDefaults.buttonColors(containerColor = Rose500)
+                ) {
+                    Text(stringResource(R.string.smart_nuclear_unlock_deactivate))
+                }
+
+                requested -> TextButton(onClick = onCancelRequest) {
+                    Text(stringResource(R.string.smart_nuclear_unlock_cancel_request))
+                }
+
+                else -> Button(onClick = onRequestWait) {
+                    Text(stringResource(R.string.smart_nuclear_unlock_start_wait))
+                }
             }
         },
         dismissButton = {
@@ -1379,87 +1889,220 @@ private fun FloatingTimerSettingsDialog(
 
 @Composable
 private fun ContextRuleDialog(
+    currentSsid: String?,
+    currentLocation: Pair<Double, Double>?,
     onDismiss: () -> Unit,
     onConfirm: (ContextBlockRule) -> Unit
 ) {
     var ruleName by remember { mutableStateOf("") }
+    // El diálogo sólo sabía crear reglas de horario, aunque el subtítulo de la
+    // sección promete «reglas por horario, ubicación o Wi-Fi». Los otros dos
+    // tipos existían en la base y en el servicio, pero eran inalcanzables.
+    var ruleType by remember { mutableStateOf("SCHEDULE") }
     var startHour by remember { mutableStateOf(9) }
     var startMinute by remember { mutableStateOf(0) }
     var endHour by remember { mutableStateOf(18) }
     var endMinute by remember { mutableStateOf(0) }
+    var editingStart by remember { mutableStateOf(true) }
     var limitMinutes by remember { mutableStateOf(15) }
+    var blockCompletely by remember { mutableStateOf(false) }
+    var radiusMeters by remember { mutableStateOf(150) }
     var selectedDays by remember { mutableStateOf(setOf(1, 2, 3, 4, 5)) }
-    
+
+    // Sin los datos del contexto no se puede crear la regla correspondiente, y
+    // decirlo es mejor que ofrecer una opción que guardaría una regla vacía.
+    val canUseLocation = currentLocation != null
+    val canUseWifi = !currentSsid.isNullOrBlank()
+
+    val isValid = ruleName.isNotBlank() && when (ruleType) {
+        "LOCATION" -> canUseLocation
+        "WIFI" -> canUseWifi
+        else -> selectedDays.isNotEmpty() &&
+            (startHour * 60 + startMinute) != (endHour * 60 + endMinute)
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.smart_new_context_rule)) },
         text = {
-            Column {
-                OutlinedTextField(
-                    value = ruleName,
-                    onValueChange = { ruleName = it },
-                    label = { Text(stringResource(R.string.smart_rule_name_hint)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Text(stringResource(R.string.smart_rule_schedule, formatTime(startHour, startMinute), formatTime(endHour, endMinute)))
-                RangeSlider(
-                    value = startHour.toFloat()..endHour.toFloat(),
-                    onValueChange = {
-                        startHour = it.start.toInt()
-                        endHour = it.endInclusive.toInt()
-                    },
-                    valueRange = 0f..24f,
-                    steps = 23
-                )
-                
-                Text(stringResource(R.string.smart_rule_limit_value, limitMinutes))
-                Slider(
-                    value = limitMinutes.toFloat(),
-                    onValueChange = { limitMinutes = it.toInt() },
-                    valueRange = 5f..60f
-                )
-                
-                Text(stringResource(R.string.smart_days_label))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    listOf("L" to 1, "M" to 2, "X" to 3, "J" to 4, "V" to 5, "S" to 6, "D" to 7)
-                        .forEach { (label, day) ->
-                            FilterChip(
-                                selected = day in selectedDays,
-                                onClick = {
-                                    selectedDays = if (day in selectedDays)
-                                        selectedDays - day
-                                    else
-                                        selectedDays + day
-                                },
-                                label = { Text(label) }
+            LazyColumn(modifier = Modifier.heightIn(max = 460.dp)) {
+                item {
+                    OutlinedTextField(
+                        value = ruleName,
+                        onValueChange = { ruleName = it },
+                        label = { Text(stringResource(R.string.smart_rule_name_hint)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        stringResource(R.string.smart_rule_type),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterChip(
+                            selected = ruleType == "SCHEDULE",
+                            onClick = { ruleType = "SCHEDULE" },
+                            label = { Text(stringResource(R.string.smart_rule_type_schedule)) }
+                        )
+                        FilterChip(
+                            selected = ruleType == "LOCATION",
+                            onClick = { ruleType = "LOCATION" },
+                            enabled = canUseLocation,
+                            label = { Text(stringResource(R.string.smart_rule_type_location)) }
+                        )
+                        FilterChip(
+                            selected = ruleType == "WIFI",
+                            onClick = { ruleType = "WIFI" },
+                            enabled = canUseWifi,
+                            label = { Text(stringResource(R.string.smart_rule_type_wifi)) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                when (ruleType) {
+                    "SCHEDULE" -> item {
+                        Text(
+                            stringResource(
+                                R.string.smart_rule_schedule,
+                                formatTime(startHour, startMinute),
+                                formatTime(endHour, endMinute)
+                            )
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            TimePickerButton(
+                                stringResource(R.string.smart_start),
+                                startHour, startMinute, editingStart
+                            ) { editingStart = true }
+                            TimePickerButton(
+                                stringResource(R.string.smart_end),
+                                endHour, endMinute, !editingStart
+                            ) { editingStart = false }
+                        }
+                        // BUG CORREGIDO: el RangeSlider anterior sólo permitía
+                        // horas en punto y los minutos se guardaban siempre a 00.
+                        TimeStepperRow(
+                            hour = if (editingStart) startHour else endHour,
+                            minute = if (editingStart) startMinute else endMinute,
+                            onHourChange = { if (editingStart) startHour = it else endHour = it },
+                            onMinuteChange = { if (editingStart) startMinute = it else endMinute = it }
+                        )
+
+                        Text(stringResource(R.string.smart_days_label))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            listOf("L" to 1, "M" to 2, "X" to 3, "J" to 4, "V" to 5, "S" to 6, "D" to 7)
+                                .forEach { (label, day) ->
+                                    FilterChip(
+                                        selected = day in selectedDays,
+                                        onClick = {
+                                            selectedDays = if (day in selectedDays) {
+                                                selectedDays - day
+                                            } else {
+                                                selectedDays + day
+                                            }
+                                        },
+                                        label = { Text(label) }
+                                    )
+                                }
+                        }
+                    }
+
+                    "LOCATION" -> item {
+                        Text(
+                            stringResource(R.string.smart_rule_location_current),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(stringResource(R.string.smart_rule_radius, radiusMeters))
+                        Slider(
+                            value = radiusMeters.toFloat(),
+                            onValueChange = { radiusMeters = it.toInt() },
+                            valueRange = 50f..1000f
+                        )
+                    }
+
+                    else -> item {
+                        Text(
+                            stringResource(
+                                R.string.smart_rule_wifi_current,
+                                currentSsid ?: ""
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                item {
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    // `blockCompletely` existía en la entidad y en el motor, pero
+                    // la interfaz no permitía activarlo: toda regla nacía como
+                    // simple reducción de límite.
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.smart_rule_block_completely),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = blockCompletely,
+                            onCheckedChange = { blockCompletely = it }
+                        )
+                    }
+
+                    AnimatedVisibility(visible = !blockCompletely) {
+                        Column {
+                            Text(stringResource(R.string.smart_rule_limit_value, limitMinutes))
+                            Slider(
+                                value = limitMinutes.toFloat(),
+                                onValueChange = { limitMinutes = it.toInt() },
+                                valueRange = 5f..60f
                             )
                         }
+                    }
                 }
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (ruleName.isNotBlank()) {
-                        val rule = ContextBlockRule(
-                            ruleName = ruleName,
-                            scheduleStartHour = startHour,
-                            scheduleStartMinute = startMinute,
-                            scheduleEndHour = endHour,
-                            scheduleEndMinute = endMinute,
-                            contextDailyLimitMinutes = limitMinutes,
-                            scheduleDaysOfWeek = selectedDays.sorted().joinToString(",")
-                        )
-                        onConfirm(rule)
-                    }
+                    val rule = ContextBlockRule(
+                        ruleName = ruleName,
+                        contextType = ruleType,
+                        latitude = currentLocation?.first.takeIf { ruleType == "LOCATION" },
+                        longitude = currentLocation?.second.takeIf { ruleType == "LOCATION" },
+                        radiusMeters = radiusMeters,
+                        wifiSsid = currentSsid.takeIf { ruleType == "WIFI" },
+                        scheduleStartHour = startHour,
+                        scheduleStartMinute = startMinute,
+                        scheduleEndHour = endHour,
+                        scheduleEndMinute = endMinute,
+                        contextDailyLimitMinutes = limitMinutes,
+                        blockCompletely = blockCompletely,
+                        overrideDailyLimit = !blockCompletely,
+                        scheduleDaysOfWeek = selectedDays.sorted().joinToString(",")
+                    )
+                    onConfirm(rule)
                 },
-                enabled = ruleName.isNotBlank()
+                enabled = isValid
             ) {
                 Text(stringResource(R.string.smart_create))
             }

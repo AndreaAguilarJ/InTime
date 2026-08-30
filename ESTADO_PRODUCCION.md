@@ -429,3 +429,68 @@ Ninguno de estos lo puede resolver el desarrollo; dependen del propietario:
   4 idiomas.
 - Conectar o eliminar el subsistema de analítica de patrones de uso, hoy
   desconectado.
+
+---
+
+## Bloqueo inteligente — las 7 funciones, de decorativas a operativas (2026-08-26)
+
+Auditoría de extremo a extremo de la pantalla «Bloqueo inteligente» y corrección
+de los defectos encontrados. El punto de partida: **ninguna de las 7 funciones
+cumplía lo que su texto prometía**. Cuatro no producían ningún efecto y tres
+funcionaban a medias.
+
+### Los defectos que hacían inertes las funciones
+
+| Función | Qué prometía | Qué hacía en realidad |
+|---|---|---|
+| Modo nuclear | Bloqueo extremo irreversible 1–3 meses | No bloqueaba ninguna app: el diálogo confirmaba con lista vacía. El interruptor lo apagaba al instante. Mostraba un día menos de los reales. |
+| Protección de rachas | Días de gracia para no perder la racha | `useGraceDay()` no tenía **ningún llamador**. Pasar un límite tampoco rompía la racha, así que no existía el evento a rescatar. |
+| Bloqueo por ubicación / Wi-Fi | Reglas por lugar o red | Imposible crearlas en la interfaz; el motor descartaba con `else -> false` todo lo que no fuera horario. El servicio pedía GPS cada minuto y sus coincidencias no llegaban a ningún bloqueo. |
+| Ventana de sueño | No contar el uso nocturno | El uso se seguía sumando y reaparecía en el total al amanecer. Además su atajo desactivaba de paso nuclear, contexto y solo comunicación durante toda la noche. |
+| Ayuno digital | Límite estricto en su franja | Un horario que cruza medianoche nunca se activaba. Medía el día entero, no la franja. El bloqueo persistía al terminar el ayuno. |
+| Timer flotante | Visible sobre las apps | Se quedaba flotando al salir de la app. Posición no fiable, tamaño ignorado, no sobrevivía a que Android matara el servicio. |
+| Solo comunicación | Bloquea feeds y reels | Sus reglas internas podían no existir; el `UPDATE` afectaba a cero filas en silencio. Desmarcar una casilla no apagaba nada. «Permitir mensajes» y «Bloquear stories» no tenían lector. |
+
+**Defecto transversal, el de mayor alcance:** `AppMonitoringService` —dentro del
+cual se aplican las siete— sólo arrancaba si existía un límite de app
+configurado. Activar cualquier función sin límites dejaba el interruptor
+encendido y ningún efecto, sin señal alguna.
+
+### Cambios de esquema
+
+| Migración | Columna | Por qué |
+|---|---|---|
+| 17 → 18 | `sleepModeBlockApps` | El bloqueo nocturno se deducía de `!sleepModeIgnoreTracking`; desactivar el recuento dejaba el teléfono bloqueado sin haberlo pedido. Ahora es opt-in explícito. |
+| 18 → 19 | `nuclearModeUnlockRequested` | La desactivación del modo nuclear pasa por una espera real que hay que cumplir con la app abierta. |
+
+### Verificado con evidencia
+
+| Comprobación | Resultado |
+|---|---|
+| Pruebas unitarias | **163 / 163 verdes**, 0 fallos (46 nuevas en esta sesión). Antes no había ninguna que cubriera esta pantalla. |
+| Compilación debug | APK de 38 MB generado. |
+| Instalación en dispositivo real | Pixel 10 Pro XL, Android 17. Sin errores fatales, de Room ni de Hilt. |
+| **Migración 17 → 19 en dispositivo** | Forzada revirtiendo el esquema a 17 en el propio teléfono: Room migró a 19, añadió ambas columnas y validó el esquema. La app siguió viva. |
+| Render de la pantalla | Las 7 secciones aparecen y responden, en vertical y horizontal. |
+| Siembra de reglas in-app | Activar Solo comunicación pasó la tabla de **0 a 8 reglas** con los identificadores exactos que el motor espera. Antes esa orden se perdía en silencio. |
+| Aviso de permisos | Aparece y es consciente de la función: con uso y superposición concedidos sólo listó accesibilidad, la única que faltaba y la única que esa función necesita. |
+| R8 / minificación release | Completó: `mapping.txt`, dex minificado y recursos reducidos generados. |
+
+### Lo que NO se pudo verificar
+
+1. **APK de release firmado**: el build atraviesa R8 y falla sólo en la firma
+   (`SigningConfig "release" is missing required property "storeFile"`). Falta el
+   keystore de producción, que ya figuraba como bloqueo del propietario. No es
+   un defecto del código.
+2. **Bloqueo por ubicación y Wi-Fi en campo**: la fontanería quedó conectada y la
+   interfaz permite crear las reglas, pero confirmar que una regla se dispara al
+   llegar a un lugar exige desplazarse físicamente con el permiso concedido.
+3. **Modo nuclear a lo largo de días**: su ventana temporal y la espera de
+   desbloqueo se probaron en unidad; observar un bloqueo de 30 días reales, no.
+4. **Bloqueo dentro de apps (reels, shorts)**: requiere habilitar el servicio de
+   accesibilidad y abrir Instagram, YouTube y TikTok reales.
+5. **Consumo de un día de gracia**: el rescate se probó en unidad; verlo ocurrir
+   exige dejar pasar un día sin abrir la app.
+6. **Resistencia al cambio de hora del sistema**: el modo nuclear depende del
+   reloj de pared. Adelantar la hora sigue permitiendo saltárselo, igual que
+   desinstalar la app. Documentado, no resuelto.
