@@ -27,14 +27,19 @@ import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.util.LifeWeeksMath
 import com.momentummm.shared.data.SettingsKeys
 import com.momentummm.shared.data.SettingsStore
+import com.momentummm.shared.resources.Res
+import com.momentummm.shared.resources.action_cancel
+import com.momentummm.shared.resources.action_save
+import com.momentummm.shared.resources.birth_date_title
+import com.momentummm.shared.resources.life_change_birth
+import com.momentummm.shared.resources.life_empty_hint
+import com.momentummm.shared.resources.life_pick_birth
+import com.momentummm.shared.resources.life_title
 import com.momentummm.shared.ui.component.DateSelectorDialog
+import org.jetbrains.compose.resources.stringResource
+import com.momentummm.shared.util.shortMonthNames
 import com.momentummm.shared.util.todayLocalDate
 import kotlinx.datetime.LocalDate
-
-private val MONTH_NAMES = listOf(
-    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
-)
 
 /**
  * «Mi vida en semanas», la pantalla compartida entre Android e iOS.
@@ -64,7 +69,7 @@ fun LifeWeeksSharedScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Mi vida en semanas",
+            text = stringResource(Res.string.life_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.momentum.textPrimary,
         )
@@ -73,15 +78,14 @@ fun LifeWeeksSharedScreen(
         if (fecha == null) {
             Spacer(Modifier.height(24.dp))
             Text(
-                text = "Cada casilla es una semana de tu vida. Para dibujarla hace " +
-                    "falta saber cuándo empezaste.",
+                text = stringResource(Res.string.life_empty_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.momentum.textSecondary,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(20.dp))
             Button(onClick = { pickingDate = true }) {
-                Text("Elegir mi fecha de nacimiento")
+                Text(stringResource(Res.string.life_pick_birth))
             }
         } else {
             val data = LifeWeeksMath.calculate(fecha, today, expectancy)
@@ -107,7 +111,7 @@ fun LifeWeeksSharedScreen(
 
             Spacer(Modifier.height(16.dp))
             TextButton(onClick = { pickingDate = true }) {
-                Text("Cambiar fecha de nacimiento")
+                Text(stringResource(Res.string.life_change_birth))
             }
         }
     }
@@ -119,10 +123,10 @@ fun LifeWeeksSharedScreen(
             initial = birthDate ?: LocalDate(1990, 1, 1),
             minYear = today.year - 120,
             maxYear = today.year,
-            title = "Tu fecha de nacimiento",
-            confirmLabel = "Guardar",
-            dismissLabel = "Cancelar",
-            monthNames = MONTH_NAMES,
+            title = stringResource(Res.string.birth_date_title),
+            confirmLabel = stringResource(Res.string.action_save),
+            dismissLabel = stringResource(Res.string.action_cancel),
+            monthNames = remember { shortMonthNames() },
             onDismiss = { pickingDate = false },
             onConfirm = { elegida ->
                 store.writeBirthDate(elegida)

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GENERADO por docs/generar_textos_compartidos.py. No editar a mano:
+     los textos vienen de app/src/main/res/values*/ para que Android e iOS
+     digan lo mismo. Vuelve a ejecutar el script tras cambiar los de Android. -->
+<resources>
+    <string name="focus_title">Sessões de Foco</string>
+    <string name="focus_pause">Pausar</string>
+    <string name="focus_resume">Continuar</string>
+    <string name="focus_end">Encerrar sessão</string>
+    <string name="focus_skip_break">Pular pausa</string>
+    <string name="focus_status_running">Em curso</string>
+    <string name="focus_status_break">Pausa</string>
+    <string name="focus_status_paused">Em pausa</string>
+    <string name="focus_status_done">Concluída</string>
+    <string name="focus_preset_pomodoro">Pomodoro clássico</string>
+    <string name="focus_custom_create">Criar sessão personalizada</string>
+    <string name="focus_duration_label">Duração</string>
+    <string name="focus_break_label">Descanso</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="birth_date_title">Qual é sua data de nascimento?</string>
+    <string name="focus_idle_hint">Escolhe quanto tempo focar</string>
+    <string name="focus_preset_long">Sessão longa</string>
+    <string name="focus_preset_sprint">Sprint curto</string>
+    <string name="focus_preset_own">Sessão própria</string>
+    <string name="focus_break_paused">Descanso pausado</string>
+    <string name="focus_custom_title">Sessão à tua medida</string>
+    <string name="focus_custom_open">Sessão à minha medida</string>
+    <string name="focus_no_break">Sem descanso</string>
+    <string name="focus_close">Fechar</string>
+    <string name="action_start">Começar</string>
+    <string name="life_title">A minha vida em semanas</string>
+    <string name="life_empty_hint">Cada quadrado é uma semana da tua vida. Para a desenhar precisamos de saber quando começaste.</string>
+    <string name="life_pick_birth">Escolher a minha data de nascimento</string>
+    <string name="life_change_birth">Alterar data de nascimento</string>
+    <string name="life_years">Anos</string>
+    <string name="life_weeks_lived">Semanas vividas</string>
+    <string name="life_weeks_left">Semanas por viver</string>
+    <string name="label_year">Ano</string>
+    <string name="label_month">Mês</string>
+    <string name="label_day">Dia</string>
+    <string name="tab_life">A minha vida</string>
+    <string name="notif_focus_done_title">Sessão de foco concluída</string>
+    <string name="notif_break_done_title">Descanso terminado</string>
+    <string name="notif_focus_done_body">%1$s de %2$s. É hora de descansar.</string>
+    <string name="notif_break_done_body">%1$s de pausa. Outra sessão?</string>
+    <string name="notif_break_resume_body">Volta quando quiseres.</string>
+    <string name="minutes_one">1 minuto</string>
+    <string name="minutes_other">%1$d minutos</string>
+    <string name="focus_completed_detail">Sessão concluída: %1$s de foco.</string>
+    <string name="focus_start_break_action">Começar descanso de %1$d min</string>
+    <string name="focus_preset_times">%1$d min · %2$d min</string>
+    <string name="tab_focus">Foco</string>
+</resources>

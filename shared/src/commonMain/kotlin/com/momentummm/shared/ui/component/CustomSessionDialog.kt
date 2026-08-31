@@ -15,6 +15,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.ui.theme.momentum
+import com.momentummm.shared.resources.Res
+import com.momentummm.shared.resources.action_cancel
+import com.momentummm.shared.resources.action_start
+import com.momentummm.shared.resources.focus_break_label
+import com.momentummm.shared.resources.focus_custom_title
+import com.momentummm.shared.resources.focus_duration_label
+import com.momentummm.shared.resources.focus_no_break
+import org.jetbrains.compose.resources.stringResource
 
 /** Duraciones de enfoque ofrecidas, en minutos. */
 private val FOCUS_OPTIONS = listOf(1, 5, 10, 15, 20, 25, 30, 40, 45, 50, 60, 75, 90, 120)
@@ -37,6 +45,7 @@ fun CustomSessionDialog(
     onConfirm: (focusMinutes: Int, breakMinutes: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val sinDescanso = stringResource(Res.string.focus_no_break)
     var focusMinutes by remember { mutableStateOf(initialFocusMinutes) }
     var breakMinutes by remember { mutableStateOf(initialBreakMinutes) }
 
@@ -45,7 +54,7 @@ fun CustomSessionDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Sesión a tu medida",
+                text = stringResource(Res.string.focus_custom_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.momentum.textPrimary,
             )
@@ -53,7 +62,7 @@ fun CustomSessionDialog(
         text = {
             Column {
                 OptionSelectorRow(
-                    label = "Minutos de enfoque",
+                    label = stringResource(Res.string.focus_duration_label),
                     options = FOCUS_OPTIONS,
                     selected = focusMinutes,
                     optionLabel = { "$it" },
@@ -61,21 +70,21 @@ fun CustomSessionDialog(
                 )
                 Spacer(Modifier.height(14.dp))
                 OptionSelectorRow(
-                    label = "Minutos de descanso",
+                    label = stringResource(Res.string.focus_break_label),
                     options = BREAK_OPTIONS,
                     selected = breakMinutes,
-                    optionLabel = { if (it == 0) "Sin descanso" else "$it" },
+                    optionLabel = { if (it == 0) sinDescanso else "$it" },
                     onSelect = { breakMinutes = it },
                 )
             }
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(focusMinutes, breakMinutes) }) {
-                Text("Empezar")
+                Text(stringResource(Res.string.action_start))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
         },
     )
 }

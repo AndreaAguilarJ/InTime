@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GENERADO por docs/generar_textos_compartidos.py. No editar a mano:
+     los textos vienen de app/src/main/res/values*/ para que Android e iOS
+     digan lo mismo. Vuelve a ejecutar el script tras cambiar los de Android. -->
+<resources>
+    <string name="focus_title">Sessions de concentration</string>
+    <string name="focus_pause">Mettre en pause</string>
+    <string name="focus_resume">Reprendre</string>
+    <string name="focus_end">Terminer la session</string>
+    <string name="focus_skip_break">Passer la pause</string>
+    <string name="focus_status_running">En cours</string>
+    <string name="focus_status_break">Pause</string>
+    <string name="focus_status_paused">En pause</string>
+    <string name="focus_status_done">Terminée</string>
+    <string name="focus_preset_pomodoro">Pomodoro classique</string>
+    <string name="focus_custom_create">Créer une séance personnalisée</string>
+    <string name="focus_duration_label">Durée</string>
+    <string name="focus_break_label">Pause</string>
+    <string name="action_save">Enregistrer</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="birth_date_title">Quelle est votre date de naissance ?</string>
+    <string name="focus_idle_hint">Choisis ta durée de concentration</string>
+    <string name="focus_preset_long">Session longue</string>
+    <string name="focus_preset_sprint">Sprint court</string>
+    <string name="focus_preset_own">Ma session</string>
+    <string name="focus_break_paused">Pause suspendue</string>
+    <string name="focus_custom_title">Ta session sur mesure</string>
+    <string name="focus_custom_open">Session sur mesure</string>
+    <string name="focus_no_break">Sans pause</string>
+    <string name="focus_close">Fermer</string>
+    <string name="action_start">Commencer</string>
+    <string name="life_title">Ma vie en semaines</string>
+    <string name="life_empty_hint">Chaque case est une semaine de ta vie. Pour la dessiner, il faut savoir quand tu as commencé.</string>
+    <string name="life_pick_birth">Choisir ma date de naissance</string>
+    <string name="life_change_birth">Changer la date de naissance</string>
+    <string name="life_years">Ans</string>
+    <string name="life_weeks_lived">Semaines vécues</string>
+    <string name="life_weeks_left">Semaines à vivre</string>
+    <string name="label_year">Année</string>
+    <string name="label_month">Mois</string>
+    <string name="label_day">Jour</string>
+    <string name="tab_life">Ma vie</string>
+    <string name="notif_focus_done_title">Session de concentration terminée</string>
+    <string name="notif_break_done_title">Pause terminée</string>
+    <string name="notif_focus_done_body">%1$s de %2$s. C'est l'heure de la pause.</string>
+    <string name="notif_break_done_body">%1$s de pause. Une autre session ?</string>
+    <string name="notif_break_resume_body">Reviens quand tu veux.</string>
+    <string name="minutes_one">1 minute</string>
+    <string name="minutes_other">%1$d minutes</string>
+    <string name="focus_completed_detail">Session terminée : %1$s de concentration.</string>
+    <string name="focus_start_break_action">Commencer une pause de %1$d min</string>
+    <string name="focus_preset_times">%1$d min · %2$d min</string>
+    <string name="tab_focus">Concentration</string>
+</resources>

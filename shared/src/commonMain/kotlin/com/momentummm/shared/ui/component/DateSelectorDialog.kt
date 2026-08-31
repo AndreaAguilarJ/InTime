@@ -28,6 +28,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.momentummm.app.ui.theme.momentum
+import com.momentummm.shared.resources.Res
+import com.momentummm.shared.resources.label_day
+import com.momentummm.shared.resources.label_month
+import com.momentummm.shared.resources.label_year
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.datetime.LocalDate
 
 /**
@@ -78,7 +83,7 @@ fun DateSelectorDialog(
         text = {
             Column {
                 OptionSelectorRow(
-                    label = "Año",
+                    label = stringResource(Res.string.label_year),
                     options = (maxYear downTo minYear).toList(),
                     selected = year,
                     optionLabel = { it.toString() },
@@ -86,7 +91,7 @@ fun DateSelectorDialog(
                 )
                 Spacer(Modifier.height(12.dp))
                 OptionSelectorRow(
-                    label = "Mes",
+                    label = stringResource(Res.string.label_month),
                     options = (1..12).toList(),
                     selected = month,
                     optionLabel = { monthNames.getOrElse(it - 1) { it.toString() } },
@@ -94,7 +99,7 @@ fun DateSelectorDialog(
                 )
                 Spacer(Modifier.height(12.dp))
                 OptionSelectorRow(
-                    label = "Día",
+                    label = stringResource(Res.string.label_day),
                     options = (1..maxDay).toList(),
                     selected = day,
                     optionLabel = { it.toString() },

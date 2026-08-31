@@ -18,6 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.util.LifeWeeksMath
+import com.momentummm.shared.resources.Res
+import com.momentummm.shared.resources.life_weeks_left
+import com.momentummm.shared.resources.life_weeks_lived
+import com.momentummm.shared.resources.life_years
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Cuadrícula de «Mi vida en semanas»: una casilla por semana, una fila por año.
@@ -90,9 +95,9 @@ fun LifeWeeksSummary(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        LifeWeeksStat(value = data.currentAge.toString(), label = "Años")
-        LifeWeeksStat(value = data.weeksLived.toString(), label = "Semanas vividas")
-        LifeWeeksStat(value = data.weeksRemaining.toString(), label = "Semanas por vivir")
+        LifeWeeksStat(value = data.currentAge.toString(), label = stringResource(Res.string.life_years))
+        LifeWeeksStat(value = data.weeksLived.toString(), label = stringResource(Res.string.life_weeks_lived))
+        LifeWeeksStat(value = data.weeksRemaining.toString(), label = stringResource(Res.string.life_weeks_left))
     }
 }
 

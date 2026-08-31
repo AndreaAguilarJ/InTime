@@ -23,6 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.momentummm.shared.resources.Res
+import com.momentummm.shared.resources.tab_focus
+import com.momentummm.shared.resources.tab_life
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import com.momentummm.app.ui.theme.MomentumThemeCore
 import com.momentummm.app.ui.theme.momentum
 import com.momentummm.shared.data.SettingsStore
@@ -31,9 +36,9 @@ import com.momentummm.shared.ui.screen.FocusSharedScreen
 import com.momentummm.shared.ui.screen.LifeWeeksSharedScreen
 
 /** Secciones de la app compartida. */
-private enum class MomentumTab(val label: String, val icon: ImageVector) {
-    FOCUS("Enfoque", Icons.Outlined.Timer),
-    LIFE("Mi vida", Icons.Outlined.CalendarViewMonth),
+private enum class MomentumTab(val label: StringResource, val icon: ImageVector) {
+    FOCUS(Res.string.tab_focus, Icons.Outlined.Timer),
+    LIFE(Res.string.tab_life, Icons.Outlined.CalendarViewMonth),
 }
 
 /**
@@ -64,11 +69,11 @@ fun MomentumApp(store: SettingsStore, notifier: MomentumNotifier) {
                             NavigationBarItem(
                                 selected = tab == entrada,
                                 onClick = { tab = entrada },
-                                label = { Text(entrada.label) },
+                                label = { Text(stringResource(entrada.label)) },
                                 icon = {
                                     Icon(
                                         imageVector = entrada.icon,
-                                        contentDescription = entrada.label,
+                                        contentDescription = stringResource(entrada.label),
                                     )
                                 },
                                 colors = NavigationBarItemDefaults.colors(

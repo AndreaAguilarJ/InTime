@@ -84,15 +84,40 @@ pagar una instancia remota por etapa.
 
 ## Estado verificado
 
-El cimiento está probado de punta a punta el 2026-08-31, no supuesto:
+Todo medido en la rama, no supuesto. Última ronda: 2026-08-31.
 
 | Comprobación | Evidencia |
 |---|---|
 | Android sigue compilando | `:app:compileDebugKotlin` BUILD SUCCESSFUL |
 | Kotlin compila para iOS | `:shared:compileKotlinIosSimulatorArm64` BUILD SUCCESSFUL |
-| La app iOS se construye | `lim xcode build` → `Build Succeeded` (2m24s) |
-| Se instala en el simulador | `Installed to simulator in 1.89s` |
-| **Arranca y dibuja** | Captura del simulador con la interfaz Compose y `iOS 26.4` leído de `UIDevice` |
+| Pruebas del núcleo compartido | **25 pruebas, 0 fallos** (`:shared:testDebugUnitTest`) |
+| App iOS en Debug | `Build Succeeded` + `Installed to simulator` |
+| App iOS en **Release** | `Build Succeeded`, arranca y navega entre las dos secciones |
+| «Mi vida en semanas» funciona | Captura: nacido 1990-01-01 → 36 años, 1913 de 4160 semanas, 45 % |
+| Cronómetro de enfoque funciona | Captura: 24:55 a los 5 s de arrancar un Pomodoro |
+| **Aviso local llega de verdad** | Vídeo del simulador: banner «Sesión de enfoque completada» en el fotograma del segundo 66, con la app en segundo plano |
+| Accesibilidad (VoiceOver) | `element-tree` devuelve 9374 bytes de árbol con etiquetas reales |
+| Manifiesto de privacidad en el paquete | `CopyPlistFile … Momentum.app/PrivacyInfo.xcprivacy` en el log |
+
+## Qué funciona ya en iOS y qué falta
+
+**Funciona**: enfoque con cuenta atrás anclada al reloj, descansos, sesión a
+medida recordada, avisos locales, vida en semanas con fecha persistida,
+navegación, tema Momentum completo, VoiceOver.
+
+**Falta, por orden de valor**:
+
+1. **Tiempo de pantalla y bloqueo de apps.** Requiere el permiso Family Controls
+   de Apple. Las APIs fallan incluso en simulador sin él, así que escribir esa
+   capa ahora sería escribir código imposible de probar. El paso previo es la
+   solicitud, que solo puede hacer el titular de la cuenta.
+2. **Idiomas.** La app Android está en cinco idiomas; los textos de la interfaz
+   compartida están escritos en español directamente en el código.
+3. **Gamificación** (XP, rachas, logros) al núcleo compartido.
+4. **Sincronización con Appwrite** en iOS.
+5. **Unificar el cronómetro de Android** con el núcleo compartido. Es un servicio
+   en primer plano en producción; merece un paso propio y verificación en
+   dispositivo real.
 
 ## Dos trampas encontradas al ejecutar, no al compilar
 

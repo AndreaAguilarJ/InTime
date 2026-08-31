@@ -49,6 +49,9 @@ kotlin {
                 // ellos la barra de navegación dibujaba una cápsula vacía donde va
                 // el icono, que se ve como un defecto.
                 implementation(compose.materialIconsExtended)
+                // Textos traducidos, compartidos entre Android e iOS. Se generan
+                // desde los recursos de Android con docs/generar_textos_compartidos.py.
+                implementation(compose.components.resources)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
                 // `api` y no `implementation`: los tipos de fecha aparecen en la
                 // superficie pública del módulo, así que quien lo consume --la app
@@ -67,7 +70,6 @@ kotlin {
 android {
     namespace = "com.momentummm.shared"
     compileSdk = 36
-
     defaultConfig {
         minSdk = 26
     }
@@ -76,4 +78,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+// Los textos traducidos se exponen como una clase pública `Res` en este paquete,
+// para que las pantallas compartidas los pidan por nombre en vez de llevarlos
+// escritos dentro.
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.momentummm.shared.resources"
+    generateResClass = auto
 }
