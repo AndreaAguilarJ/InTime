@@ -6,6 +6,7 @@ import androidx.compose.ui.window.ComposeUIViewController
 import com.momentummm.shared.data.UserDefaultsSettingsStore
 import com.momentummm.shared.notification.UserNotificationsNotifier
 import com.momentummm.shared.ui.MomentumApp
+import platform.Foundation.NSBundle
 import platform.UIKit.UIViewController
 
 /**
@@ -39,6 +40,24 @@ fun MainViewController(): UIViewController {
         MomentumApp(
             store = UserDefaultsSettingsStore(),
             notifier = notifier,
+            appVersion = versionDelPaquete(),
         )
+    }
+}
+
+/**
+ * Versión que declara el propio paquete de la app.
+ *
+ * Se lee del `Info.plist` en vez de escribirla en el código para que no puedan
+ * discrepar: la que ve la persona en Ajustes es exactamente la que se subió.
+ */
+private fun versionDelPaquete(): String {
+    val bundle = NSBundle.mainBundle
+    val corta = bundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String
+    val build = bundle.objectForInfoDictionaryKey("CFBundleVersion") as? String
+    return when {
+        corta != null && build != null -> "$corta ($build)"
+        corta != null -> corta
+        else -> "—"
     }
 }

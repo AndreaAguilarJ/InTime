@@ -49,6 +49,13 @@ DESDE_ANDROID = {
     "gam_level_label": "community_stat_level",
     "gam_streak_label": "community_stat_streak",
     "gam_xp_to_next": "gamification_header_xp_to_next_level",
+    "tab_settings": "nav_settings",
+    "settings_life_expectancy": "life_expectancy_title",
+    "settings_life_expectancy_hint": "life_expectancy_hint",
+    "settings_theme_light": "theme_mode_light",
+    "settings_theme_dark": "theme_mode_dark",
+    "settings_theme_system": "theme_mode_system",
+    "settings_version": "about_info_version_title",
 }
 
 # Textos que no existen en Android, traducidos aqui. El orden de la tupla sigue
@@ -177,6 +184,9 @@ PROPIOS = {
         "%1$d min · %2$d min", "%1$d min · %2$d min",
     ),
     "tab_focus": ("Enfoque", "Focus", "Fokus", "Concentration", "Foco"),
+    "settings_appearance": (
+        "Apariencia", "Appearance", "Erscheinungsbild", "Apparence", "Aparência",
+    ),
     # El texto de monedas de Android trae un emoji (🪙) y el sistema de diseño de
     # Momentum los prohíbe, así que aquí se nombra en palabras.
     "gam_coins_label": ("Monedas", "Coins", "Münzen", "Pièces", "Moedas"),
@@ -206,6 +216,25 @@ PROPIOS = {
 }
 
 
+def limpiar(valor: str) -> str:
+    """
+    Quita el emoji inicial de un texto de Android.
+
+    El sistema de diseño de Momentum prohíbe los emoji, pero algunos textos de la
+    app Android los llevan («⏳ Expectativa de Vida»). Se retiran aquí en vez de
+    reescribir el texto a mano, para que reutilizar la traducción siga siendo
+    automático.
+    """
+    limpio = valor.strip()
+    # Un emoji al principio va seguido de espacio; se corta por ahí sin tocar los
+    # textos que empiezan por letra, número o signo de apertura.
+    if limpio and not (limpio[0].isalnum() or limpio[0] in "¿¡\"'%+-<({[&#"):
+        partes = limpio.split(" ", 1)
+        if len(partes) == 2 and partes[1]:
+            return partes[1].strip()
+    return limpio
+
+
 def leer_traducciones(sufijo: str) -> dict[str, str]:
     """Todas las claves de un idioma, reunidas de sus varios ficheros."""
     carpeta = ANDROID_RES / f"values{sufijo}"
@@ -215,7 +244,7 @@ def leer_traducciones(sufijo: str) -> dict[str, str]:
         for nombre, valor in re.findall(
             r'<string name="([^"]+)"[^>]*>(.*?)</string>', texto, re.DOTALL
         ):
-            encontradas.setdefault(nombre, valor.strip())
+            encontradas.setdefault(nombre, limpiar(valor))
     return encontradas
 
 

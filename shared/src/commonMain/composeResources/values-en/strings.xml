@@ -23,6 +23,13 @@
     <string name="gam_level_label">Level</string>
     <string name="gam_streak_label">Streak</string>
     <string name="gam_xp_to_next">%1$s to Level %2$d</string>
+    <string name="tab_settings">Settings</string>
+    <string name="settings_life_expectancy">Life expectancy</string>
+    <string name="settings_life_expectancy_hint">Adjust it to your health and personal expectations</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_system">Automatic</string>
+    <string name="settings_version">Version</string>
     <string name="focus_idle_hint">Choose how long to focus</string>
     <string name="focus_preset_long">Long session</string>
     <string name="focus_preset_sprint">Short sprint</string>
@@ -55,6 +62,7 @@
     <string name="focus_start_break_action">Start %1$d min break</string>
     <string name="focus_preset_times">%1$d min · %2$d min</string>
     <string name="tab_focus">Focus</string>
+    <string name="settings_appearance">Appearance</string>
     <string name="gam_coins_label">Coins</string>
     <string name="gam_session_earned">+%1$d XP · +%2$d coins</string>
     <string name="gam_level_up">You reached level %1$d</string>

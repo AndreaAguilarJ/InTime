@@ -51,8 +51,7 @@ class InMemorySettingsStore(
 }
 
 /** Claves compartidas, para que las dos plataformas lean y escriban lo mismo. */
-object SettingsKeys {
-    /** Fecha de nacimiento en formato ISO (`AAAA-MM-DD`). */
+object SettingsKeys {    /** Fecha de nacimiento en formato ISO (`AAAA-MM-DD`). */
     const val BIRTH_DATE = "birth_date"
 
     /** Años que se representan en la cuadrícula de vida. */
