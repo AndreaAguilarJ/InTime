@@ -89,33 +89,47 @@ Todo medido en la rama, no supuesto. Última ronda: 2026-08-31.
 | Comprobación | Evidencia |
 |---|---|
 | Android sigue compilando | `:app:compileDebugKotlin` BUILD SUCCESSFUL |
+| Android sigue pasando sus pruebas | **168 pruebas, 0 fallos** |
+| El paquete Android se genera | `app-debug.apk`, 39,7 MB |
 | Kotlin compila para iOS | `:shared:compileKotlinIosSimulatorArm64` BUILD SUCCESSFUL |
-| Pruebas del núcleo compartido | **25 pruebas, 0 fallos** (`:shared:testDebugUnitTest`) |
+| Pruebas del núcleo compartido | **47 pruebas, 0 fallos** (`:shared:testDebugUnitTest`) |
 | App iOS en Debug | `Build Succeeded` + `Installed to simulator` |
-| App iOS en **Release** | `Build Succeeded`, arranca y navega entre las dos secciones |
+| App iOS en **Release** | `Build Succeeded`, arranca y navega entre secciones |
 | «Mi vida en semanas» funciona | Captura: nacido 1990-01-01 → 36 años, 1913 de 4160 semanas, 45 % |
 | Cronómetro de enfoque funciona | Captura: 24:55 a los 5 s de arrancar un Pomodoro |
 | **Aviso local llega de verdad** | Vídeo del simulador: banner «Sesión de enfoque completada» en el fotograma del segundo 66, con la app en segundo plano |
-| Accesibilidad (VoiceOver) | `element-tree` devuelve 9374 bytes de árbol con etiquetas reales |
+| Cinco idiomas | Capturas con `-AppleLanguages`: alemán «Fokus / Klassisches Pomodoro / 25 Min · 5 Min», francés «Concentration / Ma vie en semaines», meses «janv., févr., mars» |
+| Progreso y racha | Captura: «Lv.1 / 80 to Level 2 / Coins 0 / Streak —» |
+| Ajustes y apariencia | Captura: tema oscuro aplicado al instante en toda la app; versión `1.2.0 (14)` leída del paquete |
+| Accesibilidad (VoiceOver) | `element-tree` devuelve el árbol con etiquetas reales |
 | Manifiesto de privacidad en el paquete | `CopyPlistFile … Momentum.app/PrivacyInfo.xcprivacy` en el log |
+
+**Una comprobación pendiente, declarada:** el texto «+X XP · +Y monedas» que
+aparece al completar una sesión no se ha visto en pantalla. Alcanzar la opción de
+un minuto exige arrastrar un carril horizontal que la automatización no consigue
+mover de forma fiable, y esperar los quince minutos del preset más corto no cabe en
+el ciclo. La lógica del premio está cubierta por 9 pruebas y el mecanismo de texto
+con argumentos está verificado en pantalla en otros tres sitios, pero eso es
+inferencia, no verificación.
 
 ## Qué funciona ya en iOS y qué falta
 
 **Funciona**: enfoque con cuenta atrás anclada al reloj, descansos, sesión a
-medida recordada, avisos locales, vida en semanas con fecha persistida,
-navegación, tema Momentum completo, VoiceOver.
+medida recordada, avisos locales, vida en semanas con fecha persistida, progreso
+con nivel y racha, ajustes con expectativa de vida y apariencia, navegación de
+tres secciones, tema Momentum completo en claro y oscuro, cinco idiomas,
+VoiceOver.
 
 **Falta, por orden de valor**:
 
 1. **Tiempo de pantalla y bloqueo de apps.** Requiere el permiso Family Controls
    de Apple. Las APIs fallan incluso en simulador sin él, así que escribir esa
    capa ahora sería escribir código imposible de probar. El paso previo es la
-   solicitud, que solo puede hacer el titular de la cuenta.
-2. **Idiomas.** La app Android está en cinco idiomas; los textos de la interfaz
-   compartida están escritos en español directamente en el código.
-3. **Gamificación** (XP, rachas, logros) al núcleo compartido.
-4. **Sincronización con Appwrite** en iOS.
-5. **Unificar el cronómetro de Android** con el núcleo compartido. Es un servicio
+   solicitud, que solo puede hacer el titular de la cuenta: los detalles están en
+   `docs/IOS_PARA_PUBLICAR.md`.
+2. **Sincronización con Appwrite** en iOS, para que el progreso viaje entre las dos
+   plataformas.
+3. **Unificar el cronómetro de Android** con el núcleo compartido. Es un servicio
    en primer plano en producción; merece un paso propio y verificación en
    dispositivo real.
 
