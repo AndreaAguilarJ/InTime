@@ -35,8 +35,11 @@ import com.momentummm.app.ui.theme.momentum
 import com.momentummm.shared.focus.FocusPhase
 import com.momentummm.shared.focus.FocusTimer
 import com.momentummm.shared.focus.FocusTimerState
+import com.momentummm.shared.data.SettingsKeys
+import com.momentummm.shared.data.SettingsStore
 import com.momentummm.shared.notification.MomentumNotifier
 import com.momentummm.shared.notification.NotificationIds
+import com.momentummm.shared.ui.component.CustomSessionDialog
 import com.momentummm.shared.util.nowEpochSeconds
 import kotlinx.coroutines.delay
 
@@ -57,9 +60,11 @@ private val PRESETS = listOf(
 @Composable
 fun FocusSharedScreen(
     notifier: MomentumNotifier,
+    store: SettingsStore,
     modifier: Modifier = Modifier,
 ) {
     var state by remember { mutableStateOf(FocusTimerState()) }
+    var customising by remember { mutableStateOf(false) }
 
     // El bucle consulta el RELOJ en cada vuelta en vez de restar un segundo a
     // ciegas. Es lo que hace que la cuenta atrás sea correcta al volver del
@@ -126,7 +131,14 @@ fun FocusSharedScreen(
         Spacer(Modifier.height(32.dp))
 
         when (state.phase) {
-            FocusPhase.IDLE -> PresetList(onPick = ::startSession)
+            FocusPhase.IDLE -> Column(modifier = Modifier.fillMaxWidth()) {
+                PresetList(onPick = ::startSession)
+                Spacer(Modifier.height(10.dp))
+                OutlinedButton(
+                    onClick = { customising = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Sesión a mi medida") }
+            }
 
             FocusPhase.RUNNING, FocusPhase.BREAK -> Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -210,6 +222,22 @@ fun FocusSharedScreen(
                 ) { Text(if (state.hasBreak) "Saltar descanso" else "Cerrar") }
             }
         }
+    }
+
+    if (customising) {
+        CustomSessionDialog(
+            initialFocusMinutes = store.getLongOrNull(SettingsKeys.CUSTOM_FOCUS_MINUTES)?.toInt() ?: 25,
+            initialBreakMinutes = store.getLongOrNull(SettingsKeys.CUSTOM_BREAK_MINUTES)?.toInt() ?: 5,
+            onDismiss = { customising = false },
+            onConfirm = { enfoque, descanso ->
+                // Se recuerda la elección: quien siempre trabaja en bloques de 40
+                // minutos no debería repetirla cada vez.
+                store.putLong(SettingsKeys.CUSTOM_FOCUS_MINUTES, enfoque.toLong())
+                store.putLong(SettingsKeys.CUSTOM_BREAK_MINUTES, descanso.toLong())
+                customising = false
+                startSession("Sesión propia", enfoque, descanso)
+            },
+        )
     }
 }
 

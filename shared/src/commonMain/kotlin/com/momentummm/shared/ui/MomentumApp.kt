@@ -84,7 +84,7 @@ fun MomentumApp(store: SettingsStore, notifier: MomentumNotifier) {
             ) { insets ->
                 Column(modifier = Modifier.fillMaxSize().padding(insets)) {
                     when (tab) {
-                        MomentumTab.FOCUS -> FocusSharedScreen(notifier = notifier)
+                        MomentumTab.FOCUS -> FocusSharedScreen(notifier = notifier, store = store)
                         MomentumTab.LIFE -> LifeWeeksSharedScreen(store = store)
                     }
                 }

@@ -57,4 +57,10 @@ object SettingsKeys {
 
     /** Años que se representan en la cuadrícula de vida. */
     const val LIFE_EXPECTANCY = "life_expectancy"
+
+    /** Última duración de enfoque elegida a mano, en minutos. */
+    const val CUSTOM_FOCUS_MINUTES = "custom_focus_minutes"
+
+    /** Último descanso elegido a mano, en minutos. */
+    const val CUSTOM_BREAK_MINUTES = "custom_break_minutes"
 }

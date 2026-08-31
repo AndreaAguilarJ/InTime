@@ -77,7 +77,7 @@ fun DateSelectorDialog(
         },
         text = {
             Column {
-                SelectorRow(
+                OptionSelectorRow(
                     label = "Año",
                     options = (maxYear downTo minYear).toList(),
                     selected = year,
@@ -85,7 +85,7 @@ fun DateSelectorDialog(
                     onSelect = { year = it },
                 )
                 Spacer(Modifier.height(12.dp))
-                SelectorRow(
+                OptionSelectorRow(
                     label = "Mes",
                     options = (1..12).toList(),
                     selected = month,
@@ -93,7 +93,7 @@ fun DateSelectorDialog(
                     onSelect = { month = it },
                 )
                 Spacer(Modifier.height(12.dp))
-                SelectorRow(
+                OptionSelectorRow(
                     label = "Día",
                     options = (1..maxDay).toList(),
                     selected = day,
@@ -111,66 +111,6 @@ fun DateSelectorDialog(
             TextButton(onClick = onDismiss) { Text(dismissLabel) }
         },
     )
-}
-
-@Composable
-private fun <T> SelectorRow(
-    label: String,
-    options: List<T>,
-    selected: T,
-    optionLabel: (T) -> String,
-    onSelect: (T) -> Unit,
-) {
-    val state = rememberLazyListState()
-    val selectedIndex = options.indexOf(selected)
-
-    // El carril arranca centrado en el valor elegido: sin esto, abrir el selector
-    // con el año 1990 dejaría la lista en 2026 y habría que arrastrar a ciegas.
-    LaunchedEffect(selectedIndex) {
-        if (selectedIndex >= 0) {
-            state.scrollToItem(maxOf(0, selectedIndex - 1))
-        }
-    }
-
-    Column {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.momentum.textSecondary,
-        )
-        Spacer(Modifier.height(6.dp))
-        LazyRow(
-            state = state,
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = 2.dp),
-        ) {
-            items(options) { option ->
-                val isSelected = option == selected
-                Text(
-                    text = optionLabel(option),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        MaterialTheme.momentum.textPrimary
-                    },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(
-                            if (isSelected) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.momentum.surfaceSunken
-                            }
-                        )
-                        .clickable { onSelect(option) }
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                )
-            }
-        }
-    }
 }
 
 /** Días del mes, contando bien los febreros bisiestos. */
