@@ -61,7 +61,7 @@ fun CustomSessionDialog(
         },
         text = {
             Column {
-                OptionSelectorRow(
+                OptionSelectorGrid(
                     label = stringResource(Res.string.focus_duration_label),
                     options = FOCUS_OPTIONS,
                     selected = focusMinutes,
@@ -69,7 +69,7 @@ fun CustomSessionDialog(
                     onSelect = { focusMinutes = it },
                 )
                 Spacer(Modifier.height(14.dp))
-                OptionSelectorRow(
+                OptionSelectorGrid(
                     label = stringResource(Res.string.focus_break_label),
                     options = BREAK_OPTIONS,
                     selected = breakMinutes,

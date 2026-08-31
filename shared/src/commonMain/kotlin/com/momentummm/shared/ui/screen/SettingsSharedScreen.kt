@@ -41,7 +41,7 @@ import com.momentummm.shared.resources.settings_theme_light
 import com.momentummm.shared.resources.settings_theme_system
 import com.momentummm.shared.resources.settings_version
 import com.momentummm.shared.resources.tab_settings
-import com.momentummm.shared.ui.component.OptionSelectorRow
+import com.momentummm.shared.ui.component.OptionSelectorGrid
 import org.jetbrains.compose.resources.stringResource
 
 /** Expectativas ofrecidas, en años. */
@@ -96,7 +96,7 @@ fun SettingsSharedScreen(
                 color = MaterialTheme.momentum.textSecondary,
             )
             Spacer(Modifier.height(12.dp))
-            OptionSelectorRow(
+            OptionSelectorGrid(
                 label = "",
                 options = LIFE_EXPECTANCY_OPTIONS,
                 selected = expectancy,
