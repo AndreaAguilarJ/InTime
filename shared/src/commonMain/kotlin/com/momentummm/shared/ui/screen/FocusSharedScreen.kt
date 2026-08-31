@@ -88,7 +88,7 @@ fun FocusSharedScreen(
             id = NotificationIds.FOCUS_COMPLETE,
             seconds = enfoque * 60,
             title = "Sesión de enfoque completada",
-            body = "$enfoque minutos de $nombre. Te toca descansar.",
+            body = "${minutos(enfoque)} de $nombre. Te toca descansar.",
         )
     }
 
@@ -191,7 +191,7 @@ fun FocusSharedScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Sesión completada: ${state.creditedMinutes} min de enfoque.",
+                    text = "Sesión completada: ${minutos(state.creditedMinutes)} de enfoque.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.momentum.textSecondary,
                     textAlign = TextAlign.Center,
@@ -206,7 +206,7 @@ fun FocusSharedScreen(
                                 id = NotificationIds.BREAK_COMPLETE,
                                 seconds = minutosDescanso * 60,
                                 title = "Descanso terminado",
-                                body = "$minutosDescanso minutos de pausa. ¿Otra sesión?",
+                                body = "${minutos(minutosDescanso)} de pausa. ¿Otra sesión?",
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -349,3 +349,13 @@ private fun FocusTimerState.statusColor(): Color = when (phase) {
     FocusPhase.COMPLETED -> MaterialTheme.colorScheme.primary
     FocusPhase.BREAK -> MaterialTheme.momentum.info
 }
+
+/**
+ * Concordancia de número en los textos de duración.
+ *
+ * Se añadió tras verlo en pantalla: la notificación de una sesión de un minuto
+ * decía «1 minutos». Ninguna prueba lo detecta porque el texto se compone
+ * correctamente desde el punto de vista del código; solo se ve leyéndolo.
+ */
+private fun minutos(cantidad: Int): String =
+    if (cantidad == 1) "1 minuto" else "$cantidad minutos"
