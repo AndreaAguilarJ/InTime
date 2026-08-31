@@ -1,10 +1,12 @@
 package com.momentummm.shared.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarViewMonth
 import androidx.compose.material.icons.outlined.Settings
@@ -22,8 +24,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import com.momentummm.app.ui.theme.MomentumThemeCore
 import com.momentummm.app.ui.theme.momentum
 import com.momentummm.shared.data.SettingsStore
@@ -110,7 +114,16 @@ fun MomentumApp(
                     }
                 },
             ) { insets ->
-                Column(modifier = Modifier.fillMaxSize().padding(insets)) {
+                // El contenido se acota y se centra en vez de estirarse. En iPad la
+                // app se veía como un móvil ensanchado: la cabecera cruzaba los 834
+                // puntos de ancho y quedaba medio panel vacío debajo. Un ancho de
+                // lectura fijo hace que la pantalla grande se vea intencionada, y de
+                // paso mejora los iPhone más anchos.
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(insets),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    Column(modifier = Modifier.widthIn(max = 560.dp).fillMaxSize()) {
                     when (tab) {
                         MomentumTab.FOCUS -> FocusSharedScreen(
                             notifier = notifier,
@@ -122,6 +135,7 @@ fun MomentumApp(
                             appVersion = appVersion,
                             onThemeChange = { elegido -> theme = elegido },
                         )
+                    }
                     }
                 }
             }
