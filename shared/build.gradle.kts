@@ -45,6 +45,10 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(compose.ui)
+                // Iconos vectoriales reales, los mismos que usa la app Android. Sin
+                // ellos la barra de navegación dibujaba una cápsula vacía donde va
+                // el icono, que se ve como un defecto.
+                implementation(compose.materialIconsExtended)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
                 // `api` y no `implementation`: los tipos de fecha aparecen en la
                 // superficie pública del módulo, así que quien lo consume --la app
