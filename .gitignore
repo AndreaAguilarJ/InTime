@@ -71,6 +71,15 @@ fastlane/readme.md
 # Version control
 .svn/
 
+# iOS / Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.limbuild-sandbox/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
 # OS-specific files
 .DS_Store
 .DS_Store?
