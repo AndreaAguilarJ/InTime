@@ -19,6 +19,10 @@
     <string name="action_save">Enregistrer</string>
     <string name="action_cancel">Annuler</string>
     <string name="birth_date_title">Quelle est votre date de naissance ?</string>
+    <string name="gam_level_short">Niv.%1$d</string>
+    <string name="gam_level_label">Niveau</string>
+    <string name="gam_streak_label">Série</string>
+    <string name="gam_xp_to_next">%1$s pour le niveau %2$d</string>
     <string name="focus_idle_hint">Choisis ta durée de concentration</string>
     <string name="focus_preset_long">Session longue</string>
     <string name="focus_preset_sprint">Sprint court</string>
@@ -51,4 +55,10 @@
     <string name="focus_start_break_action">Commencer une pause de %1$d min</string>
     <string name="focus_preset_times">%1$d min · %2$d min</string>
     <string name="tab_focus">Concentration</string>
+    <string name="gam_coins_label">Pièces</string>
+    <string name="gam_session_earned">+%1$d XP · +%2$d pièces</string>
+    <string name="gam_level_up">Tu as atteint le niveau %1$d</string>
+    <string name="gam_streak_days">%1$d jours d'affilée</string>
+    <string name="gam_streak_one_day">Premier jour</string>
+    <string name="gam_multiplier">Série ×%1$s</string>
 </resources>

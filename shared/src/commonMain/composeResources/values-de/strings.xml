@@ -19,6 +19,10 @@
     <string name="action_save">Speichern</string>
     <string name="action_cancel">Abbrechen</string>
     <string name="birth_date_title">Was ist dein Geburtsdatum?</string>
+    <string name="gam_level_short">Lv.%1$d</string>
+    <string name="gam_level_label">Level</string>
+    <string name="gam_streak_label">Serie</string>
+    <string name="gam_xp_to_next">%1$s bis Level %2$d</string>
     <string name="focus_idle_hint">Wähle deine Fokusdauer</string>
     <string name="focus_preset_long">Lange Sitzung</string>
     <string name="focus_preset_sprint">Kurzer Sprint</string>
@@ -51,4 +55,10 @@
     <string name="focus_start_break_action">%1$d-min-Pause starten</string>
     <string name="focus_preset_times">%1$d Min · %2$d Min</string>
     <string name="tab_focus">Fokus</string>
+    <string name="gam_coins_label">Münzen</string>
+    <string name="gam_session_earned">+%1$d XP · +%2$d Münzen</string>
+    <string name="gam_level_up">Du hast Level %1$d erreicht</string>
+    <string name="gam_streak_days">%1$d Tage in Folge</string>
+    <string name="gam_streak_one_day">Erster Tag</string>
+    <string name="gam_multiplier">Serie ×%1$s</string>
 </resources>

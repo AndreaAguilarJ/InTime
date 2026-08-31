@@ -45,6 +45,10 @@ DESDE_ANDROID = {
     "action_save": "action_save",
     "action_cancel": "action_cancel",
     "birth_date_title": "birth_date_title",
+    "gam_level_short": "community_level_short",
+    "gam_level_label": "community_stat_level",
+    "gam_streak_label": "community_stat_streak",
+    "gam_xp_to_next": "gamification_header_xp_to_next_level",
 }
 
 # Textos que no existen en Android, traducidos aqui. El orden de la tupla sigue
@@ -173,6 +177,32 @@ PROPIOS = {
         "%1$d min · %2$d min", "%1$d min · %2$d min",
     ),
     "tab_focus": ("Enfoque", "Focus", "Fokus", "Concentration", "Foco"),
+    # El texto de monedas de Android trae un emoji (🪙) y el sistema de diseño de
+    # Momentum los prohíbe, así que aquí se nombra en palabras.
+    "gam_coins_label": ("Monedas", "Coins", "Münzen", "Pièces", "Moedas"),
+    "gam_session_earned": (
+        "+%1$d XP · +%2$d monedas",
+        "+%1$d XP · +%2$d coins",
+        "+%1$d XP · +%2$d Münzen",
+        "+%1$d XP · +%2$d pièces",
+        "+%1$d XP · +%2$d moedas",
+    ),
+    "gam_level_up": (
+        "Has subido al nivel %1$d", "You reached level %1$d",
+        "Du hast Level %1$d erreicht", "Tu as atteint le niveau %1$d",
+        "Alcançaste o nível %1$d",
+    ),
+    "gam_streak_days": (
+        "%1$d días seguidos", "%1$d days in a row", "%1$d Tage in Folge",
+        "%1$d jours d'affilée", "%1$d dias seguidos",
+    ),
+    "gam_streak_one_day": (
+        "Primer día", "First day", "Erster Tag", "Premier jour", "Primeiro dia",
+    ),
+    "gam_multiplier": (
+        "Racha ×%1$s", "Streak ×%1$s", "Serie ×%1$s",
+        "Série ×%1$s", "Sequência ×%1$s",
+    ),
 }
 
 

@@ -1,6 +1,8 @@
 package com.momentummm.shared.ui.screen
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,10 +41,14 @@ import com.momentummm.shared.focus.FocusPhase
 import com.momentummm.shared.focus.FocusTimer
 import com.momentummm.shared.focus.FocusTimerState
 import com.momentummm.shared.notification.MomentumNotifier
+import com.momentummm.shared.gamification.Gamification
+import com.momentummm.shared.gamification.ProgressStore
 import com.momentummm.shared.notification.NotificationIds
 import com.momentummm.shared.resources.Res
 import com.momentummm.shared.resources.action_start
 import com.momentummm.shared.resources.focus_close
+import com.momentummm.shared.resources.gam_level_up
+import com.momentummm.shared.resources.gam_session_earned
 import com.momentummm.shared.resources.focus_completed_detail
 import com.momentummm.shared.resources.focus_custom_open
 import com.momentummm.shared.resources.focus_end
@@ -70,7 +76,9 @@ import com.momentummm.shared.resources.notif_focus_done_body
 import com.momentummm.shared.resources.notif_focus_done_title
 import com.momentummm.shared.resources.tab_focus
 import com.momentummm.shared.ui.component.CustomSessionDialog
+import com.momentummm.shared.ui.component.ProgressHeader
 import com.momentummm.shared.util.nowEpochSeconds
+import com.momentummm.shared.util.todayLocalDate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -106,6 +114,36 @@ fun FocusSharedScreen(
     var state by remember { mutableStateOf(FocusTimerState()) }
     var customising by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    val progressStore = remember(store) { ProgressStore(store) }
+    var progress by remember { mutableStateOf(progressStore.read()) }
+    var lastOutcome by remember { mutableStateOf<ProgressStore.SessionOutcome?>(null) }
+
+    /**
+     * Registra los minutos de enfoque cumplidos.
+     *
+     * Se llama desde un único sitio por camino para no premiar dos veces: la
+     * terminación natural la dispara el efecto de abajo, y el abandono manual la
+     * dispara el botón.
+     */
+    fun award(minutes: Int, wholeSession: Boolean) {
+        if (minutes <= 0) return
+        val resultado = progressStore.recordFocusSession(
+            minutes = minutes,
+            completedWholeSession = wholeSession,
+            today = todayLocalDate(),
+        )
+        progress = resultado.progress
+        lastOutcome = resultado
+    }
+
+    // Al agotarse el enfoque se premia UNA vez: el efecto está atado a la fase, así
+    // que no se vuelve a ejecutar mientras la pantalla siga en «completada».
+    LaunchedEffect(state.phase) {
+        if (state.phase == FocusPhase.COMPLETED) {
+            award(state.creditedMinutes, wholeSession = true)
+        }
+    }
 
     // El bucle consulta el RELOJ en cada vuelta en vez de restar un segundo a
     // ciegas. Es lo que hace que la cuenta atrás sea correcta al volver del
@@ -162,6 +200,11 @@ fun FocusSharedScreen(
     }
 
     fun endSession() {
+        // Solo el ENFOQUE premia. Sin esta comprobación, abandonar un descanso
+        // habría acreditado sus minutos como si fueran de concentración.
+        if (!state.onBreak && state.phase != FocusPhase.IDLE) {
+            award(state.elapsedSeconds / 60, wholeSession = false)
+        }
         state = FocusTimer.stop()
         notifier.cancel(NotificationIds.FOCUS_COMPLETE)
         notifier.cancel(NotificationIds.BREAK_COMPLETE)
@@ -170,9 +213,16 @@ fun FocusSharedScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            // Desplazable a propósito: con la cabecera de progreso, el anillo y los
+            // presets, el contenido no cabe en una pantalla pequeña y el último
+            // botón quedaba CORTADO por el borde inferior.
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        ProgressHeader(progress = progress)
+
+        Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(Res.string.tab_focus),
             style = MaterialTheme.typography.headlineMedium,
@@ -285,6 +335,31 @@ fun FocusSharedScreen(
                     color = MaterialTheme.momentum.textSecondary,
                     textAlign = TextAlign.Center,
                 )
+                lastOutcome?.let { resultado ->
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = stringResource(
+                            Res.string.gam_session_earned,
+                            resultado.earned.xp,
+                            resultado.earned.coins,
+                        ),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.momentum.success,
+                        textAlign = TextAlign.Center,
+                    )
+                    if (resultado.leveledUp) {
+                        Text(
+                            text = stringResource(
+                                Res.string.gam_level_up,
+                                resultado.progress.level,
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+
                 Spacer(Modifier.height(14.dp))
                 if (state.hasBreak) {
                     val minutosDescanso = state.breakMinutes
