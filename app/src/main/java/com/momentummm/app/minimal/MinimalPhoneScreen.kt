@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.util.LifeWeeksCalculator
+import com.momentummm.app.util.LifeWeeksData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -149,7 +150,7 @@ private fun MinimalLauncherContent(
 
     // Obtener datos de semanas de vida
     val context = LocalContext.current
-    var lifeWeeksData by remember { mutableStateOf<LifeWeeksCalculator.LifeWeeksData?>(null) }
+    var lifeWeeksData by remember { mutableStateOf<LifeWeeksData?>(null) }
 
     LaunchedEffect(Unit) {
         val database = AppDatabase.getDatabase(context)

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.momentummm.app.data.entity.UserSettings
 import com.momentummm.app.data.repository.UserRepository
 import com.momentummm.app.util.LifeWeeksCalculator
+import com.momentummm.app.util.LifeWeeksData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +19,7 @@ import com.momentummm.app.R
 data class LifeWeeksUiState(
     val isLoading: Boolean = true,
     val userSettings: UserSettings? = null,
-    val lifeWeeksData: LifeWeeksCalculator.LifeWeeksData? = null,
+    val lifeWeeksData: LifeWeeksData? = null,
     val showColorPicker: Boolean = false,
     val hasBirthDate: Boolean = false,
     val errorMessage: String? = null

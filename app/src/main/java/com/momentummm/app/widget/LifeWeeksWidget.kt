@@ -29,6 +29,7 @@ import com.momentummm.app.MainActivity
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.util.LifeWeeksCalculator
+import com.momentummm.app.util.LifeWeeksData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -74,7 +75,7 @@ class LifeWeeksWidget : GlanceAppWidget() {
     }
 
     data class WidgetData(
-        val lifeWeeksData: LifeWeeksCalculator.LifeWeeksData?,
+        val lifeWeeksData: LifeWeeksData?,
         val livedWeeksColor: Color,
         val futureWeeksColor: Color,
         val backgroundColor: Color

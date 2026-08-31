@@ -179,6 +179,10 @@ dependencies {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.21")
     }
 
+    // Núcleo compartido con iOS (Kotlin Multiplatform). Conserva los paquetes
+    // originales, así que las pantallas Android siguen importando igual.
+    implementation(project(":shared"))
+
     // Core Android dependencies
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")

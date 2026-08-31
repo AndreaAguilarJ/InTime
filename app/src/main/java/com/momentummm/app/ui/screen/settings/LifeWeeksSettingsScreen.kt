@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.util.LifeWeeksCalculator
+import com.momentummm.app.util.LifeWeeksData
 import com.momentummm.app.widget.LifeWeeksWidget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,7 +80,7 @@ fun LifeWeeksSettingsScreen(
     var livedWeeksColor by remember { mutableStateOf("#6366F1") }
     var futureWeeksColor by remember { mutableStateOf("#E5E7EB") }
     var backgroundColor by remember { mutableStateOf("#1F2937") }
-    var lifeWeeksData by remember { mutableStateOf<LifeWeeksCalculator.LifeWeeksData?>(null) }
+    var lifeWeeksData by remember { mutableStateOf<LifeWeeksData?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showLivedColorPicker by remember { mutableStateOf(false) }
     var showFutureColorPicker by remember { mutableStateOf(false) }

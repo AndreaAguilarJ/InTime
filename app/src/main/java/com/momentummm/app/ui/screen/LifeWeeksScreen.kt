@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.momentummm.app.ui.component.LifeWeeksGrid
 import com.momentummm.app.R
 import com.momentummm.app.ui.viewmodel.LifeWeeksViewModel
 import com.momentummm.app.util.LifeWeeksCalculator
@@ -212,7 +213,8 @@ fun LifeWeeksScreen(
                             LifeWeeksGrid(
                                 weeksLived = data.weeksLived,
                                 livedColor = livedColorParsed,
-                                futureColor = futureColorParsed
+                                futureColor = futureColorParsed,
+                                totalWeeks = data.totalWeeks
                             )
                         }
                     }
@@ -282,53 +284,6 @@ fun LifeWeeksScreen(
     }
 }
 
-@Composable
-fun LifeWeeksGrid(
-    weeksLived: Int,
-    livedColor: Color,
-    futureColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Canvas(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(52f / 80f) // 52 weeks wide, 80 years tall
-    ) {
-        drawLifeWeeksGrid(
-            weeksLived = weeksLived,
-            livedColor = livedColor,
-            futureColor = futureColor
-        )
-    }
-}
-
-private fun DrawScope.drawLifeWeeksGrid(
-    weeksLived: Int,
-    livedColor: Color,
-    futureColor: Color
-) {
-    val totalWeeks = 4160 // 80 years * 52 weeks
-    val weeksPerRow = 52
-    val totalRows = 80
-    
-    val cellWidth = size.width / weeksPerRow
-    val cellHeight = size.height / totalRows
-    val padding = 1.dp.toPx()
-    
-    for (week in 0 until totalWeeks) {
-        val row = week / weeksPerRow
-        val col = week % weeksPerRow
-        
-        val x = col * cellWidth + padding
-        val y = row * cellHeight + padding
-        val cellSize = minOf(cellWidth - padding * 2, cellHeight - padding * 2)
-        
-        val color = if (week < weeksLived) livedColor else futureColor
-        
-        drawRect(
-            color = color,
-            topLeft = androidx.compose.ui.geometry.Offset(x, y),
-            size = androidx.compose.ui.geometry.Size(cellSize, cellSize)
-        )
-    }
-}
+// La cuadrícula la dibuja ahora el componente compartido con iOS
+// (com.momentummm.app.ui.component.LifeWeeksGrid), para que las dos plataformas
+// pinten la misma rejilla y respeten la expectativa de vida configurada.

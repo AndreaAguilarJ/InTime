@@ -46,6 +46,10 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                // `api` y no `implementation`: los tipos de fecha aparecen en la
+                // superficie pública del módulo, así que quien lo consume --la app
+                // Android incluida-- necesita verlos.
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
             }
         }
         val commonTest by getting {
