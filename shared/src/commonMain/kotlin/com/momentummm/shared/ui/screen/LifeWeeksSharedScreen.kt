@@ -34,6 +34,7 @@ import com.momentummm.shared.resources.birth_date_title
 import com.momentummm.shared.resources.life_change_birth
 import com.momentummm.shared.resources.life_empty_hint
 import com.momentummm.shared.resources.life_pick_birth
+import com.momentummm.shared.resources.life_progress
 import com.momentummm.shared.resources.life_title
 import com.momentummm.shared.ui.component.DateSelectorDialog
 import org.jetbrains.compose.resources.stringResource
@@ -92,7 +93,7 @@ fun LifeWeeksSharedScreen(
 
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "${data.progressPercentage.toInt()}% recorrido",
+                text = stringResource(Res.string.life_progress, "${data.progressPercentage.toInt()} %"),
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.momentum.textPrimary,
             )

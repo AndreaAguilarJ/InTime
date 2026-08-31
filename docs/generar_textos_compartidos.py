@@ -184,6 +184,13 @@ PROPIOS = {
         "%1$d min · %2$d min", "%1$d min · %2$d min",
     ),
     "tab_focus": ("Enfoque", "Focus", "Fokus", "Concentration", "Foco"),
+    # El porcentaje llega ya formateado como texto («45 %») en vez de como numero,
+    # para no depender de como cada plataforma escapa el signo de porcentaje dentro
+    # de una cadena con argumentos.
+    "life_progress": (
+        "%1$s recorrido", "%1$s lived", "%1$s gelebt",
+        "%1$s vécu", "%1$s vivido",
+    ),
     "settings_appearance": (
         "Apariencia", "Appearance", "Erscheinungsbild", "Apparence", "Aparência",
     ),

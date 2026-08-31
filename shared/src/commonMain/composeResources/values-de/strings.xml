@@ -62,6 +62,7 @@
     <string name="focus_start_break_action">%1$d-min-Pause starten</string>
     <string name="focus_preset_times">%1$d Min · %2$d Min</string>
     <string name="tab_focus">Fokus</string>
+    <string name="life_progress">%1$s gelebt</string>
     <string name="settings_appearance">Erscheinungsbild</string>
     <string name="gam_coins_label">Münzen</string>
     <string name="gam_session_earned">+%1$d XP · +%2$d Münzen</string>

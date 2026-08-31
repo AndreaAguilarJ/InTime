@@ -62,6 +62,7 @@
     <string name="focus_start_break_action">Empezar descanso de %1$d min</string>
     <string name="focus_preset_times">%1$d min · %2$d min</string>
     <string name="tab_focus">Enfoque</string>
+    <string name="life_progress">%1$s recorrido</string>
     <string name="settings_appearance">Apariencia</string>
     <string name="gam_coins_label">Monedas</string>
     <string name="gam_session_earned">+%1$d XP · +%2$d monedas</string>
