@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Manifiesto de privacidad exigido por Apple.
+
+	  Sin este archivo, App Store Connect rechaza la subida con ITMS-91053 en
+	  cuanto la app usa una «API de motivo obligatorio», y Momentum usa una:
+	  NSUserDefaults, donde guarda la fecha de nacimiento y las preferencias.
+
+	  El código de motivo CA92.1 significa exactamente «acceder a los ajustes de
+	  la propia app, sin compartirlos con nadie», que es el caso: los datos se
+	  quedan en el dispositivo.
+	-->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- La app no rastrea a nadie ni across apps ni across webs. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!--
+	  Datos recogidos. El tiempo de uso y la fecha de nacimiento se quedan en el
+	  dispositivo; la cuenta y la sincronización con Appwrite se declaran cuando
+	  esa parte se conecte en iOS, no antes.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+</dict>
+</plist>

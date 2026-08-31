@@ -3,6 +3,7 @@ package com.momentummm.shared.focus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class FocusTimerTest {
@@ -132,5 +133,65 @@ class FocusTimerTest {
         assertEquals(0f, FocusTimerState().progress)
         val mitad = tickTimes(FocusTimer.start("Estudio", 10), 5 * 60)
         assertEquals(0.5f, mitad.progress)
+    }
+
+    // ── Anclaje al reloj: lo que hace que el cronometro sobreviva a que iOS
+    //    suspenda la app en segundo plano ────────────────────────────────────
+
+    @Test
+    fun `al volver del segundo plano la cuenta atras salta a donde dice el reloj`() {
+        val inicio = FocusTimer.start("Estudio", 25, breakMinutes = 5, nowEpochSeconds = 1_000)
+        assertEquals(1_000 + 25 * 60, inicio.endsAtEpochSeconds)
+
+        // La app estuvo suspendida diez minutos: sin esto seguiria en 24:59.
+        val alVolver = FocusTimer.syncToClock(inicio, nowEpochSeconds = 1_000 + 600)
+        assertEquals(FocusPhase.RUNNING, alVolver.phase)
+        assertEquals(15 * 60, alVolver.remainingSeconds)
+    }
+
+    @Test
+    fun `si el intervalo vencio estando suspendida, aparece completada`() {
+        val inicio = FocusTimer.start("Estudio", 25, breakMinutes = 5, nowEpochSeconds = 1_000)
+        val alVolver = FocusTimer.syncToClock(inicio, nowEpochSeconds = 1_000 + 30 * 60)
+        assertEquals(FocusPhase.COMPLETED, alVolver.phase)
+        assertEquals(0, alVolver.remainingSeconds)
+        assertEquals(25, alVolver.creditedMinutes)
+    }
+
+    @Test
+    fun `pausar suelta el ancla y reanudar la vuelve a poner`() {
+        val inicio = FocusTimer.start("Estudio", 25, nowEpochSeconds = 1_000)
+        val enMarcha = FocusTimer.syncToClock(inicio, nowEpochSeconds = 1_300)
+        assertEquals(20 * 60, enMarcha.remainingSeconds)
+
+        val pausada = FocusTimer.pause(enMarcha)
+        assertNull(pausada.endsAtEpochSeconds)
+
+        // Una hora pausada no consume nada del intervalo.
+        val sincronizada = FocusTimer.syncToClock(pausada, nowEpochSeconds = 1_300 + 3_600)
+        assertEquals(20 * 60, sincronizada.remainingSeconds)
+
+        val reanudada = FocusTimer.resume(sincronizada, nowEpochSeconds = 5_000)
+        assertEquals(5_000 + 20 * 60, reanudada.endsAtEpochSeconds)
+    }
+
+    @Test
+    fun `un reloj que retrocede no alarga el intervalo mas alla de su duracion`() {
+        val inicio = FocusTimer.start("Estudio", 10, nowEpochSeconds = 1_000)
+        // Cambio de hora o ajuste manual hacia atras.
+        val sincronizada = FocusTimer.syncToClock(inicio, nowEpochSeconds = 500)
+        assertEquals(10 * 60, sincronizada.remainingSeconds)
+    }
+
+    @Test
+    fun `el descanso tambien queda anclado al reloj`() {
+        val completada = tickTimes(
+            FocusTimer.start("Estudio", 1, breakMinutes = 5, nowEpochSeconds = 1_000), 60
+        )
+        val descanso = FocusTimer.startBreak(completada, nowEpochSeconds = 2_000)
+        assertEquals(2_000 + 5 * 60, descanso.endsAtEpochSeconds)
+
+        val fin = FocusTimer.syncToClock(descanso, nowEpochSeconds = 2_000 + 5 * 60)
+        assertEquals(FocusPhase.IDLE, fin.phase)
     }
 }

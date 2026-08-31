@@ -31,6 +31,16 @@ data class FocusTimerState(
     val onBreak: Boolean = false,
     /** Minutos de enfoque ya acreditados, para no repartir premio dos veces. */
     val creditedMinutes: Int = 0,
+    /**
+     * Instante en que termina el intervalo actual, en segundos desde la época.
+     *
+     * Es la fuente de verdad de cuánto queda, y existe por una razón concreta:
+     * iOS **suspende** la app al pasar a segundo plano, así que un contador que
+     * resta de uno en uno se congela. Al volver, [FocusTimer.syncToClock] compara
+     * con el reloj real y la cuenta atrás aparece donde debe estar, no donde se
+     * quedó.
+     */
+    val endsAtEpochSeconds: Long? = null,
 ) {
     val elapsedSeconds: Int get() = (totalSeconds - remainingSeconds).coerceAtLeast(0)
 
@@ -49,8 +59,12 @@ data class FocusTimerState(
  *
  * Vive aquí para que Android e iOS se comporten igual y para que las reglas se
  * puedan comprobar sin teléfono: el servicio de Android aporta la notificación
- * persistente y el reparto de XP, iOS aportará las notificaciones locales, pero
- * las transiciones son estas y solo estas.
+ * persistente y el reparto de XP, iOS aporta los avisos locales, pero las
+ * transiciones son estas y solo estas.
+ *
+ * Todas las funciones que dependen del tiempo reciben el instante actual como
+ * parámetro en vez de leer el reloj por dentro: así son comprobables y no hay dos
+ * llamadas seguidas que discrepen.
  */
 object FocusTimer {
 
@@ -59,6 +73,7 @@ object FocusTimer {
         sessionName: String?,
         durationMinutes: Int,
         breakMinutes: Int = 0,
+        nowEpochSeconds: Long = 0L,
     ): FocusTimerState {
         if (durationMinutes <= 0) return FocusTimerState()
         val total = durationMinutes * 60
@@ -69,42 +84,74 @@ object FocusTimer {
             remainingSeconds = total,
             breakMinutes = breakMinutes.coerceAtLeast(0),
             onBreak = false,
+            endsAtEpochSeconds = nowEpochSeconds + total,
         )
     }
 
     /**
-     * Avanza un segundo. Solo tiene efecto en marcha o en descanso: pausada o
-     * terminada, el reloj no corre.
+     * Pone la cuenta atrás donde dice el reloj real.
      *
-     * Al llegar a cero el enfoque pasa a COMPLETED --nunca directo al descanso--
-     * porque el aviso de sesión cumplida debe verse antes, y saltar el descanso
-     * es una decisión de la persona, no del reloj.
+     * Es lo que hay que llamar al volver del segundo plano. Si el intervalo ya
+     * venció mientras la app estaba suspendida, aplica la transición que
+     * correspondía, de modo que la persona encuentra la sesión completada y no un
+     * reloj parado a mitad.
+     */
+    fun syncToClock(state: FocusTimerState, nowEpochSeconds: Long): FocusTimerState {
+        val endsAt = state.endsAtEpochSeconds ?: return state
+        if (!state.isTicking) return state
+
+        val restante = (endsAt - nowEpochSeconds).coerceAtMost(state.totalSeconds.toLong())
+        if (restante > 0) return state.copy(remainingSeconds = restante.toInt())
+        return finishInterval(state)
+    }
+
+    /**
+     * Avanza un segundo, para que la cuenta atrás se mueva con suavidad mientras
+     * la pantalla está a la vista. [syncToClock] sigue siendo la autoridad.
      */
     fun tick(state: FocusTimerState): FocusTimerState {
         if (!state.isTicking) return state
         val restante = state.remainingSeconds - 1
         if (restante > 0) return state.copy(remainingSeconds = restante)
-
-        return when (state.phase) {
-            FocusPhase.RUNNING -> state.copy(
-                phase = FocusPhase.COMPLETED,
-                remainingSeconds = 0,
-                creditedMinutes = state.totalSeconds / 60,
-            )
-            // Terminado el descanso se vuelve a reposo: la sesión acabó del todo.
-            FocusPhase.BREAK -> FocusTimerState()
-            else -> state
-        }
+        return finishInterval(state)
     }
 
-    /** Pausa conservando la fase de la que viene, enfoque o descanso. */
-    fun pause(state: FocusTimerState): FocusTimerState =
-        if (state.isTicking) state.copy(phase = FocusPhase.PAUSED) else state
+    /**
+     * Cierra el intervalo agotado.
+     *
+     * El enfoque pasa a COMPLETED --nunca directo al descanso-- porque el aviso de
+     * sesión cumplida debe verse antes, y saltar el descanso es una decisión de la
+     * persona, no del reloj.
+     */
+    private fun finishInterval(state: FocusTimerState): FocusTimerState = when (state.phase) {
+        FocusPhase.RUNNING -> state.copy(
+            phase = FocusPhase.COMPLETED,
+            remainingSeconds = 0,
+            creditedMinutes = state.totalSeconds / 60,
+            endsAtEpochSeconds = null,
+        )
+        // Terminado el descanso se vuelve a reposo: la sesión acabó del todo.
+        FocusPhase.BREAK -> FocusTimerState()
+        else -> state
+    }
 
-    /** Reanuda devolviendo la sesión a la fase correcta según [FocusTimerState.onBreak]. */
-    fun resume(state: FocusTimerState): FocusTimerState =
+    /**
+     * Pausa conservando la fase de la que viene, enfoque o descanso.
+     *
+     * Al pausar se suelta el ancla temporal: lo que queda pasa a medirse en
+     * segundos guardados, porque el reloj de pared ya no representa nada mientras
+     * la sesión está detenida.
+     */
+    fun pause(state: FocusTimerState): FocusTimerState =
+        if (state.isTicking) state.copy(phase = FocusPhase.PAUSED, endsAtEpochSeconds = null) else state
+
+    /** Reanuda devolviendo la sesión a la fase correcta y reanclando el reloj. */
+    fun resume(state: FocusTimerState, nowEpochSeconds: Long = 0L): FocusTimerState =
         if (state.phase == FocusPhase.PAUSED) {
-            state.copy(phase = if (state.onBreak) FocusPhase.BREAK else FocusPhase.RUNNING)
+            state.copy(
+                phase = if (state.onBreak) FocusPhase.BREAK else FocusPhase.RUNNING,
+                endsAtEpochSeconds = nowEpochSeconds + state.remainingSeconds,
+            )
         } else {
             state
         }
@@ -118,7 +165,7 @@ object FocusTimer {
      * Solo es válido desde COMPLETED y con descanso configurado; cualquier otra
      * combinación devuelve el estado intacto en vez de inventar un intervalo.
      */
-    fun startBreak(state: FocusTimerState): FocusTimerState {
+    fun startBreak(state: FocusTimerState, nowEpochSeconds: Long = 0L): FocusTimerState {
         if (state.phase != FocusPhase.COMPLETED || !state.hasBreak) return state
         val total = state.breakMinutes * 60
         return state.copy(
@@ -126,15 +173,16 @@ object FocusTimer {
             totalSeconds = total,
             remainingSeconds = total,
             onBreak = true,
+            endsAtEpochSeconds = nowEpochSeconds + total,
         )
     }
 
     /**
      * Salta el descanso y vuelve a reposo.
      *
-     * Conserva [FocusTimerState.creditedMinutes] a cero en el estado nuevo porque
-     * el premio ya se otorgó al completar el enfoque: volver a exponerlo aquí es
-     * lo que provocaba registros duplicados.
+     * El estado nuevo deja [FocusTimerState.creditedMinutes] a cero porque el
+     * premio ya se otorgó al completar el enfoque: volver a exponerlo aquí es lo
+     * que provocaba registros duplicados.
      */
     fun skipBreak(state: FocusTimerState): FocusTimerState =
         if (state.phase == FocusPhase.BREAK || state.phase == FocusPhase.COMPLETED) {

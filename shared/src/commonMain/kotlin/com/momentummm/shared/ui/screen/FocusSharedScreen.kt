@@ -35,6 +35,9 @@ import com.momentummm.app.ui.theme.momentum
 import com.momentummm.shared.focus.FocusPhase
 import com.momentummm.shared.focus.FocusTimer
 import com.momentummm.shared.focus.FocusTimerState
+import com.momentummm.shared.notification.MomentumNotifier
+import com.momentummm.shared.notification.NotificationIds
+import com.momentummm.shared.util.nowEpochSeconds
 import kotlinx.coroutines.delay
 
 /** Duraciones ofrecidas de entrada, en minutos de enfoque y de descanso. */
@@ -48,20 +51,46 @@ private val PRESETS = listOf(
  * Pantalla de enfoque compartida entre Android e iOS.
  *
  * Toda la lógica está en [FocusTimer], que se comprueba con pruebas sin teléfono;
- * aquí solo se dibuja el estado y se avanza el reloj una vez por segundo.
+ * aquí solo se dibuja el estado, se corrige la cuenta atrás contra el reloj real y
+ * se programan los avisos.
  */
 @Composable
-fun FocusSharedScreen(modifier: Modifier = Modifier) {
+fun FocusSharedScreen(
+    notifier: MomentumNotifier,
+    modifier: Modifier = Modifier,
+) {
     var state by remember { mutableStateOf(FocusTimerState()) }
 
-    // Un único bucle atado a la fase: al pausar, la condición deja de cumplirse y
-    // la corrutina termina, de modo que no queda un ticker vivo consumiendo
-    // batería detrás de una pantalla pausada.
+    // El bucle consulta el RELOJ en cada vuelta en vez de restar un segundo a
+    // ciegas. Es lo que hace que la cuenta atrás sea correcta al volver del
+    // segundo plano en iOS, donde el sistema congela la app: la corrutina se
+    // reanuda y la primera vuelta ya pone el número donde debe estar.
+    // Al pausar, la condición deja de cumplirse y la corrutina termina, así que no
+    // queda un ticker vivo gastando batería detrás de una pantalla pausada.
     LaunchedEffect(state.phase) {
         while (state.isTicking) {
+            state = FocusTimer.syncToClock(state, nowEpochSeconds())
             delay(1000)
-            state = FocusTimer.tick(state)
         }
+    }
+
+    fun startSession(nombre: String, enfoque: Int, descanso: Int) {
+        val ahora = nowEpochSeconds()
+        state = FocusTimer.start(nombre, enfoque, descanso, ahora)
+        // El aviso se programa AHORA para el final de la sesión: si se programara
+        // al terminar, en iOS la app ya estaría suspendida y nunca se ejecutaría.
+        notifier.scheduleAfter(
+            id = NotificationIds.FOCUS_COMPLETE,
+            seconds = enfoque * 60,
+            title = "Sesión de enfoque completada",
+            body = "$enfoque minutos de $nombre. Te toca descansar.",
+        )
+    }
+
+    fun endSession() {
+        state = FocusTimer.stop()
+        notifier.cancel(NotificationIds.FOCUS_COMPLETE)
+        notifier.cancel(NotificationIds.BREAK_COMPLETE)
     }
 
     Column(
@@ -97,20 +126,25 @@ fun FocusSharedScreen(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(32.dp))
 
         when (state.phase) {
-            FocusPhase.IDLE -> PresetList(onPick = { nombre, enfoque, descanso ->
-                state = FocusTimer.start(nombre, enfoque, descanso)
-            })
+            FocusPhase.IDLE -> PresetList(onPick = ::startSession)
 
             FocusPhase.RUNNING, FocusPhase.BREAK -> Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Button(
-                    onClick = { state = FocusTimer.pause(state) },
+                    onClick = {
+                        state = FocusTimer.pause(state)
+                        // Pausado, el aviso programado ya no corresponde a nada.
+                        notifier.cancel(
+                            if (state.onBreak) NotificationIds.BREAK_COMPLETE
+                            else NotificationIds.FOCUS_COMPLETE
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("Pausar") }
                 Spacer(Modifier.height(10.dp))
                 OutlinedButton(
-                    onClick = { state = FocusTimer.stop() },
+                    onClick = ::endSession,
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(if (state.onBreak) "Saltar descanso" else "Terminar sesión") }
             }
@@ -119,12 +153,24 @@ fun FocusSharedScreen(modifier: Modifier = Modifier) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Button(
-                    onClick = { state = FocusTimer.resume(state) },
+                    onClick = {
+                        val reanudada = FocusTimer.resume(state, nowEpochSeconds())
+                        state = reanudada
+                        notifier.scheduleAfter(
+                            id = if (reanudada.onBreak) NotificationIds.BREAK_COMPLETE
+                            else NotificationIds.FOCUS_COMPLETE,
+                            seconds = reanudada.remainingSeconds,
+                            title = if (reanudada.onBreak) "Descanso terminado"
+                            else "Sesión de enfoque completada",
+                            body = if (reanudada.onBreak) "Vuelve cuando quieras."
+                            else "Te toca descansar.",
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("Reanudar") }
                 Spacer(Modifier.height(10.dp))
                 OutlinedButton(
-                    onClick = { state = FocusTimer.stop() },
+                    onClick = ::endSession,
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("Terminar sesión") }
             }
@@ -140,14 +186,26 @@ fun FocusSharedScreen(modifier: Modifier = Modifier) {
                 )
                 Spacer(Modifier.height(14.dp))
                 if (state.hasBreak) {
+                    val minutosDescanso = state.breakMinutes
                     Button(
-                        onClick = { state = FocusTimer.startBreak(state) },
+                        onClick = {
+                            state = FocusTimer.startBreak(state, nowEpochSeconds())
+                            notifier.scheduleAfter(
+                                id = NotificationIds.BREAK_COMPLETE,
+                                seconds = minutosDescanso * 60,
+                                title = "Descanso terminado",
+                                body = "$minutosDescanso minutos de pausa. ¿Otra sesión?",
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Empezar descanso de ${state.breakMinutes} min") }
+                    ) { Text("Empezar descanso de $minutosDescanso min") }
                     Spacer(Modifier.height(10.dp))
                 }
                 OutlinedButton(
-                    onClick = { state = FocusTimer.skipBreak(state) },
+                    onClick = {
+                        state = FocusTimer.skipBreak(state)
+                        notifier.cancel(NotificationIds.BREAK_COMPLETE)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(if (state.hasBreak) "Saltar descanso" else "Cerrar") }
             }

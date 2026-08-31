@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.momentummm.app.ui.theme.MomentumThemeCore
 import com.momentummm.app.ui.theme.momentum
 import com.momentummm.shared.data.SettingsStore
+import com.momentummm.shared.notification.MomentumNotifier
 import com.momentummm.shared.ui.screen.FocusSharedScreen
 import com.momentummm.shared.ui.screen.LifeWeeksSharedScreen
 
@@ -44,7 +45,7 @@ private enum class MomentumTab(val label: String, val icon: ImageVector) {
  * el bloqueo de apps se añadirán cuando Apple conceda el permiso Family Controls.
  */
 @Composable
-fun MomentumApp(store: SettingsStore) {
+fun MomentumApp(store: SettingsStore, notifier: MomentumNotifier) {
     MomentumThemeCore(darkTheme = isSystemInDarkTheme()) {
         var tab by remember { mutableStateOf(MomentumTab.FOCUS) }
 
@@ -83,7 +84,7 @@ fun MomentumApp(store: SettingsStore) {
             ) { insets ->
                 Column(modifier = Modifier.fillMaxSize().padding(insets)) {
                     when (tab) {
-                        MomentumTab.FOCUS -> FocusSharedScreen()
+                        MomentumTab.FOCUS -> FocusSharedScreen(notifier = notifier)
                         MomentumTab.LIFE -> LifeWeeksSharedScreen(store = store)
                     }
                 }
