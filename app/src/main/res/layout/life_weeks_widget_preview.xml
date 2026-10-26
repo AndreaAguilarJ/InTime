@@ -1,22 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@drawable/widget_background">
+    android:background="#FAFAFA"
+    android:padding="12dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/life_weeks_widget_name"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:gravity="center" />
-
-    <View
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#E5E7EB" />
+        android:orientation="vertical"
+        android:gravity="center">
 
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tu Vida en Semanas"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#111827"
+            android:gravity="center" />
+
+        <Space
+            android:layout_width="1dp"
+            android:layout_height="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#ECFDF5"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1234"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#10B981" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="vividas"
+                    android:textSize="9sp"
+                    android:textColor="#10B981" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#F3F4F6"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2926"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#6B7280" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="restantes"
+                    android:textSize="9sp"
+                    android:textColor="#6B7280" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="1dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#EFF6FF"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="23"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#3B82F6" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="años"
+                    android:textSize="9sp"
+                    android:textColor="#3B82F6" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Space
+            android:layout_width="1dp"
+            android:layout_height="12dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:background="#E5E7EB" />
+
+        <Space
+            android:layout_width="1dp"
+            android:layout_height="12dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#E5E7EB" />
+
+    </LinearLayout>
+
+</FrameLayout>

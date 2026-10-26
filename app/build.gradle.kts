@@ -3,18 +3,19 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
-    namespace = "com.momentum.app"
-    compileSdk = 34
+        namespace = "com.momentummm.app"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.momentum.app"
+        applicationId = "com.momentummm.app"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 35
+        versionCode = 12
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -22,21 +23,41 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            // Estas propiedades deben estar en gradle.properties (no en Git)
+            storeFile = file(project.findProperty("MOMENTUM_STORE_FILE") as String? ?: "momentum-release-key.jks")
+            storePassword = project.findProperty("MOMENTUM_STORE_PASSWORD") as String?
+            keyAlias = project.findProperty("MOMENTUM_KEY_ALIAS") as String?
+            keyPassword = project.findProperty("MOMENTUM_KEY_PASSWORD") as String?
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-DEBUG"
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
+        freeCompilerArgs += listOf(
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        )
     }
     buildFeatures {
         compose = true
@@ -49,12 +70,35 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    ndkVersion = "29.0.13599879 rc2"
+    buildToolsVersion = "36.0.0"
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+configurations.configureEach {
+    resolutionStrategy.force(
+        "org.jetbrains.kotlin:kotlin-stdlib:1.9.20",
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.20",
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20"
+    )
 }
 
 dependencies {
+    // Forzar alineamiento de todas las libs Kotlin a 1.9.20
+    implementation(enforcedPlatform("org.jetbrains.kotlin:kotlin-bom:1.9.20"))
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.20")
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.20")
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20")
+    }
+
     // Core Android dependencies
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-process:2.7.0") // Para AutoSyncManager lifecycle observer
     implementation("androidx.activity:activity-compose:1.8.2")
 
     // Compose BOM
@@ -63,21 +107,30 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    // Material Components (Views) for XML themes
+    implementation("com.google.android.material:material:1.12.0")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.5")
 
-    // ViewModel and LiveData
+    // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
+    // Hilt Dependency Injection
+    implementation("com.google.dagger:hilt-android:2.48")
+    ksp("com.google.dagger:hilt-compiler:2.48")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     // Room database (keeping for migration)
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.7.2")
+    implementation("androidx.room:room-ktx:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
 
-    // Appwrite SDK
-    implementation("io.appwrite:sdk-for-android:4.0.0")
+    // Appwrite SDK (actualizado)
+    implementation("io.appwrite:sdk-for-android:8.1.0")
+
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
@@ -85,24 +138,12 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Permissions
-    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
-
     // Widget support
     implementation("androidx.glance:glance-appwidget:1.0.0")
     implementation("androidx.glance:glance-material3:1.0.0")
 
-    // HTTP client for Appwrite
-    implementation("io.ktor:ktor-client-okhttp:2.3.6")
-
     // JSON serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-
-    // Biometric authentication
-    implementation("androidx.biometric:biometric:1.1.0")
-
-    // For minimal phone functionality
-    implementation("androidx.core:core-telecom:1.0.0-alpha01")
 
     // In-app billing for purchases
     implementation("com.android.billingclient:billing:6.1.0")
@@ -115,15 +156,11 @@ dependencies {
     implementation("com.opencsv:opencsv:5.8")
     implementation("com.itextpdf:itext7-core:7.2.5")
 
-    // Notification support
-    implementation("androidx.core:core-ktx:1.12.0")
 
     // Enhanced UI components
     implementation("androidx.compose.animation:animation:1.5.4")
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
-    // File picker for export
-    implementation("androidx.activity:activity-ktx:1.8.2")
 
     // Splash screen
     implementation("androidx.core:core-splashscreen:1.0.1")

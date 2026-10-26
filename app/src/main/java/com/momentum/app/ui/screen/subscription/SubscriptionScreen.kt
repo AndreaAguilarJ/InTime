@@ -1,7 +1,5 @@
-package com.momentum.app.ui.screen.subscription
+package com.momentummm.app.ui.screen.subscription
 
-import androidx.activity.compose.LocalActivityResultRegistryOwner
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,19 +13,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.momentum.app.data.manager.BillingManager
-import com.momentum.app.data.model.SubscriptionPlan
-import com.momentum.app.data.model.SubscriptionPlans
-import kotlinx.coroutines.launch
+import com.momentummm.app.data.manager.BillingManager
+import com.momentummm.app.data.model.SubscriptionPlan
+import com.momentummm.app.data.model.SubscriptionPlans
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,17 +34,11 @@ fun SubscriptionScreen(
     billingManager: BillingManager? = null
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    
+
     val billing = billingManager ?: remember { BillingManager(context) }
     
     var selectedPlan by remember { mutableStateOf("premium") }
     var isYearly by remember { mutableStateOf(true) }
-    
-    val connectionState by billing.billingConnectionState.collectAsState()
-    val purchaseState by billing.purchaseState.collectAsState()
-    val subscriptionStatus by billing.subscriptionStatus.collectAsState()
-    val availableProducts by billing.availableProducts.collectAsState()
     
     // Initialize billing connection
     LaunchedEffect(Unit) {
@@ -378,15 +366,18 @@ private fun PlanCard(
             Spacer(modifier = Modifier.height(8.dp))
             
             Row(
-                verticalAlignment = Alignment.Baseline
+                // Baseline no es un Alignment.Vertical válido; usar alignByBaseline() en los hijos
+                // verticalAlignment = Alignment.Baseline
             ) {
                 Text(
+                    modifier = Modifier.alignByBaseline(),
                     text = if (isYearly) plan.priceYearly else plan.priceMonthly,
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
+                    modifier = Modifier.alignByBaseline(),
                     text = if (isYearly) "/año" else "/mes",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

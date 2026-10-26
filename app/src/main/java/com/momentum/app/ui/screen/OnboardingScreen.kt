@@ -1,4 +1,4 @@
-package com.momentum.app.ui.screen
+package com.momentummm.app.ui.screen
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
@@ -11,10 +11,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.momentum.app.R
-import com.momentum.app.ui.viewmodel.OnboardingViewModel
-import com.momentum.app.ui.viewmodel.OnboardingStep
-import com.momentum.app.util.PermissionUtils
+import com.momentummm.app.R
+import com.momentummm.app.ui.viewmodel.OnboardingViewModel
+import com.momentummm.app.ui.viewmodel.OnboardingStep
+import com.momentummm.app.util.PermissionUtils
 import java.text.SimpleDateFormat
 import java.util.*
 

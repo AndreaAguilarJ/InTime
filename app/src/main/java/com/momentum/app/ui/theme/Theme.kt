@@ -1,4 +1,4 @@
-package com.momentum.app.ui.theme
+package com.momentummm.app.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.momentum.app.data.manager.ThemeManager
+import com.momentummm.app.data.manager.ThemeManager
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryDark,

@@ -1,15 +1,15 @@
-package com.momentum.app.ui.viewmodel
+package com.momentummm.app.ui.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.momentum.app.data.entity.Quote
-import com.momentum.app.data.repository.QuotesRepository
-import com.momentum.app.data.repository.UsageStatsRepository
-import com.momentum.app.data.repository.UserRepository
-import com.momentum.app.util.LifeWeeksCalculator
-import com.momentum.app.util.PermissionUtils
+import com.momentummm.app.data.entity.Quote
+import com.momentummm.app.data.repository.QuotesRepository
+import com.momentummm.app.data.repository.UsageStatsRepository
+import com.momentummm.app.data.repository.UserRepository
+import com.momentummm.app.util.LifeWeeksCalculator
+import com.momentummm.app.util.PermissionUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +19,7 @@ data class DashboardUiState(
     val isLoading: Boolean = true,
     val totalScreenTime: String = "0h 0m",
     val quoteOfTheDay: Quote? = null,
-    val topApps: List<com.momentum.app.data.repository.AppUsageInfo> = emptyList(),
+    val topApps: List<com.momentummm.app.data.repository.AppUsageInfo> = emptyList(),
     val hasUsagePermission: Boolean = false
 )
 

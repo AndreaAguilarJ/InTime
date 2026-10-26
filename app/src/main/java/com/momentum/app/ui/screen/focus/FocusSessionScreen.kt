@@ -1,7 +1,12 @@
-package com.momentum.app.ui.screen.focus
+package com.momentummm.app.ui.screen.focus
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,20 +22,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.momentum.app.ui.system.*
+import com.momentummm.app.ui.system.*
+import com.momentummm.app.MomentumApplication
+import com.momentummm.app.data.appwrite.models.AppwriteFocusSession
+import com.momentummm.app.data.appwrite.models.FocusSessionStats
 import kotlinx.coroutines.delay
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 data class FocusSession(
     val id: String,
@@ -38,16 +48,6 @@ data class FocusSession(
     val breakDuration: Int, // in minutes
     val blockedApps: List<String>,
     val isCustom: Boolean = false
-)
-
-data class SessionHistory(
-    val id: String,
-    val sessionName: String,
-    val date: String,
-    val duration: Int, // actual duration in minutes
-    val plannedDuration: Int,
-    val wasCompleted: Boolean,
-    val distractions: Int
 )
 
 enum class SessionState {
@@ -61,280 +61,568 @@ enum class SessionState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusSessionScreen(
-    isPremiumUser: Boolean,
-    onUpgradeClick: () -> Unit
+    @Suppress("UNUSED_PARAMETER") isPremiumUser: Boolean,
+    @Suppress("UNUSED_PARAMETER") onUpgradeClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val application = context.applicationContext as MomentumApplication
+    val focusRepository = application.appwriteFocusSessionRepository
+    val currentUser = application.appwriteService.currentUser.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
     var selectedSession by remember { mutableStateOf<FocusSession?>(null) }
     var sessionState by remember { mutableStateOf(SessionState.NOT_STARTED) }
     var timeRemaining by remember { mutableStateOf(0) }
     var totalTime by remember { mutableStateOf(0) }
-    
+    var sessionStartTime by remember { mutableStateOf<String?>(null) }
+    var showCreateSessionDialog by remember { mutableStateOf(false) }
+    var customSessions by remember { mutableStateOf<List<FocusSession>>(emptyList()) }
+    var showDeleteConfirmation by remember { mutableStateOf<FocusSession?>(null) }
+
+    // Estados para estadísticas reales
+    var focusStats by remember { mutableStateOf(FocusSessionStats()) }
+    var sessionHistory by remember { mutableStateOf<List<AppwriteFocusSession>>(emptyList()) }
+    var isLoadingStats by remember { mutableStateOf(true) }
+
     val predefinedSessions = listOf(
-        FocusSession("pomodoro", "Pomodoro Clásico", 25, 5, emptyList()),
-        FocusSession("deep_work", "Trabajo Profundo", 90, 15, emptyList()),
-        FocusSession("study", "Sesión de Estudio", 45, 10, emptyList()),
-        FocusSession("creative", "Trabajo Creativo", 60, 10, emptyList()),
-        FocusSession("meeting", "Preparación de Reunión", 30, 5, emptyList())
+        FocusSession("pomodoro", "🍅 Pomodoro Clásico", 25, 5, emptyList()),
+        FocusSession("deep_work", "🎯 Trabajo Profundo", 90, 15, emptyList()),
+        FocusSession("study", "📚 Sesión de Estudio", 45, 10, emptyList()),
+        FocusSession("creative", "🎨 Trabajo Creativo", 60, 10, emptyList()),
+        FocusSession("meeting", "💼 Preparación de Reunión", 30, 5, emptyList()),
+        FocusSession("quick", "⚡ Enfoque Rápido", 15, 3, emptyList())
     )
-    
-    val sessionHistory = listOf(
-        SessionHistory("1", "Pomodoro Clásico", "Hoy", 25, 25, true, 0),
-        SessionHistory("2", "Trabajo Profundo", "Ayer", 85, 90, false, 3),
-        SessionHistory("3", "Sesión de Estudio", "Ayer", 45, 45, true, 1),
-    )
-    
-    if (!isPremiumUser) {
-        PremiumFocusUpsellScreen(onUpgradeClick = onUpgradeClick)
-        return
-    }
-    
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.05f),
-                        MaterialTheme.colorScheme.surface
-                    )
-                )
-            ),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Sesiones de Enfoque",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Mejora tu concentración con sesiones estructuradas",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
+    // Cargar estadísticas y historial
+    LaunchedEffect(currentUser.value) {
+        currentUser.value?.let { user ->
+            try {
+                isLoadingStats = true
+                focusRepository.getFocusSessionStats(user.id).collect { stats ->
+                    focusStats = stats
+                    isLoadingStats = false
                 }
-                Surface(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        Icons.Filled.Psychology,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+            } catch (_: Exception) {
+                isLoadingStats = false
             }
         }
-        
-        if (selectedSession != null && sessionState != SessionState.NOT_STARTED) {
-            item {
-                // Active session display
-                ActiveSessionCard(
-                    session = selectedSession!!,
-                    sessionState = sessionState,
-                    timeRemaining = timeRemaining,
-                    totalTime = totalTime,
-                    onPause = { sessionState = SessionState.PAUSED },
-                    onResume = { sessionState = SessionState.RUNNING },
-                    onStop = { 
-                        sessionState = SessionState.NOT_STARTED
-                        selectedSession = null
-                    }
-                )
+    }
+
+    LaunchedEffect(currentUser.value) {
+        currentUser.value?.let { user ->
+            try {
+                focusRepository.getFocusSessionHistory(user.id, 10).collect { history ->
+                    sessionHistory = history
+                }
+            } catch (_: Exception) {
+                // Manejar error silenciosamente
             }
-        } else {
-            item {
-                // Session selector
-                Text(
-                    text = "Elige una Sesión",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp)
+        }
+    }
+
+    // Función para guardar sesión completada
+    suspend fun saveCompletedSession(session: FocusSession, actualDuration: Int, wasCompleted: Boolean) {
+        currentUser.value?.let { user ->
+            try {
+                val sessionId = "sess_${System.currentTimeMillis()}"
+                val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val currentTimestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }.format(Date())
+
+                val focusSession = AppwriteFocusSession(
+                    userId = user.id,
+                    sessionId = sessionId,
+                    sessionType = session.id,
+                    date = currentDate,
+                    startTime = sessionStartTime,
+                    endTime = currentTimestamp,
+                    plannedDuration = session.duration,
+                    actualDuration = actualDuration,
+                    wasCompleted = wasCompleted,
+                    distractions = 0,
+                    blockedApps = session.blockedApps,
+                    breakDuration = session.breakDuration
                 )
+
+                focusRepository.saveFocusSession(focusSession)
+            } catch (_: Exception) {
+                // Manejar error silenciosamente
             }
-            
-            items(predefinedSessions) { session ->
-                SessionCard(
-                    session = session,
-                    onSelect = { 
-                        selectedSession = session
-                        totalTime = session.duration * 60 // Convert to seconds
-                        timeRemaining = totalTime
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f),
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.surface
+                        )
+                    )
+                ),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             item {
-                // Custom session button
+                // Header mejorado
                 MomentumCard(
-                    onClick = { /* Open custom session creator */ },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            Icons.Filled.Add,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Psychology,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.padding(12.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Sesiones de Enfoque",
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "Maximiza tu productividad",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Sesión activa con animación
+            if (selectedSession != null && sessionState != SessionState.NOT_STARTED) {
+                item {
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + slideInVertically(),
+                        exit = fadeOut() + slideOutVertically()
+                    ) {
+                        ActiveSessionCard(
+                            session = selectedSession!!,
+                            sessionState = sessionState,
+                            timeRemaining = timeRemaining,
+                            totalTime = totalTime,
+                            onPause = { sessionState = SessionState.PAUSED },
+                            onResume = { sessionState = SessionState.RUNNING },
+                            onStop = {
+                                val elapsedMinutes = (totalTime - timeRemaining) / 60
+                                val currentSession = selectedSession
+
+                                // Primero cambiamos el estado
+                                sessionState = SessionState.NOT_STARTED
+                                selectedSession = null
+                                sessionStartTime = null
+
+                                // Luego guardamos la sesión en background
+                                if (currentSession != null) {
+                                    coroutineScope.launch {
+                                        try {
+                                            saveCompletedSession(currentSession, elapsedMinutes, false)
+                                        } catch (_: Exception) {
+                                            // Manejar error silenciosamente
+                                        }
+                                    }
+                                }
+                            }
                         )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = "Crear Sesión Personalizada",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                    }
+                }
+            } else {
+                // Estadísticas primero cuando no hay sesión activa
+                item {
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn()
+                    ) {
+                        if (isLoadingStats) {
+                            MomentumCard(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        } else {
+                            SessionStatsCard(
+                                completedToday = focusStats.completedToday,
+                                totalFocusTime = focusStats.totalFocusTimeToday,
+                                streakDays = focusStats.streakDays,
+                                modifier = Modifier.fillMaxWidth()
                             )
+                        }
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Sesiones Predefinidas",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                }
+
+                items(predefinedSessions) { session ->
+                    SessionCard(
+                        session = session,
+                        onSelect = {
+                            selectedSession = session
+                            totalTime = session.duration * 60
+                            timeRemaining = totalTime
+                            sessionState = SessionState.RUNNING
+                            sessionStartTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                                timeZone = TimeZone.getTimeZone("UTC")
+                            }.format(Date())
+                        },
+                        onDelete = null,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Sesiones personalizadas
+                if (customSessions.isNotEmpty()) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
-                                text = "Configura tu propia duración y apps bloqueadas",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = "Mis Sesiones",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp)
                             )
+                        }
+                    }
+
+                    items(customSessions) { session ->
+                        SessionCard(
+                            session = session,
+                            onSelect = {
+                                selectedSession = session
+                                totalTime = session.duration * 60
+                                timeRemaining = totalTime
+                                sessionState = SessionState.RUNNING
+                                sessionStartTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                                    timeZone = TimeZone.getTimeZone("UTC")
+                                }.format(Date())
+                            },
+                            onDelete = { showDeleteConfirmation = session },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                item {
+                    Text(
+                        text = "Historial Reciente",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                items(sessionHistory) { history ->
+                    AppwriteSessionHistoryCard(
+                        history = history,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                if (sessionHistory.isEmpty() && !isLoadingStats) {
+                    item {
+                        MomentumCard(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    Icons.Filled.History,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Sin historial de sesiones",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Completa tu primera sesión para ver las estadísticas",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-        
-        item {
-            // Statistics
-            SessionStatsCard(
-                completedToday = 3,
-                totalFocusTime = 115, // minutes
-                streakDays = 7,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        
-        item {
-            // History
-            Text(
-                text = "Historial Reciente",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-        }
-        
-        items(sessionHistory) { history ->
-            SessionHistoryCard(
-                history = history,
-                modifier = Modifier.fillMaxWidth()
-            )
+
+        // Botón flotante para crear sesión personalizada
+        if (selectedSession == null || sessionState == SessionState.NOT_STARTED) {
+            FloatingActionButton(
+                onClick = { showCreateSessionDialog = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Crear sesión personalizada")
+            }
         }
     }
-    
-    // Timer effect
+
+    // Diálogo para crear sesión personalizada
+    if (showCreateSessionDialog) {
+        CreateSessionDialog(
+            onDismiss = { showCreateSessionDialog = false },
+            onCreateSession = { newSession ->
+                customSessions = customSessions + newSession
+                showCreateSessionDialog = false
+            }
+        )
+    }
+
+    // Diálogo de confirmación de eliminación
+    if (showDeleteConfirmation != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = null },
+            title = { Text("Eliminar sesión") },
+            text = { Text("¿Estás seguro de que deseas eliminar '${showDeleteConfirmation!!.name}'?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        customSessions = customSessions.filter { it.id != showDeleteConfirmation!!.id }
+                        showDeleteConfirmation = null
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Timer effect mejorado con notificaciones de progreso
     LaunchedEffect(sessionState, timeRemaining) {
         if (sessionState == SessionState.RUNNING && timeRemaining > 0) {
             delay(1000)
             timeRemaining--
+
+            // Notificaciones de progreso (placeholders para futuras implementaciones)
+            if (timeRemaining > 0 && totalTime > 0) {
+                val progress = ((totalTime - timeRemaining).toFloat() / totalTime.toFloat() * 100).toInt()
+                // Notificar en 25%, 50%, 75%
+                @Suppress("ControlFlowWithEmptyBody")
+                if (progress == 25 || progress == 50 || progress == 75) {
+                    // TODO: Aquí podrías agregar una notificación o feedback visual
+                }
+            }
         } else if (sessionState == SessionState.RUNNING && timeRemaining <= 0) {
             sessionState = SessionState.COMPLETED
+            selectedSession?.let { session ->
+                saveCompletedSession(session, session.duration, true)
+            }
         }
     }
 }
 
 @Composable
-private fun PremiumFocusUpsellScreen(
-    onUpgradeClick: () -> Unit
+private fun CreateSessionDialog(
+    onDismiss: () -> Unit,
+    onCreateSession: (FocusSession) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        MaterialTheme.colorScheme.surface
-                    )
-                )
+    var sessionName by remember { mutableStateOf("") }
+    var duration by remember { mutableStateOf("25") }
+    var breakDuration by remember { mutableStateOf("5") }
+    var selectedEmoji by remember { mutableStateOf("⏱️") }
+
+    val emojis = listOf("⏱️", "🎯", "📚", "💻", "🎨", "✍️", "🧘", "💡", "🚀", "⚡")
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Crear Sesión Personalizada",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
             )
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            Icons.Filled.Psychology,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(80.dp)
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Text(
-            text = "Sesiones de Enfoque",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Mejora tu productividad con sesiones estructuradas y bloqueo de aplicaciones",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        val features = listOf(
-            "Técnica Pomodoro y sesiones personalizadas",
-            "Bloqueo automático de apps distractoras",
-            "Estadísticas detalladas de productividad",
-            "Recordatorios inteligentes",
-            "Sesiones de trabajo profundo",
-            "Seguimiento de rachas de enfoque"
-        )
-        
-        features.forEach { feature ->
-            Row(
-                modifier = Modifier.padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Icon(
-                    Icons.Filled.Check,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
+                // Selector de emoji
                 Text(
-                    text = feature,
-                    style = MaterialTheme.typography.bodyMedium
+                    "Ícono",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    emojis.forEach { emoji ->
+                        Surface(
+                            onClick = { selectedEmoji = emoji },
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            color = if (selectedEmoji == emoji)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            border = if (selectedEmoji == emoji)
+                                androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                            else null
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(emoji, style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = sessionName,
+                    onValueChange = { sessionName = it },
+                    label = { Text("Nombre de la sesión") },
+                    placeholder = { Text("Ej: Escritura creativa") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = duration,
+                        onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 3) duration = it },
+                        label = { Text("Duración") },
+                        suffix = { Text("min") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = breakDuration,
+                        onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) breakDuration = it },
+                        label = { Text("Descanso") },
+                        suffix = { Text("min") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+                }
+
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Filled.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Crea sesiones adaptadas a tu estilo de trabajo",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            MomentumButton(
+                onClick = {
+                    if (sessionName.isNotBlank() && duration.isNotBlank() && breakDuration.isNotBlank()) {
+                        val newSession = FocusSession(
+                            id = "custom_${System.currentTimeMillis()}",
+                            name = "$selectedEmoji $sessionName",
+                            duration = duration.toIntOrNull() ?: 25,
+                            breakDuration = breakDuration.toIntOrNull() ?: 5,
+                            blockedApps = emptyList(),
+                            isCustom = true
+                        )
+                        onCreateSession(newSession)
+                    }
+                },
+                style = ButtonStyle.Primary,
+                enabled = sessionName.isNotBlank() && duration.isNotBlank() && breakDuration.isNotBlank()
+            ) {
+                Text("Crear")
+            }
+        },
+        dismissButton = {
+            MomentumButton(
+                onClick = onDismiss,
+                style = ButtonStyle.Outline
+            ) {
+                Text("Cancelar")
             }
         }
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        MomentumButton(
-            onClick = onUpgradeClick,
-            style = ButtonStyle.Primary,
-            size = ButtonSize.Large,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Actualizar a Premium")
-        }
-    }
+    )
 }
 
 @Composable
@@ -347,17 +635,34 @@ private fun ActiveSessionCard(
     onResume: () -> Unit,
     onStop: () -> Unit
 ) {
+    val pulseAnimation = rememberInfiniteTransition(label = "pulse")
+    val scale by pulseAnimation.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+
+    val progress = if (totalTime > 0) {
+        (totalTime - timeRemaining).toFloat() / totalTime.toFloat()
+    } else 0f
+
     MomentumGradientCard(
         modifier = Modifier.fillMaxWidth(),
         gradient = Brush.verticalGradient(
             colors = listOf(
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.05f),
+                MaterialTheme.colorScheme.surface
             )
         )
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(vertical = 8.dp)
         ) {
             Text(
                 text = session.name,
@@ -365,54 +670,76 @@ private fun ActiveSessionCard(
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = when (sessionState) {
-                    SessionState.RUNNING -> "En progreso"
-                    SessionState.BREAK -> "Descanso"
-                    SessionState.PAUSED -> "Pausado"
-                    SessionState.COMPLETED -> "¡Completado!"
-                    else -> ""
+
+            Surface(
+                color = when (sessionState) {
+                    SessionState.RUNNING -> MaterialTheme.colorScheme.primaryContainer
+                    SessionState.PAUSED -> MaterialTheme.colorScheme.tertiaryContainer
+                    SessionState.COMPLETED -> MaterialTheme.colorScheme.secondaryContainer
+                    else -> MaterialTheme.colorScheme.surfaceVariant
                 },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text(
+                    text = when (sessionState) {
+                        SessionState.RUNNING -> "🔥 En progreso"
+                        SessionState.BREAK -> "☕ Descanso"
+                        SessionState.PAUSED -> "⏸️ Pausado"
+                        SessionState.COMPLETED -> "✅ ¡Completado!"
+                        else -> ""
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Circular timer
+
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier
+                    .size(220.dp)
+                    .scale(if (sessionState == SessionState.RUNNING) scale else 1f)
             ) {
-                val progress = if (totalTime > 0) {
-                    (totalTime - timeRemaining).toFloat() / totalTime.toFloat()
-                } else 0f
-                
                 val animatedProgress by animateFloatAsState(
                     targetValue = progress,
                     animationSpec = tween(300),
                     label = "timer_progress"
                 )
-                
+
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 12.dp.toPx()
+                    val strokeWidth = 16.dp.toPx()
                     val radius = (size.minDimension - strokeWidth) / 2
                     val center = Offset(size.width / 2, size.height / 2)
-                    
-                    // Background circle
+
+                    // Fondo del círculo
                     drawCircle(
-                        color = Color.Gray.copy(alpha = 0.3f),
+                        color = Color.Gray.copy(alpha = 0.15f),
                         radius = radius,
                         center = center,
                         style = Stroke(strokeWidth)
                     )
-                    
-                    // Progress arc
+
+                    // Progreso con gradiente
+                    val progressColor = when (sessionState) {
+                        SessionState.RUNNING -> Color(0xFF4CAF50)
+                        SessionState.PAUSED -> Color(0xFFFF9800)
+                        SessionState.COMPLETED -> Color(0xFF2196F3)
+                        else -> Color.Gray
+                    }
+
                     drawArc(
-                        color = if (sessionState == SessionState.RUNNING) Color.Green else Color.Orange,
+                        brush = Brush.sweepGradient(
+                            colors = listOf(
+                                progressColor.copy(alpha = 0.7f),
+                                progressColor,
+                                progressColor.copy(alpha = 0.9f)
+                            ),
+                            center = center
+                        ),
                         startAngle = -90f,
                         sweepAngle = 360f * animatedProgress,
                         useCenter = false,
@@ -421,42 +748,95 @@ private fun ActiveSessionCard(
                         topLeft = Offset(center.x - radius, center.y - radius)
                     )
                 }
-                
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val minutes = timeRemaining / 60
                     val seconds = timeRemaining % 60
-                    
+
                     Text(
                         text = String.format("%02d:%02d", minutes, seconds),
-                        style = MaterialTheme.typography.displayMedium,
+                        style = MaterialTheme.typography.displayLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    
+
                     if (sessionState == SessionState.RUNNING) {
                         Text(
                             text = "restantes",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Barra de progreso adicional
+                    LinearProgressIndicator(
+                        progress = animatedProgress,
+                        modifier = Modifier
+                            .width(120.dp)
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = when (sessionState) {
+                            SessionState.RUNNING -> Color(0xFF4CAF50)
+                            SessionState.PAUSED -> Color(0xFFFF9800)
+                            SessionState.COMPLETED -> Color(0xFF2196F3)
+                            else -> Color.Gray
+                        },
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Control buttons
+
+            // Información adicional
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${session.duration}min",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Duración total",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${(progress * 100).toInt()}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Completado",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(horizontal = 16.dp)
             ) {
                 when (sessionState) {
                     SessionState.RUNNING -> {
                         MomentumButton(
                             onClick = onPause,
                             style = ButtonStyle.Secondary,
-                            icon = Icons.Filled.Pause
+                            icon = Icons.Filled.Pause,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Pausar")
                         }
@@ -465,7 +845,8 @@ private fun ActiveSessionCard(
                         MomentumButton(
                             onClick = onResume,
                             style = ButtonStyle.Primary,
-                            icon = Icons.Filled.PlayArrow
+                            icon = Icons.Filled.PlayArrow,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text("Continuar")
                         }
@@ -474,19 +855,21 @@ private fun ActiveSessionCard(
                         MomentumButton(
                             onClick = onStop,
                             style = ButtonStyle.Primary,
-                            icon = Icons.Filled.Check
+                            icon = Icons.Filled.Check,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Finalizar")
+                            Text("Finalizar Sesión")
                         }
                     }
                     else -> {}
                 }
-                
+
                 if (sessionState != SessionState.COMPLETED) {
                     MomentumButton(
                         onClick = onStop,
                         style = ButtonStyle.Outline,
-                        icon = Icons.Filled.Stop
+                        icon = Icons.Filled.Stop,
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text("Detener")
                     }
@@ -500,10 +883,12 @@ private fun ActiveSessionCard(
 private fun SessionCard(
     session: FocusSession,
     onSelect: () -> Unit,
+    onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     MomentumCard(
-        modifier = modifier,
+        modifier = modifier
+            .animateContentSize(),
         onClick = onSelect
     ) {
         Row(
@@ -513,20 +898,22 @@ private fun SessionCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
-                modifier = Modifier.size(48.dp),
-                color = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
+                modifier = Modifier.size(56.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(
-                    Icons.Filled.Timer,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.padding(12.dp)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Filled.Timer,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -535,25 +922,52 @@ private fun SessionCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    text = "${session.duration}min de trabajo • ${session.breakDuration}min de descanso",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (session.blockedApps.isNotEmpty()) {
-                    Text(
-                        text = "${session.blockedApps.size} apps bloqueadas",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "⏱️ ${session.duration}min",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Surface(
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "☕ ${session.breakDuration}min",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
-            
-            Icon(
-                Icons.Filled.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+
+            if (onDelete != null) {
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Eliminar",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            } else {
+                Icon(
+                    Icons.Filled.PlayArrow,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
 }
@@ -561,24 +975,41 @@ private fun SessionCard(
 @Composable
 private fun SessionStatsCard(
     completedToday: Int,
-    totalFocusTime: Int, // in minutes
+    totalFocusTime: Int,
     streakDays: Int,
     modifier: Modifier = Modifier
 ) {
-    MomentumCard(
-        modifier = modifier
+    MomentumGradientCard(
+        modifier = modifier,
+        gradient = Brush.horizontalGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+            )
+        )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
-            Text(
-                text = "Estadísticas de Hoy",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.EmojiEvents,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Tu Progreso de Hoy",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -589,19 +1020,33 @@ private fun SessionStatsCard(
                     icon = Icons.Filled.CheckCircle,
                     color = MaterialTheme.colorScheme.primary
                 )
-                
+
+                Divider(
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(1.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
                 StatItem(
-                    value = "${totalFocusTime / 60}h ${totalFocusTime % 60}m",
+                    value = if (totalFocusTime >= 60) "${totalFocusTime / 60}h ${totalFocusTime % 60}m" else "${totalFocusTime}m",
                     label = "Tiempo\ntotal",
                     icon = Icons.Filled.Schedule,
                     color = MaterialTheme.colorScheme.secondary
                 )
-                
+
+                Divider(
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(1.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
                 StatItem(
                     value = streakDays.toString(),
                     label = "Días\nconsecutivos",
-                    icon = Icons.Filled.LocalFire,
-                    color = MaterialTheme.colorScheme.tertiary
+                    icon = Icons.Filled.Whatshot,
+                    color = Color(0xFFFF6F00)
                 )
             }
         }
@@ -616,35 +1061,56 @@ private fun StatItem(
     color: Color
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(8.dp)
     ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        Surface(
+            color = color.copy(alpha = 0.15f),
+            shape = CircleShape,
+            modifier = Modifier.size(48.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = value,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = color
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = MaterialTheme.typography.bodySmall.lineHeight
         )
     }
 }
 
 @Composable
-private fun SessionHistoryCard(
-    history: SessionHistory,
+private fun AppwriteSessionHistoryCard(
+    history: AppwriteFocusSession,
     modifier: Modifier = Modifier
 ) {
+    val sessionName = when (history.sessionType) {
+        "pomodoro" -> "🍅 Pomodoro Clásico"
+        "deep_work" -> "🎯 Trabajo Profundo"
+        "study" -> "📚 Sesión de Estudio"
+        "creative" -> "🎨 Trabajo Creativo"
+        "meeting" -> "💼 Preparación de Reunión"
+        "quick" -> "⚡ Enfoque Rápido"
+        else -> history.sessionType
+    }
+
     MomentumCard(
         modifier = modifier
     ) {
@@ -654,55 +1120,87 @@ private fun SessionHistoryCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                if (history.wasCompleted) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
-                contentDescription = null,
-                tint = if (history.wasCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(24.dp)
-            )
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = history.sessionName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "${history.date} • ${history.duration}/${history.plannedDuration}min",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (history.distractions > 0) {
-                    Text(
-                        text = "${history.distractions} distracciones",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-            
             Surface(
                 color = if (history.wasCompleted) {
                     MaterialTheme.colorScheme.primaryContainer
                 } else {
                     MaterialTheme.colorScheme.errorContainer
                 },
-                shape = RoundedCornerShape(8.dp)
+                shape = CircleShape,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        if (history.wasCompleted) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
+                        contentDescription = null,
+                        tint = if (history.wasCompleted) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        },
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = sessionName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = history.date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${history.actualDuration}/${history.plannedDuration}min",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                if (history.distractions > 0) {
+                    Text(
+                        text = "⚠️ ${history.distractions} distracciones",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            Surface(
+                color = if (history.wasCompleted) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.errorContainer
+                },
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = if (history.wasCompleted) "Completado" else "Interrumpido",
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelMedium,
                     color = if (history.wasCompleted) {
                         MaterialTheme.colorScheme.onPrimaryContainer
                     } else {
                         MaterialTheme.colorScheme.onErrorContainer
                     },
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Bold
                 )
             }
         }

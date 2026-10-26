@@ -1,4 +1,4 @@
-package com.momentum.app.widget
+package com.momentummm.app.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -12,9 +12,7 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.*
 import androidx.glance.text.Text
-import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 
 class QuoteWidget : GlanceAppWidget() {
 
@@ -31,7 +29,7 @@ class QuoteWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(ColorProvider(Color.DarkGray))
+                .background(Color.DarkGray)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -48,9 +46,7 @@ class QuoteWidget : GlanceAppWidget() {
             Text(
                 text = quote.text,
                 style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center
+                    fontSize = 14.sp
                 )
             )
             
@@ -59,9 +55,7 @@ class QuoteWidget : GlanceAppWidget() {
             Text(
                 text = "- ${quote.author}",
                 style = TextStyle(
-                    color = ColorProvider(Color.LightGray),
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center
+                    fontSize = 12.sp
                 )
             )
         }

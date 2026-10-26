@@ -1,11 +1,11 @@
-package com.momentum.app.ui.viewmodel
+package com.momentummm.app.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.momentum.app.data.entity.UserSettings
-import com.momentum.app.data.repository.UserRepository
-import com.momentum.app.util.LifeWeeksCalculator
+import com.momentummm.app.data.entity.UserSettings
+import com.momentummm.app.data.repository.UserRepository
+import com.momentummm.app.util.LifeWeeksCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +16,9 @@ data class LifeWeeksUiState(
     val isLoading: Boolean = true,
     val userSettings: UserSettings? = null,
     val lifeWeeksData: LifeWeeksCalculator.LifeWeeksData? = null,
-    val showColorPicker: Boolean = false
+    val showColorPicker: Boolean = false,
+    val hasBirthDate: Boolean = false,
+    val errorMessage: String? = null
 )
 
 class LifeWeeksViewModel(
@@ -33,14 +35,25 @@ class LifeWeeksViewModel(
     private fun loadUserSettings() {
         viewModelScope.launch {
             userRepository.getUserSettings().collect { settings ->
-                val lifeWeeksData = settings?.birthDate?.let { birthDate ->
-                    LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+                val birthDate = settings?.birthDate
+                val hasBirthDate = birthDate != null
+
+                val lifeWeeksData = if (birthDate != null) {
+                    try {
+                        LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else {
+                    null
                 }
                 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     userSettings = settings,
-                    lifeWeeksData = lifeWeeksData
+                    lifeWeeksData = lifeWeeksData,
+                    hasBirthDate = hasBirthDate,
+                    errorMessage = if (!hasBirthDate) "No se ha configurado la fecha de nacimiento" else null
                 )
             }
         }
@@ -51,7 +64,9 @@ class LifeWeeksViewModel(
             try {
                 userRepository.updateColors(livedColor, futureColor, backgroundColor)
             } catch (e: Exception) {
-                // Handle error
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Error al actualizar colores: ${e.message}"
+                )
             }
         }
     }
@@ -62,6 +77,10 @@ class LifeWeeksViewModel(
 
     fun hideColorPicker() {
         _uiState.value = _uiState.value.copy(showColorPicker = false)
+    }
+
+    fun refreshData() {
+        loadUserSettings()
     }
 }
 

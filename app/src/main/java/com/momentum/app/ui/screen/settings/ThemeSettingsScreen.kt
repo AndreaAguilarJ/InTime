@@ -1,4 +1,4 @@
-package com.momentum.app.ui.screen.settings
+package com.momentummm.app.ui.screen.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.momentum.app.data.manager.ThemeManager
+import com.momentummm.app.data.manager.ThemeManager
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

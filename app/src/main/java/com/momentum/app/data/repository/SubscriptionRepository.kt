@@ -1,8 +1,8 @@
-package com.momentum.app.data.repository
+package com.momentummm.app.data.repository
 
-import com.momentum.app.data.appwrite.AppwriteService
-import com.momentum.app.data.model.SubscriptionStatus
-import com.momentum.app.data.model.UserSubscription
+import com.momentummm.app.data.appwrite.AppwriteService
+import com.momentummm.app.data.model.SubscriptionStatus
+import com.momentummm.app.data.model.UserSubscription
 import io.appwrite.models.Document
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

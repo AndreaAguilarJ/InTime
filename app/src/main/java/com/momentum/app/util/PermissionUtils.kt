@@ -1,4 +1,4 @@
-package com.momentum.app.util
+package com.momentummm.app.util
 
 import android.app.AppOpsManager
 import android.content.Context

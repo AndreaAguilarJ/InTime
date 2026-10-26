@@ -1,23 +1,28 @@
-package com.momentum.app
+package com.momentummm.app
 
 import android.app.Application
 import android.content.Context
 import androidx.work.Configuration
-import androidx.work.WorkManager
-import com.momentum.app.data.AppDatabase
-import com.momentum.app.data.repository.UserRepository
-import com.momentum.app.data.repository.UsageStatsRepository
-import com.momentum.app.data.repository.QuotesRepository
-import com.momentum.app.data.appwrite.AppwriteService
-import com.momentum.app.data.appwrite.repository.AppwriteUserRepository
-import com.momentum.app.data.appwrite.repository.AppwriteQuotesRepository
-import com.momentum.app.data.repository.SubscriptionRepository
-import com.momentum.app.data.manager.ThemeManager
-import com.momentum.app.data.manager.BillingManager
-import com.momentum.app.data.manager.NotificationManager
-import com.momentum.app.data.manager.ExportManager
-import com.momentum.app.data.manager.BackupSyncManager
-import com.momentum.app.minimal.MinimalPhoneManager
+import com.momentummm.app.data.AppDatabase
+import com.momentummm.app.data.repository.UserRepository
+import com.momentummm.app.data.repository.UsageStatsRepository
+import com.momentummm.app.data.repository.QuotesRepository
+import com.momentummm.app.data.appwrite.AppwriteService
+import com.momentummm.app.data.appwrite.repository.AppwriteUserRepository
+import com.momentummm.app.data.appwrite.repository.AppwriteQuotesRepository
+import com.momentummm.app.data.appwrite.repository.AppwriteFocusSessionRepository
+import com.momentummm.app.data.repository.SubscriptionRepository
+import com.momentummm.app.data.manager.ThemeManager
+import com.momentummm.app.data.manager.BillingManager
+import com.momentummm.app.data.manager.SmartNotificationManager
+import com.momentummm.app.data.manager.ExportManager
+import com.momentummm.app.data.manager.BackupSyncManager
+import com.momentummm.app.data.manager.AutoSyncManager
+import com.momentummm.app.data.repository.GoalsRepository
+import com.momentummm.app.data.repository.AppLimitRepository
+import com.momentummm.app.data.repository.AppWhitelistRepository
+import com.momentummm.app.minimal.MinimalPhoneManager
+import com.momentummm.app.minimal.LauncherManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -27,9 +32,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import dagger.hilt.android.HiltAndroidApp
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
+@HiltAndroidApp
 class MomentumApplication : Application(), Configuration.Provider {
     
     // Database instance (keeping for migration)
@@ -49,14 +56,14 @@ class MomentumApplication : Application(), Configuration.Provider {
     // New Appwrite repositories
     val appwriteUserRepository by lazy { AppwriteUserRepository(appwriteService) }
     val appwriteQuotesRepository by lazy { AppwriteQuotesRepository(appwriteService) }
-    
+    val appwriteFocusSessionRepository by lazy { AppwriteFocusSessionRepository(appwriteService) }
+
     // Subscription management
     val subscriptionRepository by lazy { SubscriptionRepository(appwriteService) }
     
     // Enhanced managers
     val themeManager by lazy { ThemeManager(this) }
     val billingManager by lazy { BillingManager(this) }
-    val notificationManager by lazy { NotificationManager(this) }
     val exportManager by lazy { ExportManager(this) }
     val backupSyncManager by lazy { 
         BackupSyncManager(
@@ -68,7 +75,45 @@ class MomentumApplication : Application(), Configuration.Provider {
         ) 
     }
 
-    
+    // Repositories for goals and app usage management (ordenados para evitar dependencias circulares)
+    val appWhitelistRepository by lazy { AppWhitelistRepository(database.appWhitelistDao(), this) }
+
+    val goalsRepository by lazy { GoalsRepository(database.goalDao(), database.challengeDao()) }
+
+    val appLimitRepository by lazy {
+        AppLimitRepository(
+            database.appLimitDao(),
+            this,
+            usageStatsRepository,
+            appWhitelistRepository
+        )
+    }
+
+    // Sistema de notificaciones inteligentes
+    val smartNotificationManager by lazy {
+        SmartNotificationManager(
+            this,
+            usageStatsRepository,
+            goalsRepository,
+            appLimitRepository,
+            quotesRepository,
+            userRepository
+        )
+    }
+
+    val autoSyncManager by lazy {
+        AutoSyncManager(
+            this,
+            appwriteService,
+            userRepository,
+            usageStatsRepository,
+            goalsRepository,
+            appLimitRepository,
+            appWhitelistRepository,
+            quotesRepository
+        )
+    }
+
     private object PreferencesKeys {
         val QUOTES_SEEDED = booleanPreferencesKey("quotes_seeded")
     }
@@ -97,16 +142,19 @@ class MomentumApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         
-        // Initialize WorkManager
-        WorkManager.initialize(this, workManagerConfiguration)
-        
+        // Remove manual WorkManager initialization to avoid double initialization crash.
+        // WorkManager is auto-initialized via App Startup when Configuration.Provider is implemented.
+
         // Start widget update worker
-        com.momentum.app.worker.WidgetUpdateWorker.startPeriodicUpdate(this)
+        com.momentummm.app.worker.WidgetUpdateWorker.startPeriodicUpdate(this)
         
         // Initialize enhanced features
         billingManager.startConnection()
-        notificationManager.scheduleDailyGoalReminder()
-        
+
+        // Inicializar sistema de notificaciones inteligentes
+        // Se auto-programa al instanciarse
+        smartNotificationManager
+
         // Initialize Appwrite quotes if needed
         seedDefaultQuotesIfNeeded()
     }

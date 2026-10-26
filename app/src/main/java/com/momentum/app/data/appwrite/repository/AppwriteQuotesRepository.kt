@@ -1,8 +1,8 @@
-package com.momentum.app.data.appwrite.repository
+package com.momentummm.app.data.appwrite.repository
 
-import com.momentum.app.data.appwrite.AppwriteConfig
-import com.momentum.app.data.appwrite.AppwriteService
-import com.momentum.app.data.appwrite.models.AppwriteQuote
+import com.momentummm.app.data.appwrite.AppwriteConfig
+import com.momentummm.app.data.appwrite.AppwriteService
+import com.momentummm.app.data.appwrite.models.AppwriteQuote
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString

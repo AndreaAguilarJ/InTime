@@ -1,4 +1,4 @@
-package com.momentum.app.data.entity
+package com.momentummm.app.data.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

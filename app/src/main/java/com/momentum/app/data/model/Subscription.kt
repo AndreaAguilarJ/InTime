@@ -1,4 +1,4 @@
-package com.momentum.app.data.model
+package com.momentummm.app.data.model
 
 data class SubscriptionPlan(
     val id: String,

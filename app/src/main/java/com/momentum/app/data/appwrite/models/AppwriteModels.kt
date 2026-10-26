@@ -1,4 +1,4 @@
-package com.momentum.app.data.appwrite.models
+package com.momentummm.app.data.appwrite.models
 
 import kotlinx.serialization.Serializable
 
@@ -47,4 +47,29 @@ data class AppwriteLifeWeeksData(
     val currentAge: Int,
     val progressPercentage: Float,
     val updatedAt: String = ""
+)
+
+@Serializable
+data class AppwriteFocusSession(
+    val userId: String,
+    val sessionId: String,
+    val sessionType: String,
+    val date: String, // formato YYYY-MM-DD
+    val startTime: String? = null,
+    val endTime: String? = null,
+    val plannedDuration: Int, // en minutos
+    val actualDuration: Int, // en minutos
+    val wasCompleted: Boolean,
+    val distractions: Int = 0,
+    val blockedApps: List<String> = emptyList(),
+    val breakDuration: Int? = null,
+    val createdAt: String = "",
+    val updatedAt: String = ""
+)
+
+@Serializable
+data class FocusSessionStats(
+    val completedToday: Int = 0,
+    val totalFocusTimeToday: Int = 0, // en minutos
+    val streakDays: Int = 0
 )

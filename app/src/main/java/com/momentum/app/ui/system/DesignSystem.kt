@@ -1,5 +1,6 @@
-package com.momentum.app.ui.system
+package com.momentummm.app.ui.system
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -295,13 +296,13 @@ fun MomentumProgressIndicator(
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
-                progress = { 1f },
+                progress = 1f,
                 modifier = Modifier.size(120.dp),
                 color = trackColor,
                 strokeWidth = strokeWidth
             )
             CircularProgressIndicator(
-                progress = { animatedProgress },
+                progress = animatedProgress,
                 modifier = Modifier.size(120.dp),
                 color = color,
                 strokeWidth = strokeWidth
@@ -324,7 +325,7 @@ fun MomentumDivider(
     thickness: Dp = 1.dp,
     color: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
 ) {
-    HorizontalDivider(
+    Divider(
         modifier = modifier,
         thickness = thickness,
         color = color

@@ -1,4 +1,4 @@
-package com.momentum.app.data.manager
+package com.momentummm.app.data.manager
 
 import android.content.Context
 import androidx.datastore.core.DataStore

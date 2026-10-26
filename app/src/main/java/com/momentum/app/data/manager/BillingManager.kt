@@ -1,4 +1,4 @@
-package com.momentum.app.data.manager
+package com.momentummm.app.data.manager
 
 import android.app.Activity
 import android.content.Context

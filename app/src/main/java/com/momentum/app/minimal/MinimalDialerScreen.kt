@@ -1,4 +1,4 @@
-package com.momentum.app.minimal
+package com.momentummm.app.minimal
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells

@@ -1,6 +1,5 @@
-package com.momentum.app.ui.screen.analytics
+package com.momentummm.app.ui.screen.analytics
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -16,46 +15,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.momentum.app.ui.system.*
-import kotlin.math.cos
-import kotlin.math.sin
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.momentummm.app.data.repository.UsageStatsRepository
+import com.momentummm.app.ui.system.*
+import com.momentummm.app.ui.viewmodel.AdvancedAnalyticsViewModel
+import com.momentummm.app.ui.viewmodel.AdvancedAnalyticsViewModelFactory
+import com.momentummm.app.ui.viewmodel.TimePeriod
+import com.momentummm.app.ui.viewmodel.AppCategory as VMAppCategory
 
-data class UsageData(
-    val appName: String,
-    val packageName: String,
-    val totalTime: Long, // in minutes
-    val sessions: Int,
-    val lastUsed: String,
-    val category: AppCategory,
-    val icon: String? = null
-)
-
-data class WeeklyData(
-    val day: String,
-    val screenTime: Float, // in hours
-    val pickups: Int,
-    val mostUsedApp: String
-)
-
-data class InsightData(
-    val title: String,
-    val description: String,
-    val value: String,
-    val change: Float, // percentage change
-    val isPositive: Boolean,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector
-)
-
+// Mantener enums locales para compatibilidad con UI
 enum class AppCategory(val displayName: String, val color: Color) {
     Social("Social", Color(0xFF4267B2)),
     Entertainment("Entretenimiento", Color(0xFFFF1744)),
@@ -67,74 +42,134 @@ enum class AppCategory(val displayName: String, val color: Color) {
     Other("Otros", Color(0xFF607D8B))
 }
 
+// Data classes locales para la UI
+data class UsageData(
+    val appName: String,
+    val packageName: String,
+    val totalTime: Long,
+    val sessions: Int,
+    val lastUsed: String,
+    val category: AppCategory,
+    val icon: String? = null
+)
+
+data class WeeklyData(
+    val day: String,
+    val screenTime: Float,
+    val pickups: Int,
+    val mostUsedApp: String
+)
+
+data class InsightData(
+    val title: String,
+    val description: String,
+    val value: String,
+    val change: Float,
+    val isPositive: Boolean,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)
+
+// Función de conversión de categorías
+private fun VMAppCategory.toUICategory(): AppCategory {
+    return when (this) {
+        VMAppCategory.SOCIAL -> AppCategory.Social
+        VMAppCategory.ENTERTAINMENT -> AppCategory.Entertainment
+        VMAppCategory.PRODUCTIVITY -> AppCategory.Productivity
+        VMAppCategory.GAMES -> AppCategory.Games
+        VMAppCategory.COMMUNICATION -> AppCategory.Communication
+        VMAppCategory.NEWS -> AppCategory.News
+        VMAppCategory.HEALTH -> AppCategory.Health
+        VMAppCategory.OTHER -> AppCategory.Other
+    }
+}
+
+// Función para convertir nombre de icono a ImageVector
+private fun getIconFromName(iconName: String): androidx.compose.ui.graphics.vector.ImageVector {
+    return when (iconName) {
+        "TrendingDown" -> Icons.Filled.TrendingDown
+        "TrendingUp" -> Icons.Filled.TrendingUp
+        "Smartphone" -> Icons.Filled.Smartphone
+        "TouchApp" -> Icons.Filled.TouchApp
+        "Schedule" -> Icons.Filled.Schedule
+        "WorkOutline" -> Icons.Filled.WorkOutline
+        "Groups" -> Icons.Filled.Groups
+        else -> Icons.Filled.Analytics
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedAnalyticsScreen(
     isPremiumUser: Boolean,
     onUpgradeClick: () -> Unit
 ) {
-    val selectedPeriod = remember { mutableStateOf("Última semana") }
-    val periods = listOf("Hoy", "Última semana", "Último mes", "Último año")
-    
-    // Sample data - in real app this would come from repository
-    val sampleUsageData = listOf(
-        UsageData("Instagram", "com.instagram.android", 180, 25, "hace 5 min", AppCategory.Social),
-        UsageData("YouTube", "com.google.android.youtube", 150, 12, "hace 1 hora", AppCategory.Entertainment),
-        UsageData("WhatsApp", "com.whatsapp", 90, 45, "hace 2 min", AppCategory.Communication),
-        UsageData("Chrome", "com.android.chrome", 75, 8, "hace 30 min", AppCategory.Productivity),
-        UsageData("TikTok", "com.zhiliaoapp.musically", 120, 20, "hace 1 hora", AppCategory.Social)
-    )
-    
-    val sampleWeeklyData = listOf(
-        WeeklyData("Lun", 6.5f, 80, "Instagram"),
-        WeeklyData("Mar", 7.2f, 95, "YouTube"),
-        WeeklyData("Mié", 5.8f, 70, "WhatsApp"),
-        WeeklyData("Jue", 8.1f, 110, "Instagram"),
-        WeeklyData("Vie", 9.2f, 130, "TikTok"),
-        WeeklyData("Sáb", 4.3f, 55, "YouTube"),
-        WeeklyData("Dom", 3.8f, 40, "Chrome")
-    )
-    
-    val sampleInsights = listOf(
-        InsightData(
-            "Promedio diario",
-            "Tu tiempo de pantalla promedio esta semana",
-            "6h 24m",
-            -12.5f,
-            true,
-            Icons.Filled.TrendingDown
-        ),
-        InsightData(
-            "App más usada",
-            "Instagram representa el 28% de tu tiempo",
-            "3h 45m",
-            15.2f,
-            false,
-            Icons.Filled.Smartphone
-        ),
-        InsightData(
-            "Sesiones",
-            "Número de veces que desbloqueaste el teléfono",
-            "89",
-            -8.3f,
-            true,
-            Icons.Filled.TouchApp
-        ),
-        InsightData(
-            "Hora pico",
-            "Tu momento de mayor uso",
-            "21:30",
-            0f,
-            true,
-            Icons.Filled.Schedule
+    // DEVELOPMENT MODE: Always show content (comment out for production)
+    val showContent = true // Change to isPremiumUser for production
+
+    val context = LocalContext.current
+    val viewModel: AdvancedAnalyticsViewModel = viewModel(
+        factory = AdvancedAnalyticsViewModelFactory(
+            UsageStatsRepository(context),
+            context
         )
     )
-    
-    if (!isPremiumUser) {
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Si no tiene permiso, mostrar mensaje
+    if (!uiState.hasPermission && !uiState.isLoading) {
+        PermissionRequiredScreen()
+        return
+    }
+
+    if (!showContent) {
         PremiumUpsellScreen(onUpgradeClick = onUpgradeClick)
         return
     }
     
+    // Mostrar loading
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    // Convertir datos del ViewModel a formato UI
+    val usageData = uiState.topApps.map { appData ->
+        UsageData(
+            appName = appData.appName,
+            packageName = appData.packageName,
+            totalTime = appData.totalTime,
+            sessions = appData.sessions,
+            lastUsed = appData.lastUsed,
+            category = appData.category.toUICategory()
+        )
+    }
+
+    val weeklyData = uiState.weeklyData.map { weekData ->
+        WeeklyData(
+            day = weekData.day,
+            screenTime = weekData.screenTime,
+            pickups = weekData.pickups,
+            mostUsedApp = weekData.mostUsedApp
+        )
+    }
+
+    val insights = uiState.insights.map { insightData ->
+        InsightData(
+            title = insightData.title,
+            description = insightData.description,
+            value = insightData.value,
+            change = insightData.change,
+            isPositive = insightData.isPositive,
+            icon = getIconFromName(insightData.iconName)
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -173,92 +208,161 @@ fun AdvancedAnalyticsScreen(
                     shape = CircleShape,
                     modifier = Modifier.size(40.dp)
                 ) {
-                    Icon(
-                        Icons.Filled.Analytics,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(8.dp)
-                    )
+                    IconButton(onClick = { viewModel.refresh() }) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = "Actualizar",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                 }
             }
         }
         
         item {
-            // Period selector
+            // Period selector - AHORA CONECTADO AL VIEWMODEL
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(periods) { period ->
+                items(TimePeriod.values()) { period ->
                     MomentumChip(
-                        text = period,
-                        isSelected = selectedPeriod.value == period,
-                        onClick = { selectedPeriod.value = period }
+                        text = period.displayName,
+                        isSelected = uiState.selectedPeriod == period,
+                        onClick = { viewModel.selectPeriod(period) }
                     )
                 }
             }
         }
         
         item {
-            // Weekly chart
-            WeeklyUsageChart(
-                data = sampleWeeklyData,
+            // Summary Stats Card - USANDO DATOS REALES
+            SummaryStatsCard(
+                totalScreenTime = uiState.totalScreenTime,
+                averageDaily = uiState.averageDailyScreenTime,
+                totalPickups = uiState.totalPickups,
+                mostUsedApp = uiState.mostUsedApp,
                 modifier = Modifier.fillMaxWidth()
             )
         }
+
+        item {
+            // Weekly chart - USANDO DATOS REALES
+            if (weeklyData.isNotEmpty()) {
+                WeeklyUsageChart(
+                    data = weeklyData,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
         
         item {
-            // Key insights
-            Text(
-                text = "Insights Clave",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(sampleInsights) { insight ->
-                    InsightCard(
-                        insight = insight,
-                        modifier = Modifier.width(200.dp)
-                    )
+            // Key insights - USANDO DATOS REALES
+            if (insights.isNotEmpty()) {
+                Text(
+                    text = "Insights Clave",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(insights) { insight ->
+                        InsightCard(
+                            insight = insight,
+                            modifier = Modifier.width(200.dp)
+                        )
+                    }
                 }
             }
         }
         
         item {
-            // Category breakdown
-            CategoryBreakdownChart(
-                data = sampleUsageData,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Category breakdown - USANDO DATOS REALES
+            if (usageData.isNotEmpty()) {
+                CategoryBreakdownChart(
+                    data = usageData,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
         
         item {
-            // App usage list
-            Text(
-                text = "Uso por Aplicación",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            // App usage list - USANDO DATOS REALES
+            if (usageData.isNotEmpty()) {
+                Text(
+                    text = "Uso por Aplicación",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
         }
         
-        items(sampleUsageData.take(10)) { app ->
+        items(usageData) { app ->
             AppUsageCard(
                 app = app,
-                totalTime = sampleUsageData.sumOf { it.totalTime },
+                totalTime = usageData.sumOf { it.totalTime },
                 modifier = Modifier.fillMaxWidth()
             )
         }
         
         item {
             // Productivity insights
-            ProductivityInsightsCard(
-                modifier = Modifier.fillMaxWidth()
-            )
+            if (usageData.isNotEmpty()) {
+                ProductivityInsightsCard(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun PermissionRequiredScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            Icons.Filled.Security,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(80.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Permiso Requerido",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Para ver estadísticas avanzadas, necesitamos acceso a los datos de uso de tu dispositivo.",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = "Por favor, ve a Configuración y habilita el acceso a estadísticas de uso.",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -378,7 +482,7 @@ private fun WeeklyUsageChart(
                 verticalAlignment = Alignment.Bottom
             ) {
                 data.forEach { dayData ->
-                    val barHeight = (dayData.screenTime / maxTime) * 160.dp
+                    val barHeight = ((dayData.screenTime / maxTime) * 160).dp
                     val animatedHeight by animateDpAsState(
                         targetValue = barHeight,
                         animationSpec = spring(
@@ -738,6 +842,123 @@ private fun ProductivityInsightsCard(
                     text = "Tu productividad aumenta un 23% los martes. Considera programar tareas importantes ese día.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SummaryStatsCard(
+    totalScreenTime: String,
+    averageDaily: String,
+    totalPickups: Int,
+    mostUsedApp: String,
+    modifier: Modifier = Modifier
+) {
+    MomentumCard(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.primaryContainer
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Resumen Estadístico",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Total Screen Time
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = totalScreenTime,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Tiempo de Pantalla Total",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                // Average Daily
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = averageDaily,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Promedio Diario",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Divider
+            Divider(
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                thickness = 1.dp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Total Pickups
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Desbloqueos Totales",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = "$totalPickups veces",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Most Used App
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "App Más Usada",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = mostUsedApp,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }

@@ -1,12 +1,15 @@
-package com.momentum.app.data.repository
+package com.momentummm.app.data.repository
 
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import com.momentum.app.data.entity.AppUsage
+import com.momentummm.app.data.entity.AppUsage
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 data class AppUsageInfo(
     val packageName: String,
@@ -15,7 +18,10 @@ data class AppUsageInfo(
     val lastTimeUsed: Long
 )
 
-class UsageStatsRepository(private val context: Context) {
+@Singleton
+class UsageStatsRepository @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private val usageStatsManager: UsageStatsManager? =
         context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
@@ -51,14 +57,14 @@ class UsageStatsRepository(private val context: Context) {
         val packageManager = context.packageManager
         
         return usageStats
-            .filter { it.totalTimeInForeground > 0 }
+            .filter { it.totalTimeInForeground > 60000 } // Filtrar apps con menos de 1 minuto de uso
             .mapNotNull { stats ->
                 try {
                     val appInfo = packageManager.getApplicationInfo(stats.packageName, 0)
                     val appName = packageManager.getApplicationLabel(appInfo).toString()
                     
-                    // Filter out system apps if desired
-                    if (appInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0 || isImportantSystemApp(stats.packageName)) {
+                    // Incluir apps importantes y apps no del sistema
+                    if (shouldIncludeApp(stats.packageName, appInfo)) {
                         AppUsageInfo(
                             packageName = stats.packageName,
                             appName = appName,
@@ -73,7 +79,21 @@ class UsageStatsRepository(private val context: Context) {
             .sortedByDescending { it.totalTimeInMillis }
     }
 
-    private fun isImportantSystemApp(packageName: String): Boolean {
+    private fun shouldIncludeApp(packageName: String, appInfo: ApplicationInfo): Boolean {
+        // Excluir aplicaciones específicas que no son relevantes
+        val excludedApps = setOf(
+            "android",
+            "com.android.systemui",
+            "com.android.launcher",
+            "com.android.settings",
+            context.packageName // Excluir nuestra propia app
+        )
+
+        if (excludedApps.contains(packageName)) {
+            return false
+        }
+
+        // Incluir apps importantes del sistema
         val importantSystemApps = setOf(
             "com.android.chrome",
             "com.google.android.youtube",
@@ -81,9 +101,23 @@ class UsageStatsRepository(private val context: Context) {
             "com.google.android.apps.maps",
             "com.android.dialer",
             "com.android.mms", // Messages
-            "com.android.camera2"
+            "com.android.camera2",
+            "com.google.android.apps.photos",
+            "com.whatsapp",
+            "com.instagram.android",
+            "com.facebook.katana",
+            "com.twitter.android",
+            "com.spotify.music",
+            "com.netflix.mediaclient"
         )
-        return importantSystemApps.contains(packageName)
+
+        // Si es una app importante del sistema, incluirla
+        if (importantSystemApps.contains(packageName)) {
+            return true
+        }
+
+        // Si no es una app del sistema, incluirla
+        return (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0
     }
 
     fun getTotalScreenTime(): Long {
@@ -105,6 +139,16 @@ class UsageStatsRepository(private val context: Context) {
             endTime
         ) ?: return 0L
 
-        return usageStats.sumOf { it.totalTimeInForeground }
+        return usageStats
+            .filter { it.totalTimeInForeground > 0 }
+            .filter { stats ->
+                try {
+                    val appInfo = context.packageManager.getApplicationInfo(stats.packageName, 0)
+                    shouldIncludeApp(stats.packageName, appInfo)
+                } catch (e: PackageManager.NameNotFoundException) {
+                    false
+                }
+            }
+            .sumOf { it.totalTimeInForeground }
     }
 }

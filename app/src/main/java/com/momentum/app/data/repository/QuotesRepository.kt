@@ -1,7 +1,7 @@
-package com.momentum.app.data.repository
+package com.momentummm.app.data.repository
 
-import com.momentum.app.data.dao.QuoteDao
-import com.momentum.app.data.entity.Quote
+import com.momentummm.app.data.dao.QuoteDao
+import com.momentummm.app.data.entity.Quote
 import kotlinx.coroutines.flow.Flow
 
 class QuotesRepository(private val quoteDao: QuoteDao) {

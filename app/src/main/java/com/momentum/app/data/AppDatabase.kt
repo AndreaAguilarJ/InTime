@@ -1,4 +1,4 @@
-package com.momentum.app.data
+package com.momentummm.app.data
 
 import android.content.Context
 import androidx.room.Database
@@ -6,20 +6,35 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.momentum.app.data.dao.AppUsageDao
-import com.momentum.app.data.dao.QuoteDao
-import com.momentum.app.data.dao.UserDao
-import com.momentum.app.data.entity.AppUsage
-import com.momentum.app.data.entity.Quote
-import com.momentum.app.data.entity.UserSettings
+import com.momentummm.app.data.dao.AppUsageDao
+import com.momentummm.app.data.dao.QuoteDao
+import com.momentummm.app.data.dao.UserDao
+import com.momentummm.app.data.dao.AppLimitDao
+import com.momentummm.app.data.dao.AppWhitelistDao
+import com.momentummm.app.data.dao.GoalDao
+import com.momentummm.app.data.dao.ChallengeDao
+import com.momentummm.app.data.dao.WebsiteBlockDao
+import com.momentummm.app.data.dao.InAppBlockRuleDao
+import com.momentummm.app.data.dao.PasswordProtectionDao
+import com.momentummm.app.data.entity.AppUsage
+import com.momentummm.app.data.entity.Quote
+import com.momentummm.app.data.entity.UserSettings
+import com.momentummm.app.data.entity.AppLimit
+import com.momentummm.app.data.entity.AppWhitelist
+import com.momentummm.app.data.entity.Goal
+import com.momentummm.app.data.entity.GoalProgress
+import com.momentummm.app.data.entity.Challenge
+import com.momentummm.app.data.entity.WebsiteBlock
+import com.momentummm.app.data.entity.InAppBlockRule
+import com.momentummm.app.data.entity.PasswordProtection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [UserSettings::class, Quote::class, AppUsage::class],
-    version = 2,
+    entities = [UserSettings::class, Quote::class, AppUsage::class, AppLimit::class, AppWhitelist::class, Goal::class, GoalProgress::class, Challenge::class, WebsiteBlock::class, InAppBlockRule::class, PasswordProtection::class],
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -28,6 +43,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun quoteDao(): QuoteDao
     abstract fun appUsageDao(): AppUsageDao
+    abstract fun appLimitDao(): AppLimitDao
+    abstract fun appWhitelistDao(): AppWhitelistDao
+    abstract fun goalDao(): GoalDao
+    abstract fun challengeDao(): ChallengeDao
+    abstract fun websiteBlockDao(): WebsiteBlockDao
+    abstract fun inAppBlockRuleDao(): InAppBlockRuleDao
+    abstract fun passwordProtectionDao(): PasswordProtectionDao
 
     private class AppDatabaseCallback(
         private val scope: CoroutineScope

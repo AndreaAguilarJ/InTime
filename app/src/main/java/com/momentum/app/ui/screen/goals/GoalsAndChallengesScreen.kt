@@ -1,4 +1,4 @@
-package com.momentum.app.ui.screen.goals
+package com.momentummm.app.ui.screen.goals
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -20,21 +20,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.momentum.app.ui.system.*
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.momentummm.app.ui.system.*
+import com.momentummm.app.data.entity.Goal as DbGoal
+import com.momentummm.app.data.entity.Challenge as DbChallenge
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+// UI Data classes for presentation
 data class Goal(
     val id: String,
     val title: String,
     val description: String,
-    val targetValue: Int, // in minutes
-    val currentValue: Int, // in minutes
+    val targetValue: Int,
+    val currentValue: Int,
     val period: GoalPeriod,
     val category: GoalCategory,
     val isActive: Boolean = true,
     val createdDate: String,
-    val endDate: String?
+    val endDate: String?,
+    val currentStreak: Int = 0,
+    val completionCount: Int = 0
 )
 
 data class Challenge(
@@ -44,10 +51,12 @@ data class Challenge(
     val iconType: ChallengeIcon,
     val difficulty: ChallengeDifficulty,
     val durationDays: Int,
-    val progress: Float, // 0.0 to 1.0
+    val progress: Float,
     val reward: String,
     val isCompleted: Boolean = false,
-    val isActive: Boolean = false
+    val isActive: Boolean = false,
+    val daysCompleted: Int = 0,
+    val currentStreak: Int = 0
 )
 
 enum class GoalPeriod(val displayName: String) {
@@ -78,84 +87,34 @@ enum class ChallengeDifficulty(val displayName: String, val color: Color) {
 @Composable
 fun GoalsAndChallengesScreen(
     isPremiumUser: Boolean,
-    onUpgradeClick: () -> Unit
+    onUpgradeClick: () -> Unit,
+    viewModel: GoalsAndChallengesViewModel = hiltViewModel()
 ) {
-    val sampleGoals = listOf(
-        Goal(
-            id = "1",
-            title = "Reducir tiempo de pantalla",
-            description = "Usar el teléfono menos de 4 horas al día",
-            targetValue = 240, // 4 hours
-            currentValue = 320, // Current: 5h 20m
-            period = GoalPeriod.DAILY,
-            category = GoalCategory.SCREEN_TIME,
-            createdDate = "2024-01-01",
-            endDate = null
-        ),
-        Goal(
-            id = "2",
-            title = "Menos redes sociales",
-            description = "Máximo 1 hora en Instagram y TikTok",
-            targetValue = 60,
-            currentValue = 45,
-            period = GoalPeriod.DAILY,
-            category = GoalCategory.SOCIAL_MEDIA,
-            createdDate = "2024-01-01",
-            endDate = null
-        ),
-        Goal(
-            id = "3",
-            title = "Semana productiva",
-            description = "2 horas diarias en apps de productividad",
-            targetValue = 840, // 14 hours per week
-            currentValue = 600, // 10 hours this week
-            period = GoalPeriod.WEEKLY,
-            category = GoalCategory.PRODUCTIVITY,
-            createdDate = "2024-01-01",
-            endDate = null
-        )
-    )
-    
-    val sampleChallenges = listOf(
-        Challenge(
-            id = "1",
-            title = "Desconexión Digital",
-            description = "7 días sin usar el teléfono después de las 9 PM",
-            iconType = ChallengeIcon.PHONE_OFF,
-            difficulty = ChallengeDifficulty.MEDIUM,
-            durationDays = 7,
-            progress = 0.4f,
-            reward = "Badge de Maestro del Atardecer",
-            isActive = true
-        ),
-        Challenge(
-            id = "2",
-            title = "Enfoque Matutino",
-            description = "30 días de no usar redes sociales hasta las 10 AM",
-            iconType = ChallengeIcon.TIMER,
-            difficulty = ChallengeDifficulty.HARD,
-            durationDays = 30,
-            progress = 0.6f,
-            reward = "Badge de Guerrero del Amanecer",
-            isActive = true
-        ),
-        Challenge(
-            id = "3",
-            title = "Fin de Semana Offline",
-            description = "Usar el teléfono menos de 2 horas los fines de semana",
-            iconType = ChallengeIcon.NATURE,
-            difficulty = ChallengeDifficulty.EASY,
-            durationDays = 14,
-            progress = 0.0f,
-            reward = "Badge de Explorador Natural"
-        )
-    )
-    
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshData()
+    }
+
+    // Comentado temporalmente - Promoción Premium para Goals
+    /*
     if (!isPremiumUser) {
         PremiumGoalsUpsellScreen(onUpgradeClick = onUpgradeClick)
         return
     }
-    
+    */
+
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -207,71 +166,185 @@ fun GoalsAndChallengesScreen(
         item {
             // Quick stats
             QuickStatsCard(
-                goalsCompleted = 2,
-                goalsActive = sampleGoals.count { it.isActive },
-                challengesCompleted = 5,
-                streakDays = 12
+                goalsCompleted = uiState.goalStatistics?.completedGoals ?: 0,
+                goalsActive = uiState.activeGoals.size,
+                challengesCompleted = uiState.challengeStatistics?.completedChallenges ?: 0,
+                streakDays = uiState.goalStatistics?.averageStreak?.toInt() ?: 0
             )
         }
         
         item {
-            // Active goals section
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Tabs for Goals and Challenges
+            TabRow(
+                selectedTabIndex = selectedTab,
+                modifier = Modifier.clip(RoundedCornerShape(8.dp))
             ) {
-                Text(
-                    text = "Metas Activas",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { viewModel.selectTab(0) },
+                    text = { Text("Metas") }
                 )
-                MomentumButton(
-                    onClick = { /* Create new goal */ },
-                    style = ButtonStyle.Outline,
-                    size = ButtonSize.Small,
-                    icon = Icons.Filled.Add
-                ) {
-                    Text("Nueva Meta")
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { viewModel.selectTab(1) },
+                    text = { Text("Desafíos") }
+                )
+            }
+        }
+
+        when (selectedTab) {
+            0 -> {
+                // Goals Tab
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Metas Activas",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        MomentumButton(
+                            onClick = { viewModel.showCreateGoalDialog() },
+                            style = ButtonStyle.Outline,
+                            size = ButtonSize.Small,
+                            icon = Icons.Filled.Add
+                        ) {
+                            Text("Nueva Meta")
+                        }
+                    }
+                }
+
+                items(uiState.activeGoals.map { it.toUiModel() }) { goal ->
+                    GoalCard(
+                        goal = goal,
+                        onUpdateProgress = { newValue ->
+                            viewModel.updateGoalProgress(goal.id, newValue)
+                        },
+                        onDeactivate = {
+                            viewModel.deactivateGoal(goal.id)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                if (uiState.activeGoals.isEmpty()) {
+                    item {
+                        EmptyStateCard(
+                            title = "No hay metas activas",
+                            description = "Crea tu primera meta para comenzar a mejorar tus hábitos digitales",
+                            actionText = "Crear Meta",
+                            onActionClick = { viewModel.showCreateGoalDialog() }
+                        )
+                    }
+                }
+            }
+
+            1 -> {
+                // Challenges Tab
+                item {
+                    Text(
+                        text = "Desafíos Activos",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                items(uiState.activeChallenges.map { it.toUiModel() }) { challenge ->
+                    ChallengeCard(
+                        challenge = challenge,
+                        onJoinChallenge = {},
+                        onUpdateProgress = { daysCompleted ->
+                            viewModel.updateChallengeProgress(challenge.id, daysCompleted)
+                        },
+                        onAbandon = {
+                            viewModel.abandonChallenge(challenge.id)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                item {
+                    Text(
+                        text = "Desafíos Disponibles",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
+
+                items(uiState.availableChallenges.map { it.toUiModel() }) { challenge ->
+                    ChallengeCard(
+                        challenge = challenge,
+                        onJoinChallenge = {
+                            viewModel.startChallenge(challenge.id)
+                        },
+                        onUpdateProgress = {},
+                        onAbandon = {},
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                if (uiState.activeChallenges.isEmpty() && uiState.availableChallenges.isEmpty()) {
+                    item {
+                        EmptyStateCard(
+                            title = "No hay desafíos disponibles",
+                            description = "Los desafíos aparecerán aquí cuando estén disponibles",
+                            actionText = "Actualizar",
+                            onActionClick = { viewModel.refreshData() }
+                        )
+                    }
                 }
             }
         }
-        
-        items(sampleGoals.filter { it.isActive }) { goal ->
-            GoalCard(
-                goal = goal,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        
-        item {
-            // Challenges section
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Desafíos Disponibles",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "${sampleChallenges.count { it.isActive }} activos",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        items(sampleChallenges) { challenge ->
-            ChallengeCard(
-                challenge = challenge,
-                onJoinChallenge = { /* Join challenge */ },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
     }
+
+    // Create Goal Dialog
+    if (uiState.showCreateGoalDialog) {
+        CreateGoalDialog(
+            onDismiss = { viewModel.hideCreateGoalDialog() },
+            onCreateGoal = { title, description, targetValue, period, category ->
+                viewModel.createGoal(title, description, targetValue, period, category)
+            }
+        )
+    }
+}
+
+// Extension functions to convert between DB entities and UI models
+private fun DbGoal.toUiModel(): Goal {
+    return Goal(
+        id = id,
+        title = title,
+        description = description,
+        targetValue = targetValue,
+        currentValue = currentValue,
+        period = GoalPeriod.valueOf(period),
+        category = GoalCategory.valueOf(category),
+        isActive = isActive,
+        createdDate = createdDate.toString(),
+        endDate = endDate?.toString(),
+        currentStreak = currentStreak,
+        completionCount = completionCount
+    )
+}
+
+private fun DbChallenge.toUiModel(): Challenge {
+    return Challenge(
+        id = id,
+        title = title,
+        description = description,
+        iconType = ChallengeIcon.valueOf(iconType),
+        difficulty = ChallengeDifficulty.valueOf(difficulty),
+        durationDays = durationDays,
+        progress = progress,
+        reward = reward,
+        isCompleted = isCompleted,
+        isActive = isActive,
+        daysCompleted = daysCompleted,
+        currentStreak = currentStreak
+    )
 }
 
 @Composable
@@ -410,7 +483,7 @@ private fun QuickStatsCard(
                 StatItem(
                     value = streakDays.toString(),
                     label = "Días de\nracha",
-                    icon = Icons.Filled.LocalFire,
+                    icon = Icons.Filled.Whatshot,
                     color = Color(0xFFFF5722)
                 )
             }
@@ -453,7 +526,9 @@ private fun StatItem(
 @Composable
 private fun GoalCard(
     goal: Goal,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onUpdateProgress: (Int) -> Unit,
+    onDeactivate: () -> Unit
 ) {
     val progress = if (goal.targetValue > 0) {
         goal.currentValue.toFloat() / goal.targetValue.toFloat()
@@ -584,7 +659,9 @@ private fun GoalCard(
 private fun ChallengeCard(
     challenge: Challenge,
     onJoinChallenge: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onUpdateProgress: (Int) -> Unit,
+    onAbandon: () -> Unit
 ) {
     MomentumCard(
         modifier = modifier,

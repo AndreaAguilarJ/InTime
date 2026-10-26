@@ -1,4 +1,4 @@
-package com.momentum.app.widget
+package com.momentummm.app.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -13,82 +13,114 @@ import androidx.glance.background
 import androidx.glance.layout.*
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import com.momentummm.app.data.AppDatabase
+import com.momentummm.app.util.LifeWeeksCalculator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class LifeWeeksWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        // Load data before providing content
+        val database = AppDatabase.getDatabase(context)
+        val userSettings = withContext(Dispatchers.IO) {
+            database.userDao().getUserSettingsSync()
+        }
+
+        val lifeWeeksData = userSettings?.birthDate?.let { birthDate ->
+            LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+        }
+
         provideContent {
-            LifeWeeksWidgetContent()
+            LifeWeeksWidgetContent(lifeWeeksData)
         }
     }
 
     @Composable
-    private fun LifeWeeksWidgetContent() {
-        val weeksLived = calculateWeeksLived()
-        val totalWeeks = 80 * 52 // 80 years in weeks
-        val remainingWeeks = totalWeeks - weeksLived
-
+    private fun LifeWeeksWidgetContent(
+        lifeWeeksData: LifeWeeksCalculator.LifeWeeksData?
+    ) {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(ColorProvider(Color.Black))
+                .background(Color.Black)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Tu Vida en Semanas",
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 16.sp
+            if (lifeWeeksData != null) {
+                Text(
+                    text = "Tu Vida en Semanas",
+                    style = TextStyle(
+                        fontSize = 16.sp
+                    )
                 )
-            )
-            
-            Spacer(modifier = GlanceModifier.height(8.dp))
-            
-            Text(
-                text = "$weeksLived",
-                style = TextStyle(
-                    color = ColorProvider(Color.Green),
-                    fontSize = 24.sp
-                )
-            )
-            
-            Text(
-                text = "semanas vividas",
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 12.sp
-                )
-            )
-            
-            Spacer(modifier = GlanceModifier.height(4.dp))
-            
-            Text(
-                text = "$remainingWeeks",
-                style = TextStyle(
-                    color = ColorProvider(Color.Gray),
-                    fontSize = 18.sp
-                )
-            )
-            
-            Text(
-                text = "semanas restantes",
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 12.sp
-                )
-            )
-        }
-    }
 
-    private fun calculateWeeksLived(): Long {
-        // Default birth date if not configured (this should come from user preferences)
-        val birthDate = LocalDate.of(1990, 1, 1)
-        val today = LocalDate.now()
-        return ChronoUnit.WEEKS.between(birthDate, today)
+                Spacer(modifier = GlanceModifier.height(8.dp))
+
+                Text(
+                    text = "${lifeWeeksData.weeksLived}",
+                    style = TextStyle(
+                        fontSize = 32.sp
+                    )
+                )
+
+                Text(
+                    text = "semanas vividas",
+                    style = TextStyle(
+                        fontSize = 12.sp
+                    )
+                )
+
+                Spacer(modifier = GlanceModifier.height(8.dp))
+
+                Text(
+                    text = "${lifeWeeksData.weeksRemaining}",
+                    style = TextStyle(
+                        fontSize = 24.sp
+                    )
+                )
+
+                Text(
+                    text = "semanas restantes",
+                    style = TextStyle(
+                        fontSize = 12.sp
+                    )
+                )
+
+                Spacer(modifier = GlanceModifier.height(8.dp))
+
+                Text(
+                    text = "Edad: ${lifeWeeksData.currentAge} años",
+                    style = TextStyle(
+                        fontSize = 10.sp
+                    )
+                )
+            } else {
+                // Show message if no birth date configured
+                Text(
+                    text = "📅",
+                    style = TextStyle(
+                        fontSize = 48.sp
+                    )
+                )
+
+                Spacer(modifier = GlanceModifier.height(8.dp))
+
+                Text(
+                    text = "Configura tu fecha",
+                    style = TextStyle(
+                        fontSize = 14.sp
+                    )
+                )
+
+                Text(
+                    text = "de nacimiento en la app",
+                    style = TextStyle(
+                        fontSize = 12.sp
+                    )
+                )
+            }
+        }
     }
 }

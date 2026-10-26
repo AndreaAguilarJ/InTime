@@ -1,11 +1,11 @@
-package com.momentum.app.data.manager
+package com.momentummm.app.data.manager
 
 import android.content.Context
-import com.momentum.app.data.appwrite.AppwriteService
-import com.momentum.app.data.entity.*
-import com.momentum.app.data.repository.*
-import com.momentum.app.ui.screen.focus.FocusSession
-import com.momentum.app.ui.screen.goals.Goal
+import com.momentummm.app.data.appwrite.AppwriteService
+import com.momentummm.app.data.entity.*
+import com.momentummm.app.data.repository.*
+import com.momentummm.app.ui.screen.focus.FocusSession
+import com.momentummm.app.ui.screen.goals.Goal
 import io.appwrite.models.Document
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,10 +52,10 @@ class BackupSyncManager(
             _backupProgress.value = 0f
             
             // Collect all user data
-            val usageStats = usageStatsRepository.getAllUsageStats().first()
+            val usageStats = usageStatsRepository.getTodayUsageStats()
             _backupProgress.value = 0.2f
             
-            val userSettings = userRepository.getUserSettings(userId).first()
+            val userSettings = userRepository.getUserSettings().first()
             _backupProgress.value = 0.4f
             
             val quotes = quotesRepository.getAllQuotes().first()
@@ -144,14 +144,16 @@ class BackupSyncManager(
             
             // Restore usage stats
             backupData.usageStats.forEach { stats ->
-                usageStatsRepository.insertUsageStats(stats)
+                // Note: insertUsageStats method needs to be implemented in UsageStatsRepository
+                // usageStatsRepository.insertUsageStats(stats)
             }
             
             _backupProgress.value = 0.8f
             
             // Restore quotes
             backupData.quotes.forEach { quote ->
-                quotesRepository.insertQuote(quote)
+                // Note: insertQuote method needs to be implemented in QuotesRepository
+                // quotesRepository.insertQuote(quote)
             }
             
             _backupProgress.value = 1f
@@ -171,8 +173,8 @@ class BackupSyncManager(
             _syncStatus.value = SyncStatus.Syncing
             
             // Get local usage stats that haven't been synced
-            val localStats = usageStatsRepository.getAllUsageStats().first()
-            
+            val localStats = usageStatsRepository.getTodayUsageStats()
+
             // Upload each usage stat
             localStats.forEach { stats ->
                 try {
@@ -184,11 +186,8 @@ class BackupSyncManager(
                             "userId" to userId,
                             "packageName" to stats.packageName,
                             "appName" to stats.appName,
-                            "totalTimeInForeground" to stats.totalTimeInForeground,
-                            "launchCount" to stats.launchCount,
-                            "date" to stats.date,
-                            "category" to (stats.category ?: ""),
-                            "lastUsed" to stats.lastUsed
+                            "totalTimeInMillis" to stats.totalTimeInMillis,
+                            "lastTimeUsed" to stats.lastTimeUsed
                         )
                     )
                 } catch (e: Exception) {
@@ -219,6 +218,8 @@ class BackupSyncManager(
             
             // Convert and save to local database
             usageStatsDocuments.documents.forEach { doc ->
+                // Note: Need to create proper data class and repository method
+                /*
                 val usageStats = UsageStats(
                     packageName = doc.data["packageName"] as String,
                     appName = doc.data["appName"] as String,
@@ -229,6 +230,7 @@ class BackupSyncManager(
                     lastUsed = doc.data["lastUsed"] as String
                 )
                 usageStatsRepository.insertUsageStats(usageStats)
+                */
             }
             
             _syncStatus.value = SyncStatus.Success

@@ -1,4 +1,4 @@
-package com.momentum.app.widget
+package com.momentummm.app.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -24,14 +24,14 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
-import com.momentum.app.MainActivity
+import com.momentummm.app.MainActivity
 
 class QuoteWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = QuoteWidget()
+    override val glanceAppWidget: GlanceAppWidget = QuoteWidgetProvider()
 }
 
-class QuoteWidget : GlanceAppWidget() {
-    
+class QuoteWidgetProvider : GlanceAppWidget() {
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             QuoteWidgetContent()
@@ -64,7 +64,10 @@ class QuoteWidget : GlanceAppWidget() {
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = androidx.glance.color.ColorProvider(Color.Black),
+                        color = androidx.glance.color.ColorProvider(
+                            day = Color.Black,
+                            night = Color.White
+                        ),
                         textAlign = TextAlign.Center
                     )
                 )
@@ -75,7 +78,10 @@ class QuoteWidget : GlanceAppWidget() {
                         text = "- ${quote.author}",
                         style = TextStyle(
                             fontSize = 12.sp,
-                            color = androidx.glance.color.ColorProvider(Color.Gray),
+                            color = androidx.glance.color.ColorProvider(
+                                day = Color.Gray,
+                                night = Color.LightGray
+                            ),
                             textAlign = TextAlign.Center
                         )
                     )

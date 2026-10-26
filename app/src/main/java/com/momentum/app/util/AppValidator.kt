@@ -1,4 +1,4 @@
-package com.momentum.app.util
+package com.momentummm.app.util
 
 import android.content.Context
 
@@ -16,19 +16,19 @@ object AppValidator {
         
         // Check if critical classes exist
         try {
-            Class.forName("com.momentum.app.MomentumApplication")
+            Class.forName("com.momentummm.app.MomentumApplication")
         } catch (e: ClassNotFoundException) {
             errors.add("Clase principal de aplicación no encontrada")
         }
         
         try {
-            Class.forName("com.momentum.app.data.AppDatabase")
+            Class.forName("com.momentummm.app.data.AppDatabase")
         } catch (e: ClassNotFoundException) {
             errors.add("Base de datos no configurada correctamente")
         }
         
         try {
-            Class.forName("com.momentum.app.data.appwrite.AppwriteService")
+            Class.forName("com.momentummm.app.data.appwrite.AppwriteService")
         } catch (e: ClassNotFoundException) {
             warnings.add("Servicio Appwrite no disponible - funciones en la nube limitadas")
         }

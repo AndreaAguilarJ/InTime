@@ -1,4 +1,4 @@
-package com.momentum.app.ui.screen.settings
+package com.momentummm.app.ui.screen.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,8 +14,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.momentum.app.data.manager.BackupSyncManager
-import com.momentum.app.data.manager.ExportManager
+import com.momentummm.app.data.manager.BackupSyncManager
+import com.momentummm.app.data.manager.ExportManager
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

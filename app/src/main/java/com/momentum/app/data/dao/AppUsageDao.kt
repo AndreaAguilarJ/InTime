@@ -1,7 +1,7 @@
-package com.momentum.app.data.dao
+package com.momentummm.app.data.dao
 
 import androidx.room.*
-import com.momentum.app.data.entity.AppUsage
+import com.momentummm.app.data.entity.AppUsage
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 

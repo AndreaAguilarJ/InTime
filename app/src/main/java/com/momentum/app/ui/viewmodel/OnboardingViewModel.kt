@@ -1,10 +1,10 @@
-package com.momentum.app.ui.viewmodel
+package com.momentummm.app.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.momentum.app.data.entity.UserSettings
-import com.momentum.app.data.repository.UserRepository
+import com.momentummm.app.data.entity.UserSettings
+import com.momentummm.app.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,4 +1,4 @@
-package com.momentum.app.ui.component
+package com.momentummm.app.ui.component
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.momentum.app.util.NetworkUtils
+import com.momentummm.app.util.NetworkUtils
 
 @Composable
 fun OfflineIndicator(

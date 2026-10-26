@@ -1,11 +1,11 @@
-package com.momentum.app.minimal
+package com.momentummm.app.minimal
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.telecom.TelecomManager
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -15,6 +15,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -31,6 +32,7 @@ class MinimalPhoneManager(private val context: Context) {
         val END_TIME = stringSetPreferencesKey("end_time")
         val EMERGENCY_CONTACTS = stringSetPreferencesKey("emergency_contacts")
         val ALLOWED_DURING_SCHEDULE = stringSetPreferencesKey("allowed_during_schedule")
+        val CUSTOM_APP = stringSetPreferencesKey("custom_app")
     }
     
     private val _isMinimalModeEnabled = MutableStateFlow(false)
@@ -45,6 +47,9 @@ class MinimalPhoneManager(private val context: Context) {
     private val _emergencyContacts = MutableStateFlow<List<String>>(emptyList())
     val emergencyContacts: StateFlow<List<String>> = _emergencyContacts.asStateFlow()
     
+    private val _customApp = MutableStateFlow<String?>(null)
+    val customApp: StateFlow<String?> = _customApp.asStateFlow()
+
     init {
         // Load preferences
         loadPreferences()
@@ -122,6 +127,50 @@ class MinimalPhoneManager(private val context: Context) {
         }
     }
     
+    suspend fun setCustomApp(packageName: String?) {
+        _customApp.value = packageName
+        context.dataStore.edit { preferences ->
+            if (packageName != null) {
+                preferences[PreferencesKeys.CUSTOM_APP] = setOf(packageName)
+            } else {
+                preferences.remove(PreferencesKeys.CUSTOM_APP)
+            }
+        }
+    }
+
+    fun getCustomAppInfo(): AppInfo? {
+        val packageName = _customApp.value ?: return null
+        return try {
+            val packageManager = context.packageManager
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            AppInfo(
+                packageName = packageName,
+                appName = appInfo.loadLabel(packageManager).toString(),
+                isAllowed = true,
+                isCore = false,
+                category = getAppCategory(packageName)
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun openCustomApp(): Boolean {
+        val packageName = _customApp.value ?: return false
+        return try {
+            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                true
+            } else {
+                false
+            }
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     fun isAppAllowed(packageName: String): Boolean {
         if (!_isMinimalModeEnabled.value) return true
         
@@ -141,7 +190,7 @@ class MinimalPhoneManager(private val context: Context) {
             "com.android.contacts",
             "com.android.settings",
             "com.android.emergency",
-            "com.momentum.app" // Our app
+            "com.momentummm.app" // Our app
         )
         return coreApps.contains(packageName)
     }
@@ -156,7 +205,7 @@ class MinimalPhoneManager(private val context: Context) {
         return try {
             if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                 val intent = Intent(Intent.ACTION_CALL).apply {
-                    data = Uri.parse("tel:$phoneNumber")
+                    data = "tel:$phoneNumber".toUri()
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
                 context.startActivity(intent)
@@ -164,7 +213,7 @@ class MinimalPhoneManager(private val context: Context) {
             } else {
                 false
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -181,13 +230,13 @@ class MinimalPhoneManager(private val context: Context) {
     fun sendSMS(phoneNumber: String, message: String): Boolean {
         return try {
             val intent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("smsto:$phoneNumber")
+                data = "smsto:$phoneNumber".toUri()
                 putExtra("sms_body", message)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -200,7 +249,7 @@ class MinimalPhoneManager(private val context: Context) {
             }
             context.startActivity(intent)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -212,36 +261,179 @@ class MinimalPhoneManager(private val context: Context) {
             }
             context.startActivity(intent)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
     
     fun openCalculator(): Boolean {
         return try {
-            val intent = context.packageManager.getLaunchIntentForPackage("com.android.calculator2")
-            intent?.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            intent?.let { context.startActivity(it) }
+            // Try common calculator package names
+            val calculatorPackages = listOf(
+                "com.android.calculator2",
+                "com.google.android.calculator",
+                "com.samsung.android.app.calculator",
+                "com.miui.calculator",
+                "com.huawei.calculator"
+            )
+
+            for (packageName in calculatorPackages) {
+                try {
+                    val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+                    if (intent != null) {
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                        return true
+                    }
+                } catch (_: Exception) {
+                    continue
+                }
+            }
+
+            // Fallback: try generic calculator intent
+            val intent = Intent().apply {
+                action = Intent.ACTION_MAIN
+                addCategory("android.intent.category.APP_CALCULATOR")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
     
     fun openClock(): Boolean {
         return try {
-            val intent = Intent("android.intent.action.MAIN").apply {
-                addCategory("android.intent.category.LAUNCHER")
-                setClassName("com.android.deskclock", "com.android.deskclock.DeskClock")
+            // Try common clock app package names
+            val clockPackages = listOf(
+                "com.android.deskclock",
+                "com.google.android.deskclock",
+                "com.samsung.android.app.clockpackage",
+                "com.android.alarmclock"
+            )
+
+            for (packageName in clockPackages) {
+                try {
+                    val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+                    if (intent != null) {
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                        return true
+                    }
+                } catch (_: Exception) {
+                    continue
+                }
+            }
+
+            // Fallback: try alarm intent
+            val intent = Intent(android.provider.AlarmClock.ACTION_SHOW_ALARMS).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
     
+    fun openSettings(): Boolean {
+        return try {
+            val intent = Intent(android.provider.Settings.ACTION_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            // Fallback: try different settings intents
+            try {
+                val fallbackIntent = Intent().apply {
+                    action = "android.settings.SETTINGS"
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(fallbackIntent)
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
+    fun openMessages(): Boolean {
+        return try {
+            // Try to open default SMS app
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_APP_MESSAGING)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            // Fallback: try common messaging apps
+            val messagingApps = listOf(
+                "com.android.mms",
+                "com.google.android.apps.messaging",
+                "com.samsung.android.messaging"
+            )
+
+            for (packageName in messagingApps) {
+                try {
+                    val fallbackIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+                    if (fallbackIntent != null) {
+                        fallbackIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(fallbackIntent)
+                        return true
+                    }
+                } catch (_: Exception) {
+                    continue
+                }
+            }
+
+            // Last fallback: compose SMS
+            try {
+                val smsIntent = Intent(Intent.ACTION_VIEW).apply {
+                    data = "sms:".toUri()
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(smsIntent)
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
+    fun openDialer(): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_DIAL).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            // Fallback: try to open phone app directly
+            try {
+                val phoneApps = listOf(
+                    "com.android.dialer",
+                    "com.google.android.dialer",
+                    "com.samsung.android.dialer"
+                )
+
+                for (packageName in phoneApps) {
+                    val fallbackIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+                    if (fallbackIntent != null) {
+                        fallbackIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(fallbackIntent)
+                        return true
+                    }
+                }
+                false
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
     private fun getDefaultAllowedApps(): List<String> {
         return listOf(
             "com.android.dialer", // Phone app
@@ -249,7 +441,7 @@ class MinimalPhoneManager(private val context: Context) {
             "com.android.contacts", // Contacts app
             "com.android.settings", // Settings
             "com.android.emergency", // Emergency calls
-            "com.momentum.app", // Our app
+            "com.momentummm.app", // Our app
             "com.android.calculator2", // Calculator
             "com.android.clock", // Clock/Alarm
             "com.android.camera2", // Camera for emergencies

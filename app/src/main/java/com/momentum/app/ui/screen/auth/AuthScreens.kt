@@ -1,4 +1,4 @@
-package com.momentum.app.ui.screen.auth
+package com.momentummm.app.ui.screen.auth
 
 import android.util.Patterns
 import androidx.compose.foundation.Image
@@ -22,7 +22,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.momentum.app.R
+import com.momentummm.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

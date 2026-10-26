@@ -1,235 +1,183 @@
-package com.momentum.app.ui.screen.tutorial
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@file:Suppress("OPT_IN_USAGE", "EXPERIMENTAL_API_USAGE")
 
-import androidx.compose.foundation.Image
+package com.momentummm.app.ui.screen.tutorial
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.momentum.app.R
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 data class TutorialStep(
     val title: String,
     val description: String,
     val icon: ImageVector,
-    val tips: List<String>
+    val tips: List<String> = emptyList(),
+    val content: (@Composable () -> Unit)? = null,
+    val requiresConfirmation: Boolean = false
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppTutorialScreen(
     onCompleted: () -> Unit,
+    existingDobIso: String? = null,
+    initialLivedColor: String? = null,
+    initialFutureColor: String? = null,
+    onBirthDateSelected: (LocalDate) -> Unit = {},
+    onColorPreferencesSelected: (String, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
-    val tutorialSteps = listOf(
-        TutorialStep(
-            title = "Panel Principal - Hoy",
-            description = "Monitorea tu tiempo de pantalla diario y ve tus apps más usadas",
-            icon = Icons.Default.Home,
-            tips = listOf(
-                "Revisa tu tiempo de pantalla total del día",
-                "Identifica qué aplicaciones usas más",
-                "Lee la frase motivacional diaria",
-                "Establece límites para apps específicas"
-            )
-        ),
-        TutorialStep(
-            title = "Mi Vida en Semanas",
-            description = "Visualiza tu vida completa en una cuadrícula de 4,160 semanas",
-            icon = Icons.Default.Person,
-            tips = listOf(
-                "Cada cuadrito representa una semana de vida",
-                "Las semanas verdes son las que ya has vivido",
-                "Las grises representan tu tiempo futuro",
-                "Personaliza los colores según tus preferencias",
-                "Guarda tu visualización como fondo de pantalla"
-            )
-        ),
-        TutorialStep(
-            title = "Análisis Avanzado",
-            description = "Obtén insights detallados sobre tus patrones de uso",
-            icon = Icons.Default.Analytics,
-            tips = listOf(
-                "Ve gráficos de uso semanal y mensual",
-                "Analiza tendencias en tu tiempo de pantalla",
-                "Compara diferentes períodos",
-                "Exporta tus datos para análisis personal"
-            )
-        ),
-        TutorialStep(
-            title = "Sesiones de Enfoque",
-            description = "Mejora tu productividad con sesiones de trabajo enfocado",
-            icon = Icons.Default.Psychology,
-            tips = listOf(
-                "Inicia sesiones de enfoque cronometradas",
-                "Bloquea apps distractoras temporalmente",
-                "Sigue la técnica Pomodoro",
-                "Revisa tus estadísticas de productividad"
-            )
-        ),
-        TutorialStep(
-            title = "Teléfono Mínimo",
-            description = "Simplifica tu experiencia móvil para reducir distracciones",
-            icon = Icons.Default.PhoneAndroid,
-            tips = listOf(
-                "Activa el modo teléfono mínimo",
-                "Solo accede a apps esenciales",
-                "Reduce notificaciones innecesarias",
-                "Configura qué apps están permitidas"
-            )
-        ),
-        TutorialStep(
-            title = "Widgets de Pantalla",
-            description = "Mantente motivado con widgets en tu pantalla de inicio",
-            icon = Icons.Default.ViewModule,
-            tips = listOf(
-                "Agrega el widget 'Mi Vida en Semanas'",
-                "Instala el widget de frases motivacionales",
-                "Los widgets se actualizan automáticamente",
-                "Redimensiona según tus necesidades"
-            )
-        ),
-        TutorialStep(
-            title = "Configuración y Personalización",
-            description = "Ajusta la app según tus preferencias",
-            icon = Icons.Default.Settings,
-            tips = listOf(
-                "Configura notificaciones diarias",
-                "Personaliza temas y colores",
-                "Establece límites de uso por app",
-                "Sincroniza tus datos en la nube",
-                "Exporta datos en CSV o PDF"
+    // Estados para DOB y colores
+    var selectedBirthDate by remember { mutableStateOf<LocalDate?>(existingDobIso?.let { runCatching { LocalDate.parse(it) }.getOrNull() }) }
+    var livedColor by remember { mutableStateOf(initialLivedColor ?: "#FF6B6B") }
+    var futureColor by remember { mutableStateOf(initialFutureColor ?: "#E8E8E8") }
+
+    // Construcción dinámica de pasos: incluye DOB solo si no existe
+    val steps = buildList<TutorialStep> {
+        add(
+            TutorialStep(
+                title = "Bienvenido al Tutorial",
+                description = "Una guía rápida para configurar y personalizar Momentum según tus preferencias",
+                icon = Icons.Default.Info,
+                tips = listOf(
+                    "Puedes acceder a este tutorial en cualquier momento desde Configuración",
+                    "Todos los cambios se guardan automáticamente"
+                )
             )
         )
-    )
+        if (selectedBirthDate == null) {
+            add(
+                TutorialStep(
+                    title = "Tu fecha de nacimiento",
+                    description = "La usaremos para calcular semanas vividas y restantes en tu visualización de vida",
+                    icon = Icons.Default.CalendarMonth,
+                    content = {
+                        BirthDateStepContent(
+                            selectedDate = selectedBirthDate,
+                            onDateSelected = { newDate ->
+                                selectedBirthDate = newDate
+                                // Guardar inmediatamente la DOB
+                                onBirthDateSelected(newDate)
+                            }
+                        )
+                    },
+                    requiresConfirmation = true,
+                    tips = listOf(
+                        "Esta información se usa para calcular tu progreso de vida",
+                        "Se actualiza automáticamente el widget y todas las visualizaciones"
+                    )
+                )
+            )
+        }
+        add(
+            TutorialStep(
+                title = "Personaliza tus colores",
+                description = "Elige colores para representar las semanas vividas y las semanas futuras",
+                icon = Icons.Default.Palette,
+                content = {
+                    ColorCustomizationStepContent(
+                        livedColor = livedColor,
+                        futureColor = futureColor,
+                        onLivedColorChanged = { livedColor = it },
+                        onFutureColorChanged = { futureColor = it }
+                    )
+                },
+                tips = listOf(
+                    "Los colores se aplican inmediatamente a tu widget",
+                    "Puedes cambiar estos colores más tarde desde Mi Vida"
+                )
+            )
+        )
+        add(
+            TutorialStep(
+                title = "¡Todo listo!",
+                description = "Has configurado exitosamente Momentum. Explora las diferentes secciones para descubrir todas las funcionalidades.",
+                icon = Icons.Default.CheckCircle,
+                tips = listOf(
+                    "Visita 'Mi Vida' para ver tu visualización completa",
+                    "Usa 'Enfoque' para sesiones de productividad",
+                    "Revisa 'Análisis' para estadísticas detalladas"
+                )
+            )
+        )
+    }
 
-    val pagerState = rememberPagerState(pageCount = { tutorialSteps.size })
-    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { steps.size })
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        // Header
+    Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
-            title = { 
-                Text("Tutorial de Uso") 
-            },
+            title = { Text("Tutorial de Uso") },
             actions = {
-                TextButton(
-                    onClick = onCompleted
-                ) {
-                    Text("Omitir")
-                }
+                TextButton(onClick = onCompleted) { Text("Omitir") }
             }
         )
 
-        // Progress indicator
         LinearProgressIndicator(
-            progress = (pagerState.currentPage + 1).toFloat() / tutorialSteps.size,
+            progress = (pagerState.currentPage + 1).toFloat() / steps.size,
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.primary
         )
 
-        // Content
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(1f)
         ) { page ->
-            val step = tutorialSteps[page]
-            TutorialStepContent(
-                step = step,
-                modifier = Modifier.fillMaxSize()
-            )
+            val step = steps[page]
+            if (step.content != null) {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) { step.content.invoke() }
+            } else {
+                TutorialStepContent(
+                    step = com.momentummm.app.ui.screen.tutorial.TutorialStep(
+                        title = step.title,
+                        description = step.description,
+                        icon = step.icon,
+                        tips = step.tips
+                    ),
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
 
-        // Navigation
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Previous button
-            if (pagerState.currentPage > 0) {
-                OutlinedButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                        }
-                    }
-                ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Anterior")
-                }
-            } else {
-                Spacer(modifier = Modifier.width(1.dp))
-            }
-
-            // Page indicators
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                repeat(tutorialSteps.size) { index ->
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .run {
-                                if (index == pagerState.currentPage) {
-                                    this.background(MaterialTheme.colorScheme.primary)
-                                } else {
-                                    this.background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                                }
-                            }
-                    )
-                }
-            }
-
-            // Next/Finish button
-            if (pagerState.currentPage < tutorialSteps.size - 1) {
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                        }
-                    }
-                ) {
-                    Text("Siguiente")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.Default.ArrowForward, contentDescription = null)
-                }
-            } else {
-                Button(
-                    onClick = onCompleted
-                ) {
-                    Text("¡Empezar!")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.Default.Check, contentDescription = null)
-                }
-            }
-        }
+        TutorialNavigationBar(
+            pagerState = pagerState,
+            totalSteps = steps.size,
+            onCompleted = {
+                // Persistir preferencia de colores
+                onColorPreferencesSelected(livedColor, futureColor)
+                // Ya se guardó DOB al seleccionarla (si aplicaba)
+                onCompleted()
+            },
+            isCurrentStepConfirmable = !steps[pagerState.currentPage].requiresConfirmation || selectedBirthDate != null
+        )
     }
 }
 
+// Reutilización: contenido del paso básico
 @Composable
 private fun TutorialStepContent(
-    step: TutorialStep,
+    step: com.momentummm.app.ui.screen.tutorial.TutorialStep,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -285,43 +233,200 @@ private fun TutorialStepContent(
             )
         }
 
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        item {
-            Text(
-                text = "Consejos:",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium
-            )
-        }
-
-        items(step.tips) { tip ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+        if (step.tips.isNotEmpty()) {
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item {
+                Text(
+                    text = "Consejos:",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
                 )
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.Top
+            }
+            items(step.tips) { tip ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Lightbulb,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = tip,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = tip,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun TutorialNavigationBar(
+    pagerState: PagerState,
+    totalSteps: Int,
+    onCompleted: () -> Unit,
+    isCurrentStepConfirmable: Boolean
+) {
+    val coroutineScope = rememberCoroutineScope()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (pagerState.currentPage > 0) {
+            OutlinedButton(
+                onClick = {
+                    coroutineScope.launch {
+                        animateToPage(pagerState, pagerState.currentPage - 1)
+                    }
+                }
+            ) {
+                Icon(Icons.Default.ArrowBack, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Anterior")
+            }
+        } else {
+            Spacer(modifier = Modifier.width(1.dp))
+        }
+
+        PageIndicators(
+            total = totalSteps,
+            current = pagerState.currentPage
+        )
+
+        if (pagerState.currentPage < totalSteps - 1) {
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        animateToPage(pagerState, pagerState.currentPage + 1)
+                    }
+                },
+                enabled = isCurrentStepConfirmable
+            ) {
+                Text("Siguiente")
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(Icons.Default.ArrowForward, contentDescription = null)
+            }
+        } else {
+            Button(
+                onClick = onCompleted,
+                enabled = isCurrentStepConfirmable
+            ) {
+                Text("¡Empezar!")
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(Icons.Default.Check, contentDescription = null)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PageIndicators(total: Int, current: Int) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        repeat(total) { index ->
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .run {
+                        if (index == current) {
+                            this.background(MaterialTheme.colorScheme.primary)
+                        } else {
+                            this.background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        }
+                    }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ColorCustomizationStepContent(
+    livedColor: String,
+    futureColor: String,
+    onLivedColorChanged: (String) -> Unit,
+    onFutureColorChanged: (String) -> Unit
+) {
+    val colorOptions = listOf(
+        "#FF6B6B" to "Rojo",
+        "#4ECDC4" to "Turquesa",
+        "#45B7D1" to "Azul",
+        "#96CEB4" to "Verde"
+    )
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "🎨", style = MaterialTheme.typography.displayMedium)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = "Semanas vividas:", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            colorOptions.forEach { (color, name) ->
+                FilterChip(selected = livedColor == color, onClick = { onLivedColorChanged(color) }, label = { Text(name) })
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Semanas futuras:", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            colorOptions.forEach { (color, name) ->
+                FilterChip(selected = futureColor == color, onClick = { onFutureColorChanged(color) }, label = { Text(name) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun BirthDateStepContent(
+    selectedDate: LocalDate?,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "📅", style = MaterialTheme.typography.displayMedium)
+        Spacer(modifier = Modifier.height(24.dp))
+        OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
+            Text(text = selectedDate?.toString() ?: "Seleccionar fecha de nacimiento")
+        }
+        if (selectedDate != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            val age = LocalDate.now().year - selectedDate.year
+            val weeksLived = age * 52
+            Text(
+                text = "Tienes aproximadamente $age años\nHas vivido ~$weeksLived semanas",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+    if (showDatePicker) {
+        com.momentummm.app.ui.component.SimpleDatePicker(
+            selectedDate = selectedDate,
+            onDateSelected = { onDateSelected(it); showDatePicker = false },
+            onDismiss = { showDatePicker = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+private suspend fun animateToPage(pagerState: PagerState, page: Int) {
+    pagerState.animateScrollToPage(page)
 }

@@ -1,15 +1,21 @@
-package com.momentum.app.ui.screen
+package com.momentummm.app.ui.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,9 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.momentum.app.MomentumApplication
-import com.momentum.app.R
-import com.momentum.app.minimal.AllowedAppsManagementScreen
+import com.momentummm.app.MomentumApplication
+import com.momentummm.app.R
+import com.momentummm.app.minimal.AllowedAppsManagementScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,15 +136,59 @@ fun SettingsScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { 
-                        // Navigate to theme settings
-                        onNavigateToScreen("theme_settings")
+                    onClick = {
+                        onNavigateToScreen("password_protection")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Protección por Contraseña") },
+                        supportingContent = { Text("Protege tus configuraciones con contraseña numérica") },
+                        leadingContent = { Icon(Icons.Default.Lock, contentDescription = null) }
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        onNavigateToScreen("app_limits")
                     }
                 ) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.app_limits)) },
-                        supportingContent = { Text("Configura límites de tiempo para aplicaciones") },
-                        leadingContent = { Icon(Icons.Default.Apps, contentDescription = null) }
+                        supportingContent = { Text("Configurar límites de tiempo para apps distractoras") },
+                        leadingContent = { Icon(Icons.Default.Block, contentDescription = null) }
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        onNavigateToScreen("in_app_blocking")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Bloqueo dentro de Apps") },
+                        supportingContent = { Text("Bloquea Reels, Shorts y más sin bloquear toda la app") },
+                        leadingContent = { Icon(Icons.Default.VideoLibrary, contentDescription = null) }
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        onNavigateToScreen("website_blocks")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Bloqueo de sitios web") },
+                        supportingContent = { Text("Bloquear sitios web distractores o no deseados") },
+                        leadingContent = { Icon(Icons.Default.Security, contentDescription = null) }
                     )
                 }
             }
@@ -175,6 +225,38 @@ fun SettingsScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        // Navigate to "Mi vida en semanas" screen
+                        onNavigateToScreen("mi_vida_en_semanas")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Mi vida en semanas") },
+                        supportingContent = { Text("Visualiza tu vida y reflexiona sobre el tiempo") },
+                        leadingContent = { Icon(Icons.Default.Person, contentDescription = null) }
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        // Navigate to theme settings
+                        onNavigateToScreen("theme_settings")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Personalización") },
+                        supportingContent = { Text("Temas y apariencia de la aplicación") },
+                        leadingContent = { Icon(Icons.Default.Apps, contentDescription = null) }
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
                     onClick = { 
                         // Navigate to export/backup settings
                         onNavigateToScreen("backup_settings")
@@ -184,6 +266,21 @@ fun SettingsScreen(
                         headlineContent = { Text(stringResource(R.string.widget_settings)) },
                         supportingContent = { Text("Personalizar widgets de pantalla de inicio") },
                         leadingContent = { Icon(Icons.Default.ViewModule, contentDescription = null) }
+                    )
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        onNavigateToScreen("sync_settings")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Sincronización") },
+                        supportingContent = { Text("Ver estado y sincronizar datos") },
+                        leadingContent = { Icon(Icons.Default.Sync, contentDescription = null) }
                     )
                 }
             }
@@ -213,10 +310,26 @@ fun SettingsScreen(
                     )
                 }
             }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        // Navigate to permissions settings
+                        onNavigateToScreen("permissions_settings")
+                    }
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Permisos") },
+                        supportingContent = { Text("Configurar permisos de la aplicación") },
+                        leadingContent = { Icon(Icons.Default.Security, contentDescription = null) }
+                    )
+                }
+            }
         }
     }
 
-    // Logout Confirmation Dialog
+    // Logout confirmation dialog
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },

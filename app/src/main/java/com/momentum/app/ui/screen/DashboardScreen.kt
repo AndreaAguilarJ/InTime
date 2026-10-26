@@ -1,4 +1,4 @@
-package com.momentum.app.ui.screen
+package com.momentummm.app.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,9 +17,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.momentum.app.R
-import com.momentum.app.ui.viewmodel.DashboardViewModel
-import com.momentum.app.ui.system.*
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.core.graphics.drawable.toBitmap
+import com.momentummm.app.R
+import com.momentummm.app.ui.viewmodel.DashboardViewModel
+import com.momentummm.app.ui.system.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +37,7 @@ fun DashboardScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        val hasPermission = com.momentum.app.util.PermissionUtils.hasUsageStatsPermission(context)
+        val hasPermission = com.momentummm.app.util.PermissionUtils.hasUsageStatsPermission(context)
         if (hasPermission != uiState.hasUsagePermission) {
             viewModel.refreshData()
         }
@@ -64,6 +69,8 @@ fun DashboardScreen(
                     )
                 }
                 
+                // Comentado temporalmente - Promoción Premium
+                /*
                 if (!isPremiumUser) {
                     MomentumButton(
                         onClick = onUpgradeClick,
@@ -74,10 +81,12 @@ fun DashboardScreen(
                         Text("Premium")
                     }
                 }
+                */
             }
         }
         
-        // Premium promotion for free users
+        // Comentado temporalmente - Promoción Premium para usuarios gratuitos
+        /*
         if (!isPremiumUser) {
             item {
                 PremiumPromotionCard(
@@ -85,6 +94,7 @@ fun DashboardScreen(
                 )
             }
         }
+        */
 
         item {
             // Screen time card
@@ -98,21 +108,51 @@ fun DashboardScreen(
                     if (uiState.isLoading) {
                         CircularProgressIndicator()
                     } else if (uiState.hasUsagePermission) {
-                        Text(
-                            text = uiState.totalScreenTime,
-                            style = MaterialTheme.typography.headlineLarge
-                        )
-                        Text(
-                            text = "Tiempo total de pantalla",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.PhoneAndroid,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = uiState.totalScreenTime,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Tiempo total de pantalla hoy",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     } else {
-                        Text(
-                            text = "Permiso requerido",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                Icons.Filled.Block,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Permiso requerido",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Para mostrar estadísticas reales",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -127,21 +167,35 @@ fun DashboardScreen(
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        Text(
-                            text = stringResource(R.string.quote_of_the_day),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Filled.FormatQuote,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.quote_of_the_day),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "\"${quote.text}\"",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         )
                         quote.author?.let { author ->
                             Text(
-                                text = "- $author",
+                                text = "— $author",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 8.dp)
+                                modifier = Modifier.padding(top = 8.dp),
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
@@ -150,49 +204,58 @@ fun DashboardScreen(
         }
 
         item {
-            Text(
-                text = stringResource(R.string.most_used_apps),
-                style = MaterialTheme.typography.titleMedium
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.Apps,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.most_used_apps),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
 
         if (uiState.hasUsagePermission) {
             if (uiState.topApps.isNotEmpty()) {
                 items(uiState.topApps) { app ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = app.appName,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                Text(
-                                    text = com.momentum.app.util.LifeWeeksCalculator.formatTimeFromMillis(app.totalTimeInMillis),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
+                    AppUsageCard(app = app)
                 }
             } else {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = "No hay datos de uso disponibles para hoy",
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Filled.HourglassEmpty,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "No hay datos de uso disponibles para hoy",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = "Usa algunas aplicaciones y vuelve a revisar",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -202,19 +265,36 @@ fun DashboardScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Icon(
+                            Icons.Filled.Security,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Se requiere permiso para mostrar estadísticas de uso",
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { 
-                                com.momentum.app.util.PermissionUtils.openUsageStatsSettings(context)
-                            }
+                        Text(
+                            text = "Otorga acceso a las estadísticas de uso para ver tus aplicaciones más utilizadas",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        MomentumButton(
+                            onClick = {
+                                com.momentummm.app.util.PermissionUtils.openUsageStatsSettings(context)
+                            },
+                            style = ButtonStyle.Primary,
+                            size = ButtonSize.Large
                         ) {
                             Text("Otorgar permiso")
                         }
@@ -273,6 +353,96 @@ private fun PremiumPromotionCard(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppUsageCard(app: com.momentummm.app.data.repository.AppUsageInfo) {
+    val context = LocalContext.current
+    val packageManager = context.packageManager
+
+    // Obtener el icono de la aplicación
+    val appIcon = remember(app.packageName) {
+        try {
+            packageManager.getApplicationIcon(app.packageName)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                // Icono de la aplicación
+                if (appIcon != null) {
+                    Image(
+                        painter = BitmapPainter(appIcon.toBitmap().asImageBitmap()),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                } else {
+                    // Icono por defecto si no se puede cargar el icono de la app
+                    Surface(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    ) {
+                        Icon(
+                            Icons.Filled.Apps,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = app.appName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = com.momentummm.app.util.LifeWeeksCalculator.formatTimeFromMillis(app.totalTimeInMillis),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // Indicador visual del tiempo de uso
+            val usagePercentage = remember(app.totalTimeInMillis) {
+                // Esto es una aproximación, idealmente calcularías el porcentaje basado en el total
+                when {
+                    app.totalTimeInMillis > 3600000 -> 1f // Más de 1 hora
+                    app.totalTimeInMillis > 1800000 -> 0.7f // Más de 30 min
+                    app.totalTimeInMillis > 900000 -> 0.5f // Más de 15 min
+                    else -> 0.3f
+                }
+            }
+
+            CircularProgressIndicator(
+                progress = usagePercentage,
+                modifier = Modifier.size(24.dp),
+                strokeWidth = 3.dp,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
         }
     }

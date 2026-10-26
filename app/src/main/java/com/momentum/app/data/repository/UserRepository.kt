@@ -1,7 +1,7 @@
-package com.momentum.app.data.repository
+package com.momentummm.app.data.repository
 
-import com.momentum.app.data.dao.UserDao
-import com.momentum.app.data.entity.UserSettings
+import com.momentummm.app.data.dao.UserDao
+import com.momentummm.app.data.entity.UserSettings
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
@@ -20,30 +20,60 @@ class UserRepository(private val userDao: UserDao) {
     }
 
     suspend fun setBirthDate(birthDate: Date) {
-        val currentSettings = UserSettings(
+        // Obtener configuraciones existentes para preservar datos
+        val existingSettings = userDao.getUserSettingsSync()
+        val updatedSettings = existingSettings?.copy(
+            birthDate = birthDate,
+            isOnboardingCompleted = true
+        ) ?: UserSettings(
             birthDate = birthDate,
             isOnboardingCompleted = true
         )
-        userDao.insertUserSettings(currentSettings)
+        userDao.insertUserSettings(updatedSettings)
     }
 
     suspend fun updateColors(livedColor: String, futureColor: String, backgroundColor: String) {
-        val settings = UserSettings(
-            birthDate = null, // Will be merged with existing data
+        // Obtener configuraciones existentes para preservar datos
+        val existingSettings = userDao.getUserSettingsSync()
+        val updatedSettings = existingSettings?.copy(
             livedWeeksColor = livedColor,
             futureWeeksColor = futureColor,
             backgroundColor = backgroundColor
+        ) ?: UserSettings(
+            birthDate = null, // Solución: agregar el parámetro obligatorio
+            livedWeeksColor = livedColor,
+            futureWeeksColor = futureColor,
+            backgroundColor = backgroundColor,
+            isOnboardingCompleted = true // Asegurar que está marcado como completado
         )
-        userDao.updateUserSettings(settings)
+        userDao.insertUserSettings(updatedSettings)
     }
 
     suspend fun markTutorialAsSeen() {
-        // Get current settings first
-        val currentSettings = UserSettings(
-            birthDate = null,
+        // Obtener configuraciones existentes para preservar TODOS los datos
+        val existingSettings = userDao.getUserSettingsSync()
+        val updatedSettings = existingSettings?.copy(
+            isOnboardingCompleted = true,
+            hasSeenTutorial = true
+        ) ?: UserSettings(
+            birthDate = null, // Solución: agregar el parámetro obligatorio
             isOnboardingCompleted = true,
             hasSeenTutorial = true
         )
-        userDao.insertUserSettings(currentSettings)
+        userDao.insertUserSettings(updatedSettings)
+    }
+
+    suspend fun completeOnboarding() {
+        // Marcar definitivamente el onboarding como completado
+        val existingSettings = userDao.getUserSettingsSync()
+        val updatedSettings = existingSettings?.copy(
+            isOnboardingCompleted = true,
+            hasSeenTutorial = true
+        ) ?: UserSettings(
+            birthDate = null, // Solución: agregar el parámetro obligatorio
+            isOnboardingCompleted = true,
+            hasSeenTutorial = true
+        )
+        userDao.insertUserSettings(updatedSettings)
     }
 }

@@ -1,11 +1,10 @@
-package com.momentum.app.worker
+package com.momentummm.app.worker
 
 import android.content.Context
 import androidx.work.*
 import androidx.glance.appwidget.updateAll
-import com.momentum.app.MomentumApplication
-import com.momentum.app.widget.LifeWeeksWidget
-import com.momentum.app.widget.QuoteWidget
+import com.momentummm.app.widget.LifeWeeksWidgetProvider
+import com.momentummm.app.widget.QuoteWidget
 import java.util.concurrent.TimeUnit
 
 class WidgetUpdateWorker(
@@ -16,8 +15,8 @@ class WidgetUpdateWorker(
     override suspend fun doWork(): Result {
         return try {
             // Update life weeks widget
-            LifeWeeksWidget().updateAll(applicationContext)
-            
+            LifeWeeksWidgetProvider().updateAll(applicationContext)
+
             // Update quote widget
             QuoteWidget().updateAll(applicationContext)
             
