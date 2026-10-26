@@ -280,7 +280,7 @@
     <string name="notification_daily_motivation_title">Motivación Diaria</string>
     <string name="notification_daily_motivation_desc">Recibe una frase inspiradora cada mañana</string>
     <string name="notification_weekly_summary_title">Resumen Semanal</string>
-    <string name="notification_weekly_summary_desc">Resumen de tu uso del dispositivo cada domingo</string>
+    <string name="notification_weekly_summary_desc">Cada domingo a las 20:00: tu tiempo frente a la semana anterior y tus apps más usadas</string>
     <string name="notification_achievements_title">Logros y Metas</string>
     <string name="notification_achievements_desc">Celebra tus logros y rachas alcanzadas</string>
     <string name="notification_screen_time_reminders_title">Recordatorios de Bienestar</string>

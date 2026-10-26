@@ -141,11 +141,16 @@ class MotivationalMessagesRepository @Inject constructor(
      * 3. Respects enabled categories and tones
      * 4. Falls back gracefully if no matches found
      */
-    suspend fun getNextMessageToShow(): MotivationalMessage? {
+    suspend fun getNextMessageToShow(
+        categoriesOverride: List<MessageCategory>? = null
+    ): MotivationalMessage? {
         return withContext(Dispatchers.IO) {
             try {
                 val prefs = preferencesDao.getPreferencesSync() ?: MotivationalPreferences()
-                val enabledCategories = prefs.getEnabledCategoriesList()
+                // Los mensajes periódicos pasan aquí las categorías que encajan
+                // con la hora, el día y la racha (MessageRelevance). Sin ellas
+                // se sorteaba entre todas y llegaban «Buenos días» por la tarde.
+                val enabledCategories = categoriesOverride ?: prefs.getEnabledCategoriesList()
                 val enabledTones = prefs.getEnabledTonesList()
                 
                 if (enabledCategories.isEmpty() || enabledTones.isEmpty()) {
@@ -160,6 +165,14 @@ class MotivationalMessagesRepository @Inject constructor(
                 if (message == null) {
                     Log.d(TAG, "Smart selection failed, trying category fallback")
                     message = messageDao.getLeastShownMessages(enabledCategories, 1).firstOrNull()
+                }
+
+                // Con categorías acotadas al momento, el respaldo también debe
+                // encajar: se prueban las universales antes que cualquier fila.
+                if (message == null && categoriesOverride != null) {
+                    message = messageDao.getLeastShownMessages(
+                        com.momentummm.app.notification.MessageRelevance.UNIVERSAL, 1
+                    ).firstOrNull()
                 }
                 
                 // Final fallback to any message

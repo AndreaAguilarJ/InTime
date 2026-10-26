@@ -53,7 +53,9 @@ object BlockEnforcer {
     private const val TAG = "BlockEnforcer"
 
     private const val CHANNEL_ID = "app_blocking_permission_channel"
-    private const val NOTIFICATION_ID_PERMISSION = 2001
+    // Era 2001 + ordinal (2001-2004): pisaba el temporizador flotante, el aviso
+    // de límite alcanzado y el resumen semanal. Ahora tiene su propio rango.
+    private const val NOTIFICATION_ID_PERMISSION = 9300
 
     /** Evita relanzar la UI de bloqueo en bucle para la misma app. */
     private const val ENFORCE_COOLDOWN_MS = 2_000L

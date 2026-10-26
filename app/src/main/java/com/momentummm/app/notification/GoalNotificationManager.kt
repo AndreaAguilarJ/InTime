@@ -29,10 +29,15 @@ class GoalNotificationManager @Inject constructor(
         const val CHANNEL_ID_CHALLENGES = "challenges_notifications"
         const val CHANNEL_ID_ACHIEVEMENTS = "achievements_notifications"
 
-        const val NOTIFICATION_ID_GOAL_REMINDER = 1001
-        const val NOTIFICATION_ID_CHALLENGE_REMINDER = 1002
-        const val NOTIFICATION_ID_ACHIEVEMENT = 1003
-        const val NOTIFICATION_ID_STREAK_REMINDER = 1004
+        // Rango 5000: antes eran 1001-1004 y 1001/1003 son los avisos fijos del
+        // monitor de apps y del bloqueo superpuesto, que un logro sustituía.
+        const val NOTIFICATION_ID_GOAL_REMINDER = 5001
+        const val NOTIFICATION_ID_CHALLENGE_REMINDER = 5002
+        const val NOTIFICATION_ID_ACHIEVEMENT = 5003
+        const val NOTIFICATION_ID_STREAK_REMINDER = 5004
+
+        /** Ids por entidad: 50 100-50 189 (metas) y 50 200-50 289 (retos). */
+        private const val ENTITY_ID_FLOOR = 50_000
 
         private const val TAG = "GoalNotificationManager"
     }
@@ -82,7 +87,7 @@ class GoalNotificationManager @Inject constructor(
     private fun notificationIdFor(base: Int, entityId: String): Int {
         val hash = entityId.hashCode()
         val offset = if (hash == Int.MIN_VALUE) 0 else kotlin.math.abs(hash) % 90
-        return base * 100 + offset
+        return ENTITY_ID_FLOOR + (base - 5000) * 100 + offset
     }
 
     fun showGoalReminderNotification(goal: Goal) {

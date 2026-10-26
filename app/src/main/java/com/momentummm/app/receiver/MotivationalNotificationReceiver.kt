@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.NotificationManagerCompat
 import com.momentummm.app.data.manager.MotivationalNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -29,6 +30,7 @@ class MotivationalNotificationReceiver : BroadcastReceiver() {
         const val ACTION_DISMISS = "com.momentummm.app.action.MOTIVATIONAL_DISMISS"
         
         const val EXTRA_MESSAGE_ID = "message_id"
+        const val EXTRA_NOTIFICATION_ID = "notification_id"
     }
     
     @Inject
@@ -40,7 +42,15 @@ class MotivationalNotificationReceiver : BroadcastReceiver() {
         Log.d(TAG, "Received action: ${intent.action}, messageId: $messageId")
         
         when (intent.action) {
-            ACTION_LOVE -> handleLoveAction(context, messageId)
+            ACTION_LOVE -> {
+                handleLoveAction(context, messageId)
+                // El mensaje ya está guardado en favoritos: dejarlo en la
+                // bandeja hacía pensar que el botón no había funcionado.
+                val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, 0)
+                if (notificationId != 0) {
+                    NotificationManagerCompat.from(context).cancel(notificationId)
+                }
+            }
             ACTION_ANOTHER -> handleAnotherAction(context, messageId)
             ACTION_DISMISS -> handleDismissAction(messageId)
             else -> Log.w(TAG, "Unknown action: ${intent.action}")

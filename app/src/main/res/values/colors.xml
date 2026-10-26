@@ -7,6 +7,9 @@
     <color name="weeks_lived_default">#FF6366F1</color>
     <color name="weeks_future_default">#FFE5E7EB</color>
     <color name="weeks_background">#FFFFFFFF</color>
+
+    <!-- Color de las notificaciones: el mismo índigo de las semanas vividas. -->
+    <color name="notification_accent">#FF6366F1</color>
     
     <!-- Launcher icon background color - Purple/Indigo matching the app logo -->
     <color name="ic_launcher_background">#1A0A1E</color>

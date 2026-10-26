@@ -442,7 +442,7 @@
     <string name="notification_daily_motivation_title">Daily Motivation</string>
     <string name="notification_daily_motivation_desc">Receive an inspiring quote every morning</string>
     <string name="notification_weekly_summary_title">Weekly Summary</string>
-    <string name="notification_weekly_summary_desc">Summary of your device usage every Sunday</string>
+    <string name="notification_weekly_summary_desc">Every Sunday at 20:00: your time compared with the week before, and your most used apps</string>
     <string name="notification_achievements_title">Achievements &amp; Goals</string>
     <string name="notification_achievements_desc">Celebrate your achievements and streaks</string>
     <string name="notification_screen_time_reminders_title">Wellbeing Reminders</string>

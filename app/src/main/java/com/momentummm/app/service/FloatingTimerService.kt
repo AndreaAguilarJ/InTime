@@ -68,7 +68,9 @@ class FloatingTimerService : Service(), LifecycleOwner, SavedStateRegistryOwner,
 
     companion object {
         private const val TAG = "FloatingTimerService"
-        private const val NOTIFICATION_ID = 2001
+        // Era 2001: chocaba con el aviso de límite y con el primer aviso de
+        // permisos de BlockEnforcer. Rango 9000+ reservado a servicios.
+        private const val NOTIFICATION_ID = 9003
         private const val CHANNEL_ID = "floating_timer_channel"
         
         const val ACTION_START = "com.momentummm.app.action.START_FLOATING_TIMER"

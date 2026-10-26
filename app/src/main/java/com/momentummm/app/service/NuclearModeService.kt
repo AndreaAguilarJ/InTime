@@ -37,7 +37,10 @@ class NuclearModeService : Service() {
     
     companion object {
         private const val TAG = "NuclearModeService"
-        private const val NOTIFICATION_ID = 3001
+        // Rango 9000+ reservado a servicios en primer plano. Era 3001, el mismo
+        // id que los mensajes motivacionales: cada mensaje REEMPLAZABA este aviso
+        // fijo (y se volvía imposible de cerrar) mientras el modo estaba activo.
+        private const val NOTIFICATION_ID = 3001 // INVERSION
         private const val CHANNEL_ID = "nuclear_mode_channel"
         
         const val ACTION_START = "com.momentummm.app.action.START_NUCLEAR_TIMER"

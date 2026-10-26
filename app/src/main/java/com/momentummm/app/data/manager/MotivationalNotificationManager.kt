@@ -16,6 +16,10 @@ import com.momentummm.app.data.entity.MessageTone
 import com.momentummm.app.data.entity.MotivationalMessage
 import com.momentummm.app.data.repository.MotivationalMessagesRepository
 import com.momentummm.app.notification.MessagePersonalizer
+import com.momentummm.app.notification.MessageRelevance
+import com.momentummm.app.notification.NotificationIntents
+import com.momentummm.app.notification.NotificationRoutes
+import com.momentummm.app.notification.NotificationStyle
 import com.momentummm.app.receiver.MotivationalNotificationReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -116,7 +120,8 @@ class MotivationalNotificationManager @Inject constructor(
         message: MotivationalMessage? = null,
         contextInfo: String? = null,
         respectWindow: Boolean = true,
-        windowGraceMinutes: Int = 0
+        windowGraceMinutes: Int = 0,
+        isScheduled: Boolean = true
     ) {
         try {
             if (!ensureCanNotify()) return
@@ -127,18 +132,90 @@ class MotivationalNotificationManager @Inject constructor(
                 return
             }
 
-            val messageToShow = message ?: resolveMessage(null)
+            // Un mensaje programado no interrumpe una sesión de enfoque ni un
+            // «No molestar». Lo que el usuario pide a mano sí se entrega.
+            if (isScheduled && shouldDeferScheduledMessage()) return
+
+            val messageToShow = message ?: resolvePeriodicMessage()
 
             // Mark as shown
             messagesRepository.markMessageAsShown(messageToShow.id, contextInfo)
 
             // Build and show notification
-            showNotificationInternal(messageToShow, NOTIFICATION_ID_MOTIVATIONAL)
+            showNotificationInternal(
+                messageToShow,
+                NOTIFICATION_ID_MOTIVATIONAL,
+                alertAgain = isScheduled
+            )
 
             Log.d(TAG, "Showed motivational notification: ${messageToShow.id}")
         } catch (e: Exception) {
             Log.e(TAG, "Error showing motivational notification", e)
         }
+    }
+
+    /**
+     * Mensaje periódico cuya categoría encaja con la hora, el día y la racha.
+     *
+     * Antes se sorteaba entre todas las categorías activas y el título sale de
+     * la categoría, así que llegaban «Buenos días» por la tarde, «¡Nuevo
+     * lunes!» un viernes o «Tu racha» con la racha a cero.
+     */
+    private suspend fun resolvePeriodicMessage(): MotivationalMessage {
+        val enabled = runCatching { messagesRepository.getPreferencesSync() }
+            .getOrNull()
+            ?.getEnabledCategoriesList()
+            ?.takeIf { it.isNotEmpty() }
+            ?: MessageCategory.entries.toList()
+        val categories = MessageRelevance.periodicCategories(enabled, currentMoment())
+
+        runCatching { messagesRepository.getNextMessageToShow(categories) }
+            .getOrNull()
+            ?.let { return it }
+
+        Log.w(TAG, "Sin mensaje para ${categories.size} categorías del momento; se usa el incrustado")
+        return builtInFallback(categories.firstOrNull())
+    }
+
+    private suspend fun currentMoment(): MessageRelevance.Moment {
+        val calendar = java.util.Calendar.getInstance()
+        val streak = runCatching { personalizer.loadUserContext().streak }.getOrDefault(0)
+        return MessageRelevance.Moment(
+            hourOfDay = calendar.get(java.util.Calendar.HOUR_OF_DAY),
+            dayOfWeek = calendar.get(java.util.Calendar.DAY_OF_WEEK),
+            streakDays = streak
+        )
+    }
+
+    /**
+     * «Horario inteligente»: true si un mensaje programado debe esperar a la
+     * siguiente franja porque el usuario está en una sesión de enfoque o tiene
+     * activado «No molestar». La alarma ya se reprogramó antes de llegar aquí,
+     * así que saltarse este mensaje no rompe la cadena.
+     */
+    private suspend fun shouldDeferScheduledMessage(): Boolean {
+        val prefs = runCatching { messagesRepository.getPreferencesSync() }.getOrNull() ?: return false
+        val focusActive = runCatching {
+            com.momentummm.app.data.UserPreferencesRepository.getFocusModeEnabled(context)
+        }.getOrDefault(false)
+        val reason = MessageRelevance.deferral(
+            smartTimingEnabled = prefs.smartTimingEnabled,
+            respectFocusMode = prefs.respectFocusMode,
+            respectDnd = prefs.respectDnd,
+            focusSessionActive = focusActive,
+            doNotDisturbActive = isDoNotDisturbActive()
+        ) ?: return false
+        Log.d(TAG, "Mensaje programado aplazado: $reason")
+        return true
+    }
+
+    private fun isDoNotDisturbActive(): Boolean {
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            ?: return false
+        val filter = runCatching { manager.currentInterruptionFilter }
+            .getOrDefault(NotificationManager.INTERRUPTION_FILTER_ALL)
+        return filter != NotificationManager.INTERRUPTION_FILTER_ALL &&
+            filter != NotificationManager.INTERRUPTION_FILTER_UNKNOWN
     }
 
     /**
@@ -169,9 +246,9 @@ class MotivationalNotificationManager @Inject constructor(
                     error = context.getString(R.string.motiv_notif_disabled)
                 )
             }
-            val message = resolveMessage(null)
+            val message = resolvePeriodicMessage()
             messagesRepository.markMessageAsShown(message.id, "test")
-            showNotificationInternal(message, NOTIFICATION_ID_MOTIVATIONAL)
+            showNotificationInternal(message, NOTIFICATION_ID_MOTIVATIONAL, alertAgain = false)
             Log.d(TAG, "Mensaje de prueba enviado: ${message.id}")
             TestResult(delivered = true, message = message)
         } catch (e: Exception) {
@@ -345,6 +422,7 @@ class MotivationalNotificationManager @Inject constructor(
     suspend fun showMorningMessage() {
         try {
             if (!ensureCanNotify()) return
+            if (shouldDeferScheduledMessage()) return
             val message = resolveMessage(MessageCategory.MORNING)
             messagesRepository.markMessageAsShown(message.id, "morning")
             showNotificationInternal(message, NOTIFICATION_ID_MOTIVATIONAL)
@@ -360,6 +438,7 @@ class MotivationalNotificationManager @Inject constructor(
     suspend fun showEveningMessage() {
         try {
             if (!ensureCanNotify()) return
+            if (shouldDeferScheduledMessage()) return
             val message = resolveMessage(MessageCategory.EVENING)
             messagesRepository.markMessageAsShown(message.id, "evening")
             showNotificationInternal(message, NOTIFICATION_ID_MOTIVATIONAL)
@@ -395,7 +474,7 @@ class MotivationalNotificationManager @Inject constructor(
                 // que no se aplica la ventana horaria: antes, pedir "otro
                 // mensaje" a las 22:05 no devolvía nada y parecía que el botón
                 // estaba roto.
-                showMotivationalNotification(respectWindow = false)
+                showMotivationalNotification(respectWindow = false, isScheduled = false)
                 
                 Log.d(TAG, "Another message requested after: $messageId")
             } catch (e: Exception) {
@@ -414,7 +493,8 @@ class MotivationalNotificationManager @Inject constructor(
     private suspend fun showNotificationInternal(
         message: MotivationalMessage,
         notificationId: Int,
-        customTitle: String? = null
+        customTitle: String? = null,
+        alertAgain: Boolean = true
     ) {
         try {
             val userContext = runCatching { personalizer.loadUserContext() }
@@ -434,23 +514,18 @@ class MotivationalNotificationManager @Inject constructor(
             val baseTitle = customTitle ?: buildTitle(message)
             val title = personalizer.buildTitle(baseTitle, userContext)
 
-            // Content intent - opens app
-            val contentIntent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("message_id", message.id)
-                putExtra("source", "notification")
-            }
-            val contentPendingIntent = PendingIntent.getActivity(
-                context,
-                REQUEST_CODE_OPEN,
-                contentIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            // Tocar el mensaje abre «Hoy», donde están la racha y el tiempo de
+            // pantalla de los que habla la línea de contexto. Antes el Intent
+            // llevaba extras que nadie leía.
+            val contentPendingIntent = NotificationIntents.open(
+                context, NotificationRoutes.TODAY, REQUEST_CODE_OPEN
             )
             
             // Action: Love
             val loveIntent = Intent(context, MotivationalNotificationReceiver::class.java).apply {
                 action = MotivationalNotificationReceiver.ACTION_LOVE
                 putExtra(MotivationalNotificationReceiver.EXTRA_MESSAGE_ID, message.id)
+                putExtra(MotivationalNotificationReceiver.EXTRA_NOTIFICATION_ID, notificationId)
             }
             val lovePendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -471,21 +546,16 @@ class MotivationalNotificationManager @Inject constructor(
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             
-            // Action: Settings
-            val settingsIntent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("navigate_to", "motivational_settings")
-            }
-            val settingsPendingIntent = PendingIntent.getActivity(
-                context,
-                REQUEST_CODE_SETTINGS,
-                settingsIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            // Action: Settings. Antes pedía la ruta «motivational_settings»,
+            // que no existía, y el botón solo abría la app.
+            val settingsPendingIntent = NotificationIntents.open(
+                context, NotificationRoutes.MOTIVATIONAL_SETTINGS, REQUEST_CODE_SETTINGS
             )
 
             // Build notification
             val notification = NotificationCompat.Builder(context, CHANNEL_ID_MOTIVATIONAL)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(NotificationStyle.SMALL_ICON)
+                .setColor(NotificationStyle.accentColor(context))
                 .setContentTitle(title)
                 .setContentText(personalizedContent)
                 .setStyle(NotificationCompat.BigTextStyle()
@@ -494,10 +564,13 @@ class MotivationalNotificationManager @Inject constructor(
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(contentPendingIntent)
                 .setAutoCancel(true)
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                // «Otro mensaje» y «Probar» reemplazan el aviso que el usuario
+                // tiene delante: no tiene sentido que vuelva a sonar y vibrar.
+                .setOnlyAlertOnce(!alertAgain)
+                .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
                 .addAction(0, context.getString(R.string.motiv_action_love), lovePendingIntent)
                 .addAction(0, context.getString(R.string.motiv_action_another), anotherPendingIntent)
-                .addAction(0, "⚙️", settingsPendingIntent)
+                .addAction(0, context.getString(R.string.notif_action_settings), settingsPendingIntent)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .build()
             

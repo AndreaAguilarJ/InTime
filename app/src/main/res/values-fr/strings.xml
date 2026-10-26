@@ -264,7 +264,7 @@
     <string name="notification_daily_motivation_title">Motivation quotidienne</string>
     <string name="notification_daily_motivation_desc">Recevez une citation inspirante chaque matin</string>
     <string name="notification_weekly_summary_title">Résumé hebdomadaire</string>
-    <string name="notification_weekly_summary_desc">Résumé de votre utilisation de l’appareil chaque dimanche</string>
+    <string name="notification_weekly_summary_desc">Chaque dimanche à 20:00 : votre temps comparé à la semaine précédente et vos applis les plus utilisées</string>
     <string name="notification_achievements_title">Réussites et objectifs</string>
     <string name="notification_achievements_desc">Célébrez vos réussites et vos séries</string>
     <string name="notification_screen_time_reminders_title">Rappels de bien-être</string>

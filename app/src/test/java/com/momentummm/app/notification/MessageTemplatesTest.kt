@@ -190,6 +190,43 @@ class MessageTemplatesTest {
         assertNull(MessageTemplates.buildContextLine(anonymous, MessageCategory.FOCUS))
     }
 
+    @Test
+    fun `por la noche se compara el dia con la media del propio usuario`() {
+        val below = MessageTemplates.UserContext(screenTimeMinutesToday = 120, averageScreenTimeMinutes = 180)
+        val above = MessageTemplates.UserContext(screenTimeMinutesToday = 240, averageScreenTimeMinutes = 180)
+
+        val belowLine = MessageTemplates.buildContextLine(below, MessageCategory.EVENING)
+        val aboveLine = MessageTemplates.buildContextLine(above, MessageCategory.EVENING)
+
+        assertTrue(belowLine, belowLine?.contains("1h menos que tu media") == true)
+        assertTrue(aboveLine, aboveLine?.contains("1h más que tu media") == true)
+    }
+
+    @Test
+    fun `una diferencia minima con la media no se presenta como logro`() {
+        val line = MessageTemplates.eveningScreenLine(todayMinutes = 175, averageMinutes = 180)
+
+        assertFalse(line, line.contains("menos"))
+        assertTrue(line, line.contains("normal"))
+    }
+
+    @Test
+    fun `sin media no se compara contra cero`() {
+        val line = MessageTemplates.eveningScreenLine(todayMinutes = 90, averageMinutes = 0)
+
+        assertFalse(line, line.contains("media"))
+        assertTrue(line, line.contains("1h 30min"))
+    }
+
+    @Test
+    fun `por la noche el balance del dia va antes que la racha`() {
+        val both = MessageTemplates.UserContext(streak = 6, screenTimeMinutesToday = 100, averageScreenTimeMinutes = 160)
+
+        val line = MessageTemplates.buildContextLine(both, MessageCategory.EVENING)
+
+        assertTrue(line, line?.contains("pantalla") == true)
+    }
+
     // ─── Formato de duración ──────────────────────────────────────────────
 
     @Test

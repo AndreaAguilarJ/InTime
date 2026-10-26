@@ -17,6 +17,11 @@ import com.momentummm.app.data.notificationPrefs
 import com.momentummm.app.MainActivity
 import com.momentummm.app.R
 import com.momentummm.app.data.repository.*
+import com.momentummm.app.notification.NotificationInsights
+import com.momentummm.app.notification.NotificationIntents
+import com.momentummm.app.notification.NotificationRoutes
+import com.momentummm.app.notification.NotificationStyle
+import com.momentummm.app.util.PermissionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -107,7 +112,23 @@ class SmartNotificationManager @Inject constructor(
         val SCREEN_TIME_REMINDERS_ENABLED = booleanPreferencesKey("screen_time_reminders")
         val STREAK_WARNINGS_ENABLED = booleanPreferencesKey("streak_warnings")
         val QUIET_HOURS_ENABLED = booleanPreferencesKey("quiet_hours_enabled")
+        val LIFE_WEEKS_ENABLED = booleanPreferencesKey("life_weeks_notifications")
+
+        /** Total de la semana enviada en el último resumen, para comparar. */
+        private val LAST_WEEK_TOTAL_MINUTES = longPreferencesKey("weekly_summary_last_total_minutes")
+
+        /** Cota inferior de los ids por app/entidad (ver getUniqueNotificationId). */
+        private const val UNIQUE_ID_FLOOR = 100_000
+
+        /** Cooldown del resumen semanal: un periódico puede llegar tarde, nunca dos veces. */
+        const val COOLDOWN_WEEKLY_SUMMARY_MINUTES = 6L * 24 * 60
+
+        /** Nombre del trabajo retirado de «Inspiración del día» (duplicaba el de la mañana). */
+        private const val WORK_DAILY_MOTIVATION = "daily_motivation"
     }
+
+    /** Botón de una notificación que abre una pantalla concreta. */
+    private data class OpenAction(val label: String, val destination: String)
 
     // CoroutineExceptionHandler para manejar excepciones sin crashear
     private val exceptionHandler = kotlinx.coroutines.CoroutineExceptionHandler { _, throwable ->
@@ -203,7 +224,12 @@ class SmartNotificationManager @Inject constructor(
      * Genera ID único de notificación por app para que no se sobrescriban
      */
     private fun getUniqueNotificationId(baseId: Int, packageName: String): Int {
-        return baseId + (packageName.hashCode() and 0x0000FFFF)
+        // Antes era `baseId + (hash & 0xFFFF)`: caía entre 2001 y ~67 500, así
+        // que una app concreta podía obtener el id de un aviso fijo de servicio
+        // (4001, 9101…) y sustituirlo. Ahora cada tipo tiene su propio bloque
+        // de 65 536 ids por encima de 100 000, sin solaparse entre sí.
+        val typeIndex = (baseId - 2000).coerceAtLeast(0)
+        return UNIQUE_ID_FLOOR + typeIndex * 0x10000 + (packageName.hashCode() and 0xFFFF)
     }
     
     private fun createNotificationChannels() {
@@ -269,10 +295,19 @@ class SmartNotificationManager @Inject constructor(
      * - Cada app tiene su propio cooldown independiente
      */
     fun checkAppLimitsAndNotify() {
-        scope.launch {
+        scope.launch { checkAppLimitsAndNotifyNow() }
+    }
+
+    /**
+     * Versión que ESPERA al resultado. Los workers deben usar esta: la otra
+     * lanza una corrutina y vuelve al instante, así que el worker devolvía
+     * `success()` antes de haber leído nada y el sistema podía matar el
+     * proceso con la comprobación a medias.
+     */
+    suspend fun checkAppLimitsAndNotifyNow() {
             try {
-                if (!isNotificationEnabled(APP_LIMITS_ENABLED)) return@launch
-                if (isQuietHours()) return@launch
+                if (!isNotificationEnabled(APP_LIMITS_ENABLED)) return
+                if (isQuietHours()) return
 
                 val enabledLimits = appLimitRepository.getAllEnabledLimits().first()
                 val todayUsage = usageStatsRepository.getTodayUsageStats()
@@ -320,7 +355,6 @@ class SmartNotificationManager @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }
     }
 
     private fun showAppLimitWarningNotification(
@@ -344,7 +378,13 @@ class SmartNotificationManager @Inject constructor(
             title = title,
             message = message,
             icon = R.drawable.ic_reminder,
-            priority = NotificationCompat.PRIORITY_DEFAULT // Bajamos prioridad para ser menos intrusivos
+            priority = NotificationCompat.PRIORITY_DEFAULT, // Bajamos prioridad para ser menos intrusivos
+            destination = NotificationRoutes.APP_LIMITS,
+            // Quedan minutos: la salida útil es dejar la app a tiempo.
+            actions = listOf(
+                OpenAction(context.getString(R.string.notif_action_start_focus), NotificationRoutes.FOCUS),
+                OpenAction(context.getString(R.string.notif_action_view_limits), NotificationRoutes.APP_LIMITS)
+            )
         )
     }
     
@@ -364,7 +404,11 @@ class SmartNotificationManager @Inject constructor(
             message = message,
             icon = R.drawable.ic_reminder,
             priority = NotificationCompat.PRIORITY_HIGH,
-            autoCancel = true // Que se pueda descartar fácilmente
+            autoCancel = true, // Que se pueda descartar fácilmente
+            destination = NotificationRoutes.APP_LIMITS,
+            actions = listOf(
+                OpenAction(context.getString(R.string.notif_action_view_limits), NotificationRoutes.APP_LIMITS)
+            )
         )
     }
 
@@ -372,20 +416,53 @@ class SmartNotificationManager @Inject constructor(
      * 2. Resumen semanal de uso - Solo domingos a las 8 PM
      */
     fun sendWeeklySummary() {
-        scope.launch {
+        scope.launch { sendWeeklySummaryNow() }
+    }
+
+    /**
+     * Resumen del domingo con datos que significan algo para quien lo lee:
+     * cuánto cambió frente a SU semana anterior, su media diaria, sus apps y,
+     * si dio su fecha de nacimiento, qué semana de su vida acaba de cerrar.
+     *
+     * Antes enviaba «Tiempo total: 0m» a quien no había dado permiso de uso, y
+     * nunca comparaba con nada, así que la cifra sola no decía si iba mejor.
+     */
+    suspend fun sendWeeklySummaryNow() {
             try {
-                if (!isNotificationEnabled(WEEKLY_SUMMARY_ENABLED)) return@launch
+                if (!isNotificationEnabled(WEEKLY_SUMMARY_ENABLED)) return
 
                 val weeklyUsage = usageStatsRepository.getWeeklyUsageStats()
-                val totalMinutes = weeklyUsage.sumOf { it.totalTimeInMillis } / 60000
+                val totalMinutes = (weeklyUsage.sumOf { it.totalTimeInMillis } / 60000).toInt()
+                val hasPermission = PermissionUtils.hasUsageStatsPermission(context)
+                if (!NotificationInsights.shouldSendWeeklySummary(hasPermission, totalMinutes)) return
+                if (!canSendNotification("weekly_summary", "", COOLDOWN_WEEKLY_SUMMARY_MINUTES)) return
+
+                val prefs = context.notificationPrefs.data.first()
+                val previous = prefs[LAST_WEEK_TOTAL_MINUTES]?.toInt()
+                val comparison = NotificationInsights.compareWeeks(totalMinutes, previous)
                 val topApps = weeklyUsage.take(3)
                 val goals = goalsRepository.getAllGoals().first()
                 val completedGoals = goals.count { it.currentValue >= it.targetValue }
 
-                val title = context.getString(R.string.notification_weekly_summary_title)
+                val trendLine = when (comparison.trend) {
+                    NotificationInsights.Trend.DOWN -> context.getString(
+                        R.string.notif_weekly_trend_down, formatMinutes(comparison.deltaMinutes), comparison.percent
+                    )
+                    NotificationInsights.Trend.UP -> context.getString(
+                        R.string.notif_weekly_trend_up, formatMinutes(comparison.deltaMinutes), comparison.percent
+                    )
+                    NotificationInsights.Trend.SAME -> context.getString(R.string.notif_weekly_trend_same)
+                    NotificationInsights.Trend.NONE -> null
+                }
+                val averageLine = context.getString(
+                    R.string.notif_weekly_daily_average, formatMinutes(totalMinutes / 7)
+                )
+
+                val title = context.getString(R.string.notif_weekly_title, formatMinutes(totalMinutes))
                 val message = buildString {
-                    append(context.getString(R.string.notification_weekly_summary_total_time, formatMinutes(totalMinutes.toInt())))
-                    append("\n")
+                    trendLine?.let { append(it).append("\n") }
+                    append(averageLine)
+                    append("\n\n")
                     append(context.getString(R.string.notification_weekly_summary_top_apps))
                     append("\n")
                     topApps.forEachIndexed { index, app ->
@@ -401,25 +478,66 @@ class SmartNotificationManager @Inject constructor(
                         append("\n")
                         append(context.getString(R.string.notification_weekly_summary_goals, completedGoals))
                     }
-                }
+                    weeksLivedOrNull()?.let { weeks ->
+                        append("\n\n")
+                        append(context.getString(
+                            R.string.notif_weekly_life_week,
+                            java.text.NumberFormat.getIntegerInstance().format(weeks)
+                        ))
+                    }
+                }.trim()
 
                 showExpandableNotification(
                     channelId = CHANNEL_ID_WEEKLY_SUMMARY,
                     notificationId = NOTIFICATION_ID_WEEKLY_SUMMARY,
                     title = title,
                     message = message,
-                    icon = R.drawable.ic_goal
+                    icon = R.drawable.ic_goal,
+                    destination = NotificationRoutes.ANALYTICS,
+                    summaryLine = trendLine ?: averageLine,
+                    actions = listOf(
+                        OpenAction(context.getString(R.string.notif_action_view_analysis), NotificationRoutes.ANALYTICS)
+                    )
                 )
+                recordNotificationSent("weekly_summary", "")
+                // La base de la próxima comparación: Android no guarda las
+                // estadísticas diarias de hace dos semanas.
+                context.notificationPrefs.edit { it[LAST_WEEK_TOTAL_MINUTES] = totalMinutes.toLong() }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+    }
+
+    /** Fecha de nacimiento del usuario, o null si no la ha dado. */
+    private suspend fun birthDateOrNull(): kotlinx.datetime.LocalDate? {
+        val fromSettings = runCatching { userRepository.getUserSettingsSync()?.birthDate }.getOrNull()
+        if (fromSettings != null) {
+            return runCatching {
+                com.momentummm.app.util.LifeWeeksCalculator.localDateOf(fromSettings)
+            }.getOrNull()
         }
+        val iso = runCatching {
+            com.momentummm.app.data.UserPreferencesRepository.getDobIso(context)
+        }.getOrNull()?.take(10) ?: return null
+        return runCatching { kotlinx.datetime.LocalDate.parse(iso) }.getOrNull()
+    }
+
+    /** Semanas vividas hasta hoy, o null sin fecha de nacimiento. */
+    private suspend fun weeksLivedOrNull(): Int? {
+        val birth = birthDateOrNull() ?: return null
+        val today = com.momentummm.app.util.LifeWeeksCalculator.localDateOf(Date())
+        return com.momentummm.app.util.LifeWeeksMath.calculate(birth, today).weeksLived.takeIf { it > 0 }
     }
     
     /**
      * Enviar una notificación de prueba inmediata
      */
-    fun sendTestNotification() {
+    /**
+     * Envía una notificación de prueba. Devuelve false si Android la bloquea,
+     * para que la pantalla no diga «enviada» cuando no llegó nada.
+     */
+    fun sendTestNotification(): Boolean {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return false
         val title = context.getString(R.string.notification_test_title_sent)
         val message = context.getString(R.string.notification_test_message)
         
@@ -429,12 +547,20 @@ class SmartNotificationManager @Inject constructor(
             title = title,
             message = message,
             icon = R.drawable.ic_goal,
-            priority = NotificationCompat.PRIORITY_HIGH
+            priority = NotificationCompat.PRIORITY_HIGH,
+            destination = NotificationRoutes.NOTIFICATION_SETTINGS
         )
+        return true
     }
     
     /**
-     * 3. Motivación diaria con frases
+     * 3. Motivación diaria con frases.
+     *
+     * RETIRADA de la programación: a las 9:00 llegaba «Inspiración del día»
+     * una hora después del «Buenos días» de los mensajes motivacionales, que
+     * ya son personalizados y configurables. Dos avisos casi iguales cada
+     * mañana es justo el ruido que hace silenciar una app. Se conserva la
+     * función por si se quiere volver a usar desde otra parte.
      */
     fun sendDailyMotivation() {
         scope.launch {
@@ -465,17 +591,26 @@ class SmartNotificationManager @Inject constructor(
      * 4. Logros por hitos alcanzados - con cooldowns para evitar spam
      */
     fun checkAndNotifyAchievements() {
-        scope.launch {
+        scope.launch { checkAndNotifyAchievementsNow() }
+    }
+
+    suspend fun checkAndNotifyAchievementsNow() {
             try {
-                if (!isNotificationEnabled(ACHIEVEMENTS_ENABLED)) return@launch
-                if (isQuietHours()) return@launch
+                // El cumpleaños tiene su propio interruptor y no depende de logros.
+                checkBirthday()
+
+                if (!isNotificationEnabled(ACHIEVEMENTS_ENABLED)) return
+                if (isQuietHours()) return
 
                 val goals = goalsRepository.getAllGoals().first()
 
                 goals.forEach { goal ->
-                    // Meta completada por primera vez - solo notificar una vez
+                    // Meta completada por primera vez. Antes llevaba un cooldown
+                    // de 60 min y este chequeo corre cada 4 h, así que el mismo
+                    // «¡Meta alcanzada!» se repetía hasta la siguiente
+                    // completación. Ahora se envía una sola vez por meta.
                     if (goal.currentValue >= goal.targetValue && goal.completionCount == 1) {
-                        showAchievementNotificationWithCooldown(
+                        showOnceNotification(
                             "first_goal_${goal.id}",
                             context.getString(R.string.notification_goal_achieved_title),
                             context.getString(R.string.notification_goal_achieved_message, goal.title)
@@ -501,9 +636,10 @@ class SmartNotificationManager @Inject constructor(
                         )
                     }
 
-                    // Múltiplos de 10 completados - con cooldown
+                    // Múltiplos de 10: una vez por cifra (el 10 no vuelve a
+                    // celebrarse cada semana mientras siga en 10).
                     if (goal.completionCount > 0 && goal.completionCount % 10 == 0) {
-                        showMilestoneNotificationWithCooldown(
+                        showOnceNotification(
                             "completion_${goal.completionCount}_${goal.id}",
                             context.getString(R.string.notification_completion_title, goal.completionCount),
                             goal.title
@@ -517,31 +653,108 @@ class SmartNotificationManager @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }
+    }
+
+    /**
+     * Felicitación de cumpleaños con las semanas vividas, una vez al año.
+     * Es el aviso más personal de «Mi vida en semanas» y no tenía llamador.
+     */
+    private suspend fun checkBirthday() {
+        if (!isNotificationEnabled(LIFE_WEEKS_ENABLED)) return
+        if (isQuietHours()) return
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        if (hour < 9) return
+        val birth = birthDateOrNull() ?: return
+        val today = com.momentummm.app.util.LifeWeeksCalculator.localDateOf(Date())
+        if (!NotificationInsights.isBirthday(birth, today)) return
+        val key = "birthday_${today.year}"
+        if (!canSendOnce("life", key)) return
+        val weeks = com.momentummm.app.util.LifeWeeksMath.calculate(birth, today).weeksLived
+        showNotification(
+            channelId = CHANNEL_ID_MOTIVATION,
+            notificationId = NOTIFICATION_ID_LIFE_WEEKS,
+            title = context.getString(R.string.notification_birthday_title),
+            message = context.getString(R.string.notification_birthday_message, weeks),
+            priority = NotificationCompat.PRIORITY_DEFAULT,
+            destination = NotificationRoutes.MY_LIFE
+        )
+        recordNotificationSent("life", key)
+    }
+
+    /** true si [identifier] de [type] no se ha enviado NUNCA. */
+    private suspend fun canSendOnce(type: String, identifier: String): Boolean {
+        val key = getCooldownKey(type, identifier)
+        if (lastNotificationCache.containsKey(key)) return false
+        val sentAt = context.notificationPrefs.data.first()[longPreferencesKey(key)] ?: 0L
+        return sentAt == 0L
+    }
+
+    private suspend fun showOnceNotification(identifier: String, title: String, message: String) {
+        if (!canSendOnce("achievement_once", identifier)) return
+        showNotification(
+            channelId = CHANNEL_ID_GOALS,
+            notificationId = getUniqueNotificationId(NOTIFICATION_ID_GOAL_ACHIEVED, identifier),
+            title = title,
+            message = message,
+            priority = NotificationCompat.PRIORITY_DEFAULT,
+            destination = NotificationRoutes.TODAY
+        )
+        recordNotificationSent("achievement_once", identifier)
     }
     
     private suspend fun checkScreenTimeReduction() {
         try {
             val todayUsage = usageStatsRepository.getTodayUsageStats()
-            val totalMinutes = todayUsage.sumOf { it.totalTimeInMillis } / 60000
+            val totalMinutes = (todayUsage.sumOf { it.totalTimeInMillis } / 60000).toInt()
+            val average = previousDaysAverageMinutes()
+            val calendar = Calendar.getInstance()
 
-            // Logro por mantener uso moderado (menos de 3 horas)
-            // Solo notificar en la noche y con cooldown diario
-            if (totalMinutes < 180) {
-                val calendar = Calendar.getInstance()
-                val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
-                if (calendar.get(Calendar.HOUR_OF_DAY) >= 20) {
-                    showAchievementNotificationWithCooldown(
-                        "balanced_day_$dayOfYear",
-                        context.getString(R.string.notification_balanced_day_title),
-                        context.getString(R.string.notification_balanced_day_message, formatMinutes(totalMinutes.toInt()))
-                    )
-                }
+            // Sin permiso de uso las estadísticas valen 0 y antes se felicitaba
+            // cada noche por un «uso saludable» que la app no había medido.
+            val balanced = NotificationInsights.isBalancedDay(
+                hasUsagePermission = PermissionUtils.hasUsageStatsPermission(context),
+                hourOfDay = calendar.get(Calendar.HOUR_OF_DAY),
+                todayMinutes = totalMinutes,
+                averageMinutes = average
+            )
+            if (!balanced) return
+
+            val belowAverage = average - totalMinutes
+            val message = if (average > 0 && belowAverage >= 10) {
+                context.getString(
+                    R.string.notif_balanced_day_vs_average,
+                    formatMinutes(totalMinutes),
+                    formatMinutes(belowAverage)
+                )
+            } else {
+                context.getString(R.string.notification_balanced_day_message, formatMinutes(totalMinutes))
             }
+            // Clave fija con 20 h de espera: una por noche y sin dejar una
+            // clave nueva en DataStore cada día del año.
+            if (!canSendNotification("balanced_day", "", 20 * 60L)) return
+            showNotification(
+                channelId = CHANNEL_ID_GOALS,
+                notificationId = NOTIFICATION_ID_GOAL_ACHIEVED,
+                title = context.getString(R.string.notification_balanced_day_title),
+                message = message,
+                destination = NotificationRoutes.ANALYTICS
+            )
+            recordNotificationSent("balanced_day", "")
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
+
+    /**
+     * Media diaria de los seis días anteriores a hoy, en minutos; 0 sin datos.
+     * Hoy se excluye porque está a medias y bajaría la media artificialmente.
+     */
+    private fun previousDaysAverageMinutes(): Int = runCatching {
+        val week = usageStatsRepository.getWeeklyUsageStats().sumOf { it.totalTimeInMillis }
+        val today = usageStatsRepository.getTodayUsageStats().sumOf { it.totalTimeInMillis }
+        val previous = ((week - today).coerceAtLeast(0L) / 60000L).toInt()
+        if (previous < 60) 0 else previous / 6
+    }.getOrDefault(0)
 
     private suspend fun showAchievementNotificationWithCooldown(
         identifier: String,
@@ -728,22 +941,44 @@ class SmartNotificationManager @Inject constructor(
      * - Máximo una vez cada 3 horas
      */
     fun sendSmartScreenTimeReminder() {
-        scope.launch {
+        scope.launch { sendSmartScreenTimeReminderNow() }
+    }
+
+    /**
+     * Recordatorio con datos propios: cuánto lleva hoy y en qué app.
+     *
+     * El umbral ya no es fijo para todos: para quien usa el móvil 7 h de
+     * media, un aviso diario a las 6 h es ruido que aprende a ignorar. Ahora
+     * salta al superar 6 h Y una hora por encima de su media.
+     */
+    suspend fun sendSmartScreenTimeReminderNow() {
             try {
-                if (!isNotificationEnabled(SCREEN_TIME_REMINDERS_ENABLED)) return@launch
-                if (isQuietHours()) return@launch
+                if (!isNotificationEnabled(SCREEN_TIME_REMINDERS_ENABLED)) return
+                if (isQuietHours()) return
                 
                 // Solo notificar cada 3 horas como máximo
                 if (!canSendNotification("screen_time", "", COOLDOWN_SCREEN_TIME_MINUTES)) {
-                    return@launch
+                    return
                 }
 
                 val todayUsage = usageStatsRepository.getTodayUsageStats()
-                val totalMinutes = todayUsage.sumOf { it.totalTimeInMillis } / 60000
+                val totalMinutes = (todayUsage.sumOf { it.totalTimeInMillis } / 60000).toInt()
+                val average = previousDaysAverageMinutes()
+                val threshold = maxOf(EXCESSIVE_USAGE_HOURS * 60, if (average > 0) average + 60 else 0)
 
-                if (totalMinutes > EXCESSIVE_USAGE_HOURS * 60) {
+                if (totalMinutes > threshold) {
                     val title = context.getString(R.string.notification_screen_time_title)
-                    val message = context.getString(R.string.notification_screen_time_message, formatMinutes(totalMinutes.toInt()))
+                    val top = todayUsage.firstOrNull()
+                    val message = if (top != null) {
+                        context.getString(
+                            R.string.notif_screen_time_top_app,
+                            formatMinutes(totalMinutes),
+                            formatMinutes((top.totalTimeInMillis / 60000).toInt()),
+                            top.appName
+                        )
+                    } else {
+                        context.getString(R.string.notification_screen_time_message, formatMinutes(totalMinutes))
+                    }
 
                     showNotification(
                         channelId = CHANNEL_ID_REMINDERS,
@@ -751,7 +986,12 @@ class SmartNotificationManager @Inject constructor(
                         title = title,
                         message = message,
                         icon = R.drawable.ic_reminder,
-                        priority = NotificationCompat.PRIORITY_LOW // Baja prioridad
+                        priority = NotificationCompat.PRIORITY_LOW, // Baja prioridad
+                        destination = NotificationRoutes.ANALYTICS,
+                        bigText = message,
+                        actions = listOf(
+                            OpenAction(context.getString(R.string.notif_action_start_focus), NotificationRoutes.FOCUS)
+                        )
                     )
                     
                     recordNotificationSent("screen_time", "")
@@ -759,7 +999,6 @@ class SmartNotificationManager @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }
     }
 
     /**
@@ -770,8 +1009,10 @@ class SmartNotificationManager @Inject constructor(
         // Chequeo de límites cada 15 minutos (el cooldown interno evita spam)
         scheduleAppLimitsCheck()
 
-        // Motivación diaria a las 9 AM
-        scheduleDailyMotivation()
+        // «Inspiración del día» a las 9:00 RETIRADA: duplicaba el «Buenos días»
+        // de los mensajes motivacionales. Se cancela el trabajo que ya tuvieran
+        // encolado las instalaciones existentes.
+        WorkManager.getInstance(context).cancelUniqueWork(WORK_DAILY_MOTIVATION)
 
         // Resumen semanal los domingos a las 8 PM
         scheduleWeeklySummary()
@@ -894,37 +1135,55 @@ class SmartNotificationManager @Inject constructor(
     }
 
     // Funciones auxiliares
+    /**
+     * Publica una notificación de Momentum.
+     *
+     * @param destination pantalla que se abre al tocarla ([NotificationRoutes]).
+     *   Antes todas abrían el inicio con CLEAR_TASK, que además destruía la
+     *   pantalla en la que estuviera el usuario.
+     * @param icon se ignora: todas llevan ya la silueta de la app (ver
+     *   [NotificationStyle]); se conserva para no tocar cada llamada.
+     */
+    @Suppress("UNUSED_PARAMETER")
     private fun showNotification(
         channelId: String,
         notificationId: Int,
         title: String,
         message: String,
-        icon: Int,
+        icon: Int = 0,
         priority: Int = NotificationCompat.PRIORITY_DEFAULT,
-        autoCancel: Boolean = true
+        autoCancel: Boolean = true,
+        destination: String = NotificationRoutes.TODAY,
+        bigText: String? = null,
+        actions: List<OpenAction> = emptyList()
     ) {
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        // Sin POST_NOTIFICATIONS o con la app bloqueada, notify() descarta el
+        // aviso EN SILENCIO (no lanza nada). Se deja constancia en el log.
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            android.util.Log.w("SmartNotificationManager", "Notificaciones bloqueadas en Android: $title")
+            return
         }
-        
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            notificationId,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        
-        val notification = NotificationCompat.Builder(context, channelId)
+
+        val builder = NotificationCompat.Builder(context, channelId)
             .setContentTitle(title)
             .setContentText(message)
-            .setSmallIcon(icon)
-            .setContentIntent(pendingIntent)
+            .setSmallIcon(NotificationStyle.SMALL_ICON)
+            .setColor(NotificationStyle.accentColor(context))
+            .setContentIntent(NotificationIntents.open(context, destination, notificationId))
             .setAutoCancel(autoCancel)
             .setPriority(priority)
-            .build()
+        if (bigText != null) {
+            builder.setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
+        }
+        actions.forEachIndexed { index, action ->
+            // Código propio por botón: si compartieran el del contenido,
+            // FLAG_UPDATE_CURRENT haría que todos abrieran el mismo destino.
+            val requestCode = notificationId * 10 + index + 1
+            builder.addAction(0, action.label, NotificationIntents.open(context, action.destination, requestCode))
+        }
 
         try {
-            NotificationManagerCompat.from(context).notify(notificationId, notification)
+            NotificationManagerCompat.from(context).notify(notificationId, builder.build())
         } catch (e: SecurityException) {
             e.printStackTrace()
         }
@@ -935,34 +1194,21 @@ class SmartNotificationManager @Inject constructor(
         notificationId: Int,
         title: String,
         message: String,
-        icon: Int
+        icon: Int = 0,
+        destination: String = NotificationRoutes.TODAY,
+        summaryLine: String = message,
+        actions: List<OpenAction> = emptyList()
     ) {
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            notificationId,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        showNotification(
+            channelId = channelId,
+            notificationId = notificationId,
+            title = title,
+            message = summaryLine,
+            icon = icon,
+            destination = destination,
+            bigText = message,
+            actions = actions
         )
-
-        val notification = NotificationCompat.Builder(context, channelId)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setSmallIcon(icon)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
-            .build()
-        
-        try {
-            NotificationManagerCompat.from(context).notify(notificationId, notification)
-        } catch (e: SecurityException) {
-            e.printStackTrace()
-        }
     }
     
     private fun formatMinutes(minutes: Int): String {
@@ -989,17 +1235,24 @@ class SmartNotificationManager @Inject constructor(
      * Notificación cuando el usuario sube de nivel
      */
     fun showLevelUpNotification(newLevel: Int, levelTitle: String, coinsBonus: Int) {
-        val title = context.getString(R.string.notification_level_up_title, newLevel)
-        val message = context.getString(R.string.notification_level_up_message, levelTitle, coinsBonus)
-        
-        showNotification(
-            channelId = CHANNEL_ID_GAMIFICATION,
-            notificationId = NOTIFICATION_ID_LEVEL_UP,
-            title = title,
-            message = message,
-            icon = R.drawable.ic_goal,
-            priority = NotificationCompat.PRIORITY_HIGH
-        )
+        scope.launch {
+            // Antes no miraba ningún interruptor: apagar «Logros y metas» no
+            // silenciaba las subidas de nivel, y podían llegar de madrugada.
+            if (!isNotificationEnabled(ACHIEVEMENTS_ENABLED)) return@launch
+            if (isQuietHours()) return@launch
+            val title = context.getString(R.string.notification_level_up_title, newLevel)
+            val message = context.getString(R.string.notification_level_up_message, levelTitle, coinsBonus)
+
+            showNotification(
+                channelId = CHANNEL_ID_GAMIFICATION,
+                notificationId = NOTIFICATION_ID_LEVEL_UP,
+                title = title,
+                message = message,
+                icon = R.drawable.ic_goal,
+                priority = NotificationCompat.PRIORITY_HIGH,
+                destination = NotificationRoutes.TODAY
+            )
+        }
     }
     
     /**
@@ -1146,7 +1399,7 @@ class SmartNotificationManager @Inject constructor(
         
         showNotification(
             channelId = CHANNEL_ID_GAMIFICATION,
-            notificationId = NOTIFICATION_ID_GAMIFICATION + achievementName.hashCode(),
+            notificationId = getUniqueNotificationId(NOTIFICATION_ID_GAMIFICATION, achievementName),
             title = title,
             message = message,
             icon = R.drawable.ic_goal,
@@ -1169,7 +1422,8 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_LIMITS,
-                    notificationId = NOTIFICATION_ID_WEBSITE_BLOCKED + url.hashCode(),
+                    destination = NotificationRoutes.WEBSITE_BLOCKS,
+                    notificationId = getUniqueNotificationId(NOTIFICATION_ID_WEBSITE_BLOCKED, url),
                     title = title,
                     message = message,
                     icon = R.drawable.ic_reminder,
@@ -1196,7 +1450,8 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_LIMITS,
-                    notificationId = NOTIFICATION_ID_WEBSITE_BLOCKED + category.hashCode(),
+                    destination = NotificationRoutes.WEBSITE_BLOCKS,
+                    notificationId = getUniqueNotificationId(NOTIFICATION_ID_WEBSITE_BLOCKED, "category:$category"),
                     title = title,
                     message = message,
                     icon = R.drawable.ic_reminder,
@@ -1225,7 +1480,8 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_LIMITS,
-                    notificationId = NOTIFICATION_ID_APP_BLOCKED + packageName.hashCode(),
+                    destination = NotificationRoutes.APP_LIMITS,
+                    notificationId = getUniqueNotificationId(NOTIFICATION_ID_APP_BLOCKED, packageName),
                     title = title,
                     message = message,
                     icon = R.drawable.ic_reminder,
@@ -1252,6 +1508,7 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_LIMITS,
+                    destination = NotificationRoutes.APP_LIMITS,
                     notificationId = NOTIFICATION_ID_APP_BLOCKED + 1000,
                     title = title,
                     message = message,
@@ -1275,7 +1532,8 @@ class SmartNotificationManager @Inject constructor(
         
         showNotification(
             channelId = CHANNEL_ID_LIMITS,
-            notificationId = NOTIFICATION_ID_APP_BLOCKED + 2000,
+            destination = NotificationRoutes.APP_LIMITS,
+                    notificationId = NOTIFICATION_ID_APP_BLOCKED + 2000,
             title = title,
             message = message,
             icon = R.drawable.ic_reminder,
@@ -1296,6 +1554,7 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_REMINDERS,
+                    destination = NotificationRoutes.APP_LIMITS,
                     notificationId = NOTIFICATION_ID_APP_BLOCKED + 3000,
                     title = title,
                     message = message,
@@ -1323,6 +1582,7 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_REMINDERS,
+                    destination = NotificationRoutes.APP_LIMITS,
                     notificationId = NOTIFICATION_ID_APP_BLOCKED + 4000,
                     title = title,
                     message = message,
@@ -1348,6 +1608,7 @@ class SmartNotificationManager @Inject constructor(
         
         showNotification(
             channelId = CHANNEL_ID_REMINDERS,
+            destination = NotificationRoutes.FOCUS,
             notificationId = NOTIFICATION_ID_FOCUS_SESSION,
             title = title,
             message = message,
@@ -1365,6 +1626,7 @@ class SmartNotificationManager @Inject constructor(
         
         showNotification(
             channelId = CHANNEL_ID_GAMIFICATION,
+            destination = NotificationRoutes.FOCUS,
             notificationId = NOTIFICATION_ID_FOCUS_SESSION + 1,
             title = title,
             message = message,
@@ -1382,6 +1644,7 @@ class SmartNotificationManager @Inject constructor(
         
         showNotification(
             channelId = CHANNEL_ID_REMINDERS,
+            destination = NotificationRoutes.FOCUS,
             notificationId = NOTIFICATION_ID_FOCUS_SESSION + 2,
             title = title,
             message = message,
@@ -1458,6 +1721,7 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_MOTIVATION,
+                    destination = NotificationRoutes.MY_LIFE,
                     notificationId = NOTIFICATION_ID_LIFE_WEEKS + 1,
                     title = title,
                     message = message,
@@ -1483,6 +1747,7 @@ class SmartNotificationManager @Inject constructor(
                 
                 showNotification(
                     channelId = CHANNEL_ID_MOTIVATION,
+                    destination = NotificationRoutes.MY_LIFE,
                     notificationId = NOTIFICATION_ID_LIFE_WEEKS + 2,
                     title = title,
                     message = message,
@@ -1556,6 +1821,7 @@ class SmartNotificationManager @Inject constructor(
             "achievements" to (prefs[ACHIEVEMENTS_ENABLED] ?: true),
             "screen_time_reminders" to (prefs[SCREEN_TIME_REMINDERS_ENABLED] ?: true),
             "streak_warnings" to (prefs[STREAK_WARNINGS_ENABLED] ?: true),
+            "life_weeks" to (prefs[LIFE_WEEKS_ENABLED] ?: true),
             "quiet_hours" to (prefs[QUIET_HOURS_ENABLED] ?: false)
         )
     }
@@ -1571,7 +1837,7 @@ class AppLimitsCheckWorker(
         return try {
             val notificationManager = (applicationContext as com.momentummm.app.MomentumApplication)
                 .smartNotificationManager
-            notificationManager.checkAppLimitsAndNotify()
+            notificationManager.checkAppLimitsAndNotifyNow()
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1586,15 +1852,9 @@ class DailyMotivationWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        return try {
-            val notificationManager = (applicationContext as com.momentummm.app.MomentumApplication)
-                .smartNotificationManager
-            notificationManager.sendDailyMotivation()
-            Result.success()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.retry()
-        }
+        // Retirado: duplicaba el «Buenos días» de los mensajes motivacionales.
+        // Una ejecución que quedara encolada antes de la cancelación no envía nada.
+        return Result.success()
     }
 }
 
@@ -1607,7 +1867,7 @@ class WeeklySummaryWorker(
         return try {
             val notificationManager = (applicationContext as com.momentummm.app.MomentumApplication)
                 .smartNotificationManager
-            notificationManager.sendWeeklySummary()
+            notificationManager.sendWeeklySummaryNow()
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1625,7 +1885,7 @@ class AchievementsCheckWorker(
         return try {
             val notificationManager = (applicationContext as com.momentummm.app.MomentumApplication)
                 .smartNotificationManager
-            notificationManager.checkAndNotifyAchievements()
+            notificationManager.checkAndNotifyAchievementsNow()
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -1648,7 +1908,7 @@ class ScreenTimeReminderWorker(
             if (hour in 9..20) {
                 val notificationManager = (applicationContext as com.momentummm.app.MomentumApplication)
                     .smartNotificationManager
-                notificationManager.sendSmartScreenTimeReminder()
+                notificationManager.sendSmartScreenTimeReminderNow()
             }
             Result.success()
         } catch (e: Exception) {

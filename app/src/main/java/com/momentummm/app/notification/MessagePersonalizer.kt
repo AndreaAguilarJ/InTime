@@ -48,6 +48,12 @@ class MessagePersonalizer @Inject constructor(
     /** Alias para no obligar a los llamadores a nombrar [MessageTemplates]. */
     companion object {
         fun emptyContext(): MessageTemplates.UserContext = MessageTemplates.UserContext()
+
+        /** Días completos que entran en la media (la semana menos hoy). */
+        private const val PREVIOUS_DAYS = 6
+
+        /** Por debajo de una hora de historial la media no significa nada. */
+        private const val MIN_HISTORY_MINUTES = 60
     }
 
     /**
@@ -73,9 +79,24 @@ class MessagePersonalizer @Inject constructor(
             streak = settings?.currentStreak ?: 0,
             level = settings?.userLevel ?: 1,
             timeCoins = settings?.timeCoins ?: 0,
-            screenTimeMinutesToday = screenMinutes
+            screenTimeMinutesToday = screenMinutes,
+            averageScreenTimeMinutes = averageOfPreviousDays()
         )
     }
+
+    /**
+     * Media diaria de los seis días anteriores a hoy, en minutos.
+     *
+     * Se resta el día de hoy (incompleto) para no comparar el día en curso
+     * contra sí mismo. Devuelve 0 si no hay datos: sin permiso de uso, o en la
+     * primera semana, en que comparar daría una conclusión falsa.
+     */
+    private fun averageOfPreviousDays(): Int = runCatching {
+        val weekMillis = usageStatsRepository.getWeeklyUsageStats().sumOf { it.totalTimeInMillis }
+        val todayMillis = usageStatsRepository.getTodayUsageStats().sumOf { it.totalTimeInMillis }
+        val previousMinutes = ((weekMillis - todayMillis).coerceAtLeast(0L) / 60_000L).toInt()
+        if (previousMinutes < MIN_HISTORY_MINUTES) 0 else previousMinutes / PREVIOUS_DAYS
+    }.getOrDefault(0)
 
     fun applyPlaceholders(content: String, userContext: MessageTemplates.UserContext): String =
         MessageTemplates.applyPlaceholders(content, userContext, currentHour())

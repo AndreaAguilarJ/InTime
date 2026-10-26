@@ -99,7 +99,7 @@ Descarga Momentum hoy y comienza a vivir con más conciencia y propósito. Cada 
 1. **Capturas de pantalla:** Incluye imágenes de la visualización de semanas, el panel principal, y el modo minimalista
 2. **Icono:** Asegúrate de que sea moderno y represente la dualidad digital/existencial
 3. **Política de privacidad:** Ya tienes el archivo actualizado y listo
-4. **targetSdk:** Ya actualizado a API 35
-5. **VersionCode:** Incrementa a 2 para esta nueva versión
+4. **targetSdk:** Ya actualizado a API 36 (Android 16), requisito de Google Play desde el 1 nov 2026. La Biblioteca de Facturación es la 9.1.0 (el mínimo exigido es la 8.0.0)
+5. **VersionCode:** Siempre mayor que el último subido a Play Console. Actual: 15
 
 **Nota:** Estas descripciones están optimizadas para conversión y destacan los beneficios únicos de tu app.

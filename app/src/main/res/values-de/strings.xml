@@ -264,7 +264,7 @@
     <string name="notification_daily_motivation_title">Tägliche Motivation</string>
     <string name="notification_daily_motivation_desc">Erhalte jeden Morgen einen inspirierenden Spruch</string>
     <string name="notification_weekly_summary_title">Wöchentliche Zusammenfassung</string>
-    <string name="notification_weekly_summary_desc">Zusammenfassung deiner Gerätenutzung jeden Sonntag</string>
+    <string name="notification_weekly_summary_desc">Jeden Sonntag um 20:00: deine Zeit im Vergleich zur Vorwoche und deine meistgenutzten Apps</string>
     <string name="notification_achievements_title">Erfolge und Ziele</string>
     <string name="notification_achievements_desc">Feiere deine Erfolge und Serien</string>
     <string name="notification_screen_time_reminders_title">Wohlfühl-Erinnerungen</string>

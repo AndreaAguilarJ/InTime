@@ -158,9 +158,18 @@ class BillingManager(
             .setProductList(productList)
             .build()
         
-        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+        // Desde Billing 8 el callback entrega un QueryProductDetailsResult: los
+        // productos que Play no pudo resolver (no existen o no hay oferta para el
+        // usuario) llegan aparte en unfetchedProductList y ya no se pierden en silencio.
+        billingClient.queryProductDetailsAsync(params) { billingResult, queryResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                _availableProducts.value = productDetailsList
+                _availableProducts.value = queryResult.productDetailsList
+                queryResult.unfetchedProductList.forEach { unfetched ->
+                    android.util.Log.w(
+                        "BillingManager",
+                        "Producto no disponible: ${unfetched.productId} (estado ${unfetched.statusCode})"
+                    )
+                }
             }
         }
     }
@@ -358,9 +367,9 @@ class BillingManager(
             .setProductList(productList)
             .build()
 
-        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+        billingClient.queryProductDetailsAsync(params) { billingResult, queryResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                val emergencyUnlockProduct = productDetailsList.firstOrNull()
+                val emergencyUnlockProduct = queryResult.productDetailsList.firstOrNull()
                 if (emergencyUnlockProduct != null) {
                     val productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()
                         .setProductDetails(emergencyUnlockProduct)

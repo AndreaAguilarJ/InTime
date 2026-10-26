@@ -45,9 +45,11 @@ android {
     defaultConfig {
         applicationId = "com.momentummm.app"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 14
-        versionName = "1.2.0"
+        // Google Play exige apuntar a Android 16 (API 36) para poder publicar
+        // actualizaciones a partir del 1 nov 2026. compileSdk ya era 36.
+        targetSdk = 36
+        versionCode = 15
+        versionName = "1.3.0"
 
         buildConfigField("String", "GEMINI_API_KEY", geminiBuildConfigValue)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -237,9 +239,12 @@ dependencies {
     // JSON serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
-    // In-app billing for purchases
-    implementation("com.android.billingclient:billing:7.1.1")
-    implementation("com.android.billingclient:billing-ktx:7.1.1")
+    // In-app billing for purchases. Google Play exige la versión 8.0.0 o posterior a
+    // partir del 1 nov 2026 y recomienda la 9.
+    // `billing-ktx` se retiró a propósito: BillingManager usa solo los callbacks de la
+    // librería base (ninguna extensión suspend), y billing-ktx 9.x se compila con
+    // Kotlin 2.2, cuya metadata este proyecto (Kotlin 2.0.21) no puede leer.
+    implementation("com.android.billingclient:billing:9.1.0")
 
     // DataStore for preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
