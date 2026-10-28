@@ -1154,8 +1154,18 @@ private fun ContextRuleCard(
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
+                // Cada tipo resume su propio disparador: antes una regla de Lugar o
+                // de Wi-Fi mostraba el horario por defecto (L-V 09:00-18:00), que
+                // no interviene en ella.
+                val summary = when (rule.contextType) {
+                    "LOCATION" -> stringResource(R.string.smart_rule_type_location) +
+                        " • " + stringResource(R.string.smart_rule_radius, rule.radiusMeters)
+                    "WIFI" -> stringResource(R.string.smart_rule_type_wifi) +
+                        (rule.wifiSsid?.takeIf { it.isNotBlank() }?.let { " • $it" } ?: "")
+                    else -> "${rule.getDaysAsText()} • ${formatTime(rule.scheduleStartHour, rule.scheduleStartMinute)} - ${formatTime(rule.scheduleEndHour, rule.scheduleEndMinute)}"
+                }
                 Text(
-                    "${rule.getDaysAsText()} • ${formatTime(rule.scheduleStartHour, rule.scheduleStartMinute)} - ${formatTime(rule.scheduleEndHour, rule.scheduleEndMinute)}",
+                    summary,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
