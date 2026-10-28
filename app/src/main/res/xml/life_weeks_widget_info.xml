@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    - initialLayout: la vista de carga de Glance. Antes era la previsualización, con
+      cifras inventadas («1234 vividas») que el usuario veía como suyas mientras
+      el widget cargaba.
+    - Sin widgetFeatures="reconfigurable": no hay actividad de configuración, así
+      que el launcher ofrecía «Reconfigurar» y no pasaba nada.
+    - Sin tope de tamaño: la cuadrícula se adapta a cualquier hueco.
+-->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/life_weeks_widget_description"
-    android:initialKeyguardLayout="@layout/life_weeks_widget_preview"
-    android:initialLayout="@layout/life_weeks_widget_preview"
+    android:initialKeyguardLayout="@layout/glance_default_loading_layout"
+    android:initialLayout="@layout/glance_default_loading_layout"
     android:minWidth="180dp"
     android:minHeight="180dp"
     android:minResizeWidth="110dp"
     android:minResizeHeight="110dp"
-    android:maxResizeWidth="500dp"
-    android:maxResizeHeight="600dp"
-    android:previewImage="@drawable/ic_launcher_foreground"
+    android:previewImage="@drawable/widget_preview_life_grid"
     android:previewLayout="@layout/life_weeks_widget_preview"
     android:resizeMode="horizontal|vertical"
     android:targetCellHeight="3"
     android:targetCellWidth="3"
-    android:updatePeriodMillis="1800000"
-    android:widgetCategory="home_screen|keyguard"
-    android:widgetFeatures="reconfigurable" />
+    android:updatePeriodMillis="10800000"
+    android:widgetCategory="home_screen|keyguard" />

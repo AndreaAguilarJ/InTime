@@ -426,7 +426,7 @@ class FocusTimerService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(com.momentummm.app.notification.NotificationStyle.SMALL_ICON)
             .setContentTitle(getString(R.string.svc_focus_title_break_over))
             .setContentText(getString(R.string.svc_focus_text_break_over))
             .setContentIntent(contentIntent)
@@ -481,7 +481,7 @@ class FocusTimerService : Service() {
         }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(com.momentummm.app.notification.NotificationStyle.SMALL_ICON)
             .setContentTitle(title)
             .setContentText(contentText)
             .setContentIntent(contentIntent)

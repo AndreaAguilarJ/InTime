@@ -1,12 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_years">anos</string>
-    <string name="widget_percent_of_life">%1$s%% da sua vida</string>
-    <string name="widget_tap_to_open">Toque para abrir</string>
-    <string name="widget_life_title">A MINHA VIDA EM SEMANAS</string>
-    <string name="widget_weeks_lived">vividas</string>
-    <string name="widget_weeks_remaining">restantes</string>
-    <string name="widget_days_past">passados</string>
-    <string name="widget_quote_of_day">Frase motivacional do dia</string>
-    <string name="widget_motivation_label">✨ Motivação</string>
+    <string name="motivational_widget_name">Mensagem motivacional</string>
+
+    <string name="widget_load_error">Não foi possível carregar. Abra o Momentum para atualizar.</string>
+
+    <string name="widget_life_title">Minha vida em semanas</string>
+    <string name="widget_life_percent_of_life">%1$s da sua vida</string>
+    <plurals name="widget_life_weeks_lived">
+        <item quantity="one">vivida</item>
+        <item quantity="other">vividas</item>
+    </plurals>
+    <plurals name="widget_life_weeks_left">
+        <item quantity="one">restante</item>
+        <item quantity="other">restantes</item>
+    </plurals>
+    <plurals name="widget_life_years">
+        <item quantity="one">ano</item>
+        <item quantity="other">anos</item>
+    </plurals>
+    <string name="widget_life_grid_cd">%1$s de %2$s semanas vividas</string>
+    <string name="widget_life_empty_title">Adicione sua data de nascimento</string>
+    <string name="widget_life_empty_body">Toque para ver sua vida em semanas</string>
+
+    <string name="widget_year_day_of">Dia %1$s de %2$s</string>
+    <plurals name="widget_year_days_passed">
+        <item quantity="one">passado</item>
+        <item quantity="other">passados</item>
+    </plurals>
+    <plurals name="widget_year_days_left">
+        <item quantity="one">restante</item>
+        <item quantity="other">restantes</item>
+    </plurals>
+    <string name="widget_year_progress_cd">%1$s do ano de %2$s já passou</string>
+
+    <string name="widget_quote_label">Frase do dia</string>
+    <string name="widget_quote_author">— %1$s</string>
+    <string name="widget_message_label">Mensagem para hoje</string>
+
+    <string name="widget_settings_widget_motivational_title">Mensagem motivacional</string>
+    <string name="widget_settings_widget_motivational_desc">Uma mensagem do Momentum diferente a cada dia</string>
+    <string name="widget_settings_add_button">Adicionar</string>
+    <string name="widget_settings_add_cd">Adicionar “%1$s” à tela inicial</string>
+    <string name="widget_settings_pin_unsupported">Sua tela inicial não permite adicionar daqui. Toque e segure um espaço vazio, escolha “Widgets” e procure o Momentum.</string>
+    <string name="widget_settings_refreshed">Widgets atualizados</string>
+    <string name="widget_settings_preview_title">Assim ele vai aparecer na sua tela inicial</string>
+    <string name="widget_settings_colors_shared_note">Elas mudam só o widget. Se depois você escolher cores em “Minha vida em semanas”, o widget vai usar essas.</string>
+
+    <string name="widget_preview_life_percent" formatted="false">37,5%</string>
+    <string name="widget_preview_weeks_lived">vividas</string>
+    <string name="widget_preview_weeks_left">restantes</string>
+    <string name="widget_preview_years">anos</string>
+    <string name="widget_preview_year_percent" formatted="false">81%</string>
+    <string name="widget_preview_days_passed">passados</string>
+    <string name="widget_preview_days_left">restantes</string>
+    <string name="widget_preview_quote_text">Não é que tenhamos pouco tempo para viver, mas sim que desperdiçamos muito.</string>
+    <string name="widget_preview_quote_author">— Sêneca</string>
+    <string name="widget_preview_message_text">Sua atenção é o que você tem de mais valioso. Escolha bem onde colocá-la.</string>
+
+    <string-array name="widget_quotes">
+        <item>O tempo é o que mais queremos, mas o que pior usamos.|William Penn</item>
+        <item>Não é que tenhamos pouco tempo para viver, mas sim que desperdiçamos muito.|Sêneca</item>
+        <item>Nós somos aquilo que fazemos repetidamente.|Will Durant</item>
+        <item>A vida é o que acontece enquanto você está ocupado fazendo outros planos.|John Lennon</item>
+        <item>Perca uma hora pela manhã e você passará o dia inteiro procurando por ela.|Richard Whately</item>
+        <item>Enquanto você não se valorizar, não valorizará o seu tempo.|M. Scott Peck</item>
+        <item>A forma como passamos nossos dias é, claro, a forma como passamos nossa vida.|Annie Dillard</item>
+        <item>A concentração é a raiz de todas as capacidades superiores do ser humano.|Bruce Lee</item>
+        <item>Não conte os dias, faça os dias contarem.|Muhammad Ali</item>
+        <item>A melhor época para plantar uma árvore foi há 20 anos. A segunda melhor é agora.|Provérbio chinês</item>
+        <item>Faça de cada dia a sua obra-prima.|John Wooden</item>
+        <item>Uma jornada de mil milhas começa com um único passo.|Lao Tsé</item>
+    </string-array>
+
+    <string-array name="widget_messages">
+        <item>Cada minuto que você não entrega à tela volta a ser seu.</item>
+        <item>Você não precisa de um dia perfeito: basta uma boa decisão agora.</item>
+        <item>Sua atenção é o que você tem de mais valioso. Escolha bem onde colocá-la.</item>
+        <item>Um tempo longe do celular também é avançar.</item>
+        <item>Hoje conta. Faça algo que o seu eu de amanhã vai agradecer.</item>
+        <item>O que importa raramente chega como notificação.</item>
+        <item>Respire, olhe ao seu redor e volte ao que realmente importa.</item>
+        <item>Pequenos hábitos, repetidos todos os dias, mudam uma vida inteira.</item>
+        <item>Desconectar por um momento é a forma mais rápida de recarregar as energias.</item>
+        <item>Seu tempo não é infinito, e é exatamente isso que o torna valioso.</item>
+        <item>Escolha uma única coisa importante para hoje e dê a ela toda a sua atenção.</item>
+        <item>Ser gentil com você mesmo quando falha também faz parte do progresso.</item>
+    </string-array>
 </resources>

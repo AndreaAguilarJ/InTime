@@ -198,4 +198,42 @@ class SleepWindowExclusionTest {
             assertTrue(config.isInSleepHours())
         }
     }
+
+    /**
+     * El día del cambio de hora dura 25 h (octubre) o 23 h (marzo). La ventana
+     * se calculaba sumando milisegundos a la medianoche, así que la mañana
+     * siguiente terminaba a las 06:00 en vez de a las 07:00 y el uso de 06:40
+     * a 07:20 no se excluía en absoluto. Se descubrió porque este mismo test,
+     * con «hoy», falló el 26 oct 2026.
+     */
+    @Test
+    fun `la ventana nocturna termina a las 7 aunque la noche anterior cambiara la hora`() {
+        val original = java.util.TimeZone.getDefault()
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Europe/Madrid"))
+            fun at(year: Int, month: Int, day: Int, hour: Int, min: Int): Long =
+                Calendar.getInstance().apply {
+                    clear()
+                    set(year, month, day, hour, min, 0)
+                }.timeInMillis
+
+            // Otoño: 25 oct 2026 tiene 25 horas.
+            val autumn = DailyUsageCalculator.excludedOverlapMillis(
+                from = at(2026, Calendar.OCTOBER, 26, 6, 40),
+                to = at(2026, Calendar.OCTOBER, 26, 7, 20),
+                window = window(23, 0, 7, 0)
+            )
+            assertEquals(20 * minute, autumn)
+
+            // Primavera: 29 mar 2026 tiene 23 horas.
+            val spring = DailyUsageCalculator.excludedOverlapMillis(
+                from = at(2026, Calendar.MARCH, 30, 6, 40),
+                to = at(2026, Calendar.MARCH, 30, 7, 20),
+                window = window(23, 0, 7, 0)
+            )
+            assertEquals(20 * minute, spring)
+        } finally {
+            java.util.TimeZone.setDefault(original)
+        }
+    }
 }

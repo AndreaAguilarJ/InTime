@@ -1,249 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Previsualización en el selector de widgets (Android 12+). Imita el widget real
+     con los mismos colores y textos traducidos; las cifras son de ejemplo. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1A1A2E"
-    android:padding="12dp">
+    android:background="@drawable/widget_surface"
+    android:orientation="vertical"
+    android:padding="14dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center">
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <!-- Título -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
             android:text="@string/widget_life_title"
-            android:textStyle="bold"
+            android:textColor="@color/widget_accent"
             android:textSize="11sp"
-            android:textColor="#FFFFFF"
-            android:gravity="center" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="8dp" />
-
-        <!-- Cuadrícula visual simplificada -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp">
-            
-            <!-- Fila 1 - puntos vividos -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-            </LinearLayout>
-            
-            <!-- Fila 2 - puntos vividos -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#10B981"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-            </LinearLayout>
-            
-            <!-- Fila 3 - puntos futuros -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-            </LinearLayout>
-            
-            <!-- Fila 4 - puntos futuros -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-                <View android:layout_width="5dp" android:layout_height="5dp" android:layout_margin="1dp" android:background="#E5E7EB"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="8dp" />
-
-        <!-- Estadísticas -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <!-- Semanas vividas -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="1234"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#10B981" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/widget_weeks_lived"
-                    android:textSize="9sp"
-                    android:textColor="#AAAAAA" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="16dp"
-                android:layout_height="1dp" />
-
-            <!-- Separador -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="24dp"
-                android:background="#333333" />
-
-            <View
-                android:layout_width="16dp"
-                android:layout_height="1dp" />
-
-            <!-- Semanas restantes -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2926"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#E5E7EB" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/widget_weeks_remaining"
-                    android:textSize="9sp"
-                    android:textColor="#AAAAAA" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="16dp"
-                android:layout_height="1dp" />
-
-            <!-- Separador -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="24dp"
-                android:background="#333333" />
-
-            <View
-                android:layout_width="16dp"
-                android:layout_height="1dp" />
-
-            <!-- Edad -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="23"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/widget_years"
-                    android:textSize="9sp"
-                    android:textColor="#AAAAAA" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="6dp" />
-
-        <!-- Barra de progreso -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:orientation="horizontal"
-            android:background="#E5E7EB">
-            
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.3"
-                android:background="#10B981" />
-            
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.7"
-                android:background="#E5E7EB" />
-        </LinearLayout>
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="29.7% de tu vida"
-            android:textSize="9sp"
-            android:textColor="#888888"
-            android:layout_marginTop="4dp" />
-
+            android:text="@string/widget_preview_life_percent"
+            android:textColor="@color/widget_on_surface"
+            android:textSize="12sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-</FrameLayout>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_weight="1"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@drawable/widget_preview_life_grid" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1560"
+                android:textColor="@color/widget_on_surface"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/widget_preview_weeks_lived"
+                android:textColor="@color/widget_on_surface_variant"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="24dp"
+            android:background="@color/widget_track" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2600"
+                android:textColor="@color/widget_on_surface"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/widget_preview_weeks_left"
+                android:textColor="@color/widget_on_surface_variant"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="24dp"
+            android:background="@color/widget_track" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30"
+                android:textColor="@color/widget_on_surface"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/widget_preview_years"
+                android:textColor="@color/widget_on_surface_variant"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -37,7 +37,10 @@ class NuclearModeService : Service() {
     
     companion object {
         private const val TAG = "NuclearModeService"
-        private const val NOTIFICATION_ID = 3001
+        // Rango 9000+ reservado a servicios en primer plano. Era 3001, el mismo
+        // id que los mensajes motivacionales: cada mensaje REEMPLAZABA este aviso
+        // fijo (y se volvía imposible de cerrar) mientras el modo estaba activo.
+        private const val NOTIFICATION_ID = 9004
         private const val CHANNEL_ID = "nuclear_mode_channel"
         
         const val ACTION_START = "com.momentummm.app.action.START_NUCLEAR_TIMER"
@@ -252,7 +255,7 @@ class NuclearModeService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.svc_nuclear_title))
             .setContentText(getString(R.string.svc_nuclear_text, remainingDays, remainingMinutes))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(com.momentummm.app.notification.NotificationStyle.SMALL_ICON)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -283,7 +286,7 @@ class NuclearModeService : Service() {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.svc_nuclear_unlock_title))
             .setContentText(getString(R.string.svc_nuclear_unlock_text))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(com.momentummm.app.notification.NotificationStyle.SMALL_ICON)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)

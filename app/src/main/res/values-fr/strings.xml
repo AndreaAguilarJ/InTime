@@ -47,10 +47,10 @@
     <string name="account_settings">Paramètres du compte</string>
     
     <!-- Widgets -->
-    <string name="life_weeks_widget_name">Ma Vie en Semaines</string>
+    <string name="life_weeks_widget_name">Ma vie en semaines</string>
     <string name="life_weeks_widget_description">Visualisez votre progression de vie en semaines</string>
-    <string name="quote_widget_name">Phrase motivante</string>
-    <string name="quote_widget_description">Inspiration quotidienne pour votre écran d’accueil</string>
+    <string name="quote_widget_name">Citation du jour</string>
+    <string name="quote_widget_description">Une citation célèbre différente chaque jour</string>
     <string name="year_progress_widget_name">Progression de l’année</string>
     <string name="year_progress_widget_description">Visualisez les jours passés et restants de l’année en cours</string>
     
@@ -264,7 +264,7 @@
     <string name="notification_daily_motivation_title">Motivation quotidienne</string>
     <string name="notification_daily_motivation_desc">Recevez une citation inspirante chaque matin</string>
     <string name="notification_weekly_summary_title">Résumé hebdomadaire</string>
-    <string name="notification_weekly_summary_desc">Résumé de votre utilisation de l’appareil chaque dimanche</string>
+    <string name="notification_weekly_summary_desc">Chaque dimanche à 20:00 : votre temps comparé à la semaine précédente et vos applis les plus utilisées</string>
     <string name="notification_achievements_title">Réussites et objectifs</string>
     <string name="notification_achievements_desc">Célébrez vos réussites et vos séries</string>
     <string name="notification_screen_time_reminders_title">Rappels de bien-être</string>
@@ -610,7 +610,7 @@
     <string name="widget_settings_available_subtitle">Appuyez longuement sur l’écran d’accueil pour ajouter des widgets</string>
     <string name="widget_settings_widget_life_weeks_title">Ma vie en semaines</string>
     <string name="widget_settings_widget_life_weeks_desc">Visualisation de votre vie divisée en semaines</string>
-    <string name="widget_settings_widget_quote_title">Citation motivante</string>
+    <string name="widget_settings_widget_quote_title">Citation du jour</string>
     <string name="widget_settings_widget_quote_desc">Une citation inspirante qui change chaque jour</string>
     <string name="widget_settings_widget_year_progress_title">Progression de l’année</string>
     <string name="widget_settings_widget_year_progress_desc">Pourcentage de l’année écoulée</string>

@@ -17,4 +17,8 @@ interface QuoteDao {
 
     @Query("SELECT COUNT(*) FROM quotes")
     suspend fun getQuoteCount(): Int
+
+    /** Frase en la posición [offset] por orden de id: estable para la Frase del día. */
+    @Query("SELECT * FROM quotes ORDER BY id LIMIT 1 OFFSET :offset")
+    suspend fun getQuoteAt(offset: Int): Quote?
 }

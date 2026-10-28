@@ -1,377 +1,381 @@
 package com.momentummm.app.widget
 
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
-import androidx.glance.action.clickable
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.Image
+import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
+import androidx.glance.LocalSize
+import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
-import androidx.glance.background
-import androidx.glance.layout.*
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.ContentScale
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
+import androidx.glance.layout.size
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
-import com.momentummm.app.MainActivity
+import com.momentummm.app.R
 import com.momentummm.app.data.AppDatabase
 import com.momentummm.app.data.UserPreferencesRepository
+import com.momentummm.app.notification.NotificationRoutes
 import com.momentummm.app.util.LifeWeeksCalculator
 import com.momentummm.app.util.LifeWeeksData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import com.momentummm.app.R
+import java.util.Date
 
 /**
- * Widget de Vida en Semanas - Muestra una cuadrícula visual de las semanas vividas
- * con los colores configurados por el usuario
+ * Widget «Mi vida en semanas»: la cuadrícula completa de la vida, una celda por
+ * semana como en la app, con las cifras debajo cuando hay sitio.
  */
-class LifeWeeksWidget : GlanceAppWidget() {
+class LifeWeeksWidget : GlanceAppWidget(errorUiLayout = R.layout.widget_error) {
+
+    // Exact: la cuadrícula se dibuja a la medida real del widget.
+    override val sizeMode: SizeMode = SizeMode.Exact
 
     companion object {
         private const val TAG = "LifeWeeksWidget"
-        
-        /**
-         * Actualiza todos los widgets de vida en semanas
-         */
+        private const val LOAD_TIMEOUT_MS = 3_000L
+
+        /** Colores por defecto de la app (UserSettings). */
+        const val DEFAULT_LIVED_COLOR = "#6366F1"
+        const val DEFAULT_FUTURE_COLOR = "#E5E7EB"
+
         suspend fun updateAllWidgets(context: Context) {
             try {
                 LifeWeeksWidget().updateAll(context)
-                Log.d(TAG, "All LifeWeeksWidgets updated successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error updating widgets", e)
             }
         }
-        
-        /**
-         * Notifica al sistema que hay que actualizar los widgets
-         */
-        fun requestUpdate(context: Context) {
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            val componentName = ComponentName(context, LifeWeeksWidgetReceiver::class.java)
-            val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
-            
-            if (appWidgetIds.isNotEmpty()) {
-                val intent = Intent(context, LifeWeeksWidgetReceiver::class.java).apply {
-                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
-                }
-                context.sendBroadcast(intent)
-            }
-        }
     }
 
-    data class WidgetData(
-        val lifeWeeksData: LifeWeeksData?,
-        val livedWeeksColor: Color,
-        val futureWeeksColor: Color,
-        val backgroundColor: Color
+    override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val ui = loadUi(context)
+        provideContent { LifeWeeksContent(ui) }
+    }
+
+    private data class Stored(
+        val birthDate: Date?,
+        val livedHex: String?,
+        val futureHex: String?,
+        val lifeExpectancy: Int,
     )
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Load data before providing content with timeout to prevent ANR
-        val widgetData = withTimeoutOrNull(3000L) {
+    private suspend fun loadUi(context: Context): LifeWeeksUi {
+        val stored = withTimeoutOrNull(LOAD_TIMEOUT_MS) {
             try {
-                // Obtener datos de semanas de vida
-                val database = AppDatabase.getDatabase(context)
-                val userSettings = withContext(Dispatchers.IO) {
-                    database.userDao().getUserSettingsSync()
+                withContext(Dispatchers.IO) {
+                    val settings = AppDatabase.getDatabase(context).userDao().getUserSettingsSync()
+                    val (widgetLived, widgetFuture) = UserPreferencesRepository.getWidgetColors(context)
+                    // Los colores elegidos en Ajustes > Widgets mandan; si no hay,
+                    // los de «Mi vida en semanas», que es lo que la app pinta.
+                    Stored(
+                        birthDate = settings?.birthDate,
+                        livedHex = widgetLived ?: settings?.livedWeeksColor,
+                        futureHex = widgetFuture ?: settings?.futureWeeksColor,
+                        lifeExpectancy = UserPreferencesRepository.getLifeExpectancy(context),
+                    )
                 }
-
-                val lifeWeeksData = userSettings?.birthDate?.let { birthDate ->
-                    LifeWeeksCalculator.calculateLifeWeeks(birthDate)
-                }
-
-                // Obtener colores configurados por el usuario
-                val (livedColorHex, futureColorHex) = withContext(Dispatchers.IO) {
-                    UserPreferencesRepository.getWidgetColors(context)
-                }
-
-                val livedColor = parseColorSafe(livedColorHex ?: userSettings?.livedWeeksColor ?: "#10B981")
-                val futureColor = parseColorSafe(futureColorHex ?: userSettings?.futureWeeksColor ?: "#E5E7EB")
-                val backgroundColor = Color(0xFF1A1A2E) // Fondo oscuro elegante
-
-                WidgetData(
-                    lifeWeeksData = lifeWeeksData,
-                    livedWeeksColor = livedColor,
-                    futureWeeksColor = futureColor,
-                    backgroundColor = backgroundColor
-                )
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading widget data", e)
                 null
             }
         }
-
-        provideContent {
-            LifeWeeksWidgetContent(widgetData ?: WidgetData(
-                lifeWeeksData = null,
-                livedWeeksColor = Color(0xFF10B981),
-                futureWeeksColor = Color(0xFFE5E7EB),
-                backgroundColor = Color(0xFF1A1A2E)
-            ))
-        }
+        return LifeWeeksUi.build(
+            context = WidgetLocale.localized(context),
+            data = stored?.birthDate?.let { LifeWeeksCalculator.calculateLifeWeeks(it, stored.lifeExpectancy) },
+            livedColor = parseColor(stored?.livedHex, DEFAULT_LIVED_COLOR),
+            futureColor = parseColor(stored?.futureHex, DEFAULT_FUTURE_COLOR),
+        )
     }
 
-    private fun parseColorSafe(colorHex: String): Color {
-        return try {
-            Color(android.graphics.Color.parseColor(colorHex))
-        } catch (e: Exception) {
-            Color(0xFF10B981) // Color por defecto
+    private fun parseColor(hex: String?, fallback: String): Int =
+        runCatching { android.graphics.Color.parseColor(hex ?: fallback) }
+            .getOrElse { android.graphics.Color.parseColor(fallback) }
+
+    @Composable
+    private fun LifeWeeksContent(ui: LifeWeeksUi) {
+        val context = LocalContext.current
+        val open = WidgetActions.open(context, NotificationRoutes.MY_LIFE)
+        val stats = ui.stats
+        if (stats == null) {
+            EmptyState(ui, open)
+            return
+        }
+
+        val size = LocalSize.current
+        val fontScale = WidgetTextRoom.fontScale(context)
+        val showStats = LifeWeeksSizing.showStats(size, fontScale)
+        val padding = if (showStats) WidgetDimens.padding else WidgetDimens.compactPadding
+
+        WidgetSurface(onClick = open, padding = padding, verticalAlignment = Alignment.Top) {
+            Header(ui, stats, LifeWeeksSizing.header(size.width, fontScale))
+            Spacer(modifier = GlanceModifier.height(LifeWeeksSizing.HEADER_GAP_DP.dp))
+
+            val gridWidthDp = size.width.value - padding.value * 2
+            val gridHeightDp = size.height.value - padding.value * 2 -
+                LifeWeeksSizing.reservedTextHeightDp(showStats, fontScale)
+            Box(
+                modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Grid(context, ui, stats, gridWidthDp, gridHeightDp)
+            }
+
+            if (showStats) {
+                Spacer(modifier = GlanceModifier.height(LifeWeeksSizing.STATS_GAP_DP.dp))
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    WidgetStat(
+                        value = stats.livedValue,
+                        label = stats.livedLabel,
+                        legend = Color(ui.livedColor),
+                        modifier = GlanceModifier.defaultWeight(),
+                    )
+                    WidgetStatDivider()
+                    WidgetStat(
+                        value = stats.leftValue,
+                        label = stats.leftLabel,
+                        legend = Color(ui.futureColor),
+                        modifier = GlanceModifier.defaultWeight(),
+                    )
+                    WidgetStatDivider()
+                    WidgetStat(
+                        value = stats.ageValue,
+                        label = stats.ageLabel,
+                        modifier = GlanceModifier.defaultWeight(),
+                    )
+                }
+            }
         }
     }
 
     @Composable
-    private fun LifeWeeksWidgetContent(data: WidgetData) {
-        val context = LocalContext.current
-        Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(data.backgroundColor)
-                .padding(12.dp)
-                .clickable(actionStartActivity(Intent().apply {
-                    setClassName("com.momentummm.app", "com.momentummm.app.MainActivity")
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                })),
-            verticalAlignment = Alignment.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (data.lifeWeeksData != null) {
-                // Título
-                Text(
-                    text = context.getString(R.string.widget_life_title),
-                    style = TextStyle(
-                        color = ColorProvider(Color.White),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                )
-
-                Spacer(modifier = GlanceModifier.height(8.dp))
-
-                // Cuadrícula de semanas (visualización compacta)
-                LifeWeeksGrid(
-                    weeksLived = data.lifeWeeksData.weeksLived,
-                    livedColor = data.livedWeeksColor,
-                    futureColor = data.futureWeeksColor
-                )
-
-                Spacer(modifier = GlanceModifier.height(8.dp))
-
-                // Estadísticas en fila
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Semanas vividas
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "${data.lifeWeeksData.weeksLived}",
-                            style = TextStyle(
-                                color = ColorProvider(data.livedWeeksColor),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                        Text(
-                            text = "vividas",
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFFAAAAAA)),
-                                fontSize = 9.sp
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = GlanceModifier.width(16.dp))
-
-                    // Separador
-                    Box(
-                        modifier = GlanceModifier
-                            .width(1.dp)
-                            .height(24.dp)
-                            .background(Color(0xFF333333))
-                    ) {}
-
-                    Spacer(modifier = GlanceModifier.width(16.dp))
-
-                    // Semanas restantes
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "${data.lifeWeeksData.weeksRemaining}",
-                            style = TextStyle(
-                                color = ColorProvider(data.futureWeeksColor),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                        Text(
-                            text = "restantes",
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFFAAAAAA)),
-                                fontSize = 9.sp
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = GlanceModifier.width(16.dp))
-
-                    // Separador
-                    Box(
-                        modifier = GlanceModifier
-                            .width(1.dp)
-                            .height(24.dp)
-                            .background(Color(0xFF333333))
-                    ) {}
-
-                    Spacer(modifier = GlanceModifier.width(16.dp))
-
-                    // Edad
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "${data.lifeWeeksData.currentAge}",
-                            style = TextStyle(
-                                color = ColorProvider(Color.White),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                        Text(
-                            text = context.getString(R.string.widget_years),
-                            style = TextStyle(
-                                color = ColorProvider(Color(0xFFAAAAAA)),
-                                fontSize = 9.sp
-                            )
-                        )
-                    }
-                }
-
-                Spacer(modifier = GlanceModifier.height(6.dp))
-
-                // Barra de progreso
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = GlanceModifier
-                            .defaultWeight()
-                            .height(4.dp)
-                            .background(data.futureWeeksColor)
-                    ) {
-                        Box(
-                            modifier = GlanceModifier
-                                .fillMaxHeight()
-                                .background(data.livedWeeksColor)
-                        ) {}
-                    }
-                }
-                
-                Text(
-                    text = context.getString(R.string.widget_percent_of_life, String.format("%.1f", data.lifeWeeksData.progressPercentage)),
-                    style = TextStyle(
-                        color = ColorProvider(Color(0xFF888888)),
-                        fontSize = 9.sp,
-                        textAlign = TextAlign.Center
-                    )
-                )
-
-            } else {
-                // Estado cuando no hay fecha configurada
-                Spacer(modifier = GlanceModifier.height(16.dp))
-                
-                Text(
-                    text = "📅",
-                    style = TextStyle(
-                        fontSize = 48.sp
-                    )
-                )
-
-                Spacer(modifier = GlanceModifier.height(8.dp))
-
-                Text(
-                    text = "Configura tu fecha",
-                    style = TextStyle(
-                        color = ColorProvider(Color.White),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-
-                Text(
-                    text = "de nacimiento en la app",
-                    style = TextStyle(
-                        color = ColorProvider(Color(0xFFAAAAAA)),
-                        fontSize = 12.sp
-                    )
-                )
-                
-                Spacer(modifier = GlanceModifier.height(8.dp))
-                
-                Text(
-                    text = context.getString(R.string.widget_tap_to_open),
-                    style = TextStyle(
-                        color = ColorProvider(Color(0xFF10B981)),
-                        fontSize = 10.sp
-                    )
-                )
-            }
+    private fun Header(ui: LifeWeeksUi, stats: LifeWeeksUi.Stats, header: LifeWeeksSizing.Header) {
+        if (header == LifeWeeksSizing.Header.PERCENT) {
+            WidgetLabel(text = stats.percent)
+            return
+        }
+        if (header == LifeWeeksSizing.Header.PERCENT_OF_LIFE) {
+            // «29,7 % de tu vida» dice lo mismo que título + cifra y cabe.
+            WidgetLabel(text = stats.percentOfLife)
+            return
+        }
+        Row(modifier = GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = GlanceModifier.defaultWeight()) { WidgetLabel(text = ui.title) }
+            Text(
+                text = stats.percent,
+                style = TextStyle(
+                    color = WidgetColors.onSurface,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                maxLines = 1,
+            )
         }
     }
+
+    @Composable
+    private fun Grid(
+        context: Context,
+        ui: LifeWeeksUi,
+        stats: LifeWeeksUi.Stats,
+        widthDp: Float,
+        heightDp: Float,
+    ) {
+        val density = context.resources.displayMetrics.density
+        var widthPx = widthDp * density
+        var heightPx = heightDp * density
+        val scale = LifeWeeksGridBitmap.downscaleFor(widthPx, heightPx)
+        widthPx *= scale
+        heightPx *= scale
+        val layout = LifeWeeksGridLayout.choose(ui.lifeYears, widthPx, heightPx) ?: return
+        val bitmap = LifeWeeksGridBitmap.render(
+            layout = layout,
+            lifeYears = ui.lifeYears,
+            weeksLived = stats.weeksLived,
+            yearsLived = stats.yearsLived,
+            livedColor = ui.livedColor,
+            futureColor = ui.futureColor,
+        )
+        Image(
+            provider = ImageProvider(bitmap),
+            contentDescription = stats.gridDescription,
+            modifier = GlanceModifier.fillMaxSize(),
+            contentScale = ContentScale.Fit,
+        )
+    }
+
+    @Composable
+    private fun EmptyState(ui: LifeWeeksUi, open: androidx.glance.action.Action) {
+        WidgetSurface(onClick = open, horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                provider = ImageProvider(R.drawable.ic_widget_event),
+                contentDescription = null,
+                modifier = GlanceModifier.size(28.dp),
+            )
+            Spacer(modifier = GlanceModifier.height(8.dp))
+            Text(
+                text = ui.emptyTitle,
+                style = TextStyle(
+                    color = WidgetColors.onSurface,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                ),
+                maxLines = 2,
+            )
+            Spacer(modifier = GlanceModifier.height(2.dp))
+            Text(
+                text = ui.emptyBody,
+                style = TextStyle(
+                    color = WidgetColors.onSurfaceVariant,
+                    fontSize = 11.sp,
+                    textAlign = TextAlign.Center,
+                ),
+                maxLines = 2,
+            )
+        }
+    }
+}
+
+/**
+ * Qué cabe en «Mi vida en semanas». Los umbrales de texto están medidos con la
+ * letra normal y se comparan con el hueco «en letra normal» ([WidgetTextRoom]).
+ */
+internal object LifeWeeksSizing {
+
+    enum class Header { PERCENT, PERCENT_OF_LIFE, TITLE_AND_PERCENT }
+
+    // Alturas, en dp con letra normal, que la cuadrícula descuenta del hueco.
+    private const val HEADER_DP = 16f
+    const val HEADER_GAP_DP = 6f
+    private const val STATS_DP = 36f
+    const val STATS_GAP_DP = 10f
 
     /**
-     * Cuadrícula visual de semanas de vida
-     * Muestra una representación compacta de las 4160 semanas (80 años)
+     * Por debajo de esto no caben las tres cifras: cada columna necesita ~61 dp
+     * («restantes» a 10 sp con su cuadradito), y a 170 dp le tocaban 46 y la
+     * etiqueta se cortaba sin puntos suspensivos.
      */
-    @Composable
-    private fun LifeWeeksGrid(
-        weeksLived: Int,
-        livedColor: Color,
-        futureColor: Color
-    ) {
-        // Mostrar una cuadrícula compacta (10 filas x 26 columnas = 260 puntos representativos)
-        // Cada punto representa ~16 semanas
-        val rows = 10
-        val cols = 26
-        val weeksPerDot = 16 // Cada punto representa ~16 semanas
-        
-        Column(
-            modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            repeat(rows) { row ->
-                Row(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = GlanceModifier.fillMaxWidth()
-                ) {
-                    repeat(cols) { col ->
-                        val dotIndex = row * cols + col
-                        val weeksForThisDot = dotIndex * weeksPerDot
-                        val isLived = weeksForThisDot < weeksLived
-                        
-                        Box(
-                            modifier = GlanceModifier
-                                .size(6.dp)
-                                .padding(1.dp)
-                                .background(if (isLived) livedColor else futureColor)
-                        ) {}
-                    }
-                }
+    private val STATS_MIN = DpSize(220.dp, 170.dp)
+
+    /** Título + porcentaje: «Minha vida em semanas» y «37,5 %» necesitan ~200 dp. */
+    private val TITLE_MIN_WIDTH = 200.dp
+
+    /** «37,5 % de votre vie» necesita ~130 dp; por debajo, solo la cifra. */
+    private val PERCENT_OF_LIFE_MIN_WIDTH = 150.dp
+
+    fun showStats(size: DpSize, fontScale: Float): Boolean {
+        val room = WidgetTextRoom.of(size, fontScale)
+        return room.width >= STATS_MIN.width && room.height >= STATS_MIN.height
+    }
+
+    fun header(width: Dp, fontScale: Float): Header {
+        val room = WidgetTextRoom.of(DpSize(width, width), fontScale).width
+        return when {
+            room < PERCENT_OF_LIFE_MIN_WIDTH -> Header.PERCENT
+            room < TITLE_MIN_WIDTH -> Header.PERCENT_OF_LIFE
+            else -> Header.TITLE_AND_PERCENT
+        }
+    }
+
+    /** Alto que ocupan cabecera y cifras, con su letra a la escala del sistema. */
+    fun reservedTextHeightDp(showStats: Boolean, fontScale: Float): Float {
+        val scale = fontScale.coerceIn(0.5f, 3f)
+        return HEADER_DP * scale + HEADER_GAP_DP +
+            if (showStats) STATS_DP * scale + STATS_GAP_DP else 0f
+    }
+}
+
+/**
+ * Todo lo que el widget pinta, ya traducido y formateado. Se construye fuera de
+ * la composición, con el contexto en el idioma de la app.
+ */
+internal data class LifeWeeksUi(
+    val title: String,
+    val emptyTitle: String,
+    val emptyBody: String,
+    val lifeYears: Int,
+    val livedColor: Int,
+    val futureColor: Int,
+    /** null si no hay fecha de nacimiento. */
+    val stats: Stats?,
+) {
+    data class Stats(
+        val weeksLived: Int,
+        val yearsLived: Int,
+        val percent: String,
+        val percentOfLife: String,
+        val livedValue: String,
+        val livedLabel: String,
+        val leftValue: String,
+        val leftLabel: String,
+        val ageValue: String,
+        val ageLabel: String,
+        val gridDescription: String,
+    )
+
+    companion object {
+        fun build(
+            context: Context,
+            data: LifeWeeksData?,
+            livedColor: Int,
+            futureColor: Int,
+        ): LifeWeeksUi {
+            val res = context.resources
+            val locale = WidgetLocale.locale(context)
+            val lifeYears = (data?.totalWeeks ?: 0) / LifeWeeksGridLayout.WEEKS_PER_YEAR
+            val stats = data?.let {
+                val percent = WidgetFormat.percentOneDecimal(it.progressPercentage, locale)
+                LifeWeeksUi.Stats(
+                    weeksLived = it.weeksLived,
+                    yearsLived = it.currentAge,
+                    percent = percent,
+                    percentOfLife = res.getString(R.string.widget_life_percent_of_life, percent),
+                    livedValue = WidgetFormat.integer(it.weeksLived, locale),
+                    livedLabel = res.getQuantityString(R.plurals.widget_life_weeks_lived, it.weeksLived),
+                    leftValue = WidgetFormat.integer(it.weeksRemaining, locale),
+                    leftLabel = res.getQuantityString(R.plurals.widget_life_weeks_left, it.weeksRemaining),
+                    ageValue = WidgetFormat.integer(it.currentAge, locale),
+                    ageLabel = res.getQuantityString(R.plurals.widget_life_years, it.currentAge),
+                    gridDescription = res.getString(
+                        R.string.widget_life_grid_cd,
+                        WidgetFormat.integer(it.weeksLived, locale),
+                        WidgetFormat.integer(it.totalWeeks, locale),
+                    ),
+                )
             }
+            return LifeWeeksUi(
+                title = res.getString(R.string.widget_life_title),
+                emptyTitle = res.getString(R.string.widget_life_empty_title),
+                emptyBody = res.getString(R.string.widget_life_empty_body),
+                lifeYears = lifeYears,
+                livedColor = livedColor,
+                futureColor = futureColor,
+                stats = stats,
+            )
         }
     }
 }

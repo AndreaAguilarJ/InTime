@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.momentummm.app.util.LifeExpectancy
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +40,8 @@ object UserPreferencesKeys {
     val SUPPRESS_TUTORIAL_ONCE: Preferences.Key<Boolean> = booleanPreferencesKey("suppress_tutorial_once")
     val LIVED_COLOR: Preferences.Key<String> = stringPreferencesKey("lived_color_hex")
     val FUTURE_COLOR: Preferences.Key<String> = stringPreferencesKey("future_color_hex")
+    /** Años de la cuadrícula de «Mi vida en semanas» (ver LifeExpectancy). */
+    val LIFE_EXPECTANCY_YEARS: Preferences.Key<Int> = intPreferencesKey("life_expectancy_years")
     val ONBOARDING_COMPLETED: Preferences.Key<Boolean> = booleanPreferencesKey("onboarding_completed")
 
     // Nuevas configuraciones para persistencia completa
@@ -162,23 +165,40 @@ object UserPreferencesRepository {
         return prefs[UserPreferencesKeys.LIVED_COLOR] to prefs[UserPreferencesKeys.FUTURE_COLOR]
     }
 
-    /**
-     * Flow para observar cambios en el color de semanas vividas
-     */
-    fun getLivedWeeksColorFlow(context: Context): Flow<String> {
-        return context.userPreferencesDataStore.data.map { prefs ->
-            prefs[UserPreferencesKeys.LIVED_COLOR] ?: "#4CAF50"
+    /** Esperanza de vida elegida en Ajustes > Mi vida en semanas (80 si no hay). */
+    suspend fun getLifeExpectancy(context: Context): Int =
+        LifeExpectancy.sanitize(context.safeReadPreferences()[UserPreferencesKeys.LIFE_EXPECTANCY_YEARS])
+
+    fun getLifeExpectancyFlow(context: Context): Flow<Int> =
+        context.userPreferencesDataStore.data
+            .catch { emit(emptyPreferences()) }
+            .map { prefs -> LifeExpectancy.sanitize(prefs[UserPreferencesKeys.LIFE_EXPECTANCY_YEARS]) }
+
+    suspend fun setLifeExpectancy(context: Context, years: Int) {
+        context.userPreferencesDataStore.edit { prefs ->
+            prefs[UserPreferencesKeys.LIFE_EXPECTANCY_YEARS] = LifeExpectancy.sanitize(years)
         }
     }
 
     /**
-     * Flow para observar cambios en el color de semanas futuras
+     * Colores elegidos en Ajustes > Widgets, o null si no se eligió ninguno.
+     *
+     * Sustituye a dos flujos que devolvían #4CAF50 / #E0E0E0 cuando no había nada
+     * guardado: la pantalla marcaba ese verde como elegido mientras el widget
+     * pintaba los colores de «Mi vida en semanas». Con null, quien lo muestra
+     * puede caer en los mismos colores que el widget.
      */
-    fun getFutureWeeksColorFlow(context: Context): Flow<String> {
-        return context.userPreferencesDataStore.data.map { prefs ->
-            prefs[UserPreferencesKeys.FUTURE_COLOR] ?: "#E0E0E0"
-        }
-    }
+    fun widgetColorsFlow(context: Context): Flow<Pair<String?, String?>> =
+        context.userPreferencesDataStore.data
+            .catch { e ->
+                if (e is IOException) {
+                    Log.e(TAG, "Error reading widget colors", e)
+                    emit(emptyPreferences())
+                } else {
+                    throw e
+                }
+            }
+            .map { prefs -> prefs[UserPreferencesKeys.LIVED_COLOR] to prefs[UserPreferencesKeys.FUTURE_COLOR] }
 
     // Nuevos métodos para configuraciones adicionales
     suspend fun setThemeMode(context: Context, mode: String) {

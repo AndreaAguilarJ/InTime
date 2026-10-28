@@ -1,12 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_years">ans</string>
-    <string name="widget_percent_of_life">%1$s%% de votre vie</string>
-    <string name="widget_tap_to_open">Touchez pour ouvrir</string>
-    <string name="widget_life_title">MA VIE EN SEMAINES</string>
-    <string name="widget_weeks_lived">vécues</string>
-    <string name="widget_weeks_remaining">restantes</string>
-    <string name="widget_days_past">passés</string>
-    <string name="widget_quote_of_day">Citation motivante du jour</string>
-    <string name="widget_motivation_label">✨ Motivation</string>
+    <string name="motivational_widget_name">Message motivant</string>
+
+    <string name="widget_load_error">Chargement impossible. Ouvrez Momentum pour l’actualiser.</string>
+
+    <string name="widget_life_title">Ma vie en semaines</string>
+    <string name="widget_life_percent_of_life">%1$s de votre vie</string>
+    <plurals name="widget_life_weeks_lived">
+        <item quantity="one">vécue</item>
+        <item quantity="other">vécues</item>
+    </plurals>
+    <plurals name="widget_life_weeks_left">
+        <item quantity="one">restante</item>
+        <item quantity="other">restantes</item>
+    </plurals>
+    <plurals name="widget_life_years">
+        <item quantity="one">an</item>
+        <item quantity="other">ans</item>
+    </plurals>
+    <string name="widget_life_grid_cd">%1$s semaines vécues sur %2$s</string>
+    <string name="widget_life_empty_title">Ajoutez votre date de naissance</string>
+    <string name="widget_life_empty_body">Touchez pour voir votre vie en semaines</string>
+
+    <string name="widget_year_day_of">Jour %1$s sur %2$s</string>
+    <plurals name="widget_year_days_passed">
+        <item quantity="one">passé</item>
+        <item quantity="other">passés</item>
+    </plurals>
+    <plurals name="widget_year_days_left">
+        <item quantity="one">restant</item>
+        <item quantity="other">restants</item>
+    </plurals>
+    <string name="widget_year_progress_cd">%1$s de l’année %2$s écoulée</string>
+
+    <string name="widget_quote_label">Citation du jour</string>
+    <string name="widget_quote_author">— %1$s</string>
+    <string name="widget_message_label">Message du jour</string>
+
+    <string name="widget_settings_widget_motivational_title">Message motivant</string>
+    <string name="widget_settings_widget_motivational_desc">Un message de Momentum différent chaque jour</string>
+    <string name="widget_settings_add_button">Ajouter</string>
+    <string name="widget_settings_add_cd">Ajouter « %1$s » à l’écran d’accueil</string>
+    <string name="widget_settings_pin_unsupported">Votre écran d’accueil ne permet pas de l’ajouter d’ici. Appuyez longuement sur un espace vide, choisissez « Widgets » et cherchez Momentum.</string>
+    <string name="widget_settings_refreshed">Widgets mis à jour</string>
+    <string name="widget_settings_preview_title">Voici son apparence sur votre écran d’accueil</string>
+    <string name="widget_settings_colors_shared_note">Elles ne modifient que le widget. Si vous choisissez ensuite des couleurs dans « Ma vie en semaines », le widget utilisera celles-ci.</string>
+
+    <string name="widget_preview_life_percent" formatted="false">37,5 %</string>
+    <string name="widget_preview_weeks_lived">vécues</string>
+    <string name="widget_preview_weeks_left">restantes</string>
+    <string name="widget_preview_years">ans</string>
+    <string name="widget_preview_year_percent" formatted="false">81 %</string>
+    <string name="widget_preview_days_passed">passés</string>
+    <string name="widget_preview_days_left">restants</string>
+    <string name="widget_preview_quote_text">Ce n’est pas que nous ayons peu de temps, c’est que nous en perdons beaucoup.</string>
+    <string name="widget_preview_quote_author">— Sénèque</string>
+    <string name="widget_preview_message_text">Votre attention est ce que vous avez de plus précieux. Choisissez bien où la placer.</string>
+
+    <string-array name="widget_quotes">
+        <item>Le temps est ce que nous désirons le plus, mais ce que nous utilisons le plus mal.|William Penn</item>
+        <item>Ce n’est pas que nous ayons peu de temps, c’est que nous en perdons beaucoup.|Sénèque</item>
+        <item>Nous sommes ce que nous faisons de manière répétée.|Will Durant</item>
+        <item>La vie, c’est ce qui vous arrive pendant que vous êtes occupé à faire d’autres projets.|John Lennon</item>
+        <item>Perdez une heure le matin et vous passerez la journée à la chercher.|Richard Whately</item>
+        <item>Tant que vous ne vous valorisez pas, vous ne valoriserez pas votre temps.|M. Scott Peck</item>
+        <item>La façon dont nous passons nos journées est, bien sûr, la façon dont nous passons notre vie.|Annie Dillard</item>
+        <item>La concentration est la racine de toutes les capacités supérieures de l’homme.|Bruce Lee</item>
+        <item>Ne comptez pas les jours, faites que les jours comptent.|Muhammad Ali</item>
+        <item>Le meilleur moment pour planter un arbre, c’était il y a 20 ans. Le deuxième meilleur moment, c’est maintenant.|Proverbe chinois</item>
+        <item>Faites de chaque jour votre chef-d’œuvre.|John Wooden</item>
+        <item>Un voyage de mille lieues commence toujours par un premier pas.|Lao Tseu</item>
+    </string-array>
+
+    <string-array name="widget_messages">
+        <item>Chaque minute que vous ne donnez pas à l’écran vous appartient à nouveau.</item>
+        <item>Pas besoin d’une journée parfaite : une bonne décision maintenant suffit.</item>
+        <item>Votre attention est ce que vous avez de plus précieux. Choisissez bien où la placer.</item>
+        <item>Un moment loin du téléphone, c’est aussi avancer.</item>
+        <item>Aujourd’hui compte. Faites quelque chose dont vous vous remercierez demain.</item>
+        <item>Ce qui compte arrive rarement sous forme de notification.</item>
+        <item>Respirez, regardez autour de vous et revenez à ce qui compte vraiment.</item>
+        <item>De petites habitudes, répétées chaque jour, changent toute une vie.</item>
+        <item>Se déconnecter un instant est le moyen le plus rapide de se ressourcer.</item>
+        <item>Votre temps n’est pas infini, et c’est justement ce qui lui donne sa valeur.</item>
+        <item>Choisissez une seule chose importante pour aujourd’hui et donnez-lui toute votre attention.</item>
+        <item>Être indulgent avec vous-même quand vous trébuchez fait aussi partie du progrès.</item>
+    </string-array>
 </resources>

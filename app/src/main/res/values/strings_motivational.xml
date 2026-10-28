@@ -26,7 +26,7 @@
 
     <string name="motiv_smart_features">Funciones inteligentes</string>
     <string name="motiv_smart_timing">Horario inteligente</string>
-    <string name="motiv_smart_timing_desc">Aprende tus mejores horas</string>
+    <string name="motiv_smart_timing_desc">No te interrumpe en una sesión de enfoque ni con No molestar activado</string>
     <string name="motiv_weekend_schedule">Horario de fin de semana</string>
     <string name="motiv_weekend_schedule_desc">Frecuencia diferente los fines de semana</string>
     <string name="motiv_ai_messages">Mensajes con IA</string>

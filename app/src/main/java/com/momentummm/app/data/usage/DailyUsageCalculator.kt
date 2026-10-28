@@ -340,18 +340,17 @@ object DailyUsageCalculator {
 
         var overlap = 0L
         for (dayOffset in -1..1) {
-            val dayMillis = (midnight.clone() as Calendar)
-                .apply { add(Calendar.DAY_OF_YEAR, dayOffset) }
-                .timeInMillis
-
-            val windowStart = dayMillis + window.startMinuteOfDay * 60_000L
-            val endMinute = if (window.endMinuteOfDay > window.startMinuteOfDay) {
+            // Las horas se fijan con el CALENDARIO, no sumando milisegundos a
+            // la medianoche: el día del cambio de hora dura 23 o 25 horas, y
+            // «medianoche + 31 h» caía a las 06:00 en vez de a las 07:00, así
+            // que la ventana de sueño se desplazaba una hora ese día.
+            val windowStart = atMinuteOfDay(midnight, dayOffset, window.startMinuteOfDay)
+            val crossesMidnight = window.endMinuteOfDay <= window.startMinuteOfDay
+            val windowEnd = atMinuteOfDay(
+                midnight,
+                if (crossesMidnight) dayOffset + 1 else dayOffset,
                 window.endMinuteOfDay
-            } else {
-                // Cruza medianoche: termina al día siguiente.
-                window.endMinuteOfDay + 24 * 60
-            }
-            val windowEnd = dayMillis + endMinute * 60_000L
+            )
 
             val start = maxOf(from, windowStart)
             val end = minOf(to, windowEnd)
@@ -359,6 +358,14 @@ object DailyUsageCalculator {
         }
         return overlap
     }
+
+    /** Instante de [minuteOfDay] (hora local) en el día [midnight] + [dayOffset]. */
+    private fun atMinuteOfDay(midnight: Calendar, dayOffset: Int, minuteOfDay: Int): Long =
+        (midnight.clone() as Calendar).apply {
+            add(Calendar.DAY_OF_YEAR, dayOffset)
+            set(Calendar.HOUR_OF_DAY, minuteOfDay / 60)
+            set(Calendar.MINUTE, minuteOfDay % 60)
+        }.timeInMillis
 
     private fun millisFromAggregatedStats(
         manager: UsageStatsManager,

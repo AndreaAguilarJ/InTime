@@ -45,6 +45,9 @@ object LifeWeeksCalculator {
 
     private fun today(): LocalDate = Date().toLocalDate()
 
+    /** Fecha de calendario local de [date] (para avisos de cumpleaños y semanas). */
+    fun localDateOf(date: Date): LocalDate = date.toLocalDate()
+
     private fun Date.toLocalDate(): LocalDate =
         toInstant().toKotlinInstant().toLocalDateTime(TimeZone.currentSystemDefault()).date
 }

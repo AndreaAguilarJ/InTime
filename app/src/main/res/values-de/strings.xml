@@ -49,8 +49,8 @@
     <!-- Widgets -->
     <string name="life_weeks_widget_name">Mein Leben in Wochen</string>
     <string name="life_weeks_widget_description">Visualisiere deinen Lebensfortschritt in Wochen</string>
-    <string name="quote_widget_name">Motivationsspruch</string>
-    <string name="quote_widget_description">Tägliche Inspiration für deinen Startbildschirm</string>
+    <string name="quote_widget_name">Zitat des Tages</string>
+    <string name="quote_widget_description">Jeden Tag ein anderes bekanntes Zitat</string>
     <string name="year_progress_widget_name">Jahresfortschritt</string>
     <string name="year_progress_widget_description">Zeige die vergangenen und verbleibenden Tage des aktuellen Jahres</string>
     
@@ -264,7 +264,7 @@
     <string name="notification_daily_motivation_title">Tägliche Motivation</string>
     <string name="notification_daily_motivation_desc">Erhalte jeden Morgen einen inspirierenden Spruch</string>
     <string name="notification_weekly_summary_title">Wöchentliche Zusammenfassung</string>
-    <string name="notification_weekly_summary_desc">Zusammenfassung deiner Gerätenutzung jeden Sonntag</string>
+    <string name="notification_weekly_summary_desc">Jeden Sonntag um 20:00: deine Zeit im Vergleich zur Vorwoche und deine meistgenutzten Apps</string>
     <string name="notification_achievements_title">Erfolge und Ziele</string>
     <string name="notification_achievements_desc">Feiere deine Erfolge und Serien</string>
     <string name="notification_screen_time_reminders_title">Wohlfühl-Erinnerungen</string>
@@ -610,7 +610,7 @@
     <string name="widget_settings_available_subtitle">Halten Sie den Startbildschirm gedrückt, um Widgets hinzuzufügen</string>
     <string name="widget_settings_widget_life_weeks_title">Mein Leben in Wochen</string>
     <string name="widget_settings_widget_life_weeks_desc">Visualisierung Ihres Lebens in Wochen</string>
-    <string name="widget_settings_widget_quote_title">Motivierendes Zitat</string>
+    <string name="widget_settings_widget_quote_title">Zitat des Tages</string>
     <string name="widget_settings_widget_quote_desc">Ein inspirierendes Zitat, das täglich wechselt</string>
     <string name="widget_settings_widget_year_progress_title">Jahresfortschritt</string>
     <string name="widget_settings_widget_year_progress_desc">Prozent der vergangenen Jahreszeit</string>

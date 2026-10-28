@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Colores de los widgets (modo claro). values-night/colors_widget.xml tiene los
+    del modo oscuro.
+
+    Son RECURSOS y no constantes en Kotlin a propósito: el launcher los resuelve con
+    su propia configuración, así que el widget cambia de claro a oscuro con el
+    sistema sin que la app tenga que volver a pintarlo. Antes cada widget fijaba su
+    fondo (negro, gris oscuro, pastel), y el texto de la Frase salía negro sobre gris
+    oscuro. Los valores son los del tema de la app (MomentumThemeCore).
+-->
+<resources>
+    <!-- Superficie: Neutral0 / texto principal: Neutral900 -->
+    <color name="widget_surface">#FFFFFFFF</color>
+    <color name="widget_on_surface">#FF12151F</color>
+    <!-- Texto secundario: Neutral550, 5,6:1 sobre blanco -->
+    <color name="widget_on_surface_variant">#FF60687D</color>
+    <!-- Acento: Indigo600, el primario claro de la app -->
+    <color name="widget_accent">#FF4F46E5</color>
+    <!-- Pista de la barra y separadores: Neutral200 -->
+    <color name="widget_track">#FFE4E7F0</color>
+</resources>

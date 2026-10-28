@@ -53,4 +53,16 @@
     <string name="life_weeks_saved_gallery">✅ Guardado en la galería</string>
     <string name="life_weeks_current_age">Edad actual: %1$d años</string>
     <string name="life_weeks_progress">Progreso de vida: %1$s%%</string>
+
+    <!-- Leyenda del fondo de pantalla «Mi vida en semanas». -->
+    <plurals name="wallpaper_weeks_lived">
+        <item quantity="one">%1$s semana vivida</item>
+        <item quantity="other">%1$s semanas vividas</item>
+    </plurals>
+    <plurals name="wallpaper_weeks_left">
+        <item quantity="one">Queda %1$s semana</item>
+        <item quantity="other">Quedan %1$s semanas</item>
+    </plurals>
+    <string name="life_weeks_gallery_error">No se pudo guardar la imagen en la galería</string>
+    <string name="life_wallpaper_error">No se pudo poner el fondo de pantalla</string>
 </resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Desde Android 12 el launcher redondea los widgets con este radio: usar el
+         mismo evita que el fondo asome por las esquinas. -->
+    <dimen name="widget_corner_radius">@android:dimen/system_app_widget_background_radius</dimen>
+</resources>

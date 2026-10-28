@@ -20,7 +20,7 @@
     <string name="minutes_short">m</string>
     
     <!-- Life in Weeks -->
-    <string name="my_life_in_weeks">Minha Vida em Semanas</string>
+    <string name="my_life_in_weeks">Minha vida em semanas</string>
     <string name="weeks_lived">Semanas vividas</string>
     <string name="weeks_remaining">Semanas restantes</string>
     <string name="customize_colors">Personalizar cores</string>
@@ -47,11 +47,11 @@
     <string name="account_settings">Configurações da conta</string>
     
     <!-- Widgets -->
-    <string name="life_weeks_widget_name">Minha Vida em Semanas</string>
+    <string name="life_weeks_widget_name">Minha vida em semanas</string>
     <string name="life_weeks_widget_description">Visualize seu progresso de vida em semanas</string>
-    <string name="quote_widget_name">Frase Motivacional</string>
-    <string name="quote_widget_description">Inspiração diária para sua tela inicial</string>
-    <string name="year_progress_widget_name">Progresso do Ano</string>
+    <string name="quote_widget_name">Frase do dia</string>
+    <string name="quote_widget_description">Uma frase célebre diferente a cada dia</string>
+    <string name="year_progress_widget_name">Progresso do ano</string>
     <string name="year_progress_widget_description">Visualize os dias passados e restantes do ano atual</string>
     
     <!-- Minimal Phone / Launcher -->
@@ -339,7 +339,7 @@
     <string name="notification_daily_motivation_title">Motivação diária</string>
     <string name="notification_daily_motivation_desc">Receba uma frase inspiradora todas as manhãs</string>
     <string name="notification_weekly_summary_title">Resumo semanal</string>
-    <string name="notification_weekly_summary_desc">Resumo do uso do dispositivo todo domingo</string>
+    <string name="notification_weekly_summary_desc">Todo domingo às 20:00: seu tempo comparado com a semana anterior e seus apps mais usados</string>
     <string name="notification_achievements_title">Conquistas e metas</string>
     <string name="notification_achievements_desc">Celebre suas conquistas e sequências</string>
     <string name="notification_screen_time_reminders_title">Lembretes de bem-estar</string>
@@ -608,9 +608,9 @@
     <string name="widget_settings_back_cd">Voltar</string>
     <string name="widget_settings_available_title">Widgets disponíveis</string>
     <string name="widget_settings_available_subtitle">Mantenha pressionada a tela inicial para adicionar widgets</string>
-    <string name="widget_settings_widget_life_weeks_title">Minha Vida em Semanas</string>
+    <string name="widget_settings_widget_life_weeks_title">Minha vida em semanas</string>
     <string name="widget_settings_widget_life_weeks_desc">Visualização da sua vida dividida em semanas</string>
-    <string name="widget_settings_widget_quote_title">Citação motivacional</string>
+    <string name="widget_settings_widget_quote_title">Frase do dia</string>
     <string name="widget_settings_widget_quote_desc">Uma frase inspiradora que muda diariamente</string>
     <string name="widget_settings_widget_year_progress_title">Progresso do ano</string>
     <string name="widget_settings_widget_year_progress_desc">Percentual do ano já passado</string>

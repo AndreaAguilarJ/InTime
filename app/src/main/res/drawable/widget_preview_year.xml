@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Previsualización del selector en Android 8-11 (ver widget_preview_quote):
+     año, porcentaje, barra al 81 % y las dos cifras, sin texto. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp"
+    android:height="110dp"
+    android:viewportWidth="110"
+    android:viewportHeight="110">
+    <path
+        android:fillColor="@color/widget_surface"
+        android:pathData="M16,0h78a16,16 0,0 1,16,16v78a16,16 0,0 1,-16,16h-78a16,16 0,0 1,-16,-16v-78a16,16 0,0 1,16,-16z" />
+    <path
+        android:fillColor="@color/widget_accent"
+        android:pathData="M17,16h24a3,3 0,0 1,3,3v0a3,3 0,0 1,-3,3h-24a3,3 0,0 1,-3,-3v-0a3,3 0,0 1,3,-3z" />
+    <path
+        android:fillColor="@color/widget_on_surface_variant"
+        android:pathData="M65,16h28a3,3 0,0 1,3,3v0a3,3 0,0 1,-3,3h-28a3,3 0,0 1,-3,-3v-0a3,3 0,0 1,3,-3z" />
+    <path
+        android:fillColor="@color/widget_on_surface"
+        android:pathData="M18,30h44a4,4 0,0 1,4,4v12a4,4 0,0 1,-4,4h-44a4,4 0,0 1,-4,-4v-12a4,4 0,0 1,4,-4z" />
+    <path
+        android:fillColor="@color/widget_track"
+        android:pathData="M17,60h76a3,3 0,0 1,3,3v0a3,3 0,0 1,-3,3h-76a3,3 0,0 1,-3,-3v-0a3,3 0,0 1,3,-3z" />
+    <path
+        android:fillColor="@color/widget_accent"
+        android:pathData="M17,60h60a3,3 0,0 1,3,3v0a3,3 0,0 1,-3,3h-60a3,3 0,0 1,-3,-3v-0a3,3 0,0 1,3,-3z" />
+    <path
+        android:fillColor="@color/widget_on_surface"
+        android:pathData="M26.5,80h13a4.5,4.5 0,0 1,4.5,4.5v0a4.5,4.5 0,0 1,-4.5,4.5h-13a4.5,4.5 0,0 1,-4.5,-4.5v-0a4.5,4.5 0,0 1,4.5,-4.5z" />
+    <path
+        android:fillColor="@color/widget_on_surface"
+        android:pathData="M70.5,80h13a4.5,4.5 0,0 1,4.5,4.5v0a4.5,4.5 0,0 1,-4.5,4.5h-13a4.5,4.5 0,0 1,-4.5,-4.5v-0a4.5,4.5 0,0 1,4.5,-4.5z" />
+    <path
+        android:fillColor="@color/widget_on_surface_variant"
+        android:pathData="M20.5,94h25a2.5,2.5 0,0 1,2.5,2.5v0a2.5,2.5 0,0 1,-2.5,2.5h-25a2.5,2.5 0,0 1,-2.5,-2.5v-0a2.5,2.5 0,0 1,2.5,-2.5z" />
+    <path
+        android:fillColor="@color/widget_on_surface_variant"
+        android:pathData="M64.5,94h25a2.5,2.5 0,0 1,2.5,2.5v0a2.5,2.5 0,0 1,-2.5,2.5h-25a2.5,2.5 0,0 1,-2.5,-2.5v-0a2.5,2.5 0,0 1,2.5,-2.5z" />
+    <path
+        android:fillColor="@color/widget_track"
+        android:pathData="M55,80h0a0.5,0.5 0,0 1,0.5,0.5v19a0.5,0.5 0,0 1,-0.5,0.5h-0a0.5,0.5 0,0 1,-0.5,-0.5v-19a0.5,0.5 0,0 1,0.5,-0.5z" />
+</vector>

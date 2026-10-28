@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Textos del sistema de notificaciones rehecho (avisos con destino, resumen
+     comparado, pantalla de ajustes). Las cinco traducciones deben conservar
+     los mismos especificadores de formato: lo vigila StringFormatParityTest. -->
+<resources>
+    <!-- Botones dentro de las notificaciones -->
+    <string name="notif_action_start_focus">Iniciar enfoque</string>
+    <string name="notif_action_view_limits">Ver límites</string>
+    <string name="notif_action_view_analysis">Ver análisis</string>
+    <string name="notif_action_settings">Ajustes</string>
+
+    <!-- Resumen semanal -->
+    <string name="notif_weekly_title">📊 Tu semana: %1$s de pantalla</string>
+    <string name="notif_weekly_trend_down">%1$s menos que la semana pasada (−%2$d %%). Vas en buena dirección.</string>
+    <string name="notif_weekly_trend_up">%1$s más que la semana pasada (+%2$d %%).</string>
+    <string name="notif_weekly_trend_same">Casi igual que la semana pasada.</string>
+    <string name="notif_weekly_daily_average">Media diaria: %1$s</string>
+    <string name="notif_weekly_life_week">Cerraste tu semana %1$s de vida. ¿Qué harás con la siguiente?</string>
+
+    <!-- Bienestar -->
+    <string name="notif_screen_time_top_app">Llevas %1$s de pantalla hoy, %2$s en %3$s. ¿Un descanso?</string>
+    <string name="notif_balanced_day_vs_average">Hoy %1$s de pantalla, %2$s menos que tu media.</string>
+
+    <!-- Pantalla de ajustes de notificaciones -->
+    <string name="notif_system_off_title">Android está bloqueando los avisos</string>
+    <string name="notif_system_off_body">Aunque aquí estén activados, no te llegará ninguno hasta que permitas las notificaciones de Momentum.</string>
+    <string name="notif_system_off_action">Permitir notificaciones</string>
+    <string name="notif_usage_missing_title">Falta el acceso a uso</string>
+    <string name="notif_usage_missing_body">Sin él no podemos avisarte de tus límites, darte tu resumen semanal ni comparar tu día con tu media.</string>
+    <string name="notif_usage_missing_action">Conceder acceso</string>
+    <string name="notif_section_protect">Te protegen</string>
+    <string name="notif_section_progress">Tu progreso</string>
+    <string name="notif_section_wellbeing">Bienestar</string>
+    <string name="notif_streak_warnings_title">Avisos de racha</string>
+    <string name="notif_streak_warnings_desc">Antes de que un límite rompa tu racha y cuando se usa un día de gracia</string>
+    <string name="notif_life_weeks_title">Mi vida en semanas</string>
+    <string name="notif_life_weeks_desc">El día de tu cumpleaños, con las semanas que llevas vividas</string>
+    <string name="notif_quiet_hours_title">Horario silencioso</string>
+    <string name="notif_quiet_hours_desc">De 22:00 a 08:00 no te avisamos de límites, logros ni recordatorios. Los mensajes motivacionales usan su propio horario.</string>
+    <string name="notif_motivational_row_title">Mensajes motivacionales</string>
+    <string name="notif_motivational_row_on">%1$d al día, de %2$s a %3$s</string>
+    <string name="notif_motivational_row_off">Desactivados</string>
+    <string name="notif_test_sent">Enviada. Mira la barra de notificaciones.</string>
+    <string name="notif_test_blocked">No se pudo enviar: Android tiene bloqueadas las notificaciones de Momentum.</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Previsualización del selector en Android 8-11, que ignora previewLayout y,
+     sin previewImage, mostraba el icono de la app. Esquema sin texto para que
+     valga en los cinco idiomas: etiqueta, tres líneas de frase y autor. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="250dp"
+    android:height="110dp"
+    android:viewportWidth="250"
+    android:viewportHeight="110">
+    <path
+        android:fillColor="@color/widget_surface"
+        android:pathData="M16,0h218a16,16 0,0 1,16,16v78a16,16 0,0 1,-16,16h-218a16,16 0,0 1,-16,-16v-78a16,16 0,0 1,16,-16z" />
+    <path
+        android:fillColor="@color/widget_accent"
+        android:pathData="M17,16h58a3,3 0,0 1,3,3v0a3,3 0,0 1,-3,3h-58a3,3 0,0 1,-3,-3v-0a3,3 0,0 1,3,-3z" />
+    <path
+        android:fillAlpha="0.8"
+        android:fillColor="@color/widget_on_surface"
+        android:pathData="M18.5,32h213a4.5,4.5 0,0 1,4.5,4.5v0a4.5,4.5 0,0 1,-4.5,4.5h-213a4.5,4.5 0,0 1,-4.5,-4.5v-0a4.5,4.5 0,0 1,4.5,-4.5z" />
+    <path
+        android:fillAlpha="0.8"
+        android:fillColor="@color/widget_on_surface"
+        android:pathData="M18.5,48h197a4.5,4.5 0,0 1,4.5,4.5v0a4.5,4.5 0,0 1,-4.5,4.5h-197a4.5,4.5 0,0 1,-4.5,-4.5v-0a4.5,4.5 0,0 1,4.5,-4.5z" />
+    <path
+        android:fillAlpha="0.8"
+        android:fillColor="@color/widget_on_surface"
+        android:pathData="M18.5,64h129a4.5,4.5 0,0 1,4.5,4.5v0a4.5,4.5 0,0 1,-4.5,4.5h-129a4.5,4.5 0,0 1,-4.5,-4.5v-0a4.5,4.5 0,0 1,4.5,-4.5z" />
+    <path
+        android:fillColor="@color/widget_on_surface_variant"
+        android:pathData="M17,86h78a3,3 0,0 1,3,3v0a3,3 0,0 1,-3,3h-78a3,3 0,0 1,-3,-3v-0a3,3 0,0 1,3,-3z" />
+</vector>

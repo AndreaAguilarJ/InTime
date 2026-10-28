@@ -64,6 +64,14 @@ class MainActivity : AppCompatActivity() {
         minimalPhoneManager = (application as MomentumApplication).minimalPhoneManager
 
         val themeManager = ThemeManager(this)
+
+        // Abierta desde una notificación: recordar a qué pantalla debe ir.
+        // Solo en un arranque nuevo; al recrearse (giro, muerte del proceso)
+        // el sistema vuelve a entregar el Intent original y el usuario ya
+        // estaba en otra pantalla.
+        if (savedInstanceState == null) {
+            com.momentummm.app.notification.PendingNavigation.offer(intent)
+        }
         
         // Check if we should auto-enable minimal mode when coming from launcher
         val launchMinimalMode = intent?.getBooleanExtra("launch_minimal_mode", false) ?: false
@@ -85,6 +93,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Llega aquí cuando se toca una notificación con la app ya abierta: los
+     * PendingIntents usan SINGLE_TOP, así que se reutiliza esta actividad en
+     * lugar de destruir la tarea y perder la pantalla en la que estaba.
+     */
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        com.momentummm.app.notification.PendingNavigation.offer(intent)
     }
 
     override fun onResume() {

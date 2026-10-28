@@ -43,4 +43,15 @@
     <string name="life_weeks_saved_gallery">✅ Enregistré dans la galerie</string>
     <string name="life_weeks_current_age">Âge actuel : %1$d ans</string>
     <string name="life_weeks_progress">Progression de vie : %1$s%%</string>
+
+    <plurals name="wallpaper_weeks_lived">
+        <item quantity="one">%1$s semaine vécue</item>
+        <item quantity="other">%1$s semaines vécues</item>
+    </plurals>
+    <plurals name="wallpaper_weeks_left">
+        <item quantity="one">Encore %1$s semaine</item>
+        <item quantity="other">Encore %1$s semaines</item>
+    </plurals>
+    <string name="life_weeks_gallery_error">Impossible d’enregistrer l’image dans la galerie</string>
+    <string name="life_wallpaper_error">Impossible de définir le fond d’écran</string>
 </resources>

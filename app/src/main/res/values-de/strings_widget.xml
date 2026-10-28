@@ -1,12 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_years">Jahre</string>
-    <string name="widget_percent_of_life">%1$s%% deines Lebens</string>
-    <string name="widget_tap_to_open">Zum Öffnen tippen</string>
-    <string name="widget_life_title">MEIN LEBEN IN WOCHEN</string>
-    <string name="widget_weeks_lived">gelebt</string>
-    <string name="widget_weeks_remaining">verbleibend</string>
-    <string name="widget_days_past">vergangen</string>
-    <string name="widget_quote_of_day">Motivationsspruch des Tages</string>
-    <string name="widget_motivation_label">✨ Motivation</string>
+    <string name="motivational_widget_name">Motivationsnachricht</string>
+
+    <string name="widget_load_error">Konnte nicht geladen werden. Öffne Momentum, um es zu aktualisieren.</string>
+
+    <string name="widget_life_title">Mein Leben in Wochen</string>
+    <string name="widget_life_percent_of_life">%1$s deines Lebens</string>
+    <plurals name="widget_life_weeks_lived">
+        <item quantity="one">gelebt</item>
+        <item quantity="other">gelebt</item>
+    </plurals>
+    <plurals name="widget_life_weeks_left">
+        <item quantity="one">übrig</item>
+        <item quantity="other">übrig</item>
+    </plurals>
+    <plurals name="widget_life_years">
+        <item quantity="one">Jahr</item>
+        <item quantity="other">Jahre</item>
+    </plurals>
+    <string name="widget_life_grid_cd">%1$s von %2$s Wochen gelebt</string>
+    <string name="widget_life_empty_title">Füge dein Geburtsdatum hinzu</string>
+    <string name="widget_life_empty_body">Tippe, um dein Leben in Wochen zu sehen</string>
+
+    <string name="widget_year_day_of">Tag %1$s von %2$s</string>
+    <plurals name="widget_year_days_passed">
+        <item quantity="one">vergangen</item>
+        <item quantity="other">vergangen</item>
+    </plurals>
+    <plurals name="widget_year_days_left">
+        <item quantity="one">übrig</item>
+        <item quantity="other">übrig</item>
+    </plurals>
+    <string name="widget_year_progress_cd">%1$s des Jahres %2$s sind vergangen</string>
+
+    <string name="widget_quote_label">Zitat des Tages</string>
+    <string name="widget_quote_author">— %1$s</string>
+    <string name="widget_message_label">Nachricht des Tages</string>
+
+    <string name="widget_settings_widget_motivational_title">Motivationsnachricht</string>
+    <string name="widget_settings_widget_motivational_desc">Jeden Tag eine andere Nachricht von Momentum</string>
+    <string name="widget_settings_add_button">Hinzufügen</string>
+    <string name="widget_settings_add_cd">„%1$s“ zum Startbildschirm hinzufügen</string>
+    <string name="widget_settings_pin_unsupported">Dein Startbildschirm erlaubt das Hinzufügen von hier nicht. Halte eine freie Stelle gedrückt, wähle „Widgets“ und suche nach Momentum.</string>
+    <string name="widget_settings_refreshed">Widgets aktualisiert</string>
+    <string name="widget_settings_preview_title">So sieht es auf deinem Startbildschirm aus</string>
+    <string name="widget_settings_colors_shared_note">Sie ändern nur das Widget. Wählst du später Farben in „Mein Leben in Wochen“, übernimmt das Widget diese.</string>
+
+    <string name="widget_preview_life_percent" formatted="false">37,5 %</string>
+    <string name="widget_preview_weeks_lived">gelebt</string>
+    <string name="widget_preview_weeks_left">übrig</string>
+    <string name="widget_preview_years">Jahre</string>
+    <string name="widget_preview_year_percent" formatted="false">81 %</string>
+    <string name="widget_preview_days_passed">vergangen</string>
+    <string name="widget_preview_days_left">übrig</string>
+    <string name="widget_preview_quote_text">Es ist nicht so, dass wir wenig Zeit haben, sondern dass wir viel davon verschwenden.</string>
+    <string name="widget_preview_quote_author">— Seneca</string>
+    <string name="widget_preview_message_text">Deine Aufmerksamkeit ist das Wertvollste, was du hast. Wähle gut, wohin sie geht.</string>
+
+    <string-array name="widget_quotes">
+        <item>Zeit ist das, was wir am meisten wollen, aber am schlechtesten nutzen.|William Penn</item>
+        <item>Es ist nicht so, dass wir wenig Zeit haben, sondern dass wir viel davon verschwenden.|Seneca</item>
+        <item>Wir sind, was wir wiederholt tun.|Will Durant</item>
+        <item>Leben ist das, was passiert, während du eifrig dabei bist, andere Pläne zu machen.|John Lennon</item>
+        <item>Verliere morgens eine Stunde, und du wirst den ganzen Tag nach ihr suchen.|Richard Whately</item>
+        <item>Solange du dich selbst nicht wertschätzt, wirst du deine Zeit nicht wertschätzen.|M. Scott Peck</item>
+        <item>Wie wir unsere Tage verbringen, so verbringen wir natürlich unser Leben.|Annie Dillard</item>
+        <item>Konzentration ist die Wurzel aller höheren Fähigkeiten des Menschen.|Bruce Lee</item>
+        <item>Zähl nicht die Tage, sondern sorge dafür, dass die Tage zählen.|Muhammad Ali</item>
+        <item>Die beste Zeit, einen Baum zu pflanzen, war vor 20 Jahren. Die zweitbeste ist jetzt.|Chinesisches Sprichwort</item>
+        <item>Mach jeden Tag zu deinem Meisterwerk.|John Wooden</item>
+        <item>Auch eine Reise von tausend Meilen beginnt mit einem einzigen Schritt.|Laozi</item>
+    </string-array>
+
+    <string-array name="widget_messages">
+        <item>Jede Minute, die du nicht dem Bildschirm schenkst, gehört wieder dir.</item>
+        <item>Du brauchst keinen perfekten Tag: Eine gute Entscheidung jetzt reicht.</item>
+        <item>Deine Aufmerksamkeit ist das Wertvollste, was du hast. Wähle gut, wohin sie geht.</item>
+        <item>Zeit ohne Handy ist auch ein Fortschritt.</item>
+        <item>Heute zählt. Tu etwas, wofür dein Ich von morgen dir dankbar ist.</item>
+        <item>Was wirklich zählt, kommt selten als Benachrichtigung.</item>
+        <item>Atme durch, schau dich um und kehr zu dem zurück, was wirklich wichtig ist.</item>
+        <item>Kleine Gewohnheiten, jeden Tag wiederholt, verändern ein ganzes Leben.</item>
+        <item>Kurz abschalten ist der schnellste Weg, neue Energie zu tanken.</item>
+        <item>Deine Zeit ist nicht unendlich, und genau das macht sie wertvoll.</item>
+        <item>Wähle für heute eine wichtige Sache und schenke ihr deine volle Aufmerksamkeit.</item>
+        <item>Freundlich zu dir zu sein, wenn du strauchelst, gehört auch zum Fortschritt.</item>
+    </string-array>
 </resources>

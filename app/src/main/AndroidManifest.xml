@@ -149,10 +149,15 @@
             android:launchMode="singleTask"
             android:theme="@style/Theme.Momentum" />
 
-        <!-- Life Weeks Widget -->
+        <!--
+            Widgets. Cada receptor lleva su android:label: sin él, el selector de
+            widgets mostraba los cuatro con el nombre de la app, «Momentum», y no
+            había forma de saber cuál era cuál antes de ponerlo.
+        -->
         <receiver
             android:name=".widget.LifeWeeksWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/life_weeks_widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -161,10 +166,10 @@
                 android:resource="@xml/life_weeks_widget_info" />
         </receiver>
 
-        <!-- Motivational Quote Widget -->
         <receiver
             android:name=".widget.QuoteWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/quote_widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -173,10 +178,10 @@
                 android:resource="@xml/quote_widget_info" />
         </receiver>
 
-        <!-- Year Progress Widget -->
         <receiver
             android:name=".widget.YearProgressWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/year_progress_widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -185,16 +190,27 @@
                 android:resource="@xml/year_progress_widget_info" />
         </receiver>
 
-        <!-- Motivational Message Widget -->
         <receiver
             android:name=".widget.MotivationalMessageWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/motivational_widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/motivational_message_widget_info" />
+        </receiver>
+
+        <!-- Repinta los widgets si cambian el idioma, la hora o la zona horaria. -->
+        <receiver
+            android:name=".widget.WidgetSystemChangeReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
         </receiver>
 
         <!-- Boot Receiver to start monitoring service after device reboot -->

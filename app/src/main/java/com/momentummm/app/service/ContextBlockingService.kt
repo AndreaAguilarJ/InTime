@@ -454,7 +454,7 @@ class ContextBlockingService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.svc_context_title))
             .setContentText(statusText)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(com.momentummm.app.notification.NotificationStyle.SMALL_ICON)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)

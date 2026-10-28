@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lo que muestra un widget si falla al pintarse. Sustituye al «Problem loading
+     widget» genérico de Glance, que no decía qué hacer y no seguía el tema. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_surface"
+    android:padding="14dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/widget_load_error"
+        android:textColor="@color/widget_on_surface_variant"
+        android:textSize="12sp" />
+</FrameLayout>

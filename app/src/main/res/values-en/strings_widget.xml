@@ -1,12 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_years">years</string>
-    <string name="widget_percent_of_life">%1$s%% of your life</string>
-    <string name="widget_tap_to_open">Tap to open</string>
-    <string name="widget_life_title">MY LIFE IN WEEKS</string>
-    <string name="widget_weeks_lived">lived</string>
-    <string name="widget_weeks_remaining">remaining</string>
-    <string name="widget_days_past">past</string>
-    <string name="widget_quote_of_day">Motivational quote of the day</string>
-    <string name="widget_motivation_label">✨ Motivation</string>
+    <string name="motivational_widget_name">Motivational message</string>
+
+    <string name="widget_load_error">Couldn\'t load. Open Momentum to refresh it.</string>
+
+    <string name="widget_life_title">My life in weeks</string>
+    <string name="widget_life_percent_of_life">%1$s of your life</string>
+    <plurals name="widget_life_weeks_lived">
+        <item quantity="one">lived</item>
+        <item quantity="other">lived</item>
+    </plurals>
+    <plurals name="widget_life_weeks_left">
+        <item quantity="one">left</item>
+        <item quantity="other">left</item>
+    </plurals>
+    <plurals name="widget_life_years">
+        <item quantity="one">year</item>
+        <item quantity="other">years</item>
+    </plurals>
+    <string name="widget_life_grid_cd">%1$s of %2$s weeks lived</string>
+    <string name="widget_life_empty_title">Add your date of birth</string>
+    <string name="widget_life_empty_body">Tap to see your life in weeks</string>
+
+    <string name="widget_year_day_of">Day %1$s of %2$s</string>
+    <plurals name="widget_year_days_passed">
+        <item quantity="one">passed</item>
+        <item quantity="other">passed</item>
+    </plurals>
+    <plurals name="widget_year_days_left">
+        <item quantity="one">left</item>
+        <item quantity="other">left</item>
+    </plurals>
+    <string name="widget_year_progress_cd">%1$s of %2$s has gone by</string>
+
+    <string name="widget_quote_label">Quote of the day</string>
+    <string name="widget_quote_author">— %1$s</string>
+    <string name="widget_message_label">A message for today</string>
+
+    <string name="widget_settings_widget_motivational_title">Motivational message</string>
+    <string name="widget_settings_widget_motivational_desc">A different Momentum message every day</string>
+    <string name="widget_settings_add_button">Add</string>
+    <string name="widget_settings_add_cd">Add “%1$s” to the home screen</string>
+    <string name="widget_settings_pin_unsupported">Your home screen doesn\'t let you add it from here. Long-press an empty space, choose “Widgets” and look for Momentum.</string>
+    <string name="widget_settings_refreshed">Widgets updated</string>
+    <string name="widget_settings_preview_title">How it will look on your home screen</string>
+    <string name="widget_settings_colors_shared_note">These only change the widget. If you later pick colors in “My life in weeks”, the widget will use those.</string>
+
+    <string name="widget_preview_life_percent" formatted="false">37.5%</string>
+    <string name="widget_preview_weeks_lived">lived</string>
+    <string name="widget_preview_weeks_left">left</string>
+    <string name="widget_preview_years">years</string>
+    <string name="widget_preview_year_percent" formatted="false">81%</string>
+    <string name="widget_preview_days_passed">passed</string>
+    <string name="widget_preview_days_left">left</string>
+    <string name="widget_preview_quote_text">It is not that we have a short time to live, but that we waste a lot of it.</string>
+    <string name="widget_preview_quote_author">— Seneca</string>
+    <string name="widget_preview_message_text">Your attention is the most valuable thing you have. Choose wisely where it goes.</string>
+
+    <string-array name="widget_quotes">
+        <item>Time is what we want most, but what we use worst.|William Penn</item>
+        <item>It is not that we have a short time to live, but that we waste a lot of it.|Seneca</item>
+        <item>We are what we repeatedly do.|Will Durant</item>
+        <item>Life is what happens to you while you\'re busy making other plans.|John Lennon</item>
+        <item>Lose an hour in the morning, and you will spend all day looking for it.|Richard Whately</item>
+        <item>Until you value yourself, you won\'t value your time.|M. Scott Peck</item>
+        <item>How we spend our days is, of course, how we spend our lives.|Annie Dillard</item>
+        <item>Concentration is the root of all the higher abilities in man.|Bruce Lee</item>
+        <item>Don\'t count the days, make the days count.|Muhammad Ali</item>
+        <item>The best time to plant a tree was 20 years ago. The second best time is now.|Chinese proverb</item>
+        <item>Make each day your masterpiece.|John Wooden</item>
+        <item>A journey of a thousand miles begins with a single step.|Lao Tzu</item>
+    </string-array>
+
+    <string-array name="widget_messages">
+        <item>Every minute you don\'t give to the screen becomes yours again.</item>
+        <item>You don\'t need a perfect day: one good decision right now is enough.</item>
+        <item>Your attention is the most valuable thing you have. Choose wisely where it goes.</item>
+        <item>Time away from your phone is progress too.</item>
+        <item>Today counts. Do something your future self will thank you for.</item>
+        <item>What matters rarely arrives as a notification.</item>
+        <item>Breathe, look around you and come back to what really matters.</item>
+        <item>Small habits, repeated every day, change a whole life.</item>
+        <item>Unplugging for a moment is the fastest way to recharge.</item>
+        <item>Your time isn\'t endless, and that\'s exactly what makes it valuable.</item>
+        <item>Pick one important thing for today and give it your full attention.</item>
+        <item>Being kind to yourself when you slip up is part of progress too.</item>
+    </string-array>
 </resources>

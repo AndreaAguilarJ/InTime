@@ -152,8 +152,8 @@
     <!-- Widgets -->
     <string name="life_weeks_widget_name">My Life in Weeks</string>
     <string name="life_weeks_widget_description">Visualize your life progress in weeks</string>
-    <string name="quote_widget_name">Motivational Quote</string>
-    <string name="quote_widget_description">Daily inspiration for your home screen</string>
+    <string name="quote_widget_name">Quote of the day</string>
+    <string name="quote_widget_description">A different famous quote every day</string>
     <string name="year_progress_widget_name">Year Progress</string>
     <string name="year_progress_widget_description">View the days passed and remaining in the current year</string>
     
@@ -442,7 +442,7 @@
     <string name="notification_daily_motivation_title">Daily Motivation</string>
     <string name="notification_daily_motivation_desc">Receive an inspiring quote every morning</string>
     <string name="notification_weekly_summary_title">Weekly Summary</string>
-    <string name="notification_weekly_summary_desc">Summary of your device usage every Sunday</string>
+    <string name="notification_weekly_summary_desc">Every Sunday at 20:00: your time compared with the week before, and your most used apps</string>
     <string name="notification_achievements_title">Achievements &amp; Goals</string>
     <string name="notification_achievements_desc">Celebrate your achievements and streaks</string>
     <string name="notification_screen_time_reminders_title">Wellbeing Reminders</string>
@@ -725,7 +725,7 @@
     <string name="widget_settings_available_subtitle">Long-press the home screen to add widgets</string>
     <string name="widget_settings_widget_life_weeks_title">My Life in Weeks</string>
     <string name="widget_settings_widget_life_weeks_desc">Visualization of your life divided into weeks</string>
-    <string name="widget_settings_widget_quote_title">Motivational Quote</string>
+    <string name="widget_settings_widget_quote_title">Quote of the day</string>
     <string name="widget_settings_widget_quote_desc">An inspiring quote that changes daily</string>
     <string name="widget_settings_widget_year_progress_title">Year Progress</string>
     <string name="widget_settings_widget_year_progress_desc">Percentage of the year elapsed</string>

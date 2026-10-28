@@ -199,7 +199,7 @@ class AppMonitoringService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(com.momentummm.app.R.string.notification_monitoring_title))
             .setContentText(getString(com.momentummm.app.R.string.notification_monitoring_message))
-            .setSmallIcon(android.R.drawable.ic_menu_view) // Usar icono del sistema
+            .setSmallIcon(com.momentummm.app.notification.NotificationStyle.SMALL_ICON)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setSilent(true)

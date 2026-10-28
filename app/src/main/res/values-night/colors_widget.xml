@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Colores de los widgets en modo oscuro. Ver values/colors_widget.xml. -->
+<resources>
+    <!-- Superficie: Neutral900 / texto principal: TextPrimaryDark -->
+    <color name="widget_surface">#FF12151F</color>
+    <color name="widget_on_surface">#FFF6F7FB</color>
+    <!-- Texto secundario: Neutral400, 7:1 sobre la superficie -->
+    <color name="widget_on_surface_variant">#FF9AA1B5</color>
+    <!-- Acento: Indigo400, el primario oscuro de la app -->
+    <color name="widget_accent">#FF8388FA</color>
+    <!-- Pista de la barra y separadores: Neutral800 -->
+    <color name="widget_track">#FF232936</color>
+</resources>

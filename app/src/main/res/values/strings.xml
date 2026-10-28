@@ -122,7 +122,7 @@
     <string name="dashboard_unlock_premium_desc">Análisis avanzados, sesiones de enfoque y mucho más</string>
     
     <!-- Life in Weeks -->
-    <string name="my_life_in_weeks">Mi Vida en Semanas</string>
+    <string name="my_life_in_weeks">Mi vida en semanas</string>
     <string name="weeks_lived">Semanas vividas</string>
     <string name="weeks_remaining">Semanas restantes</string>
     <string name="customize_colors">Personalizar colores</string>
@@ -280,7 +280,7 @@
     <string name="notification_daily_motivation_title">Motivación Diaria</string>
     <string name="notification_daily_motivation_desc">Recibe una frase inspiradora cada mañana</string>
     <string name="notification_weekly_summary_title">Resumen Semanal</string>
-    <string name="notification_weekly_summary_desc">Resumen de tu uso del dispositivo cada domingo</string>
+    <string name="notification_weekly_summary_desc">Cada domingo a las 20:00: tu tiempo frente a la semana anterior y tus apps más usadas</string>
     <string name="notification_achievements_title">Logros y Metas</string>
     <string name="notification_achievements_desc">Celebra tus logros y rachas alcanzadas</string>
     <string name="notification_screen_time_reminders_title">Recordatorios de Bienestar</string>
@@ -451,11 +451,11 @@
     <string name="dialog_logout_message">¿Estás seguro de que quieres cerrar sesión? Tus datos locales se mantendrán sincronizados.</string>
     
     <!-- Widgets -->
-    <string name="life_weeks_widget_name">Mi Vida en Semanas</string>
+    <string name="life_weeks_widget_name">Mi vida en semanas</string>
     <string name="life_weeks_widget_description">Visualiza tu progreso de vida en semanas</string>
-    <string name="quote_widget_name">Frase Motivacional</string>
-    <string name="quote_widget_description">Inspiración diaria para tu pantalla de inicio</string>
-    <string name="year_progress_widget_name">Progreso del Año</string>
+    <string name="quote_widget_name">Frase del día</string>
+    <string name="quote_widget_description">Una frase célebre distinta cada día</string>
+    <string name="year_progress_widget_name">Progreso del año</string>
     <string name="year_progress_widget_description">Visualiza los días pasados y restantes del año en curso</string>
     
     <!-- Minimal Phone / Launcher -->
@@ -720,21 +720,21 @@
     <string name="help_faq_a10">Si tienes protección por contraseña activada, deberás ingresar tu PIN para desactivar los límites. Esto es intencional para evitar que desactives los límites impulsivamente.</string>
 
     <!-- Widget Settings -->
-    <string name="widget_settings_title">Configuración de Widgets</string>
+    <string name="widget_settings_title">Configuración de widgets</string>
     <string name="widget_settings_back_cd">Volver</string>
-    <string name="widget_settings_available_title">Widgets Disponibles</string>
+    <string name="widget_settings_available_title">Widgets disponibles</string>
     <string name="widget_settings_available_subtitle">Mantén presionada la pantalla de inicio para agregar widgets</string>
-    <string name="widget_settings_widget_life_weeks_title">Mi Vida en Semanas</string>
+    <string name="widget_settings_widget_life_weeks_title">Mi vida en semanas</string>
     <string name="widget_settings_widget_life_weeks_desc">Visualización de tu vida dividida en semanas</string>
-    <string name="widget_settings_widget_quote_title">Cita Motivacional</string>
+    <string name="widget_settings_widget_quote_title">Frase del día</string>
     <string name="widget_settings_widget_quote_desc">Una frase inspiradora que cambia cada día</string>
-    <string name="widget_settings_widget_year_progress_title">Progreso del Año</string>
+    <string name="widget_settings_widget_year_progress_title">Progreso del año</string>
     <string name="widget_settings_widget_year_progress_desc">Porcentaje del año transcurrido</string>
-    <string name="widget_settings_lived_color_title">Color de Semanas Vividas</string>
+    <string name="widget_settings_lived_color_title">Color de las semanas vividas</string>
     <string name="widget_settings_lived_color_subtitle">Color para las semanas que ya has vivido</string>
-    <string name="widget_settings_future_color_title">Color de Semanas Futuras</string>
+    <string name="widget_settings_future_color_title">Color de las semanas futuras</string>
     <string name="widget_settings_future_color_subtitle">Color para las semanas que aún no has vivido</string>
-    <string name="widget_settings_refresh_button">Actualizar Todos los Widgets</string>
+    <string name="widget_settings_refresh_button">Actualizar todos los widgets</string>
     <string name="widget_settings_selected_cd">Seleccionado</string>
 
     <string name="widget_color_green">Verde</string>

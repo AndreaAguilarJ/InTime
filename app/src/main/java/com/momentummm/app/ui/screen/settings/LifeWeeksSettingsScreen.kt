@@ -28,9 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.UserPreferencesRepository
+import com.momentummm.app.util.LifeExpectancy
 import com.momentummm.app.util.LifeWeeksCalculator
 import com.momentummm.app.util.LifeWeeksData
 import com.momentummm.app.widget.LifeWeeksWidget
+import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -86,11 +88,13 @@ fun LifeWeeksSettingsScreen(
     var showFutureColorPicker by remember { mutableStateOf(false) }
     var showBackgroundColorPicker by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
-    var lifeExpectancy by remember { mutableStateOf(80) }
+    var lifeExpectancy by remember { mutableStateOf(LifeExpectancy.DEFAULT_YEARS) }
     
     // Cargar datos iniciales
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
+            // Antes no se leía: el control volvía siempre a 80 años.
+            lifeExpectancy = UserPreferencesRepository.getLifeExpectancy(context)
             val settings = application.userRepository.getUserSettingsSync()
             settings?.let {
                 birthDate = it.birthDate
@@ -200,6 +204,7 @@ fun LifeWeeksSettingsScreen(
                                         UserPreferencesRepository.setDobIso(context, iso)
                                     }
                                     UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
+                                    UserPreferencesRepository.setLifeExpectancy(context, lifeExpectancy)
                                     
                                     // Actualizar widgets con los nuevos colores
                                     LifeWeeksWidget.updateAllWidgets(context)
@@ -388,13 +393,14 @@ fun LifeWeeksSettingsScreen(
                         Slider(
                             value = lifeExpectancy.toFloat(),
                             onValueChange = { 
-                                lifeExpectancy = it.toInt()
+                                // roundToInt y no toInt: el slider da 72,99998 en vez de 73.
+                                lifeExpectancy = LifeExpectancy.sanitize(it.roundToInt())
                                 birthDate?.let { date ->
                                     lifeWeeksData = LifeWeeksCalculator.calculateLifeWeeks(date, lifeExpectancy)
                                 }
                             },
-                            valueRange = 60f..120f,
-                            steps = 59,
+                            valueRange = LifeExpectancy.MIN_YEARS.toFloat()..LifeExpectancy.MAX_YEARS.toFloat(),
+                            steps = LifeExpectancy.MAX_YEARS - LifeExpectancy.MIN_YEARS - 1,
                             modifier = Modifier.fillMaxWidth()
                         )
                         
@@ -402,9 +408,9 @@ fun LifeWeeksSettingsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("60", style = MaterialTheme.typography.bodySmall)
-                            Text("90", style = MaterialTheme.typography.bodySmall)
-                            Text("120", style = MaterialTheme.typography.bodySmall)
+                            Text("${LifeExpectancy.MIN_YEARS}", style = MaterialTheme.typography.bodySmall)
+                            Text("${(LifeExpectancy.MIN_YEARS + LifeExpectancy.MAX_YEARS) / 2}", style = MaterialTheme.typography.bodySmall)
+                            Text("${LifeExpectancy.MAX_YEARS}", style = MaterialTheme.typography.bodySmall)
                         }
                         
                         Spacer(modifier = Modifier.height(8.dp))
@@ -502,6 +508,7 @@ fun LifeWeeksSettingsScreen(
                                     try {
                                         // Primero guardar la configuración actual
                                         UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
+                                        UserPreferencesRepository.setLifeExpectancy(context, lifeExpectancy)
                                         
                                         // Intentar añadir widget con el método moderno (Android 8+)
                                         val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(context)
@@ -538,6 +545,7 @@ fun LifeWeeksSettingsScreen(
                                     try {
                                         // Actualizar el widget con la configuración actual
                                         UserPreferencesRepository.setWidgetColors(context, livedWeeksColor, futureWeeksColor)
+                                        UserPreferencesRepository.setLifeExpectancy(context, lifeExpectancy)
                                         LifeWeeksWidget.updateAllWidgets(context)
                                         Toast.makeText(context, context.getString(R.string.life_widget_updated), Toast.LENGTH_SHORT).show()
                                     } catch (e: Exception) {
@@ -561,23 +569,17 @@ fun LifeWeeksSettingsScreen(
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                try {
-                                    birthDate?.let { date ->
-                                        val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
-                                            context = context,
-                                            weeksLived = lifeWeeksData?.weeksLived ?: 0,
-                                            livedColor = android.graphics.Color.parseColor(livedWeeksColor),
-                                            futureColor = android.graphics.Color.parseColor(futureWeeksColor),
-                                            backgroundColor = android.graphics.Color.parseColor(backgroundColor)
-                                        )
-                                        com.momentummm.app.util.WallpaperGenerator.saveToGallery(context, bitmap)
-                                        Toast.makeText(context, context.getString(R.string.life_weeks_saved_gallery), Toast.LENGTH_SHORT).show()
-                                    } ?: run {
-                                        Toast.makeText(context, context.getString(R.string.life_set_birth_date_first), Toast.LENGTH_SHORT).show()
-                                    }
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, context.getString(R.string.life_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
+                                val data = lifeWeeksData
+                                if (birthDate == null || data == null) {
+                                    Toast.makeText(context, context.getString(R.string.life_set_birth_date_first), Toast.LENGTH_SHORT).show()
+                                    return@launch
                                 }
+                                val saved = com.momentummm.app.util.WallpaperGenerator.saveToGallery(
+                                    context,
+                                    com.momentummm.app.util.WallpaperGenerator.specFor(data, livedWeeksColor, futureWeeksColor, backgroundColor),
+                                )
+                                val message = if (saved) R.string.life_weeks_saved_gallery else R.string.life_weeks_gallery_error
+                                Toast.makeText(context, context.getString(message), Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -590,23 +592,17 @@ fun LifeWeeksSettingsScreen(
                     OutlinedButton(
                         onClick = {
                             coroutineScope.launch {
-                                try {
-                                    birthDate?.let { date ->
-                                        val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
-                                            context = context,
-                                            weeksLived = lifeWeeksData?.weeksLived ?: 0,
-                                            livedColor = android.graphics.Color.parseColor(livedWeeksColor),
-                                            futureColor = android.graphics.Color.parseColor(futureWeeksColor),
-                                            backgroundColor = android.graphics.Color.parseColor(backgroundColor)
-                                        )
-                                        com.momentummm.app.util.WallpaperGenerator.setAsWallpaper(context, bitmap)
-                                        Toast.makeText(context, context.getString(R.string.life_wallpaper_set), Toast.LENGTH_SHORT).show()
-                                    } ?: run {
-                                        Toast.makeText(context, context.getString(R.string.life_set_birth_date_first), Toast.LENGTH_SHORT).show()
-                                    }
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, context.getString(R.string.life_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
+                                val data = lifeWeeksData
+                                if (birthDate == null || data == null) {
+                                    Toast.makeText(context, context.getString(R.string.life_set_birth_date_first), Toast.LENGTH_SHORT).show()
+                                    return@launch
                                 }
+                                val applied = com.momentummm.app.util.WallpaperGenerator.setAsWallpaper(
+                                    context,
+                                    com.momentummm.app.util.WallpaperGenerator.specFor(data, livedWeeksColor, futureWeeksColor, backgroundColor),
+                                )
+                                val message = if (applied) R.string.life_wallpaper_set else R.string.life_wallpaper_error
+                                Toast.makeText(context, context.getString(message), Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth()

@@ -1,94 +1,78 @@
 package com.momentummm.app.widget
 
 import android.content.Context
-import android.content.Intent
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import android.util.Log
 import androidx.glance.GlanceId
-import androidx.glance.GlanceModifier
-import androidx.glance.action.clickable
+import androidx.glance.LocalContext
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
-import androidx.glance.background
-import androidx.glance.layout.*
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
-import com.momentummm.app.MainActivity
+import com.momentummm.app.R
 import com.momentummm.app.data.AppDatabase
-import com.momentummm.app.data.entity.Quote
+import com.momentummm.app.notification.NotificationRoutes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import java.time.LocalDate
 
-class QuoteWidget : GlanceAppWidget() {
+/**
+ * Widget «Frase del día»: una frase célebre con su autor, la misma todo el día.
+ */
+class QuoteWidget : GlanceAppWidget(errorUiLayout = R.layout.widget_error) {
+
+    override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // CRITICAL FIX: Agregar error handling + timeout para evitar crash/ANR del widget
-        val quote = try {
-            kotlinx.coroutines.withTimeoutOrNull(3000L) {
-                withContext(Dispatchers.IO) {
-                    AppDatabase.getDatabase(context).quoteDao().getRandomQuote()
-                }
-            } ?: defaultQuote()
-        } catch (e: Exception) {
-            android.util.Log.e("QuoteWidget", "Error loading quote for widget", e)
-            defaultQuote()
-        }
+        val localized = WidgetLocale.localized(context)
+        val quote = quoteOfTheDay(context, localized, LocalDate.now().toEpochDay())
+        val res = localized.resources
+        val label = res.getString(R.string.widget_quote_label)
+        val footer = quote.author?.let { res.getString(R.string.widget_quote_author, it) }
 
         provideContent {
-            QuoteWidgetContent(quote)
-        }
-    }
-
-    @Composable
-    private fun QuoteWidgetContent(quote: Quote) {
-        val authorText = quote.author?.takeIf { it.isNotBlank() } ?: "Momentum"
-
-        Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(Color.DarkGray)
-                .padding(16.dp)
-                .clickable(actionStartActivity(Intent().apply {
-                    setClassName("com.momentummm.app", "com.momentummm.app.MainActivity")
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                })),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "💡",
-                style = TextStyle(
-                    fontSize = 24.sp
-                )
-            )
-            
-            Spacer(modifier = GlanceModifier.height(8.dp))
-            
-            Text(
-                text = quote.text,
-                style = TextStyle(
-                    fontSize = 14.sp
-                )
-            )
-            
-            Spacer(modifier = GlanceModifier.height(8.dp))
-            
-            Text(
-                text = "- $authorText",
-                style = TextStyle(
-                    fontSize = 12.sp
-                )
+            WidgetTextCard(
+                label = label,
+                body = quote.text,
+                footer = footer,
+                onClick = WidgetActions.open(LocalContext.current, NotificationRoutes.TODAY),
             )
         }
     }
 
-    private fun defaultQuote(): Quote {
-        return Quote(
-            text = "Tu tiempo es limitado, úsalo sabiamente.",
-            author = "Momentum"
-        )
+    /**
+     * Las frases guardadas están en español. Con la app en español se usan esas
+     * (incluidas las que añada el usuario); en otro idioma, las traducidas de
+     * `R.array.widget_quotes`, que también cubren una base de datos vacía.
+     */
+    private suspend fun quoteOfTheDay(context: Context, localized: Context, epochDay: Long): WidgetQuote {
+        if (WidgetLocale.usesStoredSpanishContent(localized)) {
+            storedQuote(context, epochDay)?.let { return it }
+        }
+        val entries = localized.resources.getStringArray(R.array.widget_quotes)
+            .mapNotNull(WidgetQuotes::parse)
+        return entries[DailyPick.index(epochDay, entries.size, salt = QUOTE_SALT)]
+    }
+
+    private suspend fun storedQuote(context: Context, epochDay: Long): WidgetQuote? =
+        withTimeoutOrNull(LOAD_TIMEOUT_MS) {
+            try {
+                withContext(Dispatchers.IO) {
+                    val dao = AppDatabase.getDatabase(context).quoteDao()
+                    val count = dao.getQuoteCount()
+                    if (count == 0) return@withContext null
+                    dao.getQuoteAt(DailyPick.index(epochDay, count, salt = QUOTE_SALT))
+                        ?.takeIf { it.text.isNotBlank() }
+                        ?.let { WidgetQuote(it.text.trim(), it.author?.trim()?.takeIf(String::isNotEmpty)) }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading quote for widget", e)
+                null
+            }
+        }
+
+    private companion object {
+        const val TAG = "QuoteWidget"
+        const val LOAD_TIMEOUT_MS = 3_000L
+        const val QUOTE_SALT = 0
     }
 }

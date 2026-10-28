@@ -120,7 +120,7 @@ class AppBlockOverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, S
 
             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(getString(com.momentummm.app.R.string.app_blocked_time_up_title))
-                .setSmallIcon(android.R.drawable.ic_lock_idle_lock)
+                .setSmallIcon(com.momentummm.app.notification.NotificationStyle.SMALL_ICON)
                 .setOngoing(true)
                 .setSilent(true)
                 .setPriority(NotificationCompat.PRIORITY_MIN)

@@ -1,12 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_years">años</string>
-    <string name="widget_percent_of_life">%1$s%% de tu vida</string>
-    <string name="widget_tap_to_open">Toca para abrir</string>
-    <string name="widget_life_title">MI VIDA EN SEMANAS</string>
-    <string name="widget_weeks_lived">vividas</string>
-    <string name="widget_weeks_remaining">restantes</string>
-    <string name="widget_days_past">pasados</string>
-    <string name="widget_quote_of_day">Frase motivacional del día</string>
-    <string name="widget_motivation_label">✨ Motivación</string>
+    <!-- Nombre en el selector de widgets (los otros tres están en strings.xml). -->
+    <string name="motivational_widget_name">Mensaje motivacional</string>
+
+    <!-- Común -->
+    <string name="widget_load_error">No se pudo cargar. Abre Momentum para actualizarlo.</string>
+
+    <!-- Mi vida en semanas -->
+    <string name="widget_life_title">Mi vida en semanas</string>
+    <string name="widget_life_percent_of_life">%1$s de tu vida</string>
+    <plurals name="widget_life_weeks_lived">
+        <item quantity="one">vivida</item>
+        <item quantity="other">vividas</item>
+    </plurals>
+    <plurals name="widget_life_weeks_left">
+        <item quantity="one">restante</item>
+        <item quantity="other">restantes</item>
+    </plurals>
+    <plurals name="widget_life_years">
+        <item quantity="one">año</item>
+        <item quantity="other">años</item>
+    </plurals>
+    <string name="widget_life_grid_cd">%1$s de %2$s semanas vividas</string>
+    <string name="widget_life_empty_title">Añade tu fecha de nacimiento</string>
+    <string name="widget_life_empty_body">Toca para ver tu vida en semanas</string>
+
+    <!-- Progreso del año -->
+    <string name="widget_year_day_of">Día %1$s de %2$s</string>
+    <plurals name="widget_year_days_passed">
+        <item quantity="one">pasado</item>
+        <item quantity="other">pasados</item>
+    </plurals>
+    <plurals name="widget_year_days_left">
+        <item quantity="one">restante</item>
+        <item quantity="other">restantes</item>
+    </plurals>
+    <string name="widget_year_progress_cd">%1$s del año %2$s transcurrido</string>
+
+    <!-- Frase del día y mensaje motivacional -->
+    <string name="widget_quote_label">Frase del día</string>
+    <string name="widget_quote_author">— %1$s</string>
+    <string name="widget_message_label">Mensaje para hoy</string>
+
+    <!-- Pantalla Ajustes > Widgets -->
+    <string name="widget_settings_widget_motivational_title">Mensaje motivacional</string>
+    <string name="widget_settings_widget_motivational_desc">Un mensaje de Momentum distinto cada día</string>
+    <string name="widget_settings_add_button">Añadir</string>
+    <string name="widget_settings_add_cd">Añadir «%1$s» a la pantalla de inicio</string>
+    <string name="widget_settings_pin_unsupported">Tu pantalla de inicio no permite añadirlo desde aquí. Mantén pulsado un espacio vacío, elige «Widgets» y busca Momentum.</string>
+    <string name="widget_settings_refreshed">Widgets actualizados</string>
+    <string name="widget_settings_preview_title">Así se verá en tu pantalla de inicio</string>
+    <string name="widget_settings_colors_shared_note">Solo cambian el widget. Si luego eliges colores en «Mi vida en semanas», el widget usará esos.</string>
+
+    <!-- Datos de ejemplo de las previsualizaciones del selector de widgets. -->
+    <string name="widget_preview_life_percent" formatted="false">37,5 %</string>
+    <string name="widget_preview_weeks_lived">vividas</string>
+    <string name="widget_preview_weeks_left">restantes</string>
+    <string name="widget_preview_years">años</string>
+    <string name="widget_preview_year_percent" formatted="false">81 %</string>
+    <string name="widget_preview_days_passed">pasados</string>
+    <string name="widget_preview_days_left">restantes</string>
+    <string name="widget_preview_quote_text">No es que tengamos poco tiempo para vivir, sino que perdemos mucho.</string>
+    <string name="widget_preview_quote_author">— Séneca</string>
+    <string name="widget_preview_message_text">Tu atención es lo más valioso que tienes. Elige bien dónde la pones.</string>
+
+    <!-- Frases de respaldo: se muestran cuando el idioma de la app no es el español
+         (las frases guardadas están en español) o si aún no hay ninguna.
+         Formato: texto|autor. -->
+    <string-array name="widget_quotes">
+        <item>El tiempo es lo que más queremos, pero lo que peor usamos.|William Penn</item>
+        <item>No es que tengamos poco tiempo para vivir, sino que perdemos mucho.|Séneca</item>
+        <item>Somos lo que hacemos repetidamente.|Will Durant</item>
+        <item>La vida es lo que te pasa mientras estás ocupado haciendo otros planes.|John Lennon</item>
+        <item>Pierde una hora por la mañana y la estarás buscando todo el día.|Richard Whately</item>
+        <item>Hasta que no te valores a ti mismo, no valorarás tu tiempo.|M. Scott Peck</item>
+        <item>La forma en que pasamos nuestros días es, por supuesto, la forma en que pasamos nuestra vida.|Annie Dillard</item>
+        <item>La concentración es la raíz de todas las capacidades superiores del ser humano.|Bruce Lee</item>
+        <item>No cuentes los días; haz que los días cuenten.|Muhammad Ali</item>
+        <item>El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora.|Proverbio chino</item>
+        <item>Haz de cada día tu obra maestra.|John Wooden</item>
+        <item>Un viaje de mil millas comienza con un solo paso.|Lao Tse</item>
+    </string-array>
+
+    <!-- Mensajes de respaldo del widget motivacional. Valen a cualquier hora y día:
+         nada de «buenos días», rachas ni logros que el usuario quizá no tiene. -->
+    <string-array name="widget_messages">
+        <item>Cada minuto que no regalas a la pantalla vuelve a ser tuyo.</item>
+        <item>No necesitas un día perfecto: basta con una buena decisión ahora.</item>
+        <item>Tu atención es lo más valioso que tienes. Elige bien dónde la pones.</item>
+        <item>Un rato sin el móvil también es avanzar.</item>
+        <item>Hoy cuenta. Haz algo que tu yo de mañana agradezca.</item>
+        <item>Lo importante rara vez llega como una notificación.</item>
+        <item>Respira, mira a tu alrededor y vuelve a lo que de verdad importa.</item>
+        <item>Pequeños hábitos, repetidos cada día, cambian una vida entera.</item>
+        <item>Desconectar un momento es la forma más rápida de recargarte.</item>
+        <item>Tu tiempo no es infinito, y eso es justo lo que lo hace valioso.</item>
+        <item>Elige una sola cosa importante para hoy y dale toda tu atención.</item>
+        <item>Ser amable contigo cuando fallas también es parte del progreso.</item>
+    </string-array>
 </resources>

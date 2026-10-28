@@ -787,7 +787,9 @@ private fun MainAppContent(
 
                 composable("notification_settings") {
                     NotificationSettingsScreen(
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onOpenMotivationalSettings = { navController.navigate("motivational_messages_settings") },
+                        onOpenPermissions = { navController.navigate("permissions_settings") }
                     )
                 }
 
@@ -873,6 +875,18 @@ private fun MainAppContent(
                     )
                 }
             }
+
+            // Destino pedido por una notificación tocada. Va DENTRO del
+            // contenido del Scaffold, justo después del NavHost: ese contenido
+            // se compone en una subcomposición durante el layout, y desde aquí
+            // el grafo ya está asignado cuando el efecto se ejecuta.
+            val pendingDestination by com.momentummm.app.notification.PendingNavigation
+                .destination.collectAsStateWithLifecycle()
+            LaunchedEffect(pendingDestination) {
+                val destination = pendingDestination ?: return@LaunchedEffect
+                navigateFromNotification(navController, destination)
+                com.momentummm.app.notification.PendingNavigation.consume(destination)
+            }
         }
         } // Cierre del else block
 
@@ -894,4 +908,31 @@ private fun MainAppContent(
             }
         }
     } // Cierre del Box
+}
+
+/**
+ * Lleva al usuario a la pantalla de la que habla la notificación que tocó.
+ *
+ * Las pestañas se abren igual que desde la barra inferior (sin apilar copias);
+ * el resto se apila sobre la pantalla actual para que «atrás» vuelva a donde
+ * estaba. Un fallo de navegación no debe tumbar la app: en el peor caso el
+ * usuario se queda donde estaba, como antes de este cambio.
+ */
+private fun navigateFromNotification(
+    navController: androidx.navigation.NavHostController,
+    destination: String
+) {
+    runCatching {
+        if (destination in com.momentummm.app.notification.NotificationRoutes.TAB_ROUTES) {
+            navController.navigate(destination) {
+                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        } else {
+            navController.navigate(destination) { launchSingleTop = true }
+        }
+    }.onFailure {
+        android.util.Log.w("MomentumApp", "No se pudo abrir el destino de la notificación: $destination", it)
+    }
 }

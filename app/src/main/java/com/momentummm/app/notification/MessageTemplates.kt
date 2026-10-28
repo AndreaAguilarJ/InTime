@@ -21,8 +21,16 @@ object MessageTemplates {
         val streak: Int = 0,
         val level: Int = 1,
         val timeCoins: Int = 0,
-        val screenTimeMinutesToday: Int = 0
+        val screenTimeMinutesToday: Int = 0,
+        /** Media diaria de los últimos 7 días; 0 si no hay datos suficientes. */
+        val averageScreenTimeMinutes: Int = 0
     )
+
+    /**
+     * Diferencia que se considera «igual que siempre». Por debajo de esto decir
+     * «5 min menos que tu media» es ruido, no información.
+     */
+    const val SAME_AS_AVERAGE_TOLERANCE_MINUTES = 10
 
     /**
      * Sustituye los marcadores de [content] por datos reales.
@@ -81,18 +89,37 @@ object MessageTemplates {
         val screen = userContext.screenTimeMinutesToday
 
         return when {
+            // Al cerrar el día, el balance frente a su propia media es lo que
+            // más dice al usuario: es su dato, no una cifra genérica.
+            category == MessageCategory.EVENING && screen > 0 ->
+                eveningScreenLine(screen, userContext.averageScreenTimeMinutes)
+
             // La racha es el dato más motivador cuando existe.
             streak >= STREAK_WORTH_MENTIONING ->
                 "🔥 Llevas $streak días seguidos cuidando tu tiempo."
-
-            // Al cerrar el día, el tiempo de pantalla da perspectiva.
-            category == MessageCategory.EVENING && screen > 0 ->
-                "📱 Hoy has usado el teléfono ${formatMinutes(screen)}."
 
             category == MessageCategory.MORNING ->
                 "🌱 Día nuevo, contador a cero."
 
             else -> null
+        }
+    }
+
+    /**
+     * «Hoy 2h 10min de pantalla, 35 min menos que tu media.»
+     *
+     * Sin media (primera semana, sin permiso de uso) se da solo el dato de hoy:
+     * comparar contra 0 diría que hoy usó el móvil «muchísimo más».
+     */
+    fun eveningScreenLine(todayMinutes: Int, averageMinutes: Int): String {
+        val today = formatMinutes(todayMinutes)
+        if (averageMinutes <= 0) return "📱 Hoy has usado el teléfono $today."
+        val diff = todayMinutes - averageMinutes
+        return when {
+            kotlin.math.abs(diff) < SAME_AS_AVERAGE_TOLERANCE_MINUTES ->
+                "📱 Hoy $today de pantalla, como en un día normal para ti."
+            diff < 0 -> "📱 Hoy $today de pantalla, ${formatMinutes(-diff)} menos que tu media. Bien hecho."
+            else -> "📱 Hoy $today de pantalla, ${formatMinutes(diff)} más que tu media."
         }
     }
 

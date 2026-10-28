@@ -23,7 +23,10 @@ import com.momentummm.app.ui.component.LifeWeeksGrid
 import com.momentummm.app.R
 import com.momentummm.app.ui.viewmodel.LifeWeeksViewModel
 import com.momentummm.app.util.LifeWeeksCalculator
+import com.momentummm.app.util.WallpaperGenerator
 import com.momentummm.app.ui.theme.*
+import android.widget.Toast
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +36,32 @@ fun LifeWeeksScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    /** Antes estos botones no decían nada y generaban la imagen en el hilo principal. */
+    fun runWallpaperAction(data: com.momentummm.app.util.LifeWeeksData, setAsWallpaper: Boolean) {
+        val settings = uiState.userSettings ?: return
+        val spec = WallpaperGenerator.specFor(
+            data,
+            settings.livedWeeksColor,
+            settings.futureWeeksColor,
+            settings.backgroundColor,
+        )
+        coroutineScope.launch {
+            val ok = if (setAsWallpaper) {
+                WallpaperGenerator.setAsWallpaper(context, spec)
+            } else {
+                WallpaperGenerator.saveToGallery(context, spec)
+            }
+            val message = when {
+                setAsWallpaper && ok -> R.string.life_wallpaper_set
+                setAsWallpaper -> R.string.life_wallpaper_error
+                ok -> R.string.life_weeks_saved_gallery
+                else -> R.string.life_weeks_gallery_error
+            }
+            Toast.makeText(context, context.getString(message), Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.refreshData()
@@ -233,22 +262,7 @@ fun LifeWeeksScreen(
                         }
 
                         OutlinedButton(
-                            onClick = {
-                                uiState.userSettings?.let { settings ->
-                                    try {
-                                        val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
-                                            context = context,
-                                            weeksLived = data.weeksLived,
-                                            livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor ?: "#6366F1"),
-                                            futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor ?: "#E5E7EB"),
-                                            backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor ?: "#1F2937")
-                                        )
-                                        com.momentummm.app.util.WallpaperGenerator.saveToGallery(context, bitmap)
-                                    } catch (e: Exception) {
-                                        android.util.Log.e("LifeWeeksScreen", "Error generating wallpaper", e)
-                                    }
-                                }
-                            },
+                            onClick = { runWallpaperAction(data, setAsWallpaper = false) },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(stringResource(R.string.save_to_gallery))
@@ -258,22 +272,7 @@ fun LifeWeeksScreen(
 
                 item {
                     Button(
-                        onClick = {
-                            uiState.userSettings?.let { settings ->
-                                try {
-                                    val bitmap = com.momentummm.app.util.WallpaperGenerator.generateLifeWeeksWallpaper(
-                                        context = context,
-                                        weeksLived = data.weeksLived,
-                                        livedColor = android.graphics.Color.parseColor(settings.livedWeeksColor ?: "#6366F1"),
-                                        futureColor = android.graphics.Color.parseColor(settings.futureWeeksColor ?: "#E5E7EB"),
-                                        backgroundColor = android.graphics.Color.parseColor(settings.backgroundColor ?: "#1F2937")
-                                    )
-                                    com.momentummm.app.util.WallpaperGenerator.setAsWallpaper(context, bitmap)
-                                } catch (e: Exception) {
-                                    android.util.Log.e("LifeWeeksScreen", "Error setting wallpaper", e)
-                                }
-                            }
-                        },
+                        onClick = { runWallpaperAction(data, setAsWallpaper = true) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(stringResource(R.string.set_as_wallpaper))

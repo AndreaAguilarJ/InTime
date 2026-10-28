@@ -3,6 +3,7 @@ package com.momentummm.app.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.data.entity.UserSettings
 import com.momentummm.app.data.repository.UserRepository
 import com.momentummm.app.util.LifeWeeksCalculator
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -39,7 +41,11 @@ class LifeWeeksViewModel(
 
     private fun loadUserSettings() {
         viewModelScope.launch {
-            userRepository.getUserSettings()
+            // La esperanza de vida de Ajustes; antes aquí siempre eran 80 años.
+            combine(
+                userRepository.getUserSettings(),
+                UserPreferencesRepository.getLifeExpectancyFlow(appContext),
+            ) { settings, lifeExpectancy -> settings to lifeExpectancy }
                 .catch { e -> 
                     e.printStackTrace()
                     _uiState.update { it.copy(
@@ -47,13 +53,13 @@ class LifeWeeksViewModel(
                         errorMessage = appContext.getString(R.string.life_weeks_load_error)
                     ) }
                 }
-                .collect { settings ->
+                .collect { (settings, lifeExpectancy) ->
                     val birthDate = settings?.birthDate
                     val hasBirthDate = birthDate != null
 
                     val lifeWeeksData = if (birthDate != null) {
                         try {
-                            LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+                            LifeWeeksCalculator.calculateLifeWeeks(birthDate, lifeExpectancy)
                         } catch (e: Exception) {
                             null
                         }

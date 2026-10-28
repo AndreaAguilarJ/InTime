@@ -19,7 +19,7 @@
 
     <string name="motiv_smart_features">Smart features</string>
     <string name="motiv_smart_timing">Smart timing</string>
-    <string name="motiv_smart_timing_desc">Learns your best hours</string>
+    <string name="motiv_smart_timing_desc">Never interrupts a focus session or Do Not Disturb</string>
     <string name="motiv_weekend_schedule">Weekend schedule</string>
     <string name="motiv_weekend_schedule_desc">A different frequency at weekends</string>
     <string name="motiv_ai_messages">AI messages</string>

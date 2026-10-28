@@ -57,6 +57,9 @@ class LanguageManager(private val context: Context) {
             LocaleListCompat.forLanguageTags(languageCode)
         }
         AppCompatDelegate.setApplicationLocales(localeList)
+
+        // Los widgets se pintaron con el idioma anterior y no se enteran solos.
+        com.momentummm.app.worker.WidgetUpdateWorker.requestImmediateUpdate(context)
     }
 
     fun getLanguageDisplayName(code: String): String {

@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.momentummm.app.data.AppDatabase
+import com.momentummm.app.data.UserPreferencesRepository
 import com.momentummm.app.util.LifeWeeksCalculator
 import com.momentummm.app.util.LifeWeeksData
 import kotlinx.coroutines.Dispatchers
@@ -157,8 +158,9 @@ private fun MinimalLauncherContent(
         val userSettings = withContext(Dispatchers.IO) {
             database.userDao().getUserSettingsSync()
         }
+        val lifeExpectancy = UserPreferencesRepository.getLifeExpectancy(context)
         lifeWeeksData = userSettings?.birthDate?.let { birthDate ->
-            LifeWeeksCalculator.calculateLifeWeeks(birthDate)
+            LifeWeeksCalculator.calculateLifeWeeks(birthDate, lifeExpectancy)
         }
     }
 
