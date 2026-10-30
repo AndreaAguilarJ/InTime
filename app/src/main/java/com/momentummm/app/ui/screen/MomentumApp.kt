@@ -40,6 +40,8 @@ import com.momentummm.app.ui.screen.auth.SignInScreen
 import com.momentummm.app.minimal.MinimalPhoneScreen
 import kotlinx.coroutines.launch
 import com.momentummm.app.data.UserPreferencesRepository
+import com.momentummm.app.data.model.SubscriptionValidity
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import com.momentummm.app.widget.LifeWeeksWidget
 import com.momentummm.app.ui.screen.onboarding.EnhancedOnboardingScreen
@@ -396,6 +398,23 @@ private fun MainAppContent(
     val biometricPromptManager = application.biometricPromptManager
     val shouldShowLockScreen by appLockManager.shouldShowLockScreen.collectAsStateWithLifecycle()
 
+    // Suscripción guardada en Appwrite. Antes nada la leía al entrar con
+    // sesión, así que un premium o una prueba guardados en el servidor no se
+    // aplicaban hasta pulsar «Probar gratis». Las pantallas leen
+    // isPremiumState.value dentro de su destino para redibujarse cuando llega.
+    val currentUser by application.appwriteService.currentUser.collectAsStateWithLifecycle()
+    LaunchedEffect(currentUser?.id) {
+        currentUser?.id?.let { userId ->
+            runCatching { application.subscriptionRepository.getUserSubscription(userId) }
+                .onFailure { android.util.Log.w("Subscription", "No se pudo cargar la suscripción", it) }
+        }
+    }
+    val subscriptionState = application.subscriptionRepository.userSubscription
+        .collectAsStateWithLifecycle(initialValue = null)
+    val isPremiumState = remember {
+        derivedStateOf { SubscriptionValidity.isPremium(subscriptionState.value, LocalDate.now()) }
+    }
+
     // Box para manejar la pantalla de bloqueo sobre todo lo demás
     Box(modifier = Modifier.fillMaxSize()) {
         // Contenido principal de la app
@@ -479,7 +498,7 @@ private fun MainAppContent(
                     )
                     DashboardScreen(
                         viewModel = viewModel,
-                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        isPremiumUser = isPremiumState.value,
                         onUpgradeClick = {
                             navController.navigate(Screen.Subscription.route)
                         },
@@ -498,7 +517,7 @@ private fun MainAppContent(
                 }
                 composable(Screen.Analytics.route) {
                     com.momentummm.app.ui.screen.analytics.AdvancedAnalyticsScreen(
-                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        isPremiumUser = isPremiumState.value,
                         onUpgradeClick = {
                             navController.navigate(Screen.Subscription.route)
                         }
@@ -506,7 +525,7 @@ private fun MainAppContent(
                 }
                 composable(Screen.Focus.route) {
                     com.momentummm.app.ui.screen.focus.FocusSessionScreen(
-                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        isPremiumUser = isPremiumState.value,
                         onUpgradeClick = {
                             navController.navigate(Screen.Subscription.route)
                         }
@@ -514,7 +533,7 @@ private fun MainAppContent(
                 }
                 composable(Screen.Community.route) {
                     com.momentummm.app.ui.screen.community.CommunityScreen(
-                        isPremiumUser = application.subscriptionRepository.isPremiumUser(),
+                        isPremiumUser = isPremiumState.value,
                         onUpgradeClick = {
                             navController.navigate(Screen.Subscription.route)
                         }

@@ -356,6 +356,7 @@
         <service
             android:name=".accessibility.MomentumAccessibilityService"
             android:exported="true"
+            android:label="@string/a11y_service_label_in_app"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -369,6 +370,7 @@
         <service
             android:name=".service.WebsiteBlockService"
             android:exported="true"
+            android:label="@string/a11y_service_label_web"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />

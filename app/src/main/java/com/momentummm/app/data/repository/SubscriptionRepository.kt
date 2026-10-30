@@ -2,6 +2,7 @@ package com.momentummm.app.data.repository
 
 import com.momentummm.app.data.appwrite.AppwriteService
 import com.momentummm.app.data.model.SubscriptionStatus
+import com.momentummm.app.data.model.SubscriptionValidity
 import com.momentummm.app.data.model.UserSubscription
 import io.appwrite.models.Document
 import kotlinx.coroutines.flow.Flow
@@ -154,46 +155,13 @@ class SubscriptionRepository(
         return updateSubscription(premiumSubscription)
     }
     
-    fun isPremiumUser(): Boolean {
-        val subscription = _userSubscription.value
-        return when (subscription?.status) {
-            SubscriptionStatus.PREMIUM_MONTHLY,
-            SubscriptionStatus.PREMIUM_YEARLY,
-            SubscriptionStatus.TRIAL -> {
-                // Check if subscription is still valid
-                try {
-                    subscription.expiryDate?.let { expiryDate ->
-                        LocalDate.parse(expiryDate).isAfter(LocalDate.now())
-                    } ?: subscription.trialEndsAt?.let { trialEndDate ->
-                        LocalDate.parse(trialEndDate).isAfter(LocalDate.now())
-                    } ?: false
-                } catch (e: Exception) {
-                    // Si hay error de parsing, asumir que no es premium para seguridad
-                    false
-                }
-            }
-            else -> false
-        }
-    }
+    fun isPremiumUser(): Boolean =
+        SubscriptionValidity.isPremium(_userSubscription.value, LocalDate.now())
     
     fun isTrialAvailable(): Boolean {
         return _userSubscription.value?.isTrialUsed != true
     }
     
-    fun getRemainingTrialDays(): Int {
-        val subscription = _userSubscription.value
-        return if (subscription?.status == SubscriptionStatus.TRIAL) {
-            try {
-                subscription.trialEndsAt?.let { trialEndDate ->
-                    val endDate = LocalDate.parse(trialEndDate)
-                    val today = LocalDate.now()
-                    if (endDate.isAfter(today)) {
-                        endDate.toEpochDay().toInt() - today.toEpochDay().toInt()
-                    } else 0
-                } ?: 0
-            } catch (e: Exception) {
-                0 // Si hay error de parsing, retornar 0 días
-            }
-        } else 0
-    }
+    fun getRemainingTrialDays(): Int =
+        SubscriptionValidity.remainingTrialDays(_userSubscription.value, LocalDate.now())
 }

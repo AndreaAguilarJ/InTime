@@ -48,8 +48,8 @@ android {
         // Google Play exige apuntar a Android 16 (API 36) para poder publicar
         // actualizaciones a partir del 1 nov 2026. compileSdk ya era 36.
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.3.0"
+        versionCode = 17
+        versionName = "1.3.1"
 
         buildConfigField("String", "GEMINI_API_KEY", geminiBuildConfigValue)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

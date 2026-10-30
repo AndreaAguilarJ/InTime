@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:description="@string/app_name"
+    android:description="@string/a11y_service_description_in_app"
+    android:isAccessibilityTool="false"
     android:accessibilityEventTypes="typeAllMask"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:notificationTimeout="100"

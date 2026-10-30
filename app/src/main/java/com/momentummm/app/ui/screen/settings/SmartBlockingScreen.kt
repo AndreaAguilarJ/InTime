@@ -39,6 +39,7 @@ import com.momentummm.app.data.entity.SmartBlockingConfig
 import com.momentummm.app.service.FloatingTimerService
 import com.momentummm.app.service.NuclearModeService
 import com.momentummm.app.service.ContextBlockingService
+import com.momentummm.app.ui.disclosure.AccessibilityDisclosureDialog
 import com.momentummm.app.ui.system.*
 import com.momentummm.app.util.BlockingCapabilities
 import com.momentummm.app.util.ContextSnapshot
@@ -92,6 +93,11 @@ fun SmartBlockingScreen(
     /** Un permiso que falta, con su texto y su forma de concederlo. */
     data class MissingPermission(val labelRes: Int, val grant: () -> Unit)
 
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+    if (showAccessibilityDisclosure) {
+        AccessibilityDisclosureDialog(onDismiss = { showAccessibilityDisclosure = false })
+    }
+
     val missingPermissions = buildList {
         // El acceso al uso es la base de todo: sin él el monitor no puede
         // detectar qué app está delante y ninguna de las siete funciona.
@@ -118,9 +124,8 @@ fun SmartBlockingScreen(
         if (config.communicationOnlyModeEnabled && !hasAccessibility.value) {
             add(
                 MissingPermission(R.string.smart_perm_accessibility) {
-                    runCatching {
-                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                    }
+                    // Aviso destacado primero (política de Google Play).
+                    showAccessibilityDisclosure = true
                 }
             )
         }

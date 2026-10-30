@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_disclosure_title">Nutzung des Bedienungshilfen-Dienstes</string>
+    <string name="a11y_disclosure_intro">Momentum nutzt die AccessibilityService-API von Android, um die Apps, die Bereiche innerhalb von Apps (wie Reels oder Shorts) und die Websites zu blockieren, die du auswählst, sobald du sie öffnest.</string>
+    <string name="a11y_disclosure_reads_title">Welche Daten gelesen werden</string>
+    <string name="a11y_disclosure_reads_app">Welche App auf dem Bildschirm geöffnet ist.</string>
+    <string name="a11y_disclosure_reads_content">Der Bildschirminhalt der Apps, für die du eine Sperre einrichtest, um Bereiche wie Reels oder Shorts zu erkennen.</string>
+    <string name="a11y_disclosure_reads_url">Die Webadresse in der Adressleiste unterstützter Browser.</string>
+    <string name="a11y_disclosure_use_title">Wofür sie genutzt werden</string>
+    <string name="a11y_disclosure_use_rules">Nur, um sie mit deinen Regeln zu vergleichen und bei einer Übereinstimmung den Sperrbildschirm zu zeigen oder zum Startbildschirm zurückzukehren.</string>
+    <string name="a11y_disclosure_use_private">Sie werden sofort auf deinem Handy ausgewertet. Momentum speichert nicht, was du siehst oder eingibst, sendet es an keinen Server und teilt es mit niemandem.</string>
+    <string name="a11y_disclosure_control">Du kannst den Dienst jederzeit unter Android-Einstellungen &gt; Bedienungshilfen deaktivieren.</string>
+    <string name="a11y_disclosure_next">Wenn du zustimmst, öffnen sich die Bedienungshilfen-Einstellungen von Android, damit du Momentum aktivieren kannst.</string>
+    <string name="a11y_disclosure_accept">Zustimmen und weiter</string>
+    <string name="a11y_disclosure_decline">Nein, danke</string>
+
+    <string name="a11y_service_label_in_app">Momentum: Sperren in Apps</string>
+    <string name="a11y_service_label_web">Momentum: Websites sperren</string>
+    <string name="a11y_service_description_in_app">Erkennt, welche App du geöffnet hast, und in den Apps, die du einrichtest, Bereiche wie Reels oder Shorts, um deine Limits und Sperren anzuwenden. Alles wird auf deinem Handy ausgewertet: Momentum speichert und teilt nicht, was du siehst oder eingibst.</string>
+</resources>

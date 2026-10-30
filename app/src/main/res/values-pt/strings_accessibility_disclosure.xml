@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_disclosure_title">Uso do serviço de acessibilidade</string>
+    <string name="a11y_disclosure_intro">O Momentum usa a API AccessibilityService do Android para bloquear os apps, as seções dentro dos apps (como Reels ou Shorts) e os sites que você escolhe, no momento em que você os abre.</string>
+    <string name="a11y_disclosure_reads_title">Quais dados ele lê</string>
+    <string name="a11y_disclosure_reads_app">Qual app está aberto na tela.</string>
+    <string name="a11y_disclosure_reads_content">O conteúdo da tela dos apps em que você configura um bloqueio, para reconhecer seções como Reels ou Shorts.</string>
+    <string name="a11y_disclosure_reads_url">O endereço web exibido na barra dos navegadores compatíveis.</string>
+    <string name="a11y_disclosure_use_title">Para que ele os usa</string>
+    <string name="a11y_disclosure_use_rules">Somente para compará-los com as suas regras e, se coincidirem, mostrar a tela de bloqueio ou voltar à tela inicial.</string>
+    <string name="a11y_disclosure_use_private">Eles são analisados no seu celular, na hora. O Momentum não guarda o que você vê nem o que você digita, não envia nada a nenhum servidor e não compartilha com ninguém.</string>
+    <string name="a11y_disclosure_control">Você pode desativá-lo quando quiser em Configurações do Android &gt; Acessibilidade.</string>
+    <string name="a11y_disclosure_next">Se você aceitar, as configurações de acessibilidade do Android serão abertas para você ativar o Momentum.</string>
+    <string name="a11y_disclosure_accept">Aceitar e continuar</string>
+    <string name="a11y_disclosure_decline">Não, obrigado</string>
+
+    <string name="a11y_service_label_in_app">Momentum: bloqueio em apps</string>
+    <string name="a11y_service_label_web">Momentum: bloqueio de sites</string>
+    <string name="a11y_service_description_in_app">Detecta qual app você tem aberto e, nos apps que você configura, seções como Reels ou Shorts, para aplicar os seus limites e bloqueios. Tudo é analisado no seu celular: o Momentum não guarda nem compartilha o que você vê ou digita.</string>
+</resources>

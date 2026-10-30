@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
 import com.momentummm.app.R
+import com.momentummm.app.ui.disclosure.AccessibilityDisclosureDialog
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -37,6 +38,13 @@ fun PermissionsSettingsScreen(
     val hasNotificationPermission = remember { mutableStateOf(checkNotificationPermission(context)) }
     val hasAccessibilityPermission = remember { mutableStateOf(checkAccessibilityPermission(context)) }
     val isDefaultLauncher = remember { mutableStateOf(checkIsDefaultLauncher(context)) }
+
+    // Google Play exige el aviso destacado antes de abrir los ajustes de
+    // accesibilidad; el propio diálogo los abre si la persona acepta.
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+    if (showAccessibilityDisclosure) {
+        AccessibilityDisclosureDialog(onDismiss = { showAccessibilityDisclosure = false })
+    }
 
     // Refrescar permisos al volver a primer plano.
     //
@@ -174,7 +182,7 @@ fun PermissionsSettingsScreen(
                     icon = Icons.Default.Security,
                     isGranted = hasAccessibilityPermission.value,
                     onClick = {
-                        openAccessibilitySettings(context)
+                        showAccessibilityDisclosure = true
                     }
                 )
             }
@@ -503,14 +511,3 @@ private fun openAppSettings(context: Context) {
     }
 }
 
-private fun openAccessibilitySettings(context: Context) {
-    try {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        try {
-            val fallback = Intent(Settings.ACTION_SETTINGS)
-            context.startActivity(fallback)
-        } catch (_: Exception) { }
-    }
-}

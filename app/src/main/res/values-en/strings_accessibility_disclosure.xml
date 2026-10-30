@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_disclosure_title">Use of the Accessibility Service</string>
+    <string name="a11y_disclosure_intro">Momentum uses Android\'s AccessibilityService API to block the apps, the sections inside apps (such as Reels or Shorts) and the websites you choose, at the moment you open them.</string>
+    <string name="a11y_disclosure_reads_title">What data it reads</string>
+    <string name="a11y_disclosure_reads_app">Which app is open on the screen.</string>
+    <string name="a11y_disclosure_reads_content">The screen content of the apps where you set up a block, to recognise sections such as Reels or Shorts.</string>
+    <string name="a11y_disclosure_reads_url">The web address shown in the address bar of supported browsers.</string>
+    <string name="a11y_disclosure_use_title">How it uses it</string>
+    <string name="a11y_disclosure_use_rules">Only to compare it with your rules and, if they match, show the block screen or return to the home screen.</string>
+    <string name="a11y_disclosure_use_private">It is analysed on your phone in real time. Momentum does not store what you see or type, does not send it to any server and does not share it with anyone.</string>
+    <string name="a11y_disclosure_control">You can turn it off at any time in Android Settings &gt; Accessibility.</string>
+    <string name="a11y_disclosure_next">If you accept, Android\'s accessibility settings will open so you can turn on Momentum.</string>
+    <string name="a11y_disclosure_accept">Accept and continue</string>
+    <string name="a11y_disclosure_decline">No, thanks</string>
+
+    <string name="a11y_service_label_in_app">Momentum: in-app blocking</string>
+    <string name="a11y_service_label_web">Momentum: website blocking</string>
+    <string name="a11y_service_description_in_app">Detects which app you have open and, in the apps you set up, sections such as Reels or Shorts, to apply your limits and blocks. Everything is analysed on your phone: Momentum does not store or share what you see or type.</string>
+</resources>

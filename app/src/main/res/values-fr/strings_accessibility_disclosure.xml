@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_disclosure_title">Utilisation du service d\'accessibilité</string>
+    <string name="a11y_disclosure_intro">Momentum utilise l\'API AccessibilityService d\'Android pour bloquer les applis, les sections à l\'intérieur des applis (comme Reels ou Shorts) et les sites web que vous choisissez, au moment où vous les ouvrez.</string>
+    <string name="a11y_disclosure_reads_title">Quelles données il lit</string>
+    <string name="a11y_disclosure_reads_app">L\'appli ouverte à l\'écran.</string>
+    <string name="a11y_disclosure_reads_content">Le contenu de l\'écran des applis pour lesquelles vous configurez un blocage, afin de reconnaître des sections comme Reels ou Shorts.</string>
+    <string name="a11y_disclosure_reads_url">L\'adresse web affichée dans la barre des navigateurs compatibles.</string>
+    <string name="a11y_disclosure_use_title">À quoi elles servent</string>
+    <string name="a11y_disclosure_use_rules">Uniquement à les comparer avec vos règles et, si elles correspondent, à afficher l\'écran de blocage ou à revenir à l\'écran d\'accueil.</string>
+    <string name="a11y_disclosure_use_private">Elles sont analysées sur votre téléphone, sur le moment. Momentum n\'enregistre pas ce que vous voyez ni ce que vous écrivez, ne l\'envoie à aucun serveur et ne le partage avec personne.</string>
+    <string name="a11y_disclosure_control">Vous pouvez le désactiver à tout moment dans Paramètres Android &gt; Accessibilité.</string>
+    <string name="a11y_disclosure_next">Si vous acceptez, les paramètres d\'accessibilité d\'Android s\'ouvriront pour que vous activiez Momentum.</string>
+    <string name="a11y_disclosure_accept">Accepter et continuer</string>
+    <string name="a11y_disclosure_decline">Non, merci</string>
+
+    <string name="a11y_service_label_in_app">Momentum : blocage dans les applis</string>
+    <string name="a11y_service_label_web">Momentum : blocage des sites web</string>
+    <string name="a11y_service_description_in_app">Détecte l\'appli ouverte et, dans les applis que vous configurez, des sections comme Reels ou Shorts, pour appliquer vos limites et blocages. Tout est analysé sur votre téléphone : Momentum n\'enregistre ni ne partage ce que vous voyez ou écrivez.</string>
+</resources>

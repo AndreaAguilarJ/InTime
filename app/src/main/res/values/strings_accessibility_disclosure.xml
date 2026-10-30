@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Aviso destacado del servicio de accesibilidad (política de la API
+    AccessibilityService de Google Play). Debe decir qué datos lee el
+    servicio, para qué los usa y si los comparte. Si cambia lo que leen
+    MomentumAccessibilityService o WebsiteBlockService, este texto tiene que
+    cambiar con ellos, en los cinco idiomas.
+-->
+<resources>
+    <string name="a11y_disclosure_title">Uso del servicio de accesibilidad</string>
+    <string name="a11y_disclosure_intro">Momentum usa la API AccessibilityService de Android para bloquear las apps, las secciones dentro de las apps (como Reels o Shorts) y los sitios web que tú eliges, en el momento en que los abres.</string>
+    <string name="a11y_disclosure_reads_title">Qué datos lee</string>
+    <string name="a11y_disclosure_reads_app">Qué app está abierta en la pantalla.</string>
+    <string name="a11y_disclosure_reads_content">El contenido de la pantalla de las apps en las que configuras un bloqueo, para reconocer secciones como Reels o Shorts.</string>
+    <string name="a11y_disclosure_reads_url">La dirección web que muestra la barra de los navegadores compatibles.</string>
+    <string name="a11y_disclosure_use_title">Para qué los usa</string>
+    <string name="a11y_disclosure_use_rules">Solo para compararlos con tus reglas y, si coinciden, mostrar la pantalla de bloqueo o volver a la pantalla de inicio.</string>
+    <string name="a11y_disclosure_use_private">Se analizan en tu teléfono en el momento. Momentum no guarda lo que ves ni lo que escribes, no lo envía a ningún servidor y no lo comparte con nadie.</string>
+    <string name="a11y_disclosure_control">Puedes desactivarlo cuando quieras en Ajustes de Android &gt; Accesibilidad.</string>
+    <string name="a11y_disclosure_next">Si aceptas, se abrirán los ajustes de accesibilidad de Android para que actives Momentum.</string>
+    <string name="a11y_disclosure_accept">Aceptar y continuar</string>
+    <string name="a11y_disclosure_decline">No, gracias</string>
+
+    <!-- Nombre y descripción con los que Android lista cada servicio. -->
+    <string name="a11y_service_label_in_app">Momentum: bloqueo en apps</string>
+    <string name="a11y_service_label_web">Momentum: bloqueo de sitios web</string>
+    <string name="a11y_service_description_in_app">Detecta qué app tienes abierta y, en las apps que configuras, secciones como Reels o Shorts, para aplicar tus límites y bloqueos. Todo se analiza en tu teléfono: Momentum no guarda ni comparte lo que ves o escribes.</string>
+</resources>

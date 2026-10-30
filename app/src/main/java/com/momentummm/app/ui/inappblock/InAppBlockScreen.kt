@@ -1,7 +1,5 @@
 package com.momentummm.app.ui.inappblock
 
-import android.content.Intent
-import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -35,6 +33,7 @@ import com.momentummm.app.R
 import com.momentummm.app.accessibility.MomentumAccessibilityService
 import com.momentummm.app.data.entity.BlockType
 import com.momentummm.app.data.entity.InAppBlockRule
+import com.momentummm.app.ui.disclosure.AccessibilityDisclosureDialog
 import com.momentummm.app.util.AccessibilityUtils
 import androidx.core.graphics.drawable.toBitmap
 import com.momentummm.app.ui.theme.*
@@ -68,6 +67,13 @@ fun InAppBlockScreen(
         )
     }
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Google Play exige el aviso destacado antes de abrir los ajustes de
+    // accesibilidad; el propio diálogo los abre si la persona acepta.
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+    if (showAccessibilityDisclosure) {
+        AccessibilityDisclosureDialog(onDismiss = { showAccessibilityDisclosure = false })
+    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -151,9 +157,7 @@ fun InAppBlockScreen(
                         containerColor = Amber50
                     ),
                     onClick = {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        context.startActivity(intent)
+                        showAccessibilityDisclosure = true
                     }
                 ) {
                     Row(

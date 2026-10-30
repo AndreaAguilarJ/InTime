@@ -19,6 +19,8 @@ out/
 build/
 /build/
 /app/build/
+# El paquete de tests «build» (guardas de políticas de Play) no es salida de Gradle.
+!app/src/test/java/com/momentummm/app/build/
 
 # Local configuration file (sdk path, API keys, etc.)
 local.properties
