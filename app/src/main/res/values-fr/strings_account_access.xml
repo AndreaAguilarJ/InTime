@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_use_without_account">Utiliser sans compte</string>
+    <string name="auth_use_without_account_hint">Tout est enregistré sur ce téléphone. Vous pourrez créer un compte plus tard.</string>
+    <string name="err_accounts_unavailable">Le service de comptes n\'est pas disponible pour le moment. Réessayez plus tard ; ce que vous faites dans Momentum reste enregistré sur ce téléphone.</string>
+    <string name="settings_sign_in_title">Se connecter ou créer un compte</string>
+    <string name="settings_sign_in_subtitle">Facultatif. Vous utilisez Momentum sans compte sur ce téléphone.</string>
+</resources>

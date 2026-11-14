@@ -4,6 +4,7 @@ import android.content.Context
 import io.appwrite.Client
 import io.appwrite.services.Account
 import io.appwrite.services.Databases
+import io.appwrite.services.Locale
 import io.appwrite.services.Storage
 import io.appwrite.models.User
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,9 +16,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
 import android.util.Log
+import com.momentummm.app.data.account.AccountAccess
+import com.momentummm.app.data.account.AccountServer
 
 private const val TAG = "AppwriteService"
 private const val NETWORK_TIMEOUT_MS = 30_000L
+private const val PROBE_TIMEOUT_MS = 5_000L
 
 class AppwriteService(context: Context) {
     private val client = Client(context)
@@ -39,6 +43,15 @@ class AppwriteService(context: Context) {
     private val _isAuthReady = MutableStateFlow(false)
     val isAuthReady: StateFlow<Boolean> = _isAuthReady.asStateFlow()
 
+    // Si el servidor de cuentas atiende. Un proyecto en solo lectura responde
+    // 402 a todo: entonces no tiene sentido ofrecer iniciar sesión.
+    private val _serverState = MutableStateFlow(AccountServer.UNKNOWN)
+    val serverState: StateFlow<AccountServer> = _serverState.asStateFlow()
+
+    private fun noteFailure(e: Throwable) {
+        _serverState.value = AccountAccess.classify(e)
+    }
+
     init {
         checkCurrentUser()
     }
@@ -50,12 +63,31 @@ class AppwriteService(context: Context) {
                 val user = account.get()
                 _currentUser.value = user
                 _isLoggedIn.value = true
+                _serverState.value = AccountServer.AVAILABLE
             } catch (e: Exception) {
                 _currentUser.value = null
                 _isLoggedIn.value = false
+                noteFailure(e)
+                // Sin sesión, `GET /account` responde 401 aunque el proyecto
+                // esté en solo lectura: el 402 solo aparece al intentar entrar.
+                // Una consulta ligera lo distingue antes de mostrar la bienvenida.
+                if (_serverState.value == AccountServer.AVAILABLE) {
+                    probeServer()
+                }
             } finally {
                 _isAuthReady.value = true
             }
+        }
+    }
+
+    private suspend fun probeServer() {
+        try {
+            withTimeout(PROBE_TIMEOUT_MS) { Locale(client).get() }
+            _serverState.value = AccountServer.AVAILABLE
+        } catch (e: TimeoutCancellationException) {
+            _serverState.value = AccountServer.UNREACHABLE
+        } catch (e: Exception) {
+            noteFailure(e)
         }
     }
     
@@ -81,6 +113,7 @@ class AppwriteService(context: Context) {
             _isAuthReady.value = true
             Result.failure(Exception("Connection timeout. Please check your internet connection."))
         } catch (e: Exception) {
+            noteFailure(e)
             _isAuthReady.value = true
             Result.failure(e)
         }
@@ -104,6 +137,7 @@ class AppwriteService(context: Context) {
             Result.failure(Exception("Connection timeout. Please check your internet connection."))
         } catch (e: Exception) {
             Log.e(TAG, "Login failed: ${e.message}", e)
+            noteFailure(e)
             _isAuthReady.value = true
             Result.failure(e)
         }

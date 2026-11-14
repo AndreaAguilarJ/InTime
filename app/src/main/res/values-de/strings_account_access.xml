@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_use_without_account">Ohne Konto nutzen</string>
+    <string name="auth_use_without_account_hint">Alles wird auf diesem Telefon gespeichert. Ein Konto kannst du später erstellen.</string>
+    <string name="err_accounts_unavailable">Der Kontodienst ist gerade nicht verfügbar. Versuche es später noch einmal; was du in Momentum machst, bleibt auf diesem Telefon gespeichert.</string>
+    <string name="settings_sign_in_title">Anmelden oder Konto erstellen</string>
+    <string name="settings_sign_in_subtitle">Optional. Du nutzt Momentum auf diesem Telefon ohne Konto.</string>
+</resources>

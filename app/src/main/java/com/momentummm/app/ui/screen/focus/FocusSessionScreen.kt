@@ -62,6 +62,7 @@ import com.momentummm.app.ui.theme.momentum
 import com.momentummm.app.MomentumApplication
 import com.momentummm.app.data.appwrite.models.AppwriteFocusSession
 import com.momentummm.app.data.appwrite.models.FocusSessionStats
+import com.momentummm.app.data.focus.LocalFocusLog
 import com.momentummm.app.service.FocusTimerStatus
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -151,32 +152,36 @@ fun FocusSessionScreen(
             // BREAK y eso cancelaría este LaunchedEffect a media escritura.
             savedSessionKey = session.id
             coroutineScope.launch {
-                currentUser.value?.let { user ->
+                val sessionId = "sess_${System.currentTimeMillis()}"
+                val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val currentTimestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }.format(Date())
+
+                val focusSession = AppwriteFocusSession(
+                    userId = currentUser.value?.id ?: "local",
+                    sessionId = sessionId,
+                    sessionType = session.id,
+                    date = currentDate,
+                    startTime = focusState.startTimeIso,
+                    endTime = currentTimestamp,
+                    plannedDuration = session.duration,
+                    actualDuration = session.duration,
+                    wasCompleted = true,
+                    distractions = 0,
+                    blockedApps = session.blockedApps,
+                    breakDuration = session.breakDuration
+                )
+
+                // Primero en el teléfono, sin condiciones: sin cuenta (o con el
+                // servidor caído) la sesión se perdía y las cifras seguían en cero.
+                runCatching { application.localFocusSessionStore.save(focusSession) }
+
+                if (currentUser.value != null) {
                     try {
-                        val sessionId = "sess_${System.currentTimeMillis()}"
-                        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                        val currentTimestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-                            timeZone = TimeZone.getTimeZone("UTC")
-                        }.format(Date())
-
-                        val focusSession = AppwriteFocusSession(
-                            userId = user.id,
-                            sessionId = sessionId,
-                            sessionType = session.id,
-                            date = currentDate,
-                            startTime = focusState.startTimeIso,
-                            endTime = currentTimestamp,
-                            plannedDuration = session.duration,
-                            actualDuration = session.duration,
-                            wasCompleted = true,
-                            distractions = 0,
-                            blockedApps = session.blockedApps,
-                            breakDuration = session.breakDuration
-                        )
-
                         focusRepository.saveFocusSession(focusSession)
                     } catch (_: Exception) {
-                        // Manejar error silenciosamente
+                        // Lo local ya quedó guardado.
                     }
                 }
             }
@@ -184,12 +189,14 @@ fun FocusSessionScreen(
     }
 
     // Cargar estadísticas y historial.
-    // Si no hay usuario, no dejamos el indicador de carga encendido para siempre:
-    // se resuelve a "sin datos" y la pantalla muestra los presets como acción principal.
-    LaunchedEffect(currentUser.value) {
+    // Sin cuenta se calculan con las sesiones guardadas en el teléfono; antes se
+    // quedaban siempre en cero.
+    val localSessions by application.localFocusSessionStore.sessions.collectAsStateWithLifecycle()
+    LaunchedEffect(currentUser.value, localSessions) {
         val user = currentUser.value
         if (user == null) {
-            focusStats = FocusSessionStats()
+            focusStats = LocalFocusLog.stats(localSessions, java.time.LocalDate.now())
+            sessionHistory = LocalFocusLog.history(localSessions, 10)
             isLoadingStats = false
             return@LaunchedEffect
         }

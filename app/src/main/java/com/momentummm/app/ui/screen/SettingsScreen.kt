@@ -1,5 +1,6 @@
 package com.momentummm.app.ui.screen
 
+import com.momentummm.app.data.account.AccountAccess
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
@@ -313,6 +314,9 @@ fun SettingsScreen(
     val application = context.applicationContext as MomentumApplication
     val coroutineScope = rememberCoroutineScope()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val currentUser by application.appwriteService.currentUser.collectAsStateWithLifecycle()
+    val serverState by application.appwriteService.serverState.collectAsStateWithLifecycle()
+    val hasAccount = currentUser != null
     
     // Estado de protección por contraseña
     val passwordProtection by passwordViewModel.passwordProtection.collectAsStateWithLifecycle()
@@ -351,24 +355,37 @@ fun SettingsScreen(
         // ====================================================================
         item {
             PreferenceCategory(title = stringResource(R.string.settings_category_account)) {
-                PreferenceItem(
-                    title = stringResource(R.string.account_settings),
-                    subtitle = stringResource(R.string.settings_account_subtitle),
-                    icon = Icons.Default.AccountCircle,
-                    onClick = { onNavigateToScreen("account_settings") }
-                )
+                if (hasAccount) {
+                    PreferenceItem(
+                        title = stringResource(R.string.account_settings),
+                        subtitle = stringResource(R.string.settings_account_subtitle),
+                        icon = Icons.Default.AccountCircle,
+                        onClick = { onNavigateToScreen("account_settings") }
+                    )
+                } else if (AccountAccess.offersAccounts(serverState)) {
+                    // Sin cuenta: la cuenta es opcional. Volver a la bienvenida
+                    // permite iniciar sesión, crear cuenta o seguir sin cuenta.
+                    PreferenceItem(
+                        title = stringResource(R.string.settings_sign_in_title),
+                        subtitle = stringResource(R.string.settings_sign_in_subtitle),
+                        icon = Icons.Default.AccountCircle,
+                        onClick = { application.localModeStore.setLocalMode(false) }
+                    )
+                }
                 PreferenceItem(
                     title = stringResource(R.string.settings_help_title),
                     subtitle = stringResource(R.string.settings_help_subtitle),
                     icon = Icons.Default.HelpOutline,
                     onClick = { onNavigateToScreen("help") }
                 )
-                PreferenceItem(
-                    title = stringResource(R.string.logout),
-                    subtitle = stringResource(R.string.settings_logout_subtitle),
-                    icon = Icons.Default.Logout,
-                    onClick = { showLogoutDialog = true }
-                )
+                if (hasAccount) {
+                    PreferenceItem(
+                        title = stringResource(R.string.logout),
+                        subtitle = stringResource(R.string.settings_logout_subtitle),
+                        icon = Icons.Default.Logout,
+                        onClick = { showLogoutDialog = true }
+                    )
+                }
                 PreferenceItem(
                     title = stringResource(R.string.tutorial_title),
                     subtitle = stringResource(R.string.settings_tutorial_subtitle),
@@ -548,15 +565,20 @@ fun SettingsScreen(
                         title = stringResource(R.string.widget_settings),
                         subtitle = stringResource(R.string.settings_widgets_subtitle),
                         icon = Icons.Default.Widgets,
-                        onClick = { onNavigateToScreen("widget_setup") }
+                        onClick = { onNavigateToScreen("widget_setup") },
+                        showDivider = hasAccount
                     )
-                    PreferenceItem(
-                        title = stringResource(R.string.settings_sync_title),
-                        subtitle = stringResource(R.string.settings_sync_subtitle),
-                        icon = Icons.Default.Sync,
-                        onClick = { onNavigateToScreen("sync_settings") },
-                        showDivider = false
-                    )
+                    // Sincronizar solo tiene sentido con cuenta: sin ella «Sincronizar
+                    // ahora» siempre terminaba en «falló».
+                    if (hasAccount) {
+                        PreferenceItem(
+                            title = stringResource(R.string.settings_sync_title),
+                            subtitle = stringResource(R.string.settings_sync_subtitle),
+                            icon = Icons.Default.Sync,
+                            onClick = { onNavigateToScreen("sync_settings") },
+                            showDivider = false
+                        )
+                    }
                 }
             }
         }

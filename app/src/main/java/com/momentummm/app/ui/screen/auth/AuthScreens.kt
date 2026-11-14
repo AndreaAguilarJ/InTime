@@ -40,6 +40,7 @@ import com.momentummm.app.ui.theme.*
 fun WelcomeScreen(
     onSignUpClick: () -> Unit,
     onSignInClick: () -> Unit,
+    onUseWithoutAccount: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -133,6 +134,27 @@ fun WelcomeScreen(
             ) {
                 Text(stringResource(R.string.auth_sign_in))
             }
+
+            Spacer(modifier = Modifier.height(MomentumDesign.Spacing.compact))
+
+            // La cuenta es opcional: todo lo que hace Momentum se guarda en el
+            // teléfono. Sin esta salida, un servidor de cuentas caído dejaba la
+            // app entera inservible (rechazo de Google Play del 4 nov 2026).
+            MomentumButton(
+                onClick = onUseWithoutAccount,
+                style = ButtonStyle.Text,
+                size = ButtonSize.Large,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.auth_use_without_account))
+            }
+
+            Text(
+                text = stringResource(R.string.auth_use_without_account_hint),
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.momentum.textSecondary
+            )
 
             Spacer(modifier = Modifier.height(MomentumDesign.Spacing.large))
 

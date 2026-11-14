@@ -48,12 +48,29 @@ object ErrorHandler {
     }
     
     private fun getDetailedErrorMessage(error: Throwable, context: Context): String {
-        val errorMsg = error.message?.lowercase() ?: ""
         // Los mensajes se resuelven desde recursos para que aparezcan en el idioma
         // del usuario; antes estaban fijos en español y todos los idiomas veían
         // el error en español.
-        val res = errorMessageRes(errorMsg, NetworkUtils.isNetworkAvailable(context))
+        val res = errorMessageRes(error, NetworkUtils.isNetworkAvailable(context))
         return context.getString(res)
+    }
+
+    /**
+     * Como [errorMessageRes] con texto, pero mirando primero la respuesta del
+     * servidor. Un proyecto de Appwrite en solo lectura contesta 402
+     * «This project is in readonly mode», que no contiene ninguna palabra clave
+     * y se mostraba como «An unexpected error occurred». Es lo que vio el
+     * revisor de Google Play el 4 de noviembre de 2026.
+     */
+    @androidx.annotation.StringRes
+    fun errorMessageRes(error: Throwable, networkAvailable: Boolean): Int {
+        if (networkAvailable &&
+            com.momentummm.app.data.account.AccountAccess.classify(error) ==
+            com.momentummm.app.data.account.AccountServer.UNAVAILABLE
+        ) {
+            return R.string.err_accounts_unavailable
+        }
+        return errorMessageRes(error.message?.lowercase() ?: "", networkAvailable)
     }
 
     /**

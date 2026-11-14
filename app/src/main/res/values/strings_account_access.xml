@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Modo sin cuenta: la cuenta es opcional y todo se guarda en el teléfono. -->
+    <string name="auth_use_without_account">Usar sin cuenta</string>
+    <string name="auth_use_without_account_hint">Todo se guarda en este teléfono. Puedes crear una cuenta más adelante.</string>
+    <string name="err_accounts_unavailable">El servicio de cuentas no está disponible ahora mismo. Inténtalo más tarde; lo que haces en Momentum sigue guardado en este teléfono.</string>
+    <string name="settings_sign_in_title">Iniciar sesión o crear cuenta</string>
+    <string name="settings_sign_in_subtitle">Opcional. Ahora usas Momentum sin cuenta en este teléfono.</string>
+</resources>

@@ -227,7 +227,9 @@ fun EmergencyUnlockScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // OPCIÓN 1: Pago de emergencia
+            // OPCIÓN 1: Pago de emergencia. Solo si el producto existe en Google
+            // Play; si no, el cobro siempre fallaba (ver Monetization).
+            if (com.momentummm.app.data.model.Monetization.PLAY_PRODUCTS_ON_SALE) {
             AnimatedVisibility(
                 visible = isVisible && !showShameCountdown,
                 enter = fadeIn(animationSpec = tween(400, delayMillis = 600)) +
@@ -246,6 +248,7 @@ fun EmergencyUnlockScreen(
                         showConfirmDialog = true
                     }
                 )
+            }
             }
 
             // OPCIÓN 2: Shame Sharing (GRATIS pero viral)

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_use_without_account">Use without an account</string>
+    <string name="auth_use_without_account_hint">Everything is saved on this phone. You can create an account later.</string>
+    <string name="err_accounts_unavailable">The account service is not available right now. Try again later; what you do in Momentum stays saved on this phone.</string>
+    <string name="settings_sign_in_title">Sign in or create an account</string>
+    <string name="settings_sign_in_subtitle">Optional. You are using Momentum without an account on this phone.</string>
+</resources>

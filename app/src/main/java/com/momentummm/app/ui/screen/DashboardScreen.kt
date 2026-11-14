@@ -160,7 +160,9 @@ fun DashboardScreen(
                 }
             }
 
-            if (!isPremiumUser) {
+            // Sin productos a la venta en Google Play la tarjeta llevaba a un
+            // «Suscribirse» que no cobraba nada: ver Monetization.
+            if (!isPremiumUser && com.momentummm.app.data.model.Monetization.PLAY_PRODUCTS_ON_SALE) {
                 item { PremiumPromotionCard(onUpgradeClick = onUpgradeClick) }
             }
 

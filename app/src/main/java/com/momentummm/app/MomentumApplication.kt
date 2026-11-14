@@ -109,6 +109,10 @@ class MomentumApplication : Application(), Configuration.Provider {
     // Enhanced managers
     val themeManager by lazy { ThemeManager(this) }
     val billingManager by lazy { BillingManager(this) }
+    // Modo sin cuenta (la cuenta es opcional; todo se guarda en el teléfono).
+    val localModeStore by lazy { com.momentummm.app.data.account.LocalModeStore(this) }
+    // Sesiones de enfoque guardadas en el teléfono (sin cuenta no había otro sitio).
+    val localFocusSessionStore by lazy { com.momentummm.app.data.focus.LocalFocusSessionStore(this) }
     val exportManager by lazy { ExportManager(this) }
     // gamificationManager: ver el campo @Inject de arriba.
     val backupSyncManager by lazy { 

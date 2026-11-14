@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_use_without_account">Usar sem conta</string>
+    <string name="auth_use_without_account_hint">Tudo fica salvo neste celular. Você pode criar uma conta depois.</string>
+    <string name="err_accounts_unavailable">O serviço de contas não está disponível agora. Tente novamente mais tarde; o que você faz no Momentum continua salvo neste celular.</string>
+    <string name="settings_sign_in_title">Entrar ou criar conta</string>
+    <string name="settings_sign_in_subtitle">Opcional. Você está usando o Momentum sem conta neste celular.</string>
+</resources>

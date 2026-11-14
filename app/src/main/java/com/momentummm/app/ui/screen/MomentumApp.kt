@@ -45,6 +45,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import com.momentummm.app.widget.LifeWeeksWidget
 import com.momentummm.app.ui.screen.onboarding.EnhancedOnboardingScreen
+import com.momentummm.app.data.account.AccountAccess
 import com.momentummm.app.ui.screen.tutorial.AppTutorialScreen
 import com.momentummm.app.data.appwrite.models.AppwriteUserSettings
 import com.momentummm.app.ui.settings.NotificationSettingsScreen
@@ -106,10 +107,21 @@ fun MomentumApp() {
         .isOnboardingCompletedFlow(context)
         .collectAsStateWithLifecycle(initialValue = false)
 
-    LaunchedEffect(isAuthReady, isLoggedIn) {
+    // La cuenta es opcional. Si el servidor de cuentas no atiende (por ejemplo,
+    // proyecto de Appwrite en solo lectura), la bienvenida solo llevaría a un
+    // error: se entra directamente sin cuenta.
+    val serverState by application.appwriteService.serverState.collectAsStateWithLifecycle()
+    val localMode by application.localModeStore.localMode.collectAsStateWithLifecycle()
+    LaunchedEffect(isAuthReady, isLoggedIn, serverState) {
+        if (isAuthReady && AccountAccess.shouldAutoEnterLocal(serverState, isLoggedIn)) {
+            application.localModeStore.setLocalMode(true)
+        }
+    }
+
+    LaunchedEffect(isAuthReady, isLoggedIn, localMode) {
         authStateOrdinal = if (!isAuthReady) {
             AuthState.Loading.ordinal
-        } else if (isLoggedIn) {
+        } else if (AccountAccess.entersApp(isLoggedIn, localMode)) {
             AuthState.Authenticated.ordinal
         } else {
             AuthState.NotAuthenticated.ordinal
@@ -313,7 +325,8 @@ private fun AuthenticationFlow(
         AuthScreen.Welcome -> {
             WelcomeScreen(
                 onSignUpClick = { currentScreenOrdinal = AuthScreen.SignUp.ordinal },
-                onSignInClick = { currentScreenOrdinal = AuthScreen.SignIn.ordinal }
+                onSignInClick = { currentScreenOrdinal = AuthScreen.SignIn.ordinal },
+                onUseWithoutAccount = { application.localModeStore.setLocalMode(true) }
             )
         }
         AuthScreen.SignUp -> {
@@ -513,7 +526,10 @@ private fun MainAppContent(
                     val viewModel: com.momentummm.app.ui.viewmodel.LifeWeeksViewModel = viewModel(
                         factory = LifeWeeksViewModelFactory(application.userRepository, application)
                     )
-                    LifeWeeksScreen(viewModel = viewModel, onNavigateToAccountSettings = { navController.navigate("account_settings") })
+                    // La fecha se pone en «Mi vida en semanas», que guarda en el
+                    // teléfono. Ajustes de cuenta exigía sesión y sin cuenta solo
+                    // respondía «inicia sesión».
+                    LifeWeeksScreen(viewModel = viewModel, onNavigateToAccountSettings = { navController.navigate("mi_vida_en_semanas") })
                 }
                 composable(Screen.Analytics.route) {
                     com.momentummm.app.ui.screen.analytics.AdvancedAnalyticsScreen(
